@@ -33,6 +33,19 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 	public function beatHit() {}
 
 	public function stepHit() {}
+
+	override private function onActionPressed(action:String)
+	{
+		super.onActionPressed(action);
+
+		switch (action)
+		{
+			case "vol_up":
+				volume += 0.1;
+			case "vol_down":
+				volume -= 0.1;
+		}
+	}
 }
 
 interface MusicHandler

@@ -63,10 +63,6 @@ class PlayState extends MusicBeatState
 					Conductor.boundSong.stop();
 				else
 					Conductor.boundSong.play();
-			case "vol_up":
-				volume += 0.1;
-			case "vol_down":
-				volume -= 0.1;
 		}
 	}
 }
