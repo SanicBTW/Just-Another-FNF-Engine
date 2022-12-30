@@ -10,7 +10,7 @@ import openfl.display.Sprite;
 import openfl.display.StageScaleMode;
 import openfl.events.Event;
 
-// comeback later
+// Re-order the files maybe
 class Main extends Sprite
 {
 	var gameWidth:Int = 1280;
