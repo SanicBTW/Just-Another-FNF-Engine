@@ -17,7 +17,7 @@ class AudioStream
 	var channel:SoundChannel;
 
 	public var playing:Bool = false;
-	@:isVar public var time(get, /*set*/ never):Float = 0;
+	@:isVar public var time(get, set):Float = 0;
 	public var volume(default, set):Float = 1;
 	public var length:Float = 0;
 	public var lastTime:Float = 0;
@@ -74,15 +74,29 @@ class AudioStream
 			return lastTime;
 	}
 
+	function set_time(value:Float):Float
+	{
+		if (channel != null)
+		{
+			stop();
+			lastTime = value;
+			if (lastTime > length)
+				lastTime = 0;
+			play();
+			return lastTime;
+		}
+		return value;
+	}
+
 	function set_source(value:Dynamic):Dynamic
 	{
 		if (sound == null)
 			return null;
 
-		if (Std.isOfType(value, Sound))
+		if (value is Sound)
 			sound = value;
 
-		if (Std.isOfType(value, String))
+		if (value is String)
 		{
 			var shitString = Std.string(value);
 			if (shitString.contains("assets"))
@@ -97,18 +111,4 @@ class AudioStream
 
 		return value;
 	}
-	/*
-		function set_time(value:Float):Float 
-		{
-			if (channel != null)
-			{
-				stop();
-				lastTime += value;
-				if (lastTime > length)
-					lastTime = 0;
-				play();
-				return lastTime;
-			}
-			return value;
-	}*/
 }
