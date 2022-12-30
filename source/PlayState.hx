@@ -14,16 +14,17 @@ import openfl.utils.Assets;
 class PlayState extends MusicBeatState
 {
 	var cam:FlxCamera;
+	var audioStream:AudioStream = new AudioStream();
 
 	override public function create()
 	{
-		var audioStream:AudioStream = new AudioStream();
-		audioStream.source = Assets.getSound("assets/music/test.mp3");
+		audioStream.source = "assets/music/test.ogg";
 		audioStream.onComplete = function(?_)
 		{
 			Conductor.bindSong(this, audioStream, 128);
 		}
 		Conductor.bindSong(this, audioStream, 128);
+		sounds.push(audioStream);
 
 		cam = new FlxCamera();
 		cam.bgColor.alpha = 0;
@@ -55,12 +56,17 @@ class PlayState extends MusicBeatState
 	{
 		super.onActionPressed(action);
 
-		if (action == "confirm")
+		switch (action)
 		{
-			if (Conductor.boundSong.playing)
-				Conductor.boundSong.stop();
-			else
-				Conductor.boundSong.play();
+			case "confirm":
+				if (Conductor.boundSong.playing)
+					Conductor.boundSong.stop();
+				else
+					Conductor.boundSong.play();
+			case "vol_up":
+				volume += 0.1;
+			case "vol_down":
+				volume -= 0.1;
 		}
 	}
 }

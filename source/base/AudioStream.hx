@@ -13,7 +13,6 @@ using StringTools;
 // from fps plus
 class AudioStream
 {
-	// TODO: Make an option to change the audio source and reset variables to avoid errors
 	var sound:Sound;
 	var channel:SoundChannel;
 
@@ -22,7 +21,6 @@ class AudioStream
 	public var volume(default, set):Float = 1;
 	public var length:Float = 0;
 	public var lastTime:Float = 0;
-	public var initialized:Bool = false;
 	public var onComplete:Event->Void;
 	public var source(default, set):Dynamic = null;
 
@@ -96,7 +94,6 @@ class AudioStream
 		lastTime = 0;
 		length = sound.length;
 		playing = false;
-		initialized = true;
 
 		return value;
 	}

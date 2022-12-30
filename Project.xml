@@ -36,6 +36,8 @@
 	<haxedef name="FLX_NO_GAMEPAD" />
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
 	<haxedef name="FLX_NO_DEBUG" unless="debug" />
+	<haxedef name="FLX_NO_SOUND_TRAY" />
+	<haxedef name="FLX_NO_SOUND_SYSTEM" />
 
 	<!-- _________________________________ Custom _______________________________ -->
 
