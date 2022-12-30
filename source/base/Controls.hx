@@ -36,7 +36,8 @@ class Controls
 		"confirm" => [Keyboard.SPACE, Keyboard.ENTER],
 		"back" => [Keyboard.BACKSPACE, Keyboard.ESCAPE],
 		"vol_up" => [Keyboard.NUMPAD_ADD, null],
-		"vol_down" => [Keyboard.NUMPAD_SUBTRACT, null]
+		"vol_down" => [Keyboard.NUMPAD_SUBTRACT, null],
+		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0]
 	];
 
 	public static var keyPressed:Array<Int> = [];

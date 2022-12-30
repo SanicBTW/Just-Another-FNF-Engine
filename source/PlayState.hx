@@ -4,6 +4,7 @@ import base.AudioStream;
 import base.Conductor;
 import base.MusicBeatState;
 import base.Paths;
+import base.SoundManager;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -26,7 +27,7 @@ class PlayState extends MusicBeatState
 			Conductor.bindSong(this, audioStream, 128);
 		}
 		Conductor.bindSong(this, audioStream, 128);
-		sounds.push(audioStream);
+		SoundManager.addSound(audioStream);
 
 		cam = new FlxCamera();
 		cam.bgColor.alpha = 0;

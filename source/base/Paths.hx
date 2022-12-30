@@ -61,21 +61,14 @@ class Paths
 
 	public static function sound(key:String, ?library:String):Sound
 	{
-		var sound:Sound = getSound(getPath('sounds/$key.ogg', library));
-		return sound;
+		return getSound(getPath('sounds/$key.ogg', library));
 	}
 
 	public static inline function music(key:String, ?library:String):Sound
-	{
-		var music:Sound = getSound(getPath('music/$key.ogg', library));
-		return music;
-	}
+		return getSound(getPath('music/$key.ogg', library));
 
 	public static inline function image(key:String, ?library:String):FlxGraphic
-	{
-		var returnAsset:FlxGraphic = getGraphic(getPath('images/$key.png', library));
-		return returnAsset;
-	}
+		return getGraphic(getPath('images/$key.png', library));
 
 	public static function getGraphic(file:String)
 	{
@@ -130,6 +123,7 @@ class Paths
 		}
 
 		runGC();
+		SoundManager.clearSoundList();
 	}
 
 	public static function clearStoredMemory()

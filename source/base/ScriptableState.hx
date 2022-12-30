@@ -23,13 +23,18 @@ class ScriptableState extends FlxUIState
 
 	function onActionPressed(action:String)
 	{
-		trace("Pressed: " + action);
+		switch (action)
+		{
+			case "vol_up":
+				SoundManager.globalVolume += 0.1;
+			case "vol_down":
+				SoundManager.globalVolume -= 0.1;
+			case "mute":
+				SoundManager.muted = !SoundManager.muted;
+		}
 	}
 
-	function onActionReleased(action:String)
-	{
-		trace("Released: " + action);
-	}
+	function onActionReleased(action:String) {}
 }
 
 class ScriptableSubState extends FlxUISubState
@@ -48,7 +53,18 @@ class ScriptableSubState extends FlxUISubState
 		super.destroy();
 	}
 
-	function onActionPressed(action:String) {}
+	function onActionPressed(action:String)
+	{
+		switch (action)
+		{
+			case "vol_up":
+				SoundManager.globalVolume += 0.1;
+			case "vol_down":
+				SoundManager.globalVolume -= 0.1;
+			case "mute":
+				SoundManager.muted = !SoundManager.muted;
+		}
+	}
 
 	function onActionReleased(action:String) {}
 }
