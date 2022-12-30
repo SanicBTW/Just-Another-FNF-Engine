@@ -41,7 +41,7 @@
 
 	<!-- _________________________________ Custom _______________________________ -->
 
-	<!--Place custom nodes like icons here (higher priority to override the HaxeFlixel icon)-->
+	<define name="FS_ACCESS" if="windows" />
 	<icon path="icons/icon8.png" size='8'/>
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>

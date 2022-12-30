@@ -3,8 +3,10 @@ package;
 import base.AudioStream;
 import base.Conductor;
 import base.MusicBeatState;
+import base.Paths;
 import flixel.FlxCamera;
 import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.math.FlxMath;
 import flixel.system.FlxSound;
@@ -18,7 +20,7 @@ class PlayState extends MusicBeatState
 
 	override public function create()
 	{
-		audioStream.source = "assets/music/test.ogg";
+		audioStream.source = Paths.music("test");
 		audioStream.onComplete = function(?_)
 		{
 			Conductor.bindSong(this, audioStream, 128);
@@ -30,8 +32,14 @@ class PlayState extends MusicBeatState
 		cam.bgColor.alpha = 0;
 		FlxG.cameras.add(cam);
 
+		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuDefault"));
+		bg.screenCenter();
+		bg.antialiasing = true;
+		add(bg);
+
 		var sex:FlxText = new FlxText(0, 0, 0, "me cago en mis muertos", 25);
 		sex.screenCenter();
+		sex.antialiasing = true;
 		add(sex);
 		sex.cameras = [cam];
 		super.create();
