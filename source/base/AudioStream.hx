@@ -34,7 +34,7 @@ class AudioStream
 		if (channel == null)
 		{
 			channel = sound.play(lastTime);
-			channel.soundTransform = new SoundTransform(volume);
+			channel.soundTransform = new SoundTransform(SoundManager.globalVolume);
 			if (onComplete != null)
 				channel.addEventListener(Event.SOUND_COMPLETE, onComplete);
 			playing = true;

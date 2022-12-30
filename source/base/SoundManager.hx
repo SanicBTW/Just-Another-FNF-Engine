@@ -1,6 +1,5 @@
 package base;
 
-// When stopping the audio and playing it again the volume doesn't match the global volume
 class SoundManager
 {
 	private static var soundList:Array<AudioStream> = [];
