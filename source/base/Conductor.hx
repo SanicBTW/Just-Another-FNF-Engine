@@ -30,11 +30,30 @@ class Conductor
 	public static var lastBeat:Float = -1;
 
 	public static var boundSong:AudioStream;
+	public static var boundVocals:AudioStream;
 	public static var boundState:MusicHandler;
 
 	public function new() {}
 
 	public static function recalculateTimings() {}
+
+	public static function bindSong(newState:MusicHandler, newSong:AudioStream, songBPM:Float, ?newVocals:AudioStream)
+	{
+		boundSong = newSong;
+		SoundManager.addSound(boundSong);
+		if (newVocals != null)
+		{
+			boundVocals = newVocals;
+			SoundManager.addSound(boundVocals);
+		}
+		boundState = newState;
+
+		changeBPM(songBPM);
+
+		songPosition = 0;
+		lastStep = -1;
+		lastBeat = -1;
+	}
 
 	public static function mapBPMChanges(song:SwagSong)
 	{
@@ -75,13 +94,15 @@ class Conductor
 	{
 		if (boundSong.playing)
 		{
-			songPosition = boundSong.time;
+			songPosition += elapsed * 1000;
 
 			stepPosition = Math.floor(songPosition / stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
 			if (stepPosition > lastStep)
 			{
-				// resync shit here lol
+				if ((Math.abs(boundSong.time - songPosition) > 20)
+					|| (boundVocals != null && Math.abs(boundVocals.time - songPosition) > 20))
+					resyncTime();
 				boundState.stepHit();
 				lastStep = stepPosition;
 			}
@@ -95,14 +116,17 @@ class Conductor
 		}
 	}
 
-	public static function bindSong(newState:MusicHandler, newSong:AudioStream, songBPM:Float)
+	public static function resyncTime()
 	{
-		boundSong = newSong;
-		boundState = newState;
-
-		changeBPM(songBPM);
-
-		lastStep = -1;
-		lastBeat = -1;
+		trace('Resyncing song time ${boundSong.time}');
+		songPosition = boundSong.time;
+		boundSong.play();
+		if (boundVocals != null)
+		{
+			boundVocals.stop();
+			boundVocals.time = songPosition;
+			boundVocals.play();
+		}
+		trace('New song time $songPosition');
 	}
 }

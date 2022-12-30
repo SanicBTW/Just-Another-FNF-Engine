@@ -7,8 +7,6 @@ class SoundManager
 	private static var oldVolume:Float = 1;
 	public static var muted(default, set):Bool = false;
 
-	// public static var onVolumeChanged:lime.app.Event<Void->Void> = new lime.app.Event<Void->Void>();
-
 	private static function set_globalVolume(value:Float):Float
 	{
 		globalVolume = value;
@@ -16,7 +14,6 @@ class SoundManager
 			globalVolume = 1;
 		if (globalVolume < 0)
 			globalVolume = 0;
-		// onVolumeChanged.dispatch();
 		for (sound in soundList)
 			sound.volume = globalVolume;
 		return value;
@@ -39,7 +36,6 @@ class SoundManager
 		return value;
 	}
 
-	// bitch ass useless function bruh
 	public static function clearSoundList()
 		soundList = [];
 

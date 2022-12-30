@@ -18,17 +18,16 @@ import openfl.utils.Assets;
 class PlayState extends MusicBeatState
 {
 	var cam:FlxCamera;
-	var audioStream:AudioStream = new AudioStream();
 
 	override public function create()
 	{
-		audioStream.source = Paths.music("test");
-		audioStream.onComplete = function(?_)
-		{
-			Conductor.bindSong(this, audioStream, 128);
-		}
-		Conductor.bindSong(this, audioStream, 128);
-		SoundManager.addSound(audioStream);
+		var instStream:AudioStream = new AudioStream();
+		instStream.source = Paths.music("Inst");
+
+		var voicesStream:AudioStream = new AudioStream();
+		voicesStream.source = Paths.music("Voices");
+
+		Conductor.bindSong(this, instStream, 150, voicesStream);
 
 		cam = new FlxCamera();
 		cam.bgColor.alpha = 0;
@@ -45,13 +44,17 @@ class PlayState extends MusicBeatState
 		add(sex);
 		sex.cameras = [cam];
 		super.create();
+
+		Conductor.boundSong.play();
+		Conductor.boundVocals.play();
+		Conductor.resyncTime();
 	}
 
 	override public function beatHit()
 	{
 		super.beatHit();
 
-		if (Conductor.beatPosition % 4 == 2)
+		if (Conductor.beatPosition % 4 == 0)
 			cam.zoom += 0.05;
 	}
 
@@ -60,21 +63,5 @@ class PlayState extends MusicBeatState
 		cam.zoom = FlxMath.lerp(1, cam.zoom, 0.95);
 
 		super.update(elapsed);
-	}
-
-	override private function onActionPressed(action:String)
-	{
-		super.onActionPressed(action);
-
-		switch (action)
-		{
-			case "confirm":
-				ScriptableState.switchState(new PlayState());
-				/*
-					if (Conductor.boundSong.playing)
-						Conductor.boundSong.stop();
-					else
-						Conductor.boundSong.play(); */
-		}
 	}
 }

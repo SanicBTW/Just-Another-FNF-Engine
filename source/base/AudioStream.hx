@@ -21,7 +21,7 @@ class AudioStream
 	public var volume(default, set):Float = 1;
 	public var length:Float = 0;
 	public var lastTime:Float = 0;
-	public var onComplete:Event->Void;
+	public var onComplete:Void->Void;
 	public var source(default, set):Dynamic = null;
 
 	public function new()
@@ -35,8 +35,7 @@ class AudioStream
 		{
 			channel = sound.play(lastTime);
 			channel.soundTransform = new SoundTransform(SoundManager.globalVolume);
-			if (onComplete != null)
-				channel.addEventListener(Event.SOUND_COMPLETE, onComplete);
+			channel.addEventListener(Event.SOUND_COMPLETE, onSoundComplete);
 			playing = true;
 		}
 	}
@@ -46,12 +45,18 @@ class AudioStream
 		if (channel != null)
 		{
 			lastTime = channel.position;
-			if (onComplete != null)
-				channel.removeEventListener(Event.SOUND_COMPLETE, onComplete);
+			channel.removeEventListener(Event.SOUND_COMPLETE, onSoundComplete);
 			channel.stop();
 			channel = null;
 			playing = false;
 		}
+	}
+
+	private function onSoundComplete(?_)
+	{
+		stop();
+		if (onComplete != null)
+			onComplete();
 	}
 
 	function set_volume(value:Float):Float
@@ -76,16 +81,12 @@ class AudioStream
 
 	function set_time(value:Float):Float
 	{
-		if (channel != null)
-		{
-			stop();
-			lastTime = value;
-			if (lastTime > length)
-				lastTime = 0;
-			play();
-			return lastTime;
-		}
-		return value;
+		stop();
+		lastTime = value;
+		if (lastTime > length)
+			lastTime = 0;
+		play();
+		return lastTime;
 	}
 
 	function set_source(value:Dynamic):Dynamic
