@@ -50,6 +50,7 @@ class ScriptableState extends FlxUIState
 					FlxG.switchState(nextState);
 				};
 			}
+			return;
 		}
 		FlxTransitionableState.skipNextTransIn = false;
 		FlxG.switchState(nextState);

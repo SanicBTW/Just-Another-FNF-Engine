@@ -4,6 +4,7 @@ import base.AudioStream;
 import base.Conductor;
 import base.MusicBeatState;
 import base.Paths;
+import base.ScriptableState;
 import base.SoundManager;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -68,10 +69,12 @@ class PlayState extends MusicBeatState
 		switch (action)
 		{
 			case "confirm":
-				if (Conductor.boundSong.playing)
-					Conductor.boundSong.stop();
-				else
-					Conductor.boundSong.play();
+				ScriptableState.switchState(new PlayState());
+				/*
+					if (Conductor.boundSong.playing)
+						Conductor.boundSong.stop();
+					else
+						Conductor.boundSong.play(); */
 		}
 	}
 }
