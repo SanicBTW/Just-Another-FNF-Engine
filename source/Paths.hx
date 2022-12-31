@@ -1,11 +1,9 @@
-package base;
-
+import base.SoundManager;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.Assets;
 import openfl.media.Sound;
-import openfl.system.System;
 #if cpp
 import cpp.NativeGc;
 #elseif java

@@ -2,7 +2,6 @@ package;
 
 import base.Config;
 import base.Cursor;
-import base.Paths;
 import base.ScriptableState;
 import flixel.FlxG;
 import flixel.FlxState;
@@ -23,6 +22,6 @@ class Init extends FlxState
 		Cursor.setCursor(IDLE);
 
 		if (Config.firstTime)
-			ScriptableState.switchState(new states.SetupState());
+			ScriptableState.switchState(new states.TestState());
 	}
 }

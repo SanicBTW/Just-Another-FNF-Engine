@@ -35,8 +35,8 @@ class Controls
 		"note_right" => [Keyboard.D, Keyboard.RIGHT],
 		"confirm" => [Keyboard.SPACE, Keyboard.ENTER],
 		"back" => [Keyboard.BACKSPACE, Keyboard.ESCAPE],
-		"vol_up" => [Keyboard.NUMPAD_ADD, null],
-		"vol_down" => [Keyboard.NUMPAD_SUBTRACT, null],
+		"vol_up" => [187 /* mf wasnt in the keyboard list dunno why lol*/, Keyboard.NUMPAD_ADD],
+		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
 		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0]
 	];
 

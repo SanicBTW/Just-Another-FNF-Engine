@@ -1,7 +1,6 @@
 package states;
 
 import base.Cursor;
-import base.Paths;
 import base.ScriptableState;
 import flixel.FlxG;
 import flixel.FlxSprite;
