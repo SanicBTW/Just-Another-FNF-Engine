@@ -14,7 +14,7 @@ class Main extends Sprite
 {
 	var gameWidth:Int = 1280;
 	var gameHeight:Int = 720;
-	var initialClass:Class<FlxState> = PlayState;
+	var initialClass:Class<FlxState> = Init;
 	var zoom:Float = -1;
 	var framerate:Int = 60;
 	var skipSplash:Bool = true;
@@ -64,7 +64,6 @@ class Main extends Sprite
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 
 		FlxG.fixedTimestep = false;
-		FlxG.mouse.useSystemCursor = true;
 		FlxG.mouse.visible = true;
 		#if !android
 		FlxG.autoPause = false;

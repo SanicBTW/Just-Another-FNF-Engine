@@ -1,22 +1,28 @@
 package base;
 
+import flixel.FlxG;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxAtlasFrames;
+import openfl.Assets;
+import openfl.media.Sound;
+import openfl.system.System;
 #if cpp
 import cpp.NativeGc;
 #elseif java
 import java.vm.Gc;
 #end
-import flixel.FlxG;
-import flixel.graphics.FlxGraphic;
-import openfl.Assets;
-import openfl.media.Sound;
-import openfl.system.System;
 
+// Make compatbile with StorageAccess
 class Paths
 {
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = new Map();
 	public static var currentTrackedSounds:Map<String, Sound> = new Map();
 	public static var localTrackedAssets:Array<String> = [];
-	public static var dumpExclusions:Array<String> = ['assets/music/freakyMenu.ogg'];
+	public static var dumpExclusions:Array<String> = [
+		'assets/music/freakyMenu.ogg',
+		'assets/images/cursorIdle.png',
+		'assets/images/cursorHover.png'
+	];
 
 	private static var currentLevel:String;
 
@@ -59,6 +65,9 @@ class Paths
 	public static inline function getPreloadPath(file:String)
 		return 'assets/$file';
 
+	public static inline function file(file:String, ?library:String)
+		return getPath(file, library);
+
 	public static function sound(key:String, ?library:String):Sound
 	{
 		return getSound(getPath('sounds/$key.ogg', library));
@@ -69,6 +78,9 @@ class Paths
 
 	public static inline function image(key:String, ?library:String):FlxGraphic
 		return getGraphic(getPath('images/$key.png', library));
+
+	public static inline function getSparrowAtlas(key:String, ?library:String)
+		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
 
 	public static function getGraphic(file:String)
 	{
@@ -132,7 +144,7 @@ class Paths
 		for (key in FlxG.bitmap._cache.keys())
 		{
 			var obj = FlxG.bitmap._cache.get(key);
-			if (obj != null)
+			if (obj != null && !currentTrackedAssets.exists(key))
 			{
 				trace(key);
 				Assets.cache.removeBitmapData(key);

@@ -120,7 +120,6 @@ class Conductor
 	{
 		trace('Resyncing song time ${boundSong.time}');
 		songPosition = boundSong.time;
-		boundSong.play();
 		if (boundVocals != null)
 		{
 			boundVocals.stop();

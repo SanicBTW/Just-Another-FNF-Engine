@@ -14,7 +14,7 @@ class StorageAccess
 {
 	private static var directories:Map<Folders, String> = new Map();
 
-	public static function checkDirectories(customDirectory:Null<String> = null)
+	public static function checkDirectories()
 	{
 		#if FS_ACCESS
 		#end
