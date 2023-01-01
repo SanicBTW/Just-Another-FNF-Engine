@@ -1,9 +1,14 @@
+package;
+
 import base.SoundManager;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.Assets;
 import openfl.media.Sound;
+
+using StringTools;
+
 #if cpp
 import cpp.NativeGc;
 #elseif java
@@ -73,8 +78,20 @@ class Paths
 	public static inline function image(key:String, ?library:String):FlxGraphic
 		return getGraphic(getPath('images/$key.png', library));
 
+	public static inline function inst(song:String):Sound
+		return getSound(getPath('${formatString(song)}/Inst.ogg', "songs"));
+
+	public static inline function voices(song:String):Sound
+		return getSound(getPath('${formatString(song)}/Voices.ogg', "songs"));
+
+	public static inline function chart(song:String, ?diff:String)
+		return getPath('${formatString(song)}/${formatString(song)}${diff != null ? '-$diff' : ""}.json', "songs");
+
 	public static inline function getSparrowAtlas(key:String, ?library:String)
 		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
+
+	public static inline function formatString(string:String)
+		return string.toLowerCase().replace(" ", "-");
 
 	public static function getGraphic(file:String)
 	{
@@ -129,7 +146,6 @@ class Paths
 		}
 
 		runGC();
-		SoundManager.clearSoundList();
 	}
 
 	public static function clearStoredMemory()
@@ -159,6 +175,7 @@ class Paths
 		}
 
 		localTrackedAssets = [];
+		SoundManager.clearSoundList();
 	}
 
 	// who the fuck uses hashlink or neko lol

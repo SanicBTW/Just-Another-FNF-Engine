@@ -57,6 +57,7 @@ class ScriptableState extends FlxUIState
 
 	function onActionPressed(action:String)
 	{
+		trace(action);
 		switch (action)
 		{
 			case "vol_up":
@@ -75,9 +76,9 @@ class ScriptableSubState extends FlxUISubState
 {
 	override function create()
 	{
-		super.create();
 		Controls.onActionPressed.add(onActionPressed);
 		Controls.onActionReleased.add(onActionReleased);
+		super.create();
 	}
 
 	override function destroy()

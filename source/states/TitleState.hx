@@ -3,6 +3,7 @@ package states;
 import base.Conductor;
 import base.MusicBeatState;
 import base.SaveData;
+import base.ScriptableState;
 import base.SoundManager;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -82,6 +83,17 @@ class TitleState extends MusicBeatState
 				gfDance.animation.play('danceRight');
 			else
 				gfDance.animation.play('danceLeft');
+		}
+	}
+
+	override function onActionPressed(action:String)
+	{
+		super.onActionPressed(action);
+
+		if (action == "confirm")
+		{
+			SoundManager.backgroundMusic.stop();
+			ScriptableState.switchState(new PlayTest());
 		}
 	}
 }

@@ -137,14 +137,8 @@ class AudioStream
 
 	function set_volume(value:Float):Float
 	{
-		if (channel != null)
-		{
-			if (channel.soundTransform.volume == value)
-				return value;
-			channel.soundTransform = new SoundTransform(value);
-			return value;
-		}
-		return 0;
+		channel.soundTransform = new SoundTransform(value);
+		return value;
 	}
 
 	function get_time():Float

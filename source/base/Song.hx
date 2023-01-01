@@ -1,5 +1,8 @@
 package base;
 
+import haxe.Json;
+import openfl.Assets;
+
 using StringTools;
 
 typedef SwagSong =
@@ -18,6 +21,7 @@ typedef SwagSong =
 	var stage:String;
 	var arrowSkin:String;
 	var splashSkin:String;
+	var validScore:Bool;
 }
 
 class Song
@@ -78,9 +82,28 @@ class Song
 		this.bpm = bpm;
 	}
 
-	public static function loadFromJSON(jsonInput:String, ?folder:String) {}
+	public static function loadFromJSON(song:String):SwagSong
+	{
+		var rawJson = Assets.getText(Paths.chart(song, "hard")).trim();
+
+		while (!rawJson.endsWith("}"))
+		{
+			rawJson = rawJson.substr(0, rawJson.length - 1);
+		}
+
+		var songJson:SwagSong = parseJSONshit(rawJson);
+		onLoadJson(songJson);
+		return songJson;
+	}
 
 	public static function loadFromRaw(rawInput:String) {}
+
+	public static function parseJSONshit(rawJson:String):SwagSong
+	{
+		var swagShit:SwagSong = cast Json.parse(rawJson).song;
+		swagShit.validScore = true;
+		return swagShit;
+	}
 }
 
 typedef SwagSection =

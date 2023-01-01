@@ -24,6 +24,9 @@
 	<source path="source" />
 	<assets path="assets" />
 
+	<library name="songs"	preload="true"/>
+	<assets path="assets/songs"		library="songs"		exclude="*.mp3"/>
+
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
