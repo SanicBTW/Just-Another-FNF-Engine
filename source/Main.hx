@@ -1,5 +1,6 @@
 package;
 
+import base.Config;
 import base.Controls;
 import flixel.FlxG;
 import flixel.FlxGame;
@@ -64,10 +65,13 @@ class Main extends Sprite
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 
 		FlxG.fixedTimestep = false;
-		FlxG.mouse.visible = true;
 		#if !android
 		FlxG.autoPause = false;
+		FlxG.mouse.visible = true;
 		#end
 		FlxG.log.redirectTraces = true;
+
+		FlxG.save.bind("funkin_engine", "sanicbtw");
+		Config.loadSettings();
 	}
 }

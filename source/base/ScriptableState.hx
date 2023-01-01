@@ -1,6 +1,5 @@
 package base;
 
-import base.Controls;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.addons.transition.FlxTransitionableState;
@@ -17,9 +16,10 @@ class ScriptableState extends FlxUIState
 
 		FlxTransitionableState.skipNextTransOut = false;
 
-		super.create();
 		Controls.onActionPressed.add(onActionPressed);
 		Controls.onActionReleased.add(onActionReleased);
+		Cursor.currentState = IDLE; // reset just in case
+		super.create();
 	}
 
 	override function destroy()

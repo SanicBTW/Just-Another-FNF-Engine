@@ -18,8 +18,7 @@ class Paths
 	public static var localTrackedAssets:Array<String> = [];
 	public static var dumpExclusions:Array<String> = [
 		'assets/music/freakyMenu.ogg',
-		'assets/images/cursorIdle.png',
-		'assets/images/cursorHover.png'
+		#if !android 'assets/images/cursorIdle.png', 'assets/images/cursorHover.png' #end
 	];
 
 	private static var currentLevel:String;

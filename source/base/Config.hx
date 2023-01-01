@@ -2,7 +2,7 @@ package base;
 
 class Config
 {
-	public static var firstTime:Bool = true;
+	public static var antialiasing:Bool = true;
 
 	public static function loadSettings()
 	{

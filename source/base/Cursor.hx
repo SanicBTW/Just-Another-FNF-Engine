@@ -3,10 +3,16 @@ package base;
 class Cursor
 {
 	private static var cursorOffsets:Map<CursorState, Array<Int>> = [IDLE => [-31, -32], HOVER => [-25, -32]];
+	public static var currentState(default, set):CursorState;
 
-	public static function setCursor(state:CursorState)
+	private static function set_currentState(newState:CursorState):CursorState
 	{
-		flixel.FlxG.mouse.load(Paths.image('cursor$state').bitmap, 1, cursorOffsets.get(state)[0], cursorOffsets.get(state)[1]);
+		if (currentState != newState)
+		{
+			flixel.FlxG.mouse.load(Paths.image('cursor$newState').bitmap, 1, cursorOffsets.get(newState)[0], cursorOffsets.get(newState)[1]);
+			currentState = newState;
+		}
+		return newState;
 	}
 }
 
