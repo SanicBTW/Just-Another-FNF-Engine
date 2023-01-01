@@ -1,7 +1,7 @@
 package;
 
-import base.Config;
 import base.Controls;
+import base.SaveData;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
@@ -68,10 +68,11 @@ class Main extends Sprite
 		#if !android
 		FlxG.autoPause = false;
 		FlxG.mouse.visible = true;
+		FlxG.mouse.useSystemCursor = true;
 		#end
 		FlxG.log.redirectTraces = true;
 
 		FlxG.save.bind("funkin_engine", "sanicbtw");
-		Config.loadSettings();
+		SaveData.loadSettings();
 	}
 }

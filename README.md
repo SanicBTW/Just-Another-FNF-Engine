@@ -8,3 +8,6 @@ Expected features to be added:
 - Android support
 - Optimization
 - and more
+
+# Special thanks
+- SlacDeveloper for making some fucking cool sprites

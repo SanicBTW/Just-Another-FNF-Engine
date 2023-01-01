@@ -1,7 +1,6 @@
 package;
 
-import base.Config;
-import base.Cursor;
+import base.SaveData;
 import base.ScriptableState;
 import extra.Prompt;
 import flixel.FlxG;
@@ -11,19 +10,13 @@ import flixel.FlxSprite;
 class Init extends ScriptableState
 {
 	var shitPrompt:Prompt;
-	var timeLeft:Int = 10;
+	var timeLeft:Int = 5;
 
 	override function create()
 	{
-		#if !android
-		Paths.getGraphic("assets/images/cursorIdle.png");
-		Paths.getGraphic("assets/images/cursorHover.png");
-		Cursor.currentState = IDLE;
-		#end
-
 		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuDefault"));
 		bg.screenCenter();
-		bg.antialiasing = Config.antialiasing;
+		bg.antialiasing = SaveData.antialiasing;
 		bg.alpha = 0.5;
 		add(bg);
 
@@ -53,11 +46,6 @@ class Init extends ScriptableState
 		{
 			ScriptableState.switchState(new states.TestState());
 		}
-
-		if (FlxG.mouse.overlaps(shitPrompt))
-			Cursor.currentState = HOVER;
-		else
-			Cursor.currentState = IDLE;
 
 		shitPrompt.footer.text = 'You will be redirected in ${timeLeft}s';
 	}

@@ -2,7 +2,7 @@ package base;
 
 import base.MusicBeatState.MusicHandler;
 import base.Song.SwagSong;
-import flixel.system.FlxSound;
+import base.SoundManager.AudioStream;
 
 typedef BPMChangeEvent =
 {

@@ -1,6 +1,6 @@
 package extra;
 
-import base.Config;
+import base.SaveData;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -19,22 +19,22 @@ class Prompt extends FlxSpriteGroup
 		super();
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('ui/promptbg'));
-		bg.antialiasing = Config.antialiasing;
+		bg.antialiasing = SaveData.antialiasing;
 		add(bg);
 
 		this.title = new FlxText(bg.x + 105, bg.y + 30, bg.width - 132, title, 25);
 		this.title.setFormat("_sans", 25, FlxColor.BLACK, LEFT);
-		this.title.antialiasing = Config.antialiasing;
+		this.title.antialiasing = SaveData.antialiasing;
 		add(this.title);
 
 		this.description = new FlxText(bg.x + 12, this.title.y + 50, bg.width - 32, description, 20);
 		this.description.setFormat("_sans", 20, FlxColor.BLACK, LEFT);
-		this.description.antialiasing = Config.antialiasing;
+		this.description.antialiasing = SaveData.antialiasing;
 		add(this.description);
 
 		this.footer = new FlxText(bg.x + 12, this.description.y + 210, bg.width - 32, footer, 20);
 		this.footer.setFormat("_sans", 20, FlxColor.BLACK, LEFT);
-		this.footer.antialiasing = Config.antialiasing;
+		this.footer.antialiasing = SaveData.antialiasing;
 		add(this.footer);
 	}
 }

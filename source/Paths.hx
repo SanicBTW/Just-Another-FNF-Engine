@@ -16,10 +16,7 @@ class Paths
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = new Map();
 	public static var currentTrackedSounds:Map<String, Sound> = new Map();
 	public static var localTrackedAssets:Array<String> = [];
-	public static var dumpExclusions:Array<String> = [
-		'assets/music/freakyMenu.ogg',
-		#if !android 'assets/images/cursorIdle.png', 'assets/images/cursorHover.png' #end
-	];
+	public static var dumpExclusions:Array<String> = ['assets/music/freakyMenu.ogg',];
 
 	private static var currentLevel:String;
 

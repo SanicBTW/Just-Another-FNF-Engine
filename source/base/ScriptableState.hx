@@ -18,7 +18,6 @@ class ScriptableState extends FlxUIState
 
 		Controls.onActionPressed.add(onActionPressed);
 		Controls.onActionReleased.add(onActionReleased);
-		Cursor.currentState = IDLE; // reset just in case
 		super.create();
 	}
 
