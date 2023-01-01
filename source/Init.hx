@@ -14,10 +14,11 @@ class Init extends ScriptableState
 
 	override function create()
 	{
-		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuDefault"));
+		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuSDefault"));
 		bg.screenCenter();
 		bg.antialiasing = SaveData.antialiasing;
 		bg.alpha = 0.5;
+		bg.setGraphicSize(FlxG.width, FlxG.height);
 		add(bg);
 
 		shitPrompt = new Prompt("Hey there!", "This engine is in a really early state and might be unstable\nPlease report any issue you find",
@@ -44,7 +45,7 @@ class Init extends ScriptableState
 
 		if (timeLeft <= 0)
 		{
-			ScriptableState.switchState(new states.TestState());
+			ScriptableState.switchState(new states.TitleState());
 		}
 
 		shitPrompt.footer.text = 'You will be redirected in ${timeLeft}s';

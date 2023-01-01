@@ -11,3 +11,6 @@ Expected features to be added:
 
 # Special thanks
 - SlacDeveloper for making some fucking cool sprites
+
+# TODO
+- Re-order files 

@@ -55,6 +55,19 @@ class Conductor
 		lastBeat = -1;
 	}
 
+	// idk why not lol
+	public static function bindCustom(newState:MusicHandler, song:AudioStream, songBPM:Float)
+	{
+		boundSong = song;
+		boundState = newState;
+
+		changeBPM(songBPM);
+
+		songPosition = 0;
+		lastStep = -1;
+		lastBeat = -1;
+	}
+
 	public static function mapBPMChanges(song:SwagSong)
 	{
 		bpmChangeMap = [];

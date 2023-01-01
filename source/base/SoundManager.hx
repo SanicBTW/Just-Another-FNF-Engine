@@ -1,5 +1,6 @@
 package base;
 
+import flixel.tweens.FlxTween;
 import openfl.events.Event;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
@@ -9,9 +10,11 @@ import openfl.utils.Assets;
 
 using StringTools;
 
+// FIX: Trying to turn down the volume while fading in will result on the audio applying the global volume after it ends
 class SoundManager
 {
 	private static var soundList:Array<AudioStream> = [];
+	public static var backgroundMusic:AudioStream;
 	public static var globalVolume(default, set):Float = 1;
 	private static var oldVolume:Float = 1;
 	public static var muted(default, set):Bool = false;
@@ -25,6 +28,8 @@ class SoundManager
 			globalVolume = 0;
 		for (sound in soundList)
 			sound.volume = globalVolume;
+		if (backgroundMusic != null)
+			backgroundMusic.volume = globalVolume;
 		return value;
 	}
 
@@ -50,6 +55,26 @@ class SoundManager
 
 	public static function addSound(sound:AudioStream)
 		soundList.push(sound);
+
+	// uses a custom var to avoid having it cleaned up
+	public static function setBGMusic(asset:String, baseVol:Float, ?loopTime:Float, ?library:String)
+	{
+		backgroundMusic = new AudioStream();
+		backgroundMusic.source = Paths.music(asset, library);
+		backgroundMusic.loop = true;
+		if (loopTime != null)
+			backgroundMusic.loopTime = loopTime;
+		backgroundMusic.play();
+		backgroundMusic.volume = baseVol;
+	}
+
+	public static function fadeInBGMusic(duration:Float = 1, from:Float = 0, to:Float = 1)
+	{
+		FlxTween.num(from, to, duration, null, function(f:Float)
+		{
+			backgroundMusic.volume = f;
+		});
+	}
 }
 
 class AudioStream
@@ -64,6 +89,8 @@ class AudioStream
 	public var lastTime:Float = 0;
 	public var onComplete:Void->Void;
 	public var source(default, set):Dynamic = null;
+	public var loop:Bool = false;
+	public var loopTime:Float = 0;
 
 	public function new()
 	{
@@ -95,9 +122,17 @@ class AudioStream
 
 	private function onSoundComplete(?_)
 	{
-		stop();
-		if (onComplete != null)
-			onComplete();
+		if (loop)
+		{
+			time = loopTime;
+			trace("looped!");
+		}
+		else
+		{
+			stop();
+			if (onComplete != null)
+				onComplete();
+		}
 	}
 
 	function set_volume(value:Float):Float
