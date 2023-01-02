@@ -70,9 +70,6 @@ class Main extends Sprite
 		FlxG.mouse.visible = true;
 		FlxG.mouse.useSystemCursor = true;
 		#end
-		#if html5
-		FlxG.log.redirectTraces = true;
-		#end
 
 		FlxG.save.bind("funkin_engine", "sanicbtw");
 		SaveData.loadSettings();

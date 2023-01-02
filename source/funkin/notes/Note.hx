@@ -1,4 +1,4 @@
-package funkin;
+package funkin.notes;
 
 import base.Conductor;
 import base.SaveData;
@@ -6,16 +6,10 @@ import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import states.PlayTest;
 
+// todo: make receptor to be used as using
 class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;
-
-	public var dataShit:Map<Int, Array<String>> = [
-		0 => ["purple", "left"],
-		1 => ["blue", "down"],
-		2 => ["green", "up"],
-		3 => ["red", "right"]
-	];
 
 	public var stepTime:Float;
 	public var noteData:Int;
@@ -48,22 +42,12 @@ class Note extends FlxSprite
 		if (noteData > -1)
 		{
 			frames = Paths.getSparrowAtlas('NOTE_assets');
-			for (i in 0...4)
-			{
-				animation.addByPrefix('${dataShit.get(i)[0]}Scroll', '${dataShit.get(i)[0]}0');
-				animation.addByPrefix('${dataShit.get(i)[0]}holdend', '${dataShit.get(i)[0]} hold end');
-				animation.addByPrefix('${dataShit.get(i)[0]}hold', '${dataShit.get(i)[0]} hold piece');
-			}
-			animation.addByPrefix('purpleholdend', 'pruple end hold');
-
-			setGraphicSize(Std.int(width * 0.7));
-			updateHitbox();
-
+			loadNoteAnims(this, noteData, isSustain);
 			antialiasing = SaveData.antialiasing;
 
 			x += swagWidth * noteData;
 			if (!isSustain)
-				animation.play('${dataShit.get(noteData)[0]}Scroll');
+				animation.play('${Receptor.getColorFromNum(noteData)}Scroll');
 		}
 
 		var stepHeight = (0.45 * Conductor.stepCrochet * FlxMath.roundDecimal(PlayTest.SONG.speed, 2));
@@ -73,14 +57,14 @@ class Note extends FlxSprite
 			alpha = 0.6;
 			x += width / 2;
 
-			animation.play('${dataShit.get(noteData)[0]}holdend');
+			animation.play('${Receptor.getColorFromNum(noteData)}holdend');
 			updateHitbox();
 
 			x -= width / 2;
 
 			if (prevNote.isSustain)
 			{
-				prevNote.animation.play('${dataShit.get(noteData)[0]}hold');
+				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
 				prevNote.updateHitbox();
 
 				prevNote.scale.y *= (stepHeight + 1) / prevNote.height;
@@ -90,6 +74,22 @@ class Note extends FlxSprite
 				noteYOff = Math.round(-offset.y);
 			}
 		}
+	}
+
+	// this shit totally doesnt comes from my 0.3.2h fork
+	private function loadNoteAnims(sprite:Note, noteData:Int, isSustainNote:Bool)
+	{
+		sprite.animation.addByPrefix('${Receptor.getColorFromNum(noteData)}Scroll', '${Receptor.getColorFromNum(noteData)}0');
+
+		if (isSustainNote)
+		{
+			sprite.animation.addByPrefix('purpleholdend', 'pruple end hold'); // lmao
+			sprite.animation.addByPrefix('${Receptor.getColorFromNum(noteData)}holdend', '${Receptor.getColorFromNum(noteData)} hold end');
+			sprite.animation.addByPrefix('${Receptor.getColorFromNum(noteData)}hold', '${Receptor.getColorFromNum(noteData)} hold piece');
+		}
+
+		sprite.setGraphicSize(Std.int(sprite.width * 0.7));
+		sprite.updateHitbox();
 	}
 
 	override function update(elapsed:Float)

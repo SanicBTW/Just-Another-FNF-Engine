@@ -4,11 +4,15 @@ import base.Conductor;
 import base.MusicBeatState;
 import base.Song;
 import base.SoundManager.AudioStream;
-import funkin.Note;
+import flixel.FlxG;
+import funkin.notes.Note;
+import funkin.notes.StrumLine;
 
 class PlayTest extends MusicBeatState
 {
 	public static var SONG:SwagSong;
+
+	private var boyfriendStrums:StrumLine;
 
 	override function create()
 	{
@@ -22,10 +26,6 @@ class PlayTest extends MusicBeatState
 		shitvoices.source = Paths.voices("bopeebo");
 		Conductor.bindSong(this, shitinst, SONG.bpm, shitvoices);
 
-		var noteshit1 = new Note(0, 2);
-		noteshit1.screenCenter();
-		add(noteshit1);
-
 		super.create();
 
 		Conductor.boundSong.play();
@@ -33,5 +33,8 @@ class PlayTest extends MusicBeatState
 		Conductor.resyncTime();
 
 		Paths.clearUnusedMemory();
+
+		boyfriendStrums = new StrumLine(FlxG.width / 2, 4);
+		add(boyfriendStrums);
 	}
 }
