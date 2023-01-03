@@ -6,7 +6,7 @@ import lime.app.Event;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
 
-// From FNF-Forever-Engine (My fork)
+// From FNF-Forever-Engine (My fork) - prob a rewrite coming soon
 class Controls
 {
 	public static var onActionPressed:Event<String->Void> = new Event<String->Void>();
@@ -24,20 +24,28 @@ class Controls
 		105 => "Numpad 9", 109 => "Numpad -", 107 => "Numpad +", 110 => "Numpad .", 106 => "Numpad *"
 	];
 
+	// global actions
 	private static var actions:StringMap<Array<Null<Int>>> = [
-		"ui_left" => [Keyboard.A, Keyboard.LEFT],
-		"ui_down" => [Keyboard.S, Keyboard.DOWN],
-		"ui_up" => [Keyboard.W, Keyboard.UP],
-		"ui_right" => [Keyboard.D, Keyboard.RIGHT],
-		"note_left" => [Keyboard.A, Keyboard.LEFT],
-		"note_down" => [Keyboard.S, Keyboard.DOWN],
-		"note_up" => [Keyboard.W, Keyboard.UP],
-		"note_right" => [Keyboard.D, Keyboard.RIGHT],
 		"confirm" => [Keyboard.SPACE, Keyboard.ENTER],
 		"back" => [Keyboard.BACKSPACE, Keyboard.ESCAPE],
 		"vol_up" => [187 /* mf wasnt in the keyboard list dunno why lol*/, Keyboard.NUMPAD_ADD],
 		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
 		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0]
+	];
+
+	// ui actions
+	private static var uiActions:StringMap<Array<Null<Int>>> = [
+		"ui_left" => [Keyboard.A, Keyboard.LEFT],
+		"ui_down" => [Keyboard.S, Keyboard.DOWN],
+		"ui_up" => [Keyboard.W, Keyboard.UP],
+		"ui_right" => [Keyboard.D, Keyboard.RIGHT],
+	];
+
+	private static var noteActions:StringMap<Array<Null<Int>>> = [
+		"note_left" => [Keyboard.A, Keyboard.LEFT],
+		"note_down" => [Keyboard.S, Keyboard.DOWN],
+		"note_up" => [Keyboard.W, Keyboard.UP],
+		"note_right" => [Keyboard.D, Keyboard.RIGHT],
 	];
 
 	public static var keyPressed:Array<Int> = [];
@@ -47,6 +55,28 @@ class Controls
 	{
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+		setActions(UI);
+	}
+
+	// Helper function to set actions to listen on key press
+	public static function setActions(newActions:ActionType)
+	{
+		var mapToAdd = (newActions == UI ? uiActions : noteActions);
+		// to check if the action listeners already exists
+		var checkMap = (newActions == UI ? noteActions : uiActions);
+		for (action in checkMap.keys())
+		{
+			if (actions.exists(action))
+				actions.remove(action);
+		}
+
+		for (action => keys in mapToAdd)
+		{
+			if (!actions.exists(action))
+				actions.set(action, keys);
+		}
+
+		trace(actions);
 	}
 
 	public static function keyCodeToString(keyCode:Null<Int>):String
@@ -107,4 +137,10 @@ class Controls
 			}
 		}
 	}
+}
+
+enum ActionType
+{
+	UI;
+	NOTES;
 }

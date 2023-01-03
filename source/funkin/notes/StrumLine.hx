@@ -61,41 +61,4 @@ class StrumLine extends FlxSpriteGroup
 		}
 		return super.add(sprite);
 	}
-	/*
-		override public function update(elapsed:Float)
-		{
-			super.update(elapsed);
-
-			var fakeCrochet:Float = (60 / PlayTest.SONG.bpm) * 1000;
-			var roundedSpeed:Float = FlxMath.roundDecimal(PlayTest.SONG.speed, 2);
-			allNotes.forEachAlive(function(strumNote:Note)
-			{
-				if (strumNote.tooLate)
-				{
-					strumNote.active = false;
-					strumNote.visible = false;
-				}
-				else
-				{
-					strumNote.visible = true;
-					strumNote.active = true;
-				}
-
-				var baseX = receptors.members[Math.floor(strumNote.noteData)].x;
-				var baseY = receptors.members[Math.floor(strumNote.noteData)].y;
-
-				strumNote.y = baseY - 0.45 * (Conductor.songPosition - strumNote.stepTime) * roundedSpeed + strumNote.noteYOff;
-
-				var center:Float = baseY + (Note.swagWidth / 2);
-				if (strumNote.isSustain)
-				{
-					strumNote.y -= strumNote.height / 2;
-
-					var swagRect = new FlxRect(0, 0, strumNote.width / strumNote.scale.x, strumNote.height / strumNote.scale.y);
-					swagRect.y = (center - strumNote.y) / strumNote.scale.y;
-					swagRect.height -= swagRect.y;
-					strumNote.clipRect = swagRect;
-				}
-			});
-	}*/
 }

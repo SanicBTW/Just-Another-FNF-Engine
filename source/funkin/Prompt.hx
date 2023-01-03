@@ -1,4 +1,4 @@
-package extra;
+package funkin;
 
 import base.SaveData;
 import flixel.FlxG;

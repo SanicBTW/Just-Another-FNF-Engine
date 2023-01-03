@@ -84,9 +84,6 @@ class Paths
 	public static inline function voices(song:String):Sound
 		return getSound(getPath('${formatString(song)}/Voices.ogg', "songs"));
 
-	public static inline function chart(song:String, ?diff:String)
-		return getPath('${formatString(song)}/${formatString(song)}${diff != null ? '-$diff' : ""}.json', "songs");
-
 	public static inline function getSparrowAtlas(key:String, ?library:String)
 		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
 

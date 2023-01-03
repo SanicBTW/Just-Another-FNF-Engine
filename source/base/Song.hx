@@ -82,21 +82,31 @@ class Song
 		this.bpm = bpm;
 	}
 
-	public static function loadFromJSON(song:String):SwagSong
-	{
-		var rawJson = Assets.getText(Paths.chart(song, "hard")).trim();
-
-		while (!rawJson.endsWith("}"))
+	/*
+		public static function loadFromJSON(song:String):SwagSong
 		{
-			rawJson = rawJson.substr(0, rawJson.length - 1);
+			var rawJson = Assets.getText(Paths.chart(song, "hard")).trim();
+
+			while (!rawJson.endsWith("}"))
+			{
+				rawJson = rawJson.substr(0, rawJson.length - 1);
+			}
+
+			var songJson:SwagSong = parseJSONshit(rawJson);
+			onLoadJson(songJson);
+			return songJson;
+	}*/
+	public static function loadFromRaw(rawInput:String):SwagSong
+	{
+		while (!rawInput.endsWith("}"))
+		{
+			rawInput = rawInput.substr(0, rawInput.length - 1);
 		}
 
-		var songJson:SwagSong = parseJSONshit(rawJson);
+		var songJson:SwagSong = parseJSONshit(rawInput);
 		onLoadJson(songJson);
 		return songJson;
 	}
-
-	public static function loadFromRaw(rawInput:String) {}
 
 	public static function parseJSONshit(rawJson:String):SwagSong
 	{
@@ -108,11 +118,9 @@ class Song
 
 typedef SwagSection =
 {
-	var startTime:Float;
-	var endTime:Float;
 	var sectionNotes:Array<Dynamic>;
 	var lengthInSteps:Int;
-	var mustHitSection:Int;
+	var mustHitSection:Bool;
 	var gfSection:Bool;
 	var bpm:Float;
 	var changeBPM:Bool;
@@ -121,15 +129,13 @@ typedef SwagSection =
 
 class Section
 {
-	public var startTime:Float = 0;
-	public var endTime:Float = 0;
 	public var sectionNotes:Array<Dynamic> = [];
-	public var changeBPM:Bool = false;
-	public var bpm:Float = 0;
-
 	public var lengthInSteps:Int = 16;
-	public var gfSection:Bool = false;
 	public var mustHitSection:Bool = true;
+	public var gfSection:Bool = false;
+	public var bpm:Float = 0;
+	public var changeBPM:Bool = false;
+	public var altAnim:Bool = false;
 
 	public function new(lengthInSteps:Int = 16)
 	{

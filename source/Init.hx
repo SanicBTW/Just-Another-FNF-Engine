@@ -2,9 +2,9 @@ package;
 
 import base.SaveData;
 import base.ScriptableState;
-import extra.Prompt;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import funkin.Prompt;
 
 // shitiest init state lmao
 class Init extends ScriptableState

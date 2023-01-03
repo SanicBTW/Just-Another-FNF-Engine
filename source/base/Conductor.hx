@@ -3,6 +3,7 @@ package base;
 import base.MusicBeatState.MusicHandler;
 import base.Song.SwagSong;
 import base.SoundManager.AudioStream;
+import openfl.media.Sound;
 
 typedef BPMChangeEvent =
 {
@@ -37,13 +38,15 @@ class Conductor
 
 	public static function recalculateTimings() {}
 
-	public static function bindSong(newState:MusicHandler, newSong:AudioStream, songBPM:Float, ?newVocals:AudioStream)
+	public static function bindSong(newState:MusicHandler, newSong:Sound, songBPM:Float, ?newVocals:Sound)
 	{
-		boundSong = newSong;
+		boundSong = new AudioStream();
+		boundSong.source = newSong;
 		SoundManager.addSound(boundSong);
 		if (newVocals != null)
 		{
-			boundVocals = newVocals;
+			boundVocals = new AudioStream();
+			boundVocals.source = newVocals;
 			SoundManager.addSound(boundVocals);
 		}
 		boundState = newState;

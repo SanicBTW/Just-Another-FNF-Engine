@@ -57,7 +57,6 @@ class ScriptableState extends FlxUIState
 
 	function onActionPressed(action:String)
 	{
-		trace(action);
 		switch (action)
 		{
 			case "vol_up":

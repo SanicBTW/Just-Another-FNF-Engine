@@ -13,17 +13,33 @@ class Note extends FlxSprite
 
 	public var stepTime:Float;
 	public var noteData:Int;
-	public var isSustain:Bool = false;
-	public var prevNote:Note;
+	public var sustainLength:Float = 0;
 	public var tooLate:Bool = false;
 	public var canBeHit:Bool = false;
 	public var wasGoodHit:Bool = false;
-	public var sustainLength:Float = 0;
-	public var noteYOff:Int = 0;
 	public var mustPress:Bool = false;
+	public var isSustain:Bool = false;
+	public var sustainActive:Bool = true;
+	public var prevNote:Note;
 
+	public var isParent:Bool = false;
 	public var parent:Note = null;
 	public var children:Array<Note> = [];
+
+	public var offsetX:Float = 0;
+	public var offsetY:Float = 0;
+
+	public var noteSpeed(default, set):Float;
+
+	private function set_noteSpeed(value:Float):Float
+	{
+		if (noteSpeed != value)
+		{
+			noteSpeed = value;
+			updateSustainScale();
+		}
+		return noteSpeed;
+	}
 
 	public function new(stepTime:Float, noteData:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
@@ -50,17 +66,17 @@ class Note extends FlxSprite
 				animation.play('${Receptor.getColorFromNum(noteData)}Scroll');
 		}
 
-		var stepHeight = (0.45 * Conductor.stepCrochet * FlxMath.roundDecimal(PlayTest.SONG.speed, 2));
+		var stepHeight = (0.45 * Conductor.stepCrochet * FlxMath.roundDecimal(noteSpeed, 2));
 
 		if (isSustain && prevNote != null)
 		{
 			alpha = 0.6;
-			x += width / 2;
+			offsetX += width / 2;
 
 			animation.play('${Receptor.getColorFromNum(noteData)}holdend');
 			updateHitbox();
 
-			x -= width / 2;
+			offsetX -= width / 2;
 
 			if (prevNote.isSustain)
 			{
@@ -69,14 +85,14 @@ class Note extends FlxSprite
 
 				prevNote.scale.y *= (stepHeight + 1) / prevNote.height;
 				prevNote.updateHitbox();
-				prevNote.noteYOff = Math.round(-prevNote.offset.y);
+				prevNote.offsetY = Math.round(-prevNote.offset.y);
 
-				noteYOff = Math.round(-offset.y);
+				offsetY = Math.round(-offset.y);
 			}
 		}
+		x += offsetX;
 	}
 
-	// this shit totally doesnt comes from my 0.3.2h fork
 	private function loadNoteAnims(sprite:Note, noteData:Int, isSustainNote:Bool)
 	{
 		sprite.animation.addByPrefix('${Receptor.getColorFromNum(noteData)}Scroll', '${Receptor.getColorFromNum(noteData)}0');
@@ -90,6 +106,24 @@ class Note extends FlxSprite
 
 		sprite.setGraphicSize(Std.int(sprite.width * 0.7));
 		sprite.updateHitbox();
+	}
+
+	public function updateSustainScale()
+	{
+		if (isSustain)
+		{
+			if (prevNote != null && prevNote.exists)
+			{
+				if (prevNote.isSustain)
+				{
+					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (1.07 / 0.7)) * noteSpeed;
+					prevNote.updateHitbox();
+					offsetX = prevNote.offsetX;
+				}
+				else
+					offsetX = ((prevNote.width / 2) - (width / 2));
+			}
+		}
 	}
 
 	override function update(elapsed:Float)
