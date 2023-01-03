@@ -17,6 +17,7 @@ class Receptor extends FlxSprite
 	public function new(x:Float, y:Float, arrowType:Int = 0)
 	{
 		this.arrowType = arrowType;
+		action = 'note_${getArrowFromNum(arrowType)}';
 		super(x, y);
 
 		// my dumb ass was setting the frames before super :skull:

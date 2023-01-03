@@ -9,13 +9,13 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import states.PlayTest;
 
-// mix using FlatyEngine/StilicEngine code
 class StrumLine extends FlxSpriteGroup
 {
 	public var receptors:FlxTypedSpriteGroup<Receptor>;
 	public var notesGroup:FlxTypedSpriteGroup<Note>;
 	public var holdGroup:FlxTypedSpriteGroup<Note>;
 	public var allNotes:FlxTypedSpriteGroup<Note>;
+	public var botPlay:Bool = false;
 
 	public function new(x:Float = 0, keyAmount:Int = 4)
 	{

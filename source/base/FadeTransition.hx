@@ -8,6 +8,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
+import funkin.CoolUtil;
 
 class FadeTransition extends MusicBeatSubState
 {

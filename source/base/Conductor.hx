@@ -1,8 +1,8 @@
 package base;
 
 import base.MusicBeatState.MusicHandler;
-import base.Song.SwagSong;
 import base.SoundManager.AudioStream;
+import funkin.ChartLoader.Song;
 import openfl.media.Sound;
 
 typedef BPMChangeEvent =
@@ -19,6 +19,7 @@ class Conductor
 	public static var bpm:Float = 0;
 	public static var crochet:Float = ((60 / bpm) * 1000);
 	public static var stepCrochet:Float = crochet / 4;
+	public static final comparisonThreshold:Float = 20;
 
 	public static var safeZoneOffset:Float = Math.floor((10 /* safe frames */ / 60) * 1000);
 	public static var timeScale:Float = safeZoneOffset / 166;
@@ -71,7 +72,7 @@ class Conductor
 		lastBeat = -1;
 	}
 
-	public static function mapBPMChanges(song:SwagSong)
+	public static function mapBPMChanges(song:Song)
 	{
 		bpmChangeMap = [];
 
@@ -116,8 +117,8 @@ class Conductor
 			beatPosition = Math.floor(stepPosition / 4);
 			if (stepPosition > lastStep)
 			{
-				if ((Math.abs(boundSong.time - songPosition) > 20)
-					|| (boundVocals != null && Math.abs(boundVocals.time - songPosition) > 20))
+				if ((Math.abs(boundSong.time - songPosition) > comparisonThreshold)
+					|| (boundVocals != null && Math.abs(boundVocals.time - songPosition) > comparisonThreshold))
 					resyncTime();
 				boundState.stepHit();
 				lastStep = stepPosition;

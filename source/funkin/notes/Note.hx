@@ -12,19 +12,21 @@ class Note extends FlxSprite
 	public static var swagWidth:Float = 160 * 0.7;
 
 	public var stepTime:Float;
-	public var noteData:Int;
+	public var noteData:Int = 0;
 	public var sustainLength:Float = 0;
 	public var tooLate:Bool = false;
 	public var canBeHit:Bool = false;
 	public var wasGoodHit:Bool = false;
 	public var mustPress:Bool = false;
-	public var isSustain:Bool = false;
-	public var sustainActive:Bool = true;
+	public var strumLine:Int = 0;
 	public var prevNote:Note;
 
 	public var isParent:Bool = false;
 	public var parent:Note = null;
 	public var children:Array<Note> = [];
+	public var isSustain:Bool = false;
+	public var sustainActive:Bool = true;
+	public var isSustainEnd:Bool = false;
 
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
@@ -41,7 +43,7 @@ class Note extends FlxSprite
 		return noteSpeed;
 	}
 
-	public function new(stepTime:Float, noteData:Int, ?prevNote:Note, ?isSustain:Bool = false)
+	public function new(stepTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
 		super();
 
@@ -52,6 +54,7 @@ class Note extends FlxSprite
 		this.isSustain = isSustain;
 		this.noteData = noteData;
 		this.stepTime = stepTime;
+		this.strumLine = strumLine;
 
 		y -= 2000;
 
@@ -65,8 +68,6 @@ class Note extends FlxSprite
 			if (!isSustain)
 				animation.play('${Receptor.getColorFromNum(noteData)}Scroll');
 		}
-
-		var stepHeight = (0.45 * Conductor.stepCrochet * FlxMath.roundDecimal(noteSpeed, 2));
 
 		if (isSustain && prevNote != null)
 		{
@@ -83,11 +84,12 @@ class Note extends FlxSprite
 				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
 				prevNote.updateHitbox();
 
-				prevNote.scale.y *= (stepHeight + 1) / prevNote.height;
+				prevNote.scale.y *= (Conductor.stepCrochet / 100 * 1.05) * noteSpeed;
 				prevNote.updateHitbox();
-				prevNote.offsetY = Math.round(-prevNote.offset.y);
+				/* this adds some weird gap at the end
+					prevNote.offsetY = Math.round(-prevNote.offset.y);
 
-				offsetY = Math.round(-offset.y);
+					offsetY = Math.round(-offset.y); */
 			}
 		}
 		x += offsetX;
@@ -129,6 +131,9 @@ class Note extends FlxSprite
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		if (!sustainActive)
+			alpha = 0.3;
 
 		if (mustPress)
 		{
