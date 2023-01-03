@@ -32,12 +32,14 @@ class PlayTest extends MusicBeatState
 
 	public var downscroll:Bool = false;
 
+	private var generatedMusic:Bool = false;
+
 	override function create()
 	{
 		Paths.clearStoredMemory();
 		Controls.setActions(NOTES);
-		SONG = ChartLoader.loadChart(this, "bopeebo", 2);
-		songSpeed = SONG.speed;
+
+		generateSong();
 
 		camHUD = new FlxCamera();
 		camHUD.bgColor.alpha = 0;
@@ -61,16 +63,12 @@ class PlayTest extends MusicBeatState
 		Paths.clearUnusedMemory();
 	}
 
-	public var closestNotes:Array<Note> = [];
-
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		if (SONG != null)
+		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
-			closestNotes = [];
-
 			parseEventColumn(ChartLoader.unspawnedNoteList, function(unspawnNote:Note)
 			{
 				var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
@@ -114,10 +112,8 @@ class PlayTest extends MusicBeatState
 					var center:Float = baseY + (Note.swagWidth / 2);
 					if (strumNote.isSustain)
 					{
-						// note placement
 						strumNote.y -= ((Note.swagWidth / 2) * downscrollMultiplier);
 
-						// note clipping
 						if (downscrollMultiplier < 0)
 						{
 							strumNote.flipY = true;
@@ -144,103 +140,19 @@ class PlayTest extends MusicBeatState
 							}
 						}
 					}
-
-					if (strumNote.canBeHit && strumNote.mustPress && !strumNote.tooLate && !strumNote.wasGoodHit)
-						closestNotes.push(strumNote);
-
-					closestNotes.sort((a, b) -> Std.int(a.stepTime - b.stepTime));
-
-					if (closestNotes.length != 0)
-						FlxG.watch.addQuick("Current Note", closestNotes[0].stepTime - Conductor.songPosition);
 				});
 			}
-
-			var holdingKeys:Array<Bool> = [];
-			for (receptor in playerStrums.receptors)
-			{
-				for (key in 0...Controls.keyPressed.length)
-				{
-					if (receptor.action == Controls.getActionFromKey(Controls.keyPressed[key]))
-						holdingKeys[receptor.arrowType] = true;
-				}
-			}
-
-			playerStrums.holdGroup.forEachAlive(function(note:Note)
-			{
-				for (receptor in playerStrums.receptors)
-				{
-					if (note.isSustain && note.canBeHit && note.noteData == receptor.arrowType && holdingKeys[note.noteData])
-						trace("Good note hit!");
-				}
-			});
 		}
 	}
-
-	private static var receptorActionList:Array<String> = ["note_left", "note_up", "note_down", "note_right"];
 
 	override public function onActionPressed(action:String)
 	{
 		super.onActionPressed(action);
-		if (receptorActionList.contains(action))
-		{
-			for (receptor in playerStrums.receptors)
-			{
-				if (action == receptor.action)
-				{
-					trace("cool sex");
-					var possibleNoteList:Array<Note> = [];
-					var pressedNotes:Array<Note> = [];
-
-					playerStrums.notesGroup.forEachAlive(function(coolNote:Note)
-					{
-						if ((coolNote.noteData == receptor.arrowType) && !coolNote.isSustain && coolNote.canBeHit && !coolNote.tooLate)
-							possibleNoteList.push(coolNote);
-					});
-					possibleNoteList.sort((a, b) -> Std.int(a.stepTime - b.stepTime));
-
-					if (possibleNoteList.length > 0)
-					{
-						var eligable = true;
-						var firstNote = true;
-						for (coolNote in possibleNoteList)
-						{
-							for (noteDouble in pressedNotes)
-							{
-								if (Math.abs(noteDouble.stepTime - coolNote.stepTime) < 0.1)
-									firstNote = false;
-								else
-									eligable = false;
-							}
-
-							if (eligable)
-							{
-								trace("good note hit");
-								pressedNotes.push(coolNote);
-							}
-						}
-					}
-
-					if (receptor.animation.curAnim.name != "confirm")
-						receptor.playAnim('pressed');
-				}
-			}
-		}
 	}
 
 	override public function onActionReleased(action:String)
 	{
 		super.onActionReleased(action);
-		if (receptorActionList.contains(action))
-		{
-			for (receptor in playerStrums.receptors)
-			{
-				if (action == receptor.action)
-				{
-					trace("cool fuck");
-					receptor.playAnim('static');
-				}
-			}
-		}
 	}
 
 	public function parseEventColumn(eventColumn:Array<Dynamic>, functionToCall:Dynamic->Void, ?timeDelay:Float = 0)
@@ -255,5 +167,13 @@ class PlayTest extends MusicBeatState
 				eventColumn.splice(eventColumn.indexOf(eventColumn[0]), 1);
 			}
 		}
+	}
+
+	private function generateSong():Void
+	{
+		SONG = ChartLoader.loadChart(this, "bopeebo", 2);
+		songSpeed = SONG.speed;
+
+		generatedMusic = true;
 	}
 }

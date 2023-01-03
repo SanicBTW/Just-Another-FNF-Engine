@@ -101,7 +101,6 @@ class Note extends FlxSprite
 
 		if (isSustainNote)
 		{
-			sprite.animation.addByPrefix('purpleholdend', 'pruple end hold'); // lmao
 			sprite.animation.addByPrefix('${Receptor.getColorFromNum(noteData)}holdend', '${Receptor.getColorFromNum(noteData)} hold end');
 			sprite.animation.addByPrefix('${Receptor.getColorFromNum(noteData)}hold', '${Receptor.getColorFromNum(noteData)} hold piece');
 		}
