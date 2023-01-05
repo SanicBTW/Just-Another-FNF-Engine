@@ -145,14 +145,111 @@ class PlayTest extends MusicBeatState
 		}
 	}
 
+	// kade way
+	private static var receptorActionList:Array<String> = ['note_left', 'note_down', 'note_up', 'note_right'];
+
+	private var keys:Array<Bool> = [false, false, false, false];
+
 	override public function onActionPressed(action:String)
 	{
 		super.onActionPressed(action);
+
+		var data:Int = -1;
+
+		for (i in 0...receptorActionList.length)
+		{
+			if (receptorActionList[i].toLowerCase() == action.toLowerCase())
+				data = i;
+		}
+
+		if (data == -1)
+		{
+			trace('oopsies $action cant be found on action list');
+			return;
+		}
+
+		if (keys[data])
+		{
+			trace('already holding $action');
+			return;
+		}
+
+		keys[data] = true;
+
+		var dataNotes:Array<Note> = [];
+		for (i in playerStrums.notesGroup)
+			if ((i.noteData == data) && i.canBeHit && !i.tooLate)
+				dataNotes.push(i);
+
+		if (dataNotes.length != 0)
+		{
+			var daNote:Note = null;
+
+			for (i in dataNotes)
+			{
+				if (!i.isSustain)
+				{
+					daNote = i;
+					break;
+				}
+			}
+
+			if (daNote == null)
+				return;
+
+			if (dataNotes.length > 1)
+			{
+				for (i in 0...dataNotes.length)
+				{
+					if (i == 0)
+						continue;
+
+					var note:Note = dataNotes[i];
+
+					if (!note.isSustain && (note.stepTime - daNote.stepTime) < 2)
+					{
+						trace('Shit was stacked/real close ${note.stepTime - daNote.stepTime}');
+						note.kill();
+						playerStrums.notesGroup.remove(note, true);
+						note.destroy();
+					}
+				}
+			}
+
+			daNote.kill();
+			playerStrums.notesGroup.remove(daNote, true);
+			daNote.destroy();
+		}
+		else
+		{
+			trace("Miss");
+		}
+
+		if ((playerStrums.receptors.members[data].arrowType == data)
+			&& playerStrums.receptors.members[data].animation.curAnim.name != "confirm")
+			playerStrums.receptors.members[data].playAnim('pressed');
 	}
 
 	override public function onActionReleased(action:String)
 	{
 		super.onActionReleased(action);
+
+		var data:Int = -1;
+
+		for (i in 0...receptorActionList.length)
+		{
+			if (receptorActionList[i].toLowerCase() == action.toLowerCase())
+				data = i;
+		}
+
+		if (data == -1)
+			return;
+
+		keys[data] = false;
+
+		if ((playerStrums.receptors.members[data].arrowType == data)
+			&& playerStrums.receptors.members[data].animation.curAnim.name != "confirm")
+			playerStrums.receptors.members[data].playAnim('static');
 	}
 
 	public function parseEventColumn(eventColumn:Array<Dynamic>, functionToCall:Dynamic->Void, ?timeDelay:Float = 0)

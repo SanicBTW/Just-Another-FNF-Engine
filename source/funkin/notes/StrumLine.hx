@@ -31,7 +31,7 @@ class StrumLine extends FlxSpriteGroup
 			var receptor:Receptor = new Receptor(x, 60, i);
 			receptor.ID = i;
 
-			receptor.action = Receptor.getArrowFromNum(i);
+			// receptor.action = 'note_${Receptor.getArrowFromNum(i)}'; // for the next time i use "action" var on the receptor, i fixed it now cuz i just noticed
 			receptor.x -= ((keyAmount / 2) * Note.swagWidth);
 			receptor.x += (Note.swagWidth * i);
 			receptors.add(receptor);

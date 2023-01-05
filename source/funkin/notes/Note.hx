@@ -134,6 +134,7 @@ class Note extends FlxSprite
 		if (!sustainActive)
 			alpha = 0.3;
 
+		// redo this
 		if (mustPress)
 		{
 			if (isSustain)
