@@ -1,7 +1,9 @@
 package funkin.notes;
 
 import base.Conductor;
+import flixel.FlxBasic;
 import flixel.FlxSprite;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxRect;
@@ -9,22 +11,22 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import states.PlayTest;
 
-class StrumLine extends FlxSpriteGroup
+class StrumLine extends FlxTypedGroup<FlxBasic>
 {
-	public var receptors:FlxTypedSpriteGroup<Receptor>;
-	public var notesGroup:FlxTypedSpriteGroup<Note>;
-	public var holdGroup:FlxTypedSpriteGroup<Note>;
-	public var allNotes:FlxTypedSpriteGroup<Note>;
+	public var receptors:FlxTypedGroup<Receptor>;
+	public var notesGroup:FlxTypedGroup<Note>;
+	public var holdGroup:FlxTypedGroup<Note>;
+	public var allNotes:FlxTypedGroup<Note>;
 	public var botPlay:Bool = false;
 
 	public function new(x:Float = 0, keyAmount:Int = 4)
 	{
 		super();
 
-		receptors = new FlxTypedSpriteGroup<Receptor>();
-		notesGroup = new FlxTypedSpriteGroup<Note>();
-		holdGroup = new FlxTypedSpriteGroup<Note>();
-		allNotes = new FlxTypedSpriteGroup<Note>();
+		receptors = new FlxTypedGroup<Receptor>();
+		notesGroup = new FlxTypedGroup<Note>();
+		holdGroup = new FlxTypedGroup<Note>();
+		allNotes = new FlxTypedGroup<Note>();
 
 		for (i in 0...keyAmount)
 		{
@@ -51,14 +53,9 @@ class StrumLine extends FlxSpriteGroup
 		add(notesGroup);
 	}
 
-	override public function add(sprite:FlxSprite):FlxSprite
+	public function push(newNote:Note)
 	{
-		if (sprite is Note)
-		{
-			var shitNote = cast(sprite, Note);
-			(shitNote.isSustain ? holdGroup.add(shitNote) : notesGroup.add(shitNote));
-			return allNotes.add(shitNote);
-		}
-		return super.add(sprite);
+		(newNote.isSustain ? holdGroup.add(newNote) : notesGroup.add(newNote));
+		allNotes.add(newNote);
 	}
 }

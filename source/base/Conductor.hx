@@ -21,9 +21,7 @@ class Conductor
 	public static var stepCrochet:Float = crochet / 4;
 	public static final comparisonThreshold:Float = 20;
 
-	// redo this
 	public static var safeZoneOffset:Float = Math.floor((10 /* safe frames */ / 60) * 1000);
-	public static var timeScale:Float = safeZoneOffset / 166;
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
 
 	public static var stepPosition:Int = 0;

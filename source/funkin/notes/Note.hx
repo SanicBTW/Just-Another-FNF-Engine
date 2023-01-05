@@ -25,7 +25,6 @@ class Note extends FlxSprite
 	public var parent:Note = null;
 	public var children:Array<Note> = [];
 	public var isSustain:Bool = false;
-	public var sustainActive:Bool = true;
 	public var isSustainEnd:Bool = false;
 
 	public var offsetX:Float = 0;
@@ -131,38 +130,37 @@ class Note extends FlxSprite
 	{
 		super.update(elapsed);
 
-		if (!sustainActive)
-			alpha = 0.3;
-
-		// redo this
 		if (mustPress)
 		{
 			if (isSustain)
 			{
-				if (stepTime - Conductor.songPosition <= ((166 * Conductor.timeScale) * 0.5)
-					&& stepTime - Conductor.songPosition >= ((-166 * Conductor.timeScale)))
+				if (stepTime > Conductor.songPosition - (Conductor.safeZoneOffset * 0.5)
+					&& stepTime < Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
 					canBeHit = true;
 				else
 					canBeHit = false;
 			}
 			else
 			{
-				if (stepTime - Conductor.songPosition <= ((166 * Conductor.timeScale))
-					&& stepTime - Conductor.songPosition >= ((-166 * Conductor.timeScale)))
+				if (stepTime > Conductor.songPosition - (Conductor.safeZoneOffset * 1)
+					&& stepTime < Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
 					canBeHit = true;
 				else
 					canBeHit = false;
 			}
 
-			if (stepTime - Conductor.songPosition < -166 && !wasGoodHit)
+			if (stepTime < Conductor.songPosition - Conductor.safeZoneOffset && !wasGoodHit)
 				tooLate = true;
 		}
 		else
 		{
 			canBeHit = false;
 
-			if (stepTime <= Conductor.songPosition)
-				wasGoodHit = true;
+			if (stepTime <= Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
+			{
+				if ((isSustain && prevNote.wasGoodHit) || stepTime <= Conductor.songPosition)
+					wasGoodHit = true;
+			}
 		}
 
 		if (tooLate && !wasGoodHit)

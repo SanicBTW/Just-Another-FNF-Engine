@@ -73,7 +73,7 @@ class PlayTest extends MusicBeatState
 			{
 				var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
 				if (strumLine != null)
-					strumLine.add(unspawnNote);
+					strumLine.push(unspawnNote);
 			}, -(16 * Conductor.stepCrochet));
 
 			var downscrollMultiplier:Int = (!downscroll ? 1 : -1) * FlxMath.signOf(songSpeed);
@@ -178,8 +178,10 @@ class PlayTest extends MusicBeatState
 
 		var dataNotes:Array<Note> = [];
 		for (i in playerStrums.notesGroup)
+		{
 			if ((i.noteData == data) && i.canBeHit && !i.tooLate)
 				dataNotes.push(i);
+		}
 
 		if (dataNotes.length != 0)
 		{

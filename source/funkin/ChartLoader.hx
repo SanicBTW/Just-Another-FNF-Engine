@@ -39,7 +39,6 @@ typedef Song =
 	var validScore:Bool;
 }
 
-// actually the note speed is updated on play state LMAO
 // mix between my fork of forever and the hxs-forever branch of my 0.3.2h repo, although forever uses another type of shit so most of this is from the 0.3.2h branch
 class ChartLoader
 {
