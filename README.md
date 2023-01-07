@@ -9,8 +9,13 @@ Expected features to be added:
 - Optimization
 - and more
 
+Section style conductor will be added on future versions
+
 # Special thanks
 - SlacDeveloper for making some fucking cool sprites
 
 # TODO
 - Re-order files 
+- Fix note update?
+- Improve input prob
+- Fix issues

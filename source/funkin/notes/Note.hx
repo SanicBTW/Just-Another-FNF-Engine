@@ -128,39 +128,24 @@ class Note extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
-
 		if (mustPress)
 		{
-			if (isSustain)
-			{
-				if (stepTime > Conductor.songPosition - (Conductor.safeZoneOffset * 0.5)
-					&& stepTime < Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
-					canBeHit = true;
-				else
-					canBeHit = false;
-			}
+			if (stepTime > Conductor.stepPosition - (Conductor.msThreshold / Conductor.stepCrochet)
+				&& stepTime < Conductor.stepPosition + (Conductor.msThreshold / Conductor.stepCrochet))
+				canBeHit = true;
 			else
-			{
-				if (stepTime > Conductor.songPosition - (Conductor.safeZoneOffset * 1)
-					&& stepTime < Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
-					canBeHit = true;
-				else
-					canBeHit = false;
-			}
+				canBeHit = false;
 
-			if (stepTime < Conductor.songPosition - Conductor.safeZoneOffset && !wasGoodHit)
+			// check
+			if (stepTime < Conductor.stepPosition - (Conductor.msThreshold / Conductor.stepCrochet) && !wasGoodHit)
 				tooLate = true;
 		}
 		else
 		{
 			canBeHit = false;
 
-			if (stepTime <= Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
-			{
-				if ((isSustain && prevNote.wasGoodHit) || stepTime <= Conductor.songPosition)
-					wasGoodHit = true;
-			}
+			if (stepTime <= Conductor.stepPosition)
+				wasGoodHit = true;
 		}
 
 		if (tooLate && !wasGoodHit)
@@ -168,5 +153,7 @@ class Note extends FlxSprite
 			if (alpha > 0.3)
 				alpha = 0.3;
 		}
+
+		super.update(elapsed);
 	}
 }

@@ -11,6 +11,7 @@ import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import funkin.ChartLoader;
 import funkin.notes.Note;
+import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
 
 class PlayTest extends MusicBeatState
@@ -140,8 +141,21 @@ class PlayTest extends MusicBeatState
 							}
 						}
 					}
+
+					if (!strumNote.mustPress && strumNote.wasGoodHit)
+					{
+						goodNoteHit(strumNote, getReceptor(opponentStrums, strumNote.noteData), true);
+					}
 				});
 			}
+
+			playerStrums.holdGroup.forEachAlive(function(coolNote:Note)
+			{
+				if (coolNote.isSustain && coolNote.canBeHit && keys[coolNote.noteData] && !coolNote.isSustainEnd)
+				{
+					goodNoteHit(coolNote, getReceptor(playerStrums, coolNote.noteData));
+				}
+			});
 		}
 	}
 
@@ -179,7 +193,7 @@ class PlayTest extends MusicBeatState
 		var dataNotes:Array<Note> = [];
 		for (i in playerStrums.notesGroup)
 		{
-			if ((i.noteData == data) && i.canBeHit && !i.tooLate)
+			if (i.noteData == data && i.canBeHit && !i.tooLate)
 				dataNotes.push(i);
 		}
 
@@ -218,18 +232,15 @@ class PlayTest extends MusicBeatState
 				}
 			}
 
-			daNote.kill();
-			playerStrums.notesGroup.remove(daNote, true);
-			daNote.destroy();
+			goodNoteHit(daNote, getReceptor(playerStrums, data));
 		}
 		else
 		{
 			trace("Miss");
 		}
 
-		if ((playerStrums.receptors.members[data].arrowType == data)
-			&& playerStrums.receptors.members[data].animation.curAnim.name != "confirm")
-			playerStrums.receptors.members[data].playAnim('pressed');
+		if (getReceptor(playerStrums, data).animation.curAnim.name != "confirm")
+			getReceptor(playerStrums, data).playAnim('pressed');
 	}
 
 	override public function onActionReleased(action:String)
@@ -249,9 +260,45 @@ class PlayTest extends MusicBeatState
 
 		keys[data] = false;
 
-		if ((playerStrums.receptors.members[data].arrowType == data)
-			&& playerStrums.receptors.members[data].animation.curAnim.name != "confirm")
-			playerStrums.receptors.members[data].playAnim('static');
+		getReceptor(playerStrums, data).playAnim('static');
+	}
+
+	// placeholder until next commit
+
+	private function goodNoteHit(daNote:Note, receptor:Receptor, isOpp:Bool = false)
+	{
+		if (!isOpp)
+		{
+			daNote.wasGoodHit = true;
+			receptor.playAnim('confirm');
+		}
+
+		if (!daNote.isSustain)
+			destroyNote((isOpp ? opponentStrums : playerStrums), daNote);
+	}
+
+	private function receptorPlayAnim(opponent:Bool, noteData:Int, time:Float)
+	{
+		var receptor:Receptor = getReceptor(opponent ? opponentStrums : playerStrums, noteData);
+		if (receptor != null)
+		{
+			receptor.playAnim('confirm', true);
+			receptor.resetAnim = time;
+		}
+	}
+
+	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
+		return strumLine.receptors.members[noteData];
+
+	private function destroyNote(strumLine:StrumLine, note:Note)
+	{
+		note.active = false;
+		note.exists = false;
+
+		note.kill();
+		strumLine.allNotes.remove(note, true);
+		(note.isSustain ? strumLine.holdGroup.remove(note, true) : strumLine.notesGroup.remove(note, true));
+		note.destroy();
 	}
 
 	public function parseEventColumn(eventColumn:Array<Dynamic>, functionToCall:Dynamic->Void, ?timeDelay:Float = 0)
@@ -270,7 +317,7 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "bopeebo", 2);
+		SONG = ChartLoader.loadChart(this, "double-kill", 2);
 		songSpeed = SONG.speed;
 
 		generatedMusic = true;

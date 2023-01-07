@@ -58,4 +58,14 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 		(newNote.isSustain ? holdGroup.add(newNote) : notesGroup.add(newNote));
 		allNotes.add(newNote);
 	}
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		allNotes.forEachAlive(function(strumNote:Note)
+		{
+			strumNote.update(elapsed); // force the note to update because it wont automatically
+		});
+	}
 }

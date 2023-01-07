@@ -16,16 +16,14 @@ typedef BPMChangeEvent =
 class Conductor
 {
 	public static var songPosition:Float = 0;
+	public static var stepPosition:Int = 0;
+	public static var beatPosition:Int = 0;
+
 	public static var bpm:Float = 0;
 	public static var crochet:Float = ((60 / bpm) * 1000);
 	public static var stepCrochet:Float = crochet / 4;
-	public static final comparisonThreshold:Float = 20;
 
-	public static var safeZoneOffset:Float = Math.floor((10 /* safe frames */ / 60) * 1000);
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
-
-	public static var stepPosition:Int = 0;
-	public static var beatPosition:Int = 0;
 
 	public static var lastStep:Float = -1;
 	public static var lastBeat:Float = -1;
@@ -33,6 +31,9 @@ class Conductor
 	public static var boundSong:AudioStream;
 	public static var boundVocals:AudioStream;
 	public static var boundState:MusicHandler;
+	public static final comparisonThreshold:Float = 20;
+
+	public static var msThreshold:Float = 120;
 
 	public function new() {}
 
@@ -112,7 +113,10 @@ class Conductor
 		{
 			songPosition += elapsed * 1000;
 
-			stepPosition = Math.floor(songPosition / stepCrochet);
+			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
+			var swag:Float = ((Conductor.songPosition - lastChange.songTime) / lastChange.stepCrochet);
+
+			stepPosition = lastChange.stepTime + Math.floor(swag);
 			beatPosition = Math.floor(stepPosition / 4);
 			if (stepPosition > lastStep)
 			{
@@ -143,5 +147,23 @@ class Conductor
 			boundVocals.play();
 		}
 		trace('New song time $songPosition');
+	}
+
+	public static function getBPMFromSeconds(time:Float)
+	{
+		var lastChange:BPMChangeEvent = {
+			stepTime: 0,
+			songTime: 0,
+			bpm: bpm,
+			stepCrochet: stepCrochet
+		};
+
+		for (i in 0...Conductor.bpmChangeMap.length)
+		{
+			if (time >= Conductor.bpmChangeMap[i].songTime)
+				lastChange = Conductor.bpmChangeMap[i];
+		}
+
+		return lastChange;
 	}
 }
