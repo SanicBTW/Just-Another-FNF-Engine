@@ -222,50 +222,36 @@ class PlayTest extends MusicBeatState
 
 		keys[data] = true;
 
-		var dataNotes:Array<Note> = [];
-		for (i in playerStrums.notesGroup)
-		{
-			if (i.noteData == data && i.canBeHit && !i.tooLate)
-				dataNotes.push(i);
-		}
+		var possibleNoteList:Array<Note> = [];
+		var pressedNotes:Array<Note> = [];
 
-		if (dataNotes.length != 0)
+		playerStrums.notesGroup.forEachAlive(function(daNote:Note)
 		{
-			var daNote:Note = null;
+			if ((daNote.noteData == data) && !daNote.isSustain && daNote.canBeHit && !daNote.tooLate)
+				possibleNoteList.push(daNote);
+		});
+		possibleNoteList.sort((a, b) -> Std.int(a.stepTime - b.stepTime));
 
-			for (i in dataNotes)
+		if (possibleNoteList.length > 0)
+		{
+			var eligable = true;
+			var firstNote = true;
+			for (coolNote in possibleNoteList)
 			{
-				if (!i.isSustain)
+				for (noteDouble in pressedNotes)
 				{
-					daNote = i;
-					break;
+					if (Math.abs(noteDouble.stepTime - coolNote.stepTime) < 0.1)
+						firstNote = false;
+					else
+						eligable = false;
+				}
+
+				if (eligable)
+				{
+					playerHit(coolNote);
+					pressedNotes.push(coolNote);
 				}
 			}
-
-			if (daNote == null)
-				return;
-
-			if (dataNotes.length > 1)
-			{
-				for (i in 0...dataNotes.length)
-				{
-					if (i == 0)
-						continue;
-
-					var note:Note = dataNotes[i];
-
-					if (!note.isSustain && (note.stepTime - daNote.stepTime) < 2)
-					{
-						destroyNote(playerStrums, note);
-					}
-				}
-			}
-
-			playerHit(daNote);
-		}
-		else
-		{
-			playerMissPress(data);
 		}
 
 		if (getReceptor(playerStrums, data).animation.curAnim.name != "confirm")
@@ -321,10 +307,7 @@ class PlayTest extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
-			if (!note.isSustainEnd)
-				getReceptor(playerStrums, note.noteData).playAnim('confirm');
-			else
-				getReceptor(playerStrums, note.noteData).playAnim('pressed');
+			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)
