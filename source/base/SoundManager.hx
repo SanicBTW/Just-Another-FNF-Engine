@@ -21,6 +21,7 @@ class SoundManager
 
 	private static function set_globalVolume(value:Float):Float
 	{
+		muted = false;
 		globalVolume = value;
 		if (globalVolume > 1)
 			globalVolume = 1;
@@ -99,7 +100,7 @@ class AudioStream
 
 	public function play()
 	{
-		if (channel == null)
+		if (channel == null && sound != null)
 		{
 			channel = sound.play(lastTime);
 			channel.soundTransform = new SoundTransform(SoundManager.globalVolume);
@@ -130,6 +131,7 @@ class AudioStream
 		else
 		{
 			stop();
+			sound = null;
 			if (onComplete != null)
 				onComplete();
 		}

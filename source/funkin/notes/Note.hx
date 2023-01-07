@@ -144,7 +144,7 @@ class Note extends FlxSprite
 		{
 			canBeHit = false;
 
-			if (stepTime <= Conductor.stepPosition)
+			if (stepTime * Conductor.stepCrochet <= Conductor.songPosition)
 				wasGoodHit = true;
 		}
 

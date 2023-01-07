@@ -10,6 +10,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import funkin.ChartLoader;
+import funkin.CoolUtil;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
@@ -28,6 +29,11 @@ class PlayTest extends MusicBeatState
 
 	private function get_curStep():Int
 		return Conductor.stepPosition;
+
+	@:isVar private var curBeat(get, null):Int;
+
+	private function get_curBeat():Int
+		return Conductor.beatPosition;
 
 	public static var songSpeed:Float = 0;
 
@@ -68,6 +74,8 @@ class PlayTest extends MusicBeatState
 	{
 		super.update(elapsed);
 
+		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
+
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
 			parseEventColumn(ChartLoader.unspawnedNoteList, function(unspawnNote:Note)
@@ -97,7 +105,7 @@ class PlayTest extends MusicBeatState
 					else
 					{
 						strumNote.visible = true;
-						strumNote.active = false;
+						strumNote.active = true;
 					}
 
 					strumNote.noteSpeed = Math.abs(songSpeed);
@@ -143,17 +151,21 @@ class PlayTest extends MusicBeatState
 					}
 
 					if (!strumNote.mustPress && strumNote.wasGoodHit)
+						opponentHit(strumNote);
+
+					if ((strumNote.y < -strumNote.height || strumNote.y > FlxG.height + strumNote.height)
+						&& (strumNote.tooLate || strumNote.wasGoodHit))
 					{
-						goodNoteHit(strumNote, getReceptor(opponentStrums, strumNote.noteData), true);
+						destroyNote(strumLine, strumNote);
 					}
 				});
 			}
 
 			playerStrums.holdGroup.forEachAlive(function(coolNote:Note)
 			{
-				if (coolNote.isSustain && coolNote.canBeHit && keys[coolNote.noteData] && !coolNote.isSustainEnd)
+				if (coolNote.isSustain && coolNote.canBeHit && keys[coolNote.noteData])
 				{
-					goodNoteHit(coolNote, getReceptor(playerStrums, coolNote.noteData));
+					playerHit(coolNote);
 				}
 			});
 		}
@@ -224,19 +236,16 @@ class PlayTest extends MusicBeatState
 
 					if (!note.isSustain && (note.stepTime - daNote.stepTime) < 2)
 					{
-						trace('Shit was stacked/real close ${note.stepTime - daNote.stepTime}');
-						note.kill();
-						playerStrums.notesGroup.remove(note, true);
-						note.destroy();
+						destroyNote(playerStrums, note);
 					}
 				}
 			}
 
-			goodNoteHit(daNote, getReceptor(playerStrums, data));
+			playerHit(daNote);
 		}
 		else
 		{
-			trace("Miss");
+			playerMissPress(data);
 		}
 
 		if (getReceptor(playerStrums, data).animation.curAnim.name != "confirm")
@@ -263,18 +272,52 @@ class PlayTest extends MusicBeatState
 		getReceptor(playerStrums, data).playAnim('static');
 	}
 
-	// placeholder until next commit
-
-	private function goodNoteHit(daNote:Note, receptor:Receptor, isOpp:Bool = false)
+	override public function beatHit()
 	{
-		if (!isOpp)
-		{
-			daNote.wasGoodHit = true;
-			receptor.playAnim('confirm');
-		}
+		super.beatHit();
 
-		if (!daNote.isSustain)
-			destroyNote((isOpp ? opponentStrums : playerStrums), daNote);
+		if (curBeat % 4 == 0)
+		{
+			camHUD.zoom += 0.05;
+		}
+	}
+
+	private function opponentHit(note:Note)
+	{
+		if (SONG.needsVoices)
+			Conductor.boundVocals.volume = 1;
+
+		var time:Float = 0.15;
+		if (note.isSustain && !note.isSustainEnd)
+			time += 0.15;
+		receptorPlayAnim(true, note.noteData, time);
+
+		if (!note.isSustain)
+			destroyNote(opponentStrums, note);
+	}
+
+	private function playerHit(note:Note)
+	{
+		if (!note.wasGoodHit)
+		{
+			if (!note.isSustainEnd)
+				getReceptor(playerStrums, note.noteData).playAnim('confirm');
+			else
+				getReceptor(playerStrums, note.noteData).playAnim('pressed');
+
+			note.wasGoodHit = true;
+			if (SONG.needsVoices)
+				Conductor.boundVocals.volume = 1;
+
+			if (!note.isSustain)
+				destroyNote(playerStrums, note);
+		}
+	}
+
+	private function playerMissPress(direction:Int = 1)
+	{
+		if (SONG.needsVoices)
+			Conductor.boundVocals.volume = 0;
 	}
 
 	private function receptorPlayAnim(opponent:Bool, noteData:Int, time:Float)
@@ -317,7 +360,7 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "double-kill", 2);
+		SONG = ChartLoader.loadChart(this, "oversight", 2);
 		songSpeed = SONG.speed;
 
 		generatedMusic = true;
