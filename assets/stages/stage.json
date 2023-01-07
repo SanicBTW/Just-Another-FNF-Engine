@@ -1,0 +1,45 @@
+{
+    "defaultZoom": 0.9,
+    "objects":
+    [
+        {
+            "name": "bg",
+            "graphic": "stageback",
+            "position": [-600, -200],
+            "antialiasing": true,
+            "scroll_factor": [0.9, 0.9],
+            "active": false
+        },
+        {
+            "name": "stageFront",
+            "graphic": "stagefront",
+            "position": [-650, 600],
+            "antialiasing": true,
+            "scroll_factor": [0.9, 0.9],
+            "active": false,
+            "size": ["getObj(stageFront, width) * 1.1"]
+        },
+        {
+            "name": "stageLight1",
+            "position": [-125, -100],
+            "graphic": "stage_light",
+            "size": ["getObj(stageLight1, width) * 1.1"]
+        },
+        {
+            "name": "stageLight2",
+            "position": [1225, -100],
+            "graphic": "stage_light",
+            "flipX": true,
+            "size": ["getObj(stageLight2, width) * 1.1"]
+        },
+        {
+            "name": "stageCurtains",
+            "graphic": "stagecurtains",
+            "position": [-500, -300],
+            "antialiasing": true,
+            "scroll_factor": [1.3, 1.3],
+            "active": false,
+            "size": ["getObj(stageCurtains, width) * 0.9"]
+        }
+    ]
+}

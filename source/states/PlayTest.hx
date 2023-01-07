@@ -2,6 +2,7 @@ package states;
 
 import base.Conductor;
 import base.Controls;
+import base.FadeTransition;
 import base.MusicBeatState;
 import base.SoundManager.AudioStream;
 import flixel.FlxCamera;
@@ -11,6 +12,7 @@ import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
+import funkin.Stage;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
@@ -18,7 +20,12 @@ import funkin.notes.StrumLine;
 class PlayTest extends MusicBeatState
 {
 	public static var SONG:Song;
-	public static var camHUD:FlxCamera;
+	public static var stage:Stage;
+
+	public var camHUD:FlxCamera;
+	public var camHUD2:FlxCamera;
+	public var camGame:FlxCamera;
+	public var camOther:FlxCamera;
 
 	var strumLines:FlxTypedGroup<StrumLine>;
 
@@ -48,9 +55,18 @@ class PlayTest extends MusicBeatState
 
 		generateSong();
 
+		camGame = new FlxCamera();
+		FlxG.cameras.reset(camGame);
+		FlxCamera.defaultCameras = [camGame];
+
 		camHUD = new FlxCamera();
 		camHUD.bgColor.alpha = 0;
 		FlxG.cameras.add(camHUD);
+
+		camOther = new FlxCamera();
+		camOther.bgColor.alpha = 0;
+		FlxG.cameras.add(camOther);
+		FadeTransition.nextCamera = camOther;
 
 		Conductor.boundSong.play();
 		Conductor.boundVocals.play();
@@ -64,6 +80,9 @@ class PlayTest extends MusicBeatState
 		add(strumLines);
 		strumLines.cameras = [camHUD];
 
+		stage = new Stage("stage");
+		add(stage);
+
 		super.create();
 
 		Conductor.resyncTime();
@@ -74,6 +93,7 @@ class PlayTest extends MusicBeatState
 	{
 		super.update(elapsed);
 
+		FlxG.camera.zoom = FlxMath.lerp(stage.cameraZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
@@ -278,6 +298,7 @@ class PlayTest extends MusicBeatState
 
 		if (curBeat % 4 == 0)
 		{
+			FlxG.camera.zoom += 0.015;
 			camHUD.zoom += 0.05;
 		}
 	}

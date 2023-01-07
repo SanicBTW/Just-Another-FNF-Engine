@@ -75,8 +75,6 @@ class Controls
 			if (!actions.exists(action))
 				actions.set(action, keys);
 		}
-
-		trace(actions);
 	}
 
 	public static function keyCodeToString(keyCode:Null<Int>):String

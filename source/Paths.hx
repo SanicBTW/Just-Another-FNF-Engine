@@ -128,7 +128,6 @@ class Paths
 		{
 			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key))
 			{
-				trace(key);
 				var obj = currentTrackedAssets.get(key);
 				@:privateAccess
 				if (obj != null)
@@ -153,7 +152,6 @@ class Paths
 			var obj = FlxG.bitmap._cache.get(key);
 			if (obj != null && !currentTrackedAssets.exists(key))
 			{
-				trace(key);
 				Assets.cache.removeBitmapData(key);
 				FlxG.bitmap._cache.remove(key);
 				obj.dump();
@@ -165,7 +163,6 @@ class Paths
 		{
 			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key) && key != null)
 			{
-				trace(key);
 				Assets.cache.clear(key);
 				currentTrackedSounds.remove(key);
 			}
