@@ -308,6 +308,8 @@ class PlayTest extends MusicBeatState
 		if (!note.wasGoodHit)
 		{
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
+			if (note.isSustain && note.isSustainEnd)
+				getReceptor(playerStrums, note.noteData).playAnim('pressed');
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)

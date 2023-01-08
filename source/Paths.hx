@@ -5,6 +5,8 @@ import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.Assets;
+import openfl.display.BitmapData;
+import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
 
 using StringTools;
@@ -19,6 +21,7 @@ import java.vm.Gc;
 class Paths
 {
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = new Map();
+	public static var currentTrackedTextures:Map<String, Texture> = new Map();
 	public static var currentTrackedSounds:Map<String, Sound> = new Map();
 	public static var localTrackedAssets:Array<String> = [];
 	public static var dumpExclusions:Array<String> = ['assets/music/freakyMenu.ogg',];
@@ -90,7 +93,7 @@ class Paths
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");
 
-	public static function getGraphic(file:String)
+	public static function getGraphic(file:String, textureCompression:Bool = true)
 	{
 		if (!Assets.exists(file))
 		{
@@ -101,11 +104,33 @@ class Paths
 		if (!currentTrackedAssets.exists(file))
 		{
 			var newBitmap = Assets.getBitmapData(file);
-			var newGraphic = FlxGraphic.fromBitmapData(newBitmap, false, file);
+			var newGraphic:FlxGraphic;
+			if (textureCompression)
+			{
+				var texture:Texture = getTexture(file, newBitmap);
+				newGraphic = FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture), false, file);
+			}
+			else
+				newGraphic = FlxGraphic.fromBitmapData(newBitmap, false, file);
 			currentTrackedAssets.set(file, newGraphic);
 		}
 		localTrackedAssets.push(file);
 		return currentTrackedAssets.get(file);
+	}
+
+	public static function getTexture(file:String, bitmap:BitmapData)
+	{
+		if (!currentTrackedTextures.exists(file))
+		{
+			var texture:Texture = FlxG.stage.context3D.createTexture(bitmap.width, bitmap.height, BGRA, true, 0);
+			texture.uploadFromBitmapData(bitmap);
+			currentTrackedTextures.set(file, texture);
+			bitmap.dispose();
+			bitmap.disposeImage();
+			bitmap = null;
+		}
+		// dont push to localtracked because its already pushed on getGraphic
+		return currentTrackedTextures.get(file);
 	}
 
 	public static function getSound(file:String)
@@ -140,6 +165,23 @@ class Paths
 				}
 			}
 		}
+
+		// Motherfucker would crash when cleaned on web :skull:
+		#if !html5
+		for (key in currentTrackedTextures.keys())
+		{
+			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key))
+			{
+				var obj = currentTrackedTextures.get(key);
+				if (obj != null)
+				{
+					obj.dispose();
+					obj = null;
+					currentTrackedTextures.remove(key);
+				}
+			}
+		}
+		#end
 
 		runGC();
 	}

@@ -60,8 +60,12 @@ class ScriptableState extends FlxUIState
 		switch (action)
 		{
 			case "vol_up":
+				if (SoundManager.muted)
+					SoundManager.muted = false;
 				SoundManager.globalVolume += 0.1;
 			case "vol_down":
+				if (SoundManager.muted)
+					SoundManager.muted = false;
 				SoundManager.globalVolume -= 0.1;
 			case "mute":
 				SoundManager.muted = !SoundManager.muted;
@@ -92,8 +96,12 @@ class ScriptableSubState extends FlxUISubState
 		switch (action)
 		{
 			case "vol_up":
+				if (SoundManager.muted)
+					SoundManager.muted = false;
 				SoundManager.globalVolume += 0.1;
 			case "vol_down":
+				if (SoundManager.muted)
+					SoundManager.muted = false;
 				SoundManager.globalVolume -= 0.1;
 			case "mute":
 				SoundManager.muted = !SoundManager.muted;

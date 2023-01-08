@@ -21,7 +21,6 @@ class SoundManager
 
 	private static function set_globalVolume(value:Float):Float
 	{
-		muted = false;
 		globalVolume = value;
 		if (globalVolume > 1)
 			globalVolume = 1;
@@ -139,7 +138,10 @@ class AudioStream
 
 	function set_volume(value:Float):Float
 	{
-		channel.soundTransform = new SoundTransform(value);
+		if (volume > SoundManager.globalVolume)
+			channel.soundTransform = new SoundTransform(SoundManager.globalVolume);
+		else
+			channel.soundTransform = new SoundTransform(value);
 		return value;
 	}
 
