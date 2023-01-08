@@ -372,7 +372,7 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "insomnia", 2);
+		SONG = ChartLoader.loadChart(this, "oversight", 2);
 		Conductor.mapBPMChanges(SONG);
 		songSpeed = SONG.speed;
 

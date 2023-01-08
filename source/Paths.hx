@@ -93,7 +93,7 @@ class Paths
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");
 
-	public static function getGraphic(file:String, textureCompression:Bool = true)
+	public static function getGraphic(file:String, textureCompression:Bool = #if !html5 true #else false #end)
 	{
 		if (!Assets.exists(file))
 		{
@@ -166,8 +166,6 @@ class Paths
 			}
 		}
 
-		// Motherfucker would crash when cleaned on web :skull:
-		#if !html5
 		for (key in currentTrackedTextures.keys())
 		{
 			if (!localTrackedAssets.contains(key) && !dumpExclusions.contains(key))
@@ -181,7 +179,6 @@ class Paths
 				}
 			}
 		}
-		#end
 
 		runGC();
 	}
