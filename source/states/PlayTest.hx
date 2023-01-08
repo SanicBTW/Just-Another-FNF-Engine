@@ -287,6 +287,12 @@ class PlayTest extends MusicBeatState
 			FlxG.camera.zoom += 0.015;
 			camHUD.zoom += 0.05;
 		}
+
+		/* bpm changes are broken
+			if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
+			{
+				Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+		}*/
 	}
 
 	private function opponentHit(note:Note)
@@ -366,7 +372,8 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "oversight", 2);
+		SONG = ChartLoader.loadChart(this, "insomnia", 2);
+		Conductor.mapBPMChanges(SONG);
 		songSpeed = SONG.speed;
 
 		generatedMusic = true;
