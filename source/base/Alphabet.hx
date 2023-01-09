@@ -8,6 +8,7 @@ import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.system.FlxSound;
 import flixel.util.FlxTimer;
+import funkin.CoolUtil;
 
 using StringTools;
 

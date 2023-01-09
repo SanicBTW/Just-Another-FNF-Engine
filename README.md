@@ -16,6 +16,4 @@ Section style conductor will be added on future versions
 
 # TODO
 - Re-order files 
-- Fix note update?
-- Improve input prob
 - Fix issues
