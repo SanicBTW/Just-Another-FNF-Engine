@@ -18,5 +18,6 @@ Section style conductor will be added on future versions
 - Re-order files 
 - Fix issues
 
+- there are fps drops sometimes
 - check if notes alpha is scaled down, if they are deleted properly at time, make ratings, accuracy, add characters
 - arreglar bug donde al presionar muchas veces se borran las notas que vienen - arreglado?
