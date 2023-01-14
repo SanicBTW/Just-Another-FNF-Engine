@@ -1,6 +1,11 @@
 package funkin;
 
+// got lazy so everything from here is just psych shit lol
+import base.Conductor;
+import base.SaveData;
 import flixel.FlxSprite;
+import flixel.math.FlxPoint;
+import openfl.Assets;
 
 using StringTools;
 
@@ -32,5 +37,127 @@ typedef AnimArray =
 class Character extends FlxSprite
 {
 	public var animOffsets:Map<String, Array<Dynamic>>;
+
+	public static final DEFAULT:String = "bf";
+
 	public var isPlayer:Bool = false;
+	public var curCharacter:String = DEFAULT;
+
+	public var holdTimer:Float = 0;
+	public var singDuration:Float = 4;
+	public var danceEveryNumBeats:Int = 2;
+
+	public var cameraPosition:FlxPoint;
+	public var characterPosition:FlxPoint;
+
+	public function new(x:Float, y:Float, isPlayer:Bool = false, character:String = 'bf')
+	{
+		super(x, y);
+		antialiasing = SaveData.antialiasing;
+		this.isPlayer = isPlayer;
+		setChar(x, y, character);
+	}
+
+	// create it on new
+	public function setChar(x:Float, y:Float, character:String = 'bf')
+	{
+		animOffsets = new Map();
+		cameraPosition = new FlxPoint(0, 0);
+		characterPosition = new FlxPoint(0, 0);
+
+		curCharacter = character;
+
+		var json:CharacterFile = cast haxe.Json.parse(Assets.getText(getCharPath()));
+		frames = Paths.getForcedSparrowAtlas(curCharacter + "/" + json.image.replace("characters/", ""), "characters");
+
+		if (json.scale != 1)
+		{
+			setGraphicSize(Std.int(width * json.scale));
+			updateHitbox();
+		}
+
+		characterPosition.set(json.position[0], json.position[1]);
+		cameraPosition.set(json.camera_position[0], json.camera_position[1]);
+		singDuration = json.sing_duration;
+		flipX = json.flip_x;
+		if (json.no_antialiasing)
+			antialiasing = false;
+
+		if (json.animations != null && json.animations.length > 0)
+		{
+			for (anim in json.animations)
+			{
+				var animAnim:String = '${anim.anim}';
+				var animName:String = '${anim.name}';
+				var animFPS:Int = anim.fps;
+				var animLoop:Bool = !!anim.loop;
+				var animInd:Array<Int> = anim.indices;
+				if (animInd != null && animInd.length > 0)
+					animation.addByIndices(animAnim, animName, animInd, "", animFPS, animLoop);
+				else
+					animation.addByPrefix(animAnim, animName, animFPS, animLoop);
+
+				if (anim.offsets != null && anim.offsets.length > 1)
+					animOffsets[animAnim] = [anim.offsets[0], anim.offsets[1]];
+			}
+		}
+
+		if (isPlayer)
+			flipX = !flipX;
+
+		dance();
+
+		/*
+			setPosition(x, y);
+			this.x += characterPosition.x;
+			this.y += (characterPosition.y - (frameHeight * scale.y)); */
+	}
+
+	override public function update(elapsed:Float)
+	{
+		if (!isPlayer)
+		{
+			if (animation.curAnim.name.startsWith("sing"))
+				holdTimer += elapsed;
+
+			if (holdTimer >= (Conductor.stepCrochet * singDuration) / 1000)
+			{
+				dance();
+				holdTimer = 0;
+			}
+		}
+		else
+		{
+			if (animation.curAnim.name.startsWith("sing"))
+				holdTimer += elapsed;
+			else
+				holdTimer = 0;
+		}
+
+		super.update(elapsed);
+	}
+
+	public function dance(forced:Bool = false)
+	{
+		playAnim('idle', forced);
+	}
+
+	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)
+	{
+		animation.play(AnimName, Force, Reversed, Frame);
+
+		if (animOffsets.exists(AnimName))
+			offset.set(animOffsets[AnimName][0], animOffsets[AnimName][1]);
+		else
+			offset.set(0, 0);
+	}
+
+	private function getCharPath():String
+	{
+		var retPath:String = Paths.getLibraryPath('$curCharacter/$curCharacter.json', "characters");
+		if (!Assets.exists(retPath))
+			retPath = Paths.getLibraryPath('$DEFAULT/$DEFAULT.json', "characters");
+
+		return retPath;
+	}
 }

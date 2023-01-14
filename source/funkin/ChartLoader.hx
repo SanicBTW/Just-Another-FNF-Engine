@@ -48,6 +48,7 @@ class ChartLoader
 	public static function loadChart(state:MusicHandler, songName:String, difficulty:Int):Song
 	{
 		unspawnedNoteList = [];
+		var noteStrumTimes:Map<Int, Array<Float>> = [0 => [], 1 => []];
 		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
 
 		// just in case lol
@@ -78,6 +79,8 @@ class ChartLoader
 						newNote.mustPress = hitNote;
 						unspawnedNoteList.push(newNote);
 
+						newNote.doubleNote = noteStrumTimes[strumLine].contains(stepTime);
+						noteStrumTimes[strumLine].push(stepTime);
 						if (holdStep > 0)
 						{
 							newNote.isParent = true;
@@ -93,6 +96,9 @@ class ChartLoader
 								if (i == floorStep - 1)
 									sustainNote.isSustainEnd = true;
 								unspawnedNoteList.push(sustainNote);
+
+								sustainNote.doubleNote = noteStrumTimes[strumLine].contains(stepTime);
+								noteStrumTimes[strumLine].push(stepTime);
 							}
 						}
 					case -1:

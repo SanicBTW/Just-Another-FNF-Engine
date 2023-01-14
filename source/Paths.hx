@@ -90,6 +90,10 @@ class Paths
 	public static inline function getSparrowAtlas(key:String, ?library:String)
 		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
 
+	// force the path to search for an image without images/
+	public static inline function getForcedSparrowAtlas(key:String, ?library:String)
+		return FlxAtlasFrames.fromSparrow(getGraphic(getPath('$key.png', library)), file('$key.xml', library));
+
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");
 

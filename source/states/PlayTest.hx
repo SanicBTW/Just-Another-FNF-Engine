@@ -7,15 +7,20 @@ import base.MusicBeatState;
 import base.SoundManager.AudioStream;
 import flixel.FlxCamera;
 import flixel.FlxG;
+import flixel.FlxObject;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
+import funkin.Character;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
 import funkin.Stage;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
+
+using StringTools;
 
 class PlayTest extends MusicBeatState
 {
@@ -47,6 +52,12 @@ class PlayTest extends MusicBeatState
 	public var downscroll:Bool = false;
 
 	private var generatedMusic:Bool = false;
+
+	private var player:Character;
+	private var opponent:Character;
+
+	private var camFollow:FlxObject;
+	private var camFollowPos:FlxObject;
 
 	override function create()
 	{
@@ -83,21 +94,60 @@ class PlayTest extends MusicBeatState
 		stage = new Stage("stage");
 		add(stage);
 
+		player = new Character(750, 850, true, "bf");
+		add(player);
+
+		opponent = new Character(50, 850, false, "dad");
+		add(opponent);
+
 		super.create();
+
+		var camPos:FlxPoint = new FlxPoint(player.x + (player.width / 2), player.y + (player.height / 2));
+
+		camFollow = new FlxObject(0, 0, 1, 1);
+		camFollow.setPosition(camPos.x, camPos.y);
+		camFollowPos = new FlxObject(0, 0, 1, 1);
+		camFollowPos.setPosition(camPos.x, camPos.y);
+
+		add(camFollow);
+		add(camFollowPos);
+
+		FlxG.camera.follow(camFollowPos, LOCKON, 1);
+		FlxG.camera.zoom = stage.cameraZoom;
+		FlxG.camera.focusOn(camFollow.getPosition());
+
+		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
 		Conductor.resyncTime();
 		Paths.clearUnusedMemory();
 	}
 
+	// private var lastSection:Int = 0;
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		var lerpVal:Float = (elapsed * 2.4);
+		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
 		FlxG.camera.zoom = FlxMath.lerp(stage.cameraZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
+			/*
+				var curSection = std.int(curStep / 16);
+				if (curSection != lastSection)
+				{
+					if (SONG.notes[lastSection] != null)
+					{
+
+					}
+			}*/
+
+			updateCamFollow(elapsed);
+
 			parseEventColumn(ChartLoader.unspawnedNoteList, function(unspawnNote:Note)
 			{
 				var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
@@ -188,6 +238,14 @@ class PlayTest extends MusicBeatState
 					playerHit(coolNote);
 				}
 			});
+
+			if (player != null
+				&& (player.holdTimer > (Conductor.stepCrochet * player.singDuration) / 1000)
+				&& (!keys.contains(true) || playerStrums.botPlay))
+			{
+				if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
+					player.dance();
+			}
 		}
 	}
 
@@ -304,6 +362,8 @@ class PlayTest extends MusicBeatState
 		if (note.isSustain && !note.isSustainEnd)
 			time += 0.15;
 		receptorPlayAnim(true, note.noteData, time);
+		opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+		opponent.holdTimer = 0;
 
 		if (!note.isSustain)
 			destroyNote(opponentStrums, note);
@@ -316,6 +376,8 @@ class PlayTest extends MusicBeatState
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(playerStrums, note.noteData).playAnim('pressed');
+			player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+			player.holdTimer = 0;
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)
@@ -368,6 +430,24 @@ class PlayTest extends MusicBeatState
 				eventColumn.splice(eventColumn.indexOf(eventColumn[0]), 1);
 			}
 		}
+	}
+
+	private function updateCamFollow(?elapsed:Float)
+	{
+		if (elapsed == null)
+			elapsed = FlxG.elapsed;
+
+		var mustHit:Bool = SONG.notes[Std.int(curStep / 16)].mustHitSection;
+		var char:Character = (mustHit ? player : opponent);
+		var charCenterX:Float = char.getMidpoint().x;
+		var charCenterY:Float = char.getMidpoint().y;
+
+		var centerX = (mustHit ? charCenterX - 100 : charCenterX + 150);
+		var centerY = (mustHit ? charCenterY - 100 : charCenterY - 100);
+
+		camFollow.setPosition(centerX, centerY);
+		camFollow.x += char.cameraPosition.x;
+		camFollow.y += char.cameraPosition.y;
 	}
 
 	private function generateSong():Void

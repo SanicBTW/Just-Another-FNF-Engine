@@ -13,11 +13,11 @@ class Note extends FlxSprite
 
 	public var stepTime:Float;
 	public var noteData:Int = 0;
-	public var sustainLength:Float = 0;
 	public var tooLate:Bool = false;
 	public var canBeHit:Bool = false;
 	public var wasGoodHit:Bool = false;
 	public var mustPress:Bool = false;
+	public var doubleNote:Bool = false;
 	public var strumLine:Int = 0;
 	public var prevNote:Note;
 
@@ -26,6 +26,7 @@ class Note extends FlxSprite
 	public var children:Array<Note> = [];
 	public var isSustain:Bool = false;
 	public var isSustainEnd:Bool = false;
+	public var isSustainActive:Bool = false;
 
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
