@@ -107,10 +107,9 @@ class Character extends FlxSprite
 
 		dance();
 
-		/*
-			setPosition(x, y);
-			this.x += characterPosition.x;
-			this.y += (characterPosition.y - (frameHeight * scale.y)); */
+		setPosition(x, y);
+		this.x += characterPosition.x;
+		this.y += characterPosition.y;
 	}
 
 	override public function update(elapsed:Float)

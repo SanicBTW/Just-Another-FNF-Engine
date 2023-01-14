@@ -19,4 +19,4 @@ Section style conductor will be added on future versions
 - Fix issues
 
 - check if notes alpha is scaled down, if they are deleted properly at time, make ratings, accuracy, add characters
-- arreglar bug donde al presionar muchas veces se borran las notas que vienen
+- arreglar bug donde al presionar muchas veces se borran las notas que vienen - arreglado?

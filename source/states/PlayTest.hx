@@ -12,6 +12,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
+import flixel.tweens.FlxTween;
 import funkin.Character;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
@@ -94,10 +95,10 @@ class PlayTest extends MusicBeatState
 		stage = new Stage("stage");
 		add(stage);
 
-		player = new Character(750, 850, true, "bf");
+		player = new Character(750, 100, true, "bf");
 		add(player);
 
-		opponent = new Character(50, 850, false, "dad");
+		opponent = new Character(50, 100, false, "dad");
 		add(opponent);
 
 		super.create();
@@ -292,8 +293,8 @@ class PlayTest extends MusicBeatState
 
 		if (possibleNoteList.length > 0)
 		{
-			var eligable = true;
-			var firstNote = true;
+			var eligable:Bool = true;
+			var firstNote:Bool = true;
 			for (coolNote in possibleNoteList)
 			{
 				for (noteDouble in pressedNotes)
@@ -339,6 +340,14 @@ class PlayTest extends MusicBeatState
 	override public function beatHit()
 	{
 		super.beatHit();
+
+		if (curBeat % 2 == 0)
+		{
+			if (player.animation.curAnim.name.startsWith("idle") || player.animation.curAnim.name.startsWith("dance"))
+				player.dance();
+			if (opponent.animation.curAnim.name.startsWith("idle") || opponent.animation.curAnim.name.startsWith("dance"))
+				opponent.dance();
+		}
 
 		if (curBeat % 4 == 0)
 		{

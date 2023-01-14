@@ -113,10 +113,13 @@ class Conductor
 		{
 			songPosition += elapsed * 1000;
 
-			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
-			var swag:Float = ((Conductor.songPosition - lastChange.songTime) / lastChange.stepCrochet);
+			/*
+				var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
+				var swag:Float = ((Conductor.songPosition - lastChange.songTime) / lastChange.stepCrochet);
 
-			stepPosition = lastChange.stepTime + Math.floor(swag);
+				stepPosition = lastChange.stepTime + Math.floor(swag); */
+
+			stepPosition = Math.floor(songPosition / stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
 			if (stepPosition > lastStep)
 			{
@@ -139,10 +142,13 @@ class Conductor
 	public static function resyncTime()
 	{
 		trace('Resyncing song time ${boundSong.time}');
+		if (boundVocals != null)
+			boundVocals.stop();
+
+		boundSong.play();
 		songPosition = boundSong.time;
 		if (boundVocals != null)
 		{
-			boundVocals.stop();
 			boundVocals.time = songPosition;
 			boundVocals.play();
 		}
