@@ -60,6 +60,10 @@ class PlayTest extends MusicBeatState
 	private var camFollow:FlxObject;
 	private var camFollowPos:FlxObject;
 
+	private var lastSection:Int = 0;
+	private var camDisplaceX:Float = 0;
+	private var camDisplaceY:Float = 0;
+
 	override function create()
 	{
 		Paths.clearStoredMemory();
@@ -123,8 +127,6 @@ class PlayTest extends MusicBeatState
 		Paths.clearUnusedMemory();
 	}
 
-	// private var lastSection:Int = 0;
-
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -137,17 +139,20 @@ class PlayTest extends MusicBeatState
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
-			/*
-				var curSection = std.int(curStep / 16);
-				if (curSection != lastSection)
+			var curSection = Std.int(curStep / 16);
+			if (curSection != lastSection)
+			{
+				if (SONG.notes[lastSection] != null && (SONG.notes[curSection].mustHitSection != SONG.notes[lastSection].mustHitSection))
 				{
-					if (SONG.notes[lastSection] != null)
-					{
-
-					}
-			}*/
+					camDisplaceX = 0;
+					camDisplaceY = 0;
+					lastSection = Std.int(curStep / 16);
+				}
+			}
 
 			updateCamFollow(elapsed);
+			cameraDisplacement(player, true);
+			cameraDisplacement(opponent, false);
 
 			parseEventColumn(ChartLoader.unspawnedNoteList, function(unspawnNote:Note)
 			{
@@ -453,15 +458,57 @@ class PlayTest extends MusicBeatState
 
 		var centerX = (mustHit ? charCenterX - 100 : charCenterX + 150);
 		var centerY = (mustHit ? charCenterY - 100 : charCenterY - 100);
+		var newX:Float = (mustHit ? (camDisplaceX - char.cameraPosition.x) : (camDisplaceX + char.cameraPosition.x));
+		var newY:Float = camDisplaceY + char.cameraPosition.y;
 
 		camFollow.setPosition(centerX, centerY);
-		camFollow.x += char.cameraPosition.x;
-		camFollow.y += char.cameraPosition.y;
+		camFollow.x += newX;
+		camFollow.y += newY;
+	}
+
+	var camDisp:Float = 15;
+
+	private function cameraDisplacement(character:Character, mustHit:Bool)
+	{
+		if (SONG.notes[Std.int(curStep / 16)] != null)
+		{
+			if (SONG.notes[Std.int(curStep / 16)].mustHitSection
+				&& mustHit
+				|| (!SONG.notes[Std.int(curStep / 16)].mustHitSection && !mustHit))
+			{
+				if (character.animation.curAnim != null)
+				{
+					camDisplaceX = 0;
+					camDisplaceY = 0;
+					switch (character.animation.curAnim.name)
+					{
+						case 'singUP':
+							camDisplaceY -= camDisp;
+						case 'singDOWN':
+							camDisplaceY += camDisp;
+						case 'singLEFT':
+							camDisplaceX -= camDisp;
+						case 'singRIGHT':
+							camDisplaceX += camDisp;
+
+						// funky - move to the opposite direction as it missed
+						case 'singUPmiss':
+							camDisplaceY += camDisp;
+						case "singDOWNmiss":
+							camDisplaceY -= camDisp;
+						case "singLEFTmiss":
+							camDisplaceX += camDisp;
+						case "singRIGHTmiss":
+							camDisplaceX -= camDisp;
+					}
+				}
+			}
+		}
 	}
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "double-kill", 2);
+		SONG = ChartLoader.loadChart(this, "oversight", 2);
 		Conductor.mapBPMChanges(SONG);
 		songSpeed = SONG.speed;
 
