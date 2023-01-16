@@ -117,11 +117,6 @@ class PlayTest extends MusicBeatState
 		add(accuracyText);
 		accuracyText.cameras = [camHUD];
 
-		var pixEff:PixelEffect = new PixelEffect();
-		// pixEff.PIXEL_FACTOR = 128;
-		var filter:ShaderFilter = new ShaderFilter(pixEff.shader);
-		FlxG.camera.setFilters([filter]);
-
 		super.create();
 
 		var camPos:FlxPoint = new FlxPoint(player.x + (player.width / 2), player.y + (player.height / 2));
@@ -515,7 +510,7 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "double-kill", 2);
+		SONG = ChartLoader.loadChart(this, "recursed", 2);
 		Conductor.mapBPMChanges(SONG);
 		songSpeed = SONG.speed;
 

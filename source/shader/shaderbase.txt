@@ -1,10 +1,8 @@
-package shader;
 
-import flixel.system.FlxAssets.FlxShader;
+only to get the base string for the fragment and vert - jokes away, im just copying and pasting the code over to the new shaders lol
+the void main() will be set on the shader itself
 
-class BaseShader extends FlxShader
-{
-	public var bFrag:String = '
+	@:glFragmentSource('
         varying float openfl_Alphav;
 		varying vec4 openfl_ColorMultiplierv;
 		varying vec4 openfl_ColorOffsetv;
@@ -51,9 +49,9 @@ class BaseShader extends FlxShader
 			}
 			return vec4(0.0, 0.0, 0.0, 0.0);
 		}
-    ';
+	')
 
-	public var bVert:String = '
+	@:glVertexSource('
 		attribute float openfl_Alpha;
 		attribute vec4 openfl_ColorMultiplier;
 		attribute vec4 openfl_ColorOffset;
@@ -94,12 +92,4 @@ class BaseShader extends FlxShader
 				openfl_ColorMultiplierv = colorMultiplier;
 			}
 		}
-    ';
-
-	public function new()
-	{
-		glFragmentSource = bFrag;
-		glVertexSource = bVert;
-		super();
-	}
-}
+	')
