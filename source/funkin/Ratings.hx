@@ -1,5 +1,7 @@
 package funkin;
 
+import flixel.util.FlxColor;
+
 using StringTools;
 
 class Ratings
@@ -9,26 +11,53 @@ class Ratings
 	public static var accuracy:Float;
 	public static var notesHit:Int = 0;
 
+	public static var marvs:Int = 0;
+	public static var sicks:Int = 0;
+	public static var goods:Int = 0;
+	public static var bads:Int = 0;
+	public static var shits:Int = 0;
+	public static var misses:Int = 0;
+
+	// judgement weights from quaver's new system
+	// pos, weight
 	public static var judgements:Map<String, Array<Dynamic>> = [
-		"marvellous" => [0, 100],
-		"sick" => [1, 95],
-		"good" => [2, 75],
+		"marvelous" => [0, 100],
+		"sick" => [1, 98.25],
+		"good" => [2, 65],
 		"bad" => [3, 25],
-		"shit" => [4, -150],
-		"miss" => [5, -175]
+		"shit" => [4, -100],
+		"miss" => [5, -50]
 	];
 
+	// timings from quaver's standard windows
 	private static var timings:Array<Dynamic> = [
-		[15, "marvellous"],
-		[45, "sick"],
-		[90, "good"],
-		[135, "bad"],
-		[157.5, "shit"],
-		[180, "miss"]
+		[18, "marvelous"],
+		[43, "sick"],
+		[76, "good"],
+		[106, "bad"],
+		[127, "shit"],
+		[165, "miss"]
+	];
+
+	// var name, counter name, color - to help the counter stuff
+	public static var counters:Map<String, Array<Dynamic>> = [
+		"marvelous" => ["marvs", "MV", FlxColor.fromRGB(255, 255, 153)],
+		"sick" => ["sicks", "SK", FlxColor.fromRGB(255, 255, 51)],
+		"good" => ["goods", "GD", FlxColor.fromRGB(30, 144, 255)],
+		"bad" => ["bads", "BD", FlxColor.fromRGB(148, 0, 211)],
+		"shit" => ["shits", "ST", FlxColor.fromRGB(178, 34, 34)],
+		"miss" => ["misses", "MS", FlxColor.fromRGB(204, 66, 66)]
 	];
 
 	public static function call()
 	{
+		marvs = 0;
+		sicks = 0;
+		goods = 0;
+		bads = 0;
+		shits = 0;
+		misses = 0;
+
 		fakeAccuracy = 0.001;
 		accuracy = 0;
 
@@ -46,7 +75,12 @@ class Ratings
 		for (i in 0...timings.length)
 		{
 			if (ms <= timings[Math.round(Math.min(i, timings.length - 1))][0])
-				return timings[Math.round(Math.min(i, timings.length - 1))][1];
+			{
+				var judgement:String = timings[Math.round(Math.min(i, timings.length - 1))][1];
+				var judgeVar:String = counters.get(judgement)[0];
+				Reflect.setField(Ratings, judgeVar, Reflect.field(Ratings, judgeVar) + 1);
+				return judgement;
+			}
 		}
 
 		return 'miss';

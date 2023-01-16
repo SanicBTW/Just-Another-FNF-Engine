@@ -22,6 +22,7 @@ import funkin.Stage;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
+import funkin.ui.UI;
 import openfl.filters.ShaderFilter;
 import shader.*;
 
@@ -68,7 +69,7 @@ class PlayTest extends MusicBeatState
 	private var camDisplaceX:Float = 0;
 	private var camDisplaceY:Float = 0;
 
-	private var accuracyText:FlxText;
+	private var hud:UI;
 
 	override function create()
 	{
@@ -112,10 +113,9 @@ class PlayTest extends MusicBeatState
 		opponent = new Character(50, 100, false, "dad");
 		add(opponent);
 
-		accuracyText = new FlxText(30, (FlxG.height / 2), 0, '', 24);
-		accuracyText.scrollFactor.set();
-		add(accuracyText);
-		accuracyText.cameras = [camHUD];
+		hud = new UI();
+		add(hud);
+		hud.cameras = [camHUD];
 
 		super.create();
 
@@ -148,8 +148,6 @@ class PlayTest extends MusicBeatState
 
 		FlxG.camera.zoom = FlxMath.lerp(stage.cameraZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
-
-		accuracyText.text = '${Std.string(Math.floor(Ratings.accuracy * 100) / 100)}%';
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
