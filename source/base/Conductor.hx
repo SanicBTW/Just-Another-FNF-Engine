@@ -33,8 +33,6 @@ class Conductor
 	public static var boundState:MusicHandler;
 	public static final comparisonThreshold:Float = 20;
 
-	public static var msThreshold:Float = 120;
-
 	public function new() {}
 
 	public static function recalculateTimings() {}

@@ -83,8 +83,6 @@ class ChartLoader
 						noteStrumTimes[strumLine].push(stepTime);
 						if (holdStep > 0)
 						{
-							newNote.isParent = true;
-
 							var floorStep:Int = Std.int(holdStep + 1);
 							for (i in 0...floorStep)
 							{

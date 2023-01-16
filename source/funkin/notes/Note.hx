@@ -21,7 +21,6 @@ class Note extends FlxSprite
 	public var strumLine:Int = 0;
 	public var prevNote:Note;
 
-	public var isParent:Bool = false;
 	public var parent:Note = null;
 	public var children:Array<Note> = [];
 	public var isSustain:Bool = false;
@@ -131,14 +130,14 @@ class Note extends FlxSprite
 	{
 		if (mustPress)
 		{
-			if (stepTime > Conductor.stepPosition - (Conductor.msThreshold / Conductor.stepCrochet)
-				&& stepTime < Conductor.stepPosition + (Conductor.msThreshold / Conductor.stepCrochet))
+			if (stepTime > Conductor.stepPosition - (Ratings.msThreshold / Conductor.stepCrochet)
+				&& stepTime < Conductor.stepPosition + (Ratings.msThreshold / Conductor.stepCrochet))
 				canBeHit = true;
 			else
 				canBeHit = false;
 
 			// check
-			if (stepTime < Conductor.stepPosition - (Conductor.msThreshold / Conductor.stepCrochet) && !wasGoodHit)
+			if (stepTime < Conductor.stepPosition - (Ratings.msThreshold / Conductor.stepCrochet) && !wasGoodHit)
 				tooLate = true;
 		}
 		else

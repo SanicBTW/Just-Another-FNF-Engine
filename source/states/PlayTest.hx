@@ -12,14 +12,18 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
+import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
 import funkin.Character;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
+import funkin.Ratings;
 import funkin.Stage;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
+import openfl.filters.ShaderFilter;
+import shader.*;
 
 using StringTools;
 
@@ -64,10 +68,13 @@ class PlayTest extends MusicBeatState
 	private var camDisplaceX:Float = 0;
 	private var camDisplaceY:Float = 0;
 
+	private var accuracyText:FlxText;
+
 	override function create()
 	{
 		Paths.clearStoredMemory();
 		Controls.setActions(NOTES);
+		Ratings.call();
 
 		generateSong();
 
@@ -105,6 +112,16 @@ class PlayTest extends MusicBeatState
 		opponent = new Character(50, 100, false, "dad");
 		add(opponent);
 
+		accuracyText = new FlxText(30, (FlxG.height / 2), 0, '', 24);
+		accuracyText.scrollFactor.set();
+		add(accuracyText);
+		accuracyText.cameras = [camHUD];
+
+		var pixEff:PixelEffect = new PixelEffect();
+		// pixEff.PIXEL_FACTOR = 128;
+		var filter:ShaderFilter = new ShaderFilter(pixEff.shader);
+		FlxG.camera.setFilters([filter]);
+
 		super.create();
 
 		var camPos:FlxPoint = new FlxPoint(player.x + (player.width / 2), player.y + (player.height / 2));
@@ -136,6 +153,8 @@ class PlayTest extends MusicBeatState
 
 		FlxG.camera.zoom = FlxMath.lerp(stage.cameraZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
+
+		accuracyText.text = '${Std.string(Math.floor(Ratings.accuracy * 100) / 100)}%';
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
@@ -266,17 +285,10 @@ class PlayTest extends MusicBeatState
 
 		var data:Int = -1;
 
-		for (i in 0...receptorActionList.length)
-		{
-			if (receptorActionList[i].toLowerCase() == action.toLowerCase())
-				data = i;
-		}
-
-		if (data == -1)
-		{
-			trace('oopsies $action cant be found on action list');
+		if (receptorActionList.contains(action))
+			data = receptorActionList.indexOf(action);
+		else
 			return;
-		}
 
 		if (keys[data])
 		{
@@ -328,13 +340,9 @@ class PlayTest extends MusicBeatState
 
 		var data:Int = -1;
 
-		for (i in 0...receptorActionList.length)
-		{
-			if (receptorActionList[i].toLowerCase() == action.toLowerCase())
-				data = i;
-		}
-
-		if (data == -1)
+		if (receptorActionList.contains(action))
+			data = receptorActionList.indexOf(action);
+		else
 			return;
 
 		keys[data] = false;
@@ -359,12 +367,6 @@ class PlayTest extends MusicBeatState
 			FlxG.camera.zoom += 0.015;
 			camHUD.zoom += 0.05;
 		}
-
-		/* bpm changes are broken
-			if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
-			{
-				Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
-		}*/
 	}
 
 	private function opponentHit(note:Note)
@@ -372,10 +374,11 @@ class PlayTest extends MusicBeatState
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 1;
 
-		var time:Float = 0.15;
-		if (note.isSustain && !note.isSustainEnd)
-			time += 0.15;
-		receptorPlayAnim(true, note.noteData, time);
+		/*
+			var time:Float = 0.15;
+			if (note.isSustain && !note.isSustainEnd)
+				time += 0.15;
+			receptorPlayAnim(true, note.noteData, time); */
 		opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
 		opponent.holdTimer = 0;
 
@@ -390,6 +393,20 @@ class PlayTest extends MusicBeatState
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(playerStrums, note.noteData).playAnim('pressed');
+
+			if (!note.isSustain)
+			{
+				var noteDiff:Float = Math.abs((note.stepTime * Conductor.stepCrochet) - Conductor.songPosition);
+				Ratings.updateAccuracy(Ratings.judgements[Ratings.judge(noteDiff)][1]);
+				if (note.children.length > 0)
+					Ratings.notesHit++;
+			}
+			else
+			{
+				if (note.parent != null)
+					Ratings.updateAccuracy(100, true, note.parent.children.length);
+			}
+
 			player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
 			player.holdTimer = 0;
 
@@ -490,16 +507,6 @@ class PlayTest extends MusicBeatState
 							camDisplaceX -= camDisp;
 						case 'singRIGHT':
 							camDisplaceX += camDisp;
-
-						// funky - move to the opposite direction as it missed
-						case 'singUPmiss':
-							camDisplaceY += camDisp;
-						case "singDOWNmiss":
-							camDisplaceY -= camDisp;
-						case "singLEFTmiss":
-							camDisplaceX += camDisp;
-						case "singRIGHTmiss":
-							camDisplaceX -= camDisp;
 					}
 				}
 			}
@@ -508,7 +515,7 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "oversight", 2);
+		SONG = ChartLoader.loadChart(this, "double-kill", 2);
 		Conductor.mapBPMChanges(SONG);
 		songSpeed = SONG.speed;
 
