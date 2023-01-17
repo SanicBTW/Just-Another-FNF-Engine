@@ -15,7 +15,9 @@ import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.text.FlxText;
+import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxColor;
 import funkin.Character;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
@@ -77,6 +79,9 @@ class PlayTest extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
+	private var waitText:FlxText;
+	private var waiting:Bool = true;
+
 	override function create()
 	{
 		Paths.clearStoredMemory();
@@ -98,9 +103,6 @@ class PlayTest extends MusicBeatState
 		FlxG.cameras.add(camOther);
 		FadeTransition.nextCamera = camOther;
 
-		Conductor.boundSong.play();
-		Conductor.boundVocals.play();
-
 		strumLines = new FlxTypedGroup<StrumLine>();
 		var separation:Float = FlxG.width / 4;
 		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
@@ -119,9 +121,18 @@ class PlayTest extends MusicBeatState
 		opponent = new Character(50, 100, false, "dad");
 		add(opponent);
 
+		Conductor.songPosition = -5000;
+
 		hud = new UI();
 		add(hud);
 		hud.cameras = [camHUD];
+
+		waitText = new FlxText(FlxG.width / 2, (FlxG.height * 0.89) + 36, 0, "Press 'confirm' to start playing", 24);
+		waitText.scrollFactor.set();
+		waitText.alpha = 1;
+		waitText.setBorderStyle(OUTLINE, FlxColor.BLACK, 3);
+		waitText.cameras = [camHUD];
+		add(waitText);
 
 		super.create();
 
@@ -141,13 +152,18 @@ class PlayTest extends MusicBeatState
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
-		Conductor.resyncTime();
 		Paths.clearUnusedMemory();
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		if (Conductor.boundSong.playing && waiting)
+		{
+			Conductor.boundSong.stop();
+			Conductor.boundVocals.stop();
+		}
 
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
@@ -282,7 +298,25 @@ class PlayTest extends MusicBeatState
 	{
 		super.onActionPressed(action);
 
-		if (action == "confirm" && canPause)
+		if (action == "confirm" && waiting)
+		{
+			FlxTween.tween(waitText, {alpha: 0}, 1, {
+				ease: FlxEase.quartInOut,
+				onComplete: function(twn:FlxTween)
+				{
+					remove(waitText);
+					waiting = false;
+					Conductor.songPosition = 0;
+					Conductor.songPosition -= Conductor.crochet * 5;
+
+					Conductor.boundSong.play();
+					Conductor.boundVocals.play();
+					Conductor.resyncTime();
+				}
+			});
+		}
+
+		if (action == "confirm" && canPause && !waiting)
 		{
 			persistentUpdate = false;
 			persistentDraw = true;
