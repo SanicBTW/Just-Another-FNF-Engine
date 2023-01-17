@@ -14,6 +14,14 @@ Section style conductor will be added on future versions
 # Special thanks
 - SlacDeveloper for making some fucking cool sprites
 
+# Alpha Testers
+- ElDulceV
+- Galo
+- SlacDev
+- Bonndubz
+- Levi
+- Andy
+
 # TODO
 - Re-order files 
 - Fix issues

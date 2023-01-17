@@ -4,10 +4,12 @@ import base.Conductor;
 import base.Controls;
 import base.FadeTransition;
 import base.MusicBeatState;
+import base.ScriptableState.ScriptableSubState;
 import base.SoundManager.AudioStream;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
+import flixel.FlxSubState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
@@ -25,6 +27,7 @@ import funkin.notes.StrumLine;
 import funkin.ui.UI;
 import openfl.filters.ShaderFilter;
 import shader.*;
+import substates.PauseState;
 
 using StringTools;
 
@@ -70,6 +73,9 @@ class PlayTest extends MusicBeatState
 	private var camDisplaceY:Float = 0;
 
 	private var hud:UI;
+
+	public static var paused:Bool = false;
+	public static var canPause:Bool = true;
 
 	override function create()
 	{
@@ -276,6 +282,14 @@ class PlayTest extends MusicBeatState
 	{
 		super.onActionPressed(action);
 
+		if (action == "confirm" && canPause)
+		{
+			persistentUpdate = false;
+			persistentDraw = true;
+			openSubState(new PauseState());
+			return;
+		}
+
 		var data:Int = -1;
 
 		if (receptorActionList.contains(action))
@@ -364,7 +378,7 @@ class PlayTest extends MusicBeatState
 
 	private function opponentHit(note:Note)
 	{
-		if (SONG.needsVoices)
+		if (SONG.needsVoices && Conductor.boundVocals.playing)
 			Conductor.boundVocals.volume = 1;
 
 		/*
@@ -404,7 +418,7 @@ class PlayTest extends MusicBeatState
 			player.holdTimer = 0;
 
 			note.wasGoodHit = true;
-			if (SONG.needsVoices)
+			if (SONG.needsVoices && Conductor.boundVocals.playing)
 				Conductor.boundVocals.volume = 1;
 
 			if (!note.isSustain)
@@ -513,5 +527,39 @@ class PlayTest extends MusicBeatState
 		songSpeed = SONG.speed;
 
 		generatedMusic = true;
+	}
+
+	override function openSubState(SubState:FlxSubState)
+	{
+		if (!paused)
+		{
+			if (Conductor.boundSong != null)
+				Conductor.boundSong.stop();
+			if (Conductor.boundVocals != null)
+				Conductor.boundVocals.stop();
+
+			paused = true;
+			canPause = false;
+		}
+
+		super.openSubState(SubState);
+	}
+
+	override function closeSubState()
+	{
+		if (paused)
+		{
+			if (Conductor.boundSong != null)
+				Conductor.boundSong.play();
+			if (Conductor.boundVocals != null)
+				Conductor.boundVocals.play();
+
+			Conductor.resyncTime();
+
+			paused = false;
+			canPause = true;
+		}
+
+		super.closeSubState();
 	}
 }
