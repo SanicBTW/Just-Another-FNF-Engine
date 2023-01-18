@@ -1,6 +1,7 @@
 package funkin;
 
 import flixel.util.FlxColor;
+import funkin.ui.JudgementCounter;
 
 using StringTools;
 
@@ -39,16 +40,6 @@ class Ratings
 		[165, "miss"]
 	];
 
-	// var name, counter name, color - to help the counter stuff
-	public static var counters:Map<String, Array<Dynamic>> = [
-		"marvelous" => ["marvs", "MV", FlxColor.fromRGB(255, 255, 153)],
-		"sick" => ["sicks", "SK", FlxColor.fromRGB(255, 255, 51)],
-		"good" => ["goods", "GD", FlxColor.fromRGB(30, 144, 255)],
-		"bad" => ["bads", "BD", FlxColor.fromRGB(148, 0, 211)],
-		"shit" => ["shits", "ST", FlxColor.fromRGB(178, 34, 34)],
-		"miss" => ["misses", "MS", FlxColor.fromRGB(204, 66, 66)]
-	];
-
 	public static function call()
 	{
 		marvs = 0;
@@ -77,7 +68,7 @@ class Ratings
 			if (ms <= timings[Math.round(Math.min(i, timings.length - 1))][0])
 			{
 				var judgement:String = timings[Math.round(Math.min(i, timings.length - 1))][1];
-				var judgeVar:String = counters.get(judgement)[0];
+				var judgeVar:String = JudgementCounter.judgements.get(judgement)[0];
 				Reflect.setField(Ratings, judgeVar, Reflect.field(Ratings, judgeVar) + 1);
 				return judgement;
 			}
