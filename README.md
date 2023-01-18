@@ -21,6 +21,7 @@ Section style conductor will be added on future versions
 - Bonndubz
 - Levi
 - Andy
+- EchidnaWeon
 
 # TODO
 - Re-order files 
