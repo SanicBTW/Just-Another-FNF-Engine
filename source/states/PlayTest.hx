@@ -412,7 +412,7 @@ class PlayTest extends MusicBeatState
 
 	private function opponentHit(note:Note)
 	{
-		if (SONG.needsVoices && Conductor.boundVocals.playing)
+		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 1;
 
 		/*
@@ -452,7 +452,7 @@ class PlayTest extends MusicBeatState
 			player.holdTimer = 0;
 
 			note.wasGoodHit = true;
-			if (SONG.needsVoices && Conductor.boundVocals.playing)
+			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
 
 			if (!note.isSustain)

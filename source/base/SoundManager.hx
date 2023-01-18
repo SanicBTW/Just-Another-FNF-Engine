@@ -138,6 +138,12 @@ class AudioStream
 
 	function set_volume(value:Float):Float
 	{
+		if (!playing)
+		{
+			trace("Audio is not playing!");
+			return volume;
+		}
+
 		if (volume > SoundManager.globalVolume)
 			channel.soundTransform = new SoundTransform(SoundManager.globalVolume);
 		else

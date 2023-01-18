@@ -7,17 +7,16 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import funkin.Ratings;
 
-// TODO: FIX THIS SHIT / IMPROVE / CLEAN
 class JudgementCounter extends FlxSpriteGroup
 {
-	// var name, counter name, color, offset
+	// var name, counter name, color
 	public static var judgements:Map<String, Array<Dynamic>> = [
-		"marvelous" => ["marvs", "MV", FlxColor.fromRGB(255, 255, 153), 1],
-		"sick" => ["sicks", "SK", FlxColor.fromRGB(255, 255, 51), 4],
-		"good" => ["goods", "GD", FlxColor.fromRGB(30, 144, 255), 4],
-		"bad" => ["bads", "BD", FlxColor.fromRGB(148, 0, 211), 4],
-		"shit" => ["shits", "ST", FlxColor.fromRGB(178, 34, 34), 5],
-		"miss" => ["misses", "MS", FlxColor.fromRGB(204, 66, 66), 3]
+		"marvelous" => ["marvs", "MV", FlxColor.fromRGB(255, 255, 153)],
+		"sick" => ["sicks", "SK", FlxColor.fromRGB(255, 255, 51)],
+		"good" => ["goods", "GD", FlxColor.fromRGB(30, 144, 255)],
+		"bad" => ["bads", "BD", FlxColor.fromRGB(148, 0, 211)],
+		"shit" => ["shits", "ST", FlxColor.fromRGB(178, 34, 34)],
+		"miss" => ["misses", "MS", FlxColor.fromRGB(204, 66, 66)]
 	];
 
 	private var judgement:String;
@@ -26,8 +25,7 @@ class JudgementCounter extends FlxSpriteGroup
 	private var counterBG:FlxSprite;
 	private var counterText:FlxText;
 
-	private var counterTxtSize:Int = 18;
-	private var textOffset:Float = 0;
+	private var counterTxtSize:Int = 16;
 
 	public function new(x:Float, y:Float, judgement:String)
 	{
@@ -42,9 +40,9 @@ class JudgementCounter extends FlxSpriteGroup
 		counterBG.color = judgements.get(judgement)[2];
 		add(counterBG);
 
-		textOffset = (counterTxtSize - judgements.get(judgement)[3]);
-		counterText = new FlxText((counterBG.width / 2) - textOffset, (counterBG.height / 2) - (counterTxtSize - 6.8), counterBG.width,
+		counterText = new FlxText((-(counterBG.width / 2) + (counterBG.width / 2)) + 2, (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
 			judgements.get(judgement)[1], counterTxtSize);
+		counterText.alignment = CENTER;
 		counterText.autoSize = false;
 		counterText.color = FlxColor.BLACK;
 		add(counterText);
@@ -55,13 +53,6 @@ class JudgementCounter extends FlxSpriteGroup
 		super.update(elapsed);
 
 		if (Reflect.field(Ratings, judgementVar) > 0)
-		{
 			counterText.text = '${Reflect.field(Ratings, judgementVar)}';
-			if (counterText.alignment != CENTER)
-			{
-				counterText.x -= (counterBG.width / 2) - textOffset;
-				counterText.alignment = CENTER;
-			}
-		}
 	}
 }
