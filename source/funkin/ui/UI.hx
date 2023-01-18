@@ -19,8 +19,9 @@ class UI extends FlxSpriteGroup
 	{
 		super();
 
-		accuracyText = new FlxText(30, (FlxG.height / 2), 0, '', 24);
+		accuracyText = new FlxText(30, (FlxG.height / 2), 0, 'Accuracy: 0%', 24);
 		accuracyText.scrollFactor.set();
+		accuracyText.setFormat(Paths.font("funkin.otf"), 24, FlxColor.WHITE, LEFT);
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 3);
 		add(accuracyText);
 
@@ -40,12 +41,12 @@ class UI extends FlxSpriteGroup
 			judgementsArray.insert(Ratings.judgements.get(i)[0], i);
 		judgementsArray.sort(sortByJudgement);
 
-		var curY:Float = (FlxG.height / 2) + 125;
+		var curY:Float = (FlxG.height / 2) + 130;
 		for (i in 0...judgementsArray.length)
 		{
 			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 60, curY, judgementsArray[i]);
 			add(counter);
-			curY -= 55;
+			curY -= 60;
 		}
 	}
 
@@ -55,6 +56,6 @@ class UI extends FlxSpriteGroup
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		accuracyText.text = '${Math.floor(Ratings.accuracy * 100) / 100}%';
+		accuracyText.text = 'Accuracy: ${Math.floor(Ratings.accuracy * 100) / 100}%';
 	}
 }

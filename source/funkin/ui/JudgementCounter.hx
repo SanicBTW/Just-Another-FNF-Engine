@@ -25,7 +25,7 @@ class JudgementCounter extends FlxSpriteGroup
 	private var counterBG:FlxSprite;
 	private var counterText:FlxText;
 
-	private var counterTxtSize:Int = 16;
+	private var counterTxtSize:Int = 24;
 
 	public function new(x:Float, y:Float, judgement:String)
 	{
@@ -38,13 +38,15 @@ class JudgementCounter extends FlxSpriteGroup
 
 		counterBG = new FlxSprite().loadGraphic(Paths.image("judgementCounter"));
 		counterBG.color = judgements.get(judgement)[2];
+		counterBG.setGraphicSize(55, 55);
+		counterBG.antialiasing = antialiasing; // dawg wtf
 		add(counterBG);
 
-		counterText = new FlxText((-(counterBG.width / 2) + (counterBG.width / 2)) + 2, (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
+		counterText = new FlxText((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
 			judgements.get(judgement)[1], counterTxtSize);
-		counterText.alignment = CENTER;
+		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK, CENTER);
 		counterText.autoSize = false;
-		counterText.color = FlxColor.BLACK;
+		counterText.antialiasing = antialiasing; // dawg wtf
 		add(counterText);
 	}
 

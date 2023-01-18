@@ -75,6 +75,9 @@ class Paths
 		return getSound(getPath('sounds/$key.ogg', library));
 	}
 
+	public static inline function font(key:String)
+		return getPath('fonts/$key');
+
 	public static inline function music(key:String, ?library:String):Sound
 		return getSound(getPath('music/$key.ogg', library));
 

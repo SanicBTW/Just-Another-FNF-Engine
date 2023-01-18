@@ -24,11 +24,13 @@
 	<source path="source" />
 	<assets path="assets" />
 
-	<library name="songs"	preload="true"/>
-	<assets path="assets/songs"		library="songs"		exclude="*.mp3"/>
+	<library name="songs" preload="true"/>
+	<assets path="assets/songs" library="songs" exclude="*.mp3"/>
 
-	<library name="characters"	preload="true"/>
-	<assets path="assets/characters"		library="characters"/>
+	<library name="characters" preload="true"/>
+	<assets path="assets/characters" library="characters"/>
+
+	<assets path="assets/fonts" embed='true'/>
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
