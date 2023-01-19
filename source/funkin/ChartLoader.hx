@@ -8,6 +8,7 @@ import funkin.CoolUtil;
 import funkin.notes.Note;
 import haxe.Json;
 import openfl.Assets;
+import openfl.media.Sound;
 
 using StringTools;
 
@@ -39,11 +40,16 @@ typedef Song =
 	var validScore:Bool;
 }
 
+// improve the network operations
 // mix between my fork of forever and the hxs-forever branch of my 0.3.2h repo, although forever uses another type of shit so most of this is from the 0.3.2h branch
 class ChartLoader
 {
 	public static var unspawnedNoteList:Array<Note> = [];
 	public static var difficultyMap:Map<Int, Array<String>> = [0 => ['-easy'], 1 => [''], 2 => ['-hard']];
+
+	public static var netChart:String = null;
+	public static var netInst:Sound = null;
+	public static var netVoices:Sound = null;
 
 	public static function loadChart(state:MusicHandler, songName:String, difficulty:Int):Song
 	{
@@ -51,12 +57,21 @@ class ChartLoader
 		var noteStrumTimes:Map<Int, Array<Float>> = [0 => [], 1 => []];
 		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
 
-		// just in case lol
-		var formattedSongName:String = Paths.formatString(songName);
-		var rawChart:String = Assets.getText(Paths.getPath('$formattedSongName/$formattedSongName${difficultyMap[difficulty][0]}.json', "songs")).trim();
-		var swagSong:Song = CoolUtil.loadSong(rawChart);
+		var swagSong:Song = null;
+		if (netChart == null)
+		{
+			// just in case lol
+			var formattedSongName:String = Paths.formatString(songName);
+			var rawChart:String = Assets.getText(Paths.getPath('$formattedSongName/$formattedSongName${difficultyMap[difficulty][0]}.json', "songs")).trim();
+			swagSong = CoolUtil.loadSong(rawChart);
 
-		Conductor.bindSong(state, Paths.inst(songName), swagSong.bpm, Paths.voices(songName));
+			Conductor.bindSong(state, Paths.inst(songName), swagSong.bpm, Paths.voices(songName));
+		}
+		else
+		{
+			swagSong = CoolUtil.loadSong(netChart);
+			Conductor.bindSong(state, netInst, swagSong.bpm, netVoices);
+		}
 
 		for (section in swagSong.notes)
 		{

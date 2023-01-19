@@ -16,7 +16,7 @@ class PauseState extends ScriptableSubState
 {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = ['Resume', 'Reset song'];
+	var menuItems:Array<String> = ['Resume', 'Reset song', 'Exit'];
 	var curSelected:Int = 0;
 
 	public function new()
@@ -66,6 +66,8 @@ class PauseState extends ScriptableSubState
 							close();
 						case 'Reset song':
 							ScriptableState.switchState(new PlayTest());
+						case 'Exit':
+							ScriptableState.switchState(new states.OnlineSongs());
 					}
 				}
 		}
