@@ -9,15 +9,18 @@ import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxSignal.FlxTypedSignal;
 import states.PlayTest;
 
 class StrumLine extends FlxTypedGroup<FlxBasic>
 {
-	public var receptors:FlxTypedGroup<Receptor>;
-	public var notesGroup:FlxTypedGroup<Note>;
-	public var holdGroup:FlxTypedGroup<Note>;
-	public var allNotes:FlxTypedGroup<Note>;
+	public var receptors(default, null):FlxTypedGroup<Receptor>;
+	public var notesGroup(default, null):FlxTypedGroup<Note>;
+	public var holdGroup(default, null):FlxTypedGroup<Note>;
+	public var allNotes(default, null):FlxTypedGroup<Note>;
 	public var botPlay:Bool = false;
+	public var lineSpeed:Float = 0;
+	public var downScroll:Bool = false;
 
 	public function new(x:Float = 0, keyAmount:Int = 4)
 	{
@@ -33,7 +36,6 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			var receptor:Receptor = new Receptor(x, 60, i);
 			receptor.ID = i;
 
-			// receptor.action = 'note_${Receptor.getArrowFromNum(i)}'; // for the next time i use "action" var on the receptor, i fixed it now cuz i just noticed
 			receptor.x -= ((keyAmount / 2) * Note.swagWidth);
 			receptor.x += (Note.swagWidth * i);
 			receptors.add(receptor);
@@ -57,5 +59,70 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	{
 		(newNote.isSustain ? holdGroup.add(newNote) : notesGroup.add(newNote));
 		allNotes.add(newNote);
+	}
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		var downscrollMultiplier:Int = (!downScroll ? 1 : -1) * FlxMath.signOf(lineSpeed);
+
+		for (receptor in receptors)
+		{
+			if (botPlay && receptor.animation.finished)
+				receptor.playAnim('static');
+		}
+
+		allNotes.forEachAlive(function(strumNote:Note)
+		{
+			if (strumNote.tooLate)
+			{
+				strumNote.active = false;
+				strumNote.visible = false;
+			}
+			else
+			{
+				strumNote.visible = true;
+				strumNote.active = true;
+			}
+
+			strumNote.noteSpeed = Math.abs(lineSpeed);
+			var baseX:Float = receptors.members[Math.floor(strumNote.noteData)].x;
+			var baseY:Float = receptors.members[Math.floor(strumNote.noteData)].y;
+			strumNote.x = baseX + strumNote.offsetX;
+			strumNote.y = baseY
+				+ strumNote.offsetY
+				+ (downscrollMultiplier * -((Conductor.songPosition - (strumNote.stepTime * Conductor.stepCrochet)) * (0.45 * lineSpeed)));
+
+			var center:Float = baseY + (Note.swagWidth / 2);
+			if (strumNote.isSustain)
+			{
+				strumNote.y -= ((Note.swagWidth / 2) * downscrollMultiplier);
+
+				if (downscrollMultiplier < 0)
+				{
+					strumNote.flipY = true;
+					if (strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
+						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
+					{
+						var swagRect = new FlxRect(0, 0, strumNote.frameWidth, strumNote.frameHeight);
+						swagRect.height = (center - strumNote.y) / strumNote.scale.y;
+						swagRect.y = strumNote.frameHeight - swagRect.height;
+						strumNote.clipRect = swagRect;
+					}
+				}
+				else if (downscrollMultiplier > 0)
+				{
+					if (strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
+						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
+					{
+						var swagRect = new FlxRect(0, 0, strumNote.width / strumNote.scale.x, strumNote.height / strumNote.scale.y);
+						swagRect.y = (center - strumNote.y) / strumNote.scale.y;
+						swagRect.height -= swagRect.y;
+						strumNote.clipRect = swagRect;
+					}
+				}
+			}
+		});
 	}
 }

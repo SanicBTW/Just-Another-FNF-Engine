@@ -23,9 +23,10 @@ class Note extends FlxSprite
 
 	public var parent:Note = null;
 	public var children:Array<Note> = [];
+	public var spotInLine:Int = 0;
+	public var isParent:Bool = false;
 	public var isSustain:Bool = false;
 	public var isSustainEnd:Bool = false;
-	public var isSustainActive:Bool = false;
 
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
@@ -85,10 +86,6 @@ class Note extends FlxSprite
 
 				prevNote.scale.y *= (Conductor.stepCrochet / 100 * 1.05) * noteSpeed;
 				prevNote.updateHitbox();
-				/* this adds some weird gap at the end
-					prevNote.offsetY = Math.round(-prevNote.offset.y);
-
-					offsetY = Math.round(-offset.y); */
 			}
 		}
 		x += offsetX;
@@ -138,7 +135,10 @@ class Note extends FlxSprite
 
 			// check
 			if (stepTime < Conductor.stepPosition - (Ratings.msThreshold / Conductor.stepCrochet) && !wasGoodHit)
+			{
 				tooLate = true;
+				flixel.FlxG.log.add('Note at ' + Conductor.stepPosition + " too late");
+			}
 		}
 		else
 		{

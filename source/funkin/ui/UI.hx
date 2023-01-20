@@ -25,17 +25,6 @@ class UI extends FlxSpriteGroup
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 3);
 		add(accuracyText);
 
-		// straight up from forever rewrite lol
-		if (PlayTest.SONG != null)
-		{
-			var centerMark:FlxText = new FlxText(0, 0, 0, '- ${PlayTest.SONG.song.toUpperCase()} -\n', 24);
-			centerMark.setBorderStyle(OUTLINE, FlxColor.BLACK, 3);
-			add(centerMark);
-			centerMark.y = FlxG.height / 24;
-			centerMark.screenCenter(X);
-			centerMark.antialiasing = SaveData.antialiasing;
-		}
-
 		var judgementsArray:Array<String> = [];
 		for (i in Ratings.judgements.keys())
 			judgementsArray.insert(Ratings.judgements.get(i)[0], i);

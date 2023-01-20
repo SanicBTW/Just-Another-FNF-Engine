@@ -5,11 +5,14 @@ import base.Controls;
 import base.FadeTransition;
 import base.MusicBeatState;
 import base.ScriptableState.ScriptableSubState;
+import base.ScriptableState;
 import base.SoundManager.AudioStream;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
+import flixel.FlxSprite;
 import flixel.FlxSubState;
+import flixel.addons.effects.FlxTrail;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
@@ -28,6 +31,7 @@ import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
 import funkin.ui.UI;
 import openfl.filters.ShaderFilter;
+import openfl.media.Sound;
 import shader.*;
 import substates.PauseState;
 
@@ -58,8 +62,6 @@ class PlayTest extends MusicBeatState
 	private function get_curBeat():Int
 		return Conductor.beatPosition;
 
-	public static var songSpeed:Float = 0;
-
 	public var downscroll:Bool = false;
 
 	private var generatedMusic:Bool = false;
@@ -79,16 +81,11 @@ class PlayTest extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
-	private var waitText:FlxText;
-	private var waiting:Bool = true;
-
 	override function create()
 	{
 		Paths.clearStoredMemory();
 		Controls.setActions(NOTES);
 		Ratings.call();
-
-		generateSong();
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -101,7 +98,6 @@ class PlayTest extends MusicBeatState
 		camOther = new FlxCamera();
 		camOther.bgColor.alpha = 0;
 		FlxG.cameras.add(camOther);
-		FadeTransition.nextCamera = camOther;
 
 		strumLines = new FlxTypedGroup<StrumLine>();
 		var separation:Float = FlxG.width / 4;
@@ -127,14 +123,7 @@ class PlayTest extends MusicBeatState
 		add(hud);
 		hud.cameras = [camHUD];
 
-		waitText = new FlxText(FlxG.width / 2, (FlxG.height * 0.89) + 36, 0, "Press 'confirm' to start playing", 24);
-		waitText.scrollFactor.set();
-		waitText.alpha = 1;
-		waitText.setBorderStyle(OUTLINE, FlxColor.BLACK, 3);
-		waitText.cameras = [camHUD];
-		add(waitText);
-
-		super.create();
+		generateSong();
 
 		var camPos:FlxPoint = new FlxPoint(player.x + (player.width / 2), player.y + (player.height / 2));
 
@@ -152,18 +141,15 @@ class PlayTest extends MusicBeatState
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
+		super.create();
+
 		Paths.clearUnusedMemory();
+		FadeTransition.nextCamera = camOther;
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		if (Conductor.boundSong.playing && waiting)
-		{
-			Conductor.boundSong.stop();
-			Conductor.boundVocals.stop();
-		}
 
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
@@ -195,73 +181,43 @@ class PlayTest extends MusicBeatState
 					strumLine.push(unspawnNote);
 			}, -(16 * Conductor.stepCrochet));
 
-			var downscrollMultiplier:Int = (!downscroll ? 1 : -1) * FlxMath.signOf(songSpeed);
-
 			for (strumLine in strumLines)
 			{
-				for (receptor in strumLine.receptors)
-				{
-					if (strumLine.botPlay && receptor.animation.finished)
-						receptor.playAnim('static');
-				}
-
 				strumLine.allNotes.forEachAlive(function(strumNote:Note)
 				{
-					if (strumNote.tooLate)
-					{
-						strumNote.active = false;
-						strumNote.visible = false;
-					}
-					else
-					{
-						strumNote.visible = true;
-						strumNote.active = true;
-					}
-
-					strumNote.noteSpeed = Math.abs(songSpeed);
-					var roundedSpeed = FlxMath.roundDecimal(strumNote.noteSpeed, 2);
-
-					var baseX = strumLine.receptors.members[Math.floor(strumNote.noteData)].x;
-					var baseY = strumLine.receptors.members[Math.floor(strumNote.noteData)].y;
-					strumNote.x = baseX + strumNote.offsetX;
-					strumNote.y = baseY
-						+ strumNote.offsetY
-						+ (downscrollMultiplier * -((Conductor.songPosition - (strumNote.stepTime * Conductor.stepCrochet)) * (0.45 * roundedSpeed)));
-
-					var center:Float = baseY + (Note.swagWidth / 2);
-					if (strumNote.isSustain)
-					{
-						strumNote.y -= ((Note.swagWidth / 2) * downscrollMultiplier);
-
-						if (downscrollMultiplier < 0)
-						{
-							strumNote.flipY = true;
-							if (strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
-								&& (strumLine.botPlay
-									|| (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
-							{
-								var swagRect = new FlxRect(0, 0, strumNote.frameWidth, strumNote.frameHeight);
-								swagRect.height = (center - strumNote.y) / strumNote.scale.y;
-								swagRect.y = strumNote.frameHeight - swagRect.height;
-								strumNote.clipRect = swagRect;
-							}
-						}
-						else if (downscrollMultiplier > 0)
-						{
-							if (strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
-								&& (strumLine.botPlay
-									|| (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
-							{
-								var swagRect = new FlxRect(0, 0, strumNote.width / strumNote.scale.x, strumNote.height / strumNote.scale.y);
-								swagRect.y = (center - strumNote.y) / strumNote.scale.y;
-								swagRect.height -= swagRect.y;
-								strumNote.clipRect = swagRect;
-							}
-						}
-					}
-
 					if (!strumNote.mustPress && strumNote.wasGoodHit)
 						opponentHit(strumNote);
+
+					if (strumNote.mustPress && strumNote.tooLate)
+					{
+						if (!strumNote.isSustain)
+						{
+							playerMissPress(strumNote.noteData);
+						}
+
+						if (strumNote.isParent)
+						{
+							trace("missed a full hold");
+							for (note in strumNote.children)
+							{
+								note.alpha = 0.3;
+								note.canBeHit = false;
+							}
+						}
+						else
+						{
+							if (!strumNote.wasGoodHit && strumNote.isSustain && strumNote.spotInLine != strumNote.parent.children.length)
+							{
+								trace("hold fell over at " + strumNote.spotInLine);
+								for (note in strumNote.parent.children)
+								{
+									note.alpha = 0.3;
+									note.canBeHit = false;
+								}
+								playerMissPress(strumNote.noteData);
+							}
+						}
+					}
 
 					if ((strumNote.y < -strumNote.height || strumNote.y > FlxG.height + strumNote.height)
 						&& (strumNote.tooLate || strumNote.wasGoodHit))
@@ -298,25 +254,7 @@ class PlayTest extends MusicBeatState
 	{
 		super.onActionPressed(action);
 
-		if (action == "confirm" && waiting)
-		{
-			FlxTween.tween(waitText, {alpha: 0}, 1, {
-				ease: FlxEase.quartInOut,
-				onComplete: function(twn:FlxTween)
-				{
-					remove(waitText);
-					waiting = false;
-					Conductor.songPosition = 0;
-					Conductor.songPosition -= Conductor.crochet * 5;
-
-					Conductor.boundSong.play();
-					Conductor.boundVocals.play();
-					Conductor.resyncTime();
-				}
-			});
-		}
-
-		if (action == "confirm" && canPause && !waiting)
+		if (action == "confirm" && canPause)
 		{
 			persistentUpdate = false;
 			persistentDraw = true;
@@ -415,13 +353,24 @@ class PlayTest extends MusicBeatState
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 1;
 
-		/*
-			var time:Float = 0.15;
-			if (note.isSustain && !note.isSustainEnd)
-				time += 0.15;
-			receptorPlayAnim(true, note.noteData, time); */
-		opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-		opponent.holdTimer = 0;
+		var time:Float = 0.15;
+		if (note.isSustain && !note.isSustainEnd)
+			time += 0.15;
+		receptorPlayAnim(true, note.noteData, time);
+
+		if (!note.doubleNote)
+		{
+			opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+			opponent.holdTimer = 0;
+		}
+		else if (note.doubleNote && !note.isSustain)
+			trail(opponent, note);
+
+		if (note.doubleNote && note.isSustain && opponent.animation.curAnim.name == "idle")
+		{
+			opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+			opponent.holdTimer = 0;
+		}
 
 		if (!note.isSustain)
 			destroyNote(opponentStrums, note);
@@ -448,8 +397,13 @@ class PlayTest extends MusicBeatState
 					Ratings.updateAccuracy(100, true, note.parent.children.length);
 			}
 
-			player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-			player.holdTimer = 0;
+			if (!note.doubleNote)
+			{
+				player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+				player.holdTimer = 0;
+			}
+			else if (note.doubleNote && !note.isSustain)
+				trail(player, note);
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)
@@ -464,6 +418,11 @@ class PlayTest extends MusicBeatState
 	{
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 0;
+
+		player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
+
+		Ratings.misses++;
+		Ratings.updateAccuracy(Ratings.judgements.get("miss")[1]);
 	}
 
 	private function receptorPlayAnim(opponent:Bool, noteData:Int, time:Float)
@@ -556,11 +515,27 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "recursed", 2);
+		SONG = ChartLoader.loadChart(this, "", 2);
 		Conductor.mapBPMChanges(SONG);
-		songSpeed = SONG.speed;
+		for (strumLine in strumLines)
+		{
+			strumLine.lineSpeed = SONG.speed;
+		}
 
 		generatedMusic = true;
+
+		Conductor.boundSong.onComplete = function()
+		{
+			Conductor.boundSong.stop();
+			Conductor.boundVocals.stop();
+			ChartLoader.netInst = null;
+			ChartLoader.netVoices = null;
+			ScriptableState.switchState(new OnlineSongs());
+		};
+		Conductor.boundSong.play();
+		if (SONG.needsVoices)
+			Conductor.boundVocals.play();
+		Conductor.resyncTime();
 	}
 
 	override function openSubState(SubState:FlxSubState)
@@ -595,5 +570,19 @@ class PlayTest extends MusicBeatState
 		}
 
 		super.closeSubState();
+	}
+
+	// gotta check if this shit is actually lag free - move to character maybe?
+	function trail(char:Character, note:Note):Void
+	{
+		var daCopy:FlxSprite = char.clone();
+		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
+		daCopy.setPosition(char.x, char.y);
+		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
+		daCopy.active = false;
+		daCopy.alpha = 0.5;
+		daCopy.animation.play(anim, true);
+		insert(members.indexOf(char) - 1, daCopy); // LOVE YOU SANCO
+		FlxTween.tween(daCopy, {alpha: 0}, 0.5, {onComplete: function(_) daCopy.destroy()});
 	}
 }

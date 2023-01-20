@@ -1,6 +1,7 @@
 package states;
 
 import base.Alphabet;
+import base.Controls;
 import base.SaveData;
 import base.ScriptableState;
 import base.pocketbase.Request;
@@ -24,6 +25,7 @@ class OnlineSongs extends ScriptableState
 
 	override public function create()
 	{
+		Controls.setActions(UI);
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 

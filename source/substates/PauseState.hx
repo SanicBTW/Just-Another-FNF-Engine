@@ -1,6 +1,7 @@
 package substates;
 
 import base.Alphabet;
+import base.Conductor;
 import base.Controls;
 import base.ScriptableState.ScriptableSubState;
 import base.ScriptableState;
@@ -10,6 +11,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import funkin.ChartLoader;
 import states.PlayTest;
 
 class PauseState extends ScriptableSubState
@@ -67,6 +69,10 @@ class PauseState extends ScriptableSubState
 						case 'Reset song':
 							ScriptableState.switchState(new PlayTest());
 						case 'Exit':
+							Conductor.boundSong.stop();
+							Conductor.boundVocals.stop();
+							ChartLoader.netInst = null;
+							ChartLoader.netVoices = null;
 							ScriptableState.switchState(new states.OnlineSongs());
 					}
 				}

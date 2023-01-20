@@ -54,7 +54,6 @@ class ChartLoader
 	public static function loadChart(state:MusicHandler, songName:String, difficulty:Int):Song
 	{
 		unspawnedNoteList = [];
-		var noteStrumTimes:Map<Int, Array<Float>> = [0 => [], 1 => []];
 		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
 
 		var swagSong:Song = null;
@@ -72,6 +71,18 @@ class ChartLoader
 			swagSong = CoolUtil.loadSong(netChart);
 			Conductor.bindSong(state, netInst, swagSong.bpm, netVoices);
 		}
+
+		parseNotes(swagSong);
+
+		var endTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
+		trace('end chart parse time ${endTime - startTime}');
+
+		return swagSong;
+	}
+
+	private static function parseNotes(swagSong:Song)
+	{
+		var noteStrumTimes:Map<Int, Array<Float>> = [0 => [], 1 => []];
 
 		for (section in swagSong.notes)
 		{
@@ -94,10 +105,18 @@ class ChartLoader
 						newNote.mustPress = hitNote;
 						unspawnedNoteList.push(newNote);
 
-						newNote.doubleNote = noteStrumTimes[strumLine].contains(stepTime);
-						noteStrumTimes[strumLine].push(stepTime);
+						if (noteStrumTimes[strumLine].contains(Math.round(stepTime)))
+						{
+							newNote.doubleNote = true;
+							noteStrumTimes[strumLine].push(Math.round(stepTime));
+						}
+						noteStrumTimes[strumLine].push(Math.round(stepTime));
 						if (holdStep > 0)
 						{
+							newNote.isParent = true;
+
+							var spot:Int = 0;
+
 							var floorStep:Int = Std.int(holdStep + 1);
 							for (i in 0...floorStep)
 							{
@@ -105,13 +124,19 @@ class ChartLoader
 									unspawnedNoteList[Std.int(unspawnedNoteList.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 								sustainNote.parent = newNote;
+								sustainNote.spotInLine = spot;
 								newNote.children.push(sustainNote);
 								if (i == floorStep - 1)
 									sustainNote.isSustainEnd = true;
 								unspawnedNoteList.push(sustainNote);
 
-								sustainNote.doubleNote = noteStrumTimes[strumLine].contains(stepTime);
-								noteStrumTimes[strumLine].push(stepTime);
+								if (noteStrumTimes[strumLine].contains(Math.round(stepTime)))
+								{
+									sustainNote.doubleNote = true;
+									noteStrumTimes[strumLine].push(Math.round(stepTime));
+								}
+								noteStrumTimes[strumLine].push(Math.round(stepTime));
+								spot++;
 							}
 						}
 					case -1:
@@ -121,11 +146,6 @@ class ChartLoader
 		}
 
 		unspawnedNoteList.sort(sortByShit);
-
-		var endTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
-		trace('end chart parse time ${endTime - startTime}');
-
-		return swagSong;
 	}
 
 	private static function sortByShit(Obj1:Note, Obj2:Note):Int

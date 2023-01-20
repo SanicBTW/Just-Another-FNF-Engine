@@ -35,8 +35,6 @@ class Conductor
 
 	public function new() {}
 
-	public static function recalculateTimings() {}
-
 	public static function bindSong(newState:MusicHandler, newSong:Sound, songBPM:Float, ?newVocals:Sound)
 	{
 		boundSong = new AudioStream();
@@ -86,14 +84,14 @@ class Conductor
 					stepTime: totalSteps,
 					songTime: totalPos,
 					bpm: curBPM,
-					stepCrochet: ((60 / curBPM) * 1000) / 4
+					stepCrochet: calculateCrochet(curBPM) / 4
 				};
 				bpmChangeMap.push(event);
 			}
 
 			var deltaSteps:Int = song.notes[i].lengthInSteps;
 			totalSteps += deltaSteps;
-			totalPos += ((60 / curBPM) * 1000 / 4) * deltaSteps;
+			totalPos += (calculateCrochet(curBPM) / 4) * deltaSteps;
 		}
 	}
 
@@ -152,6 +150,9 @@ class Conductor
 		}
 		trace('New song time $songPosition');
 	}
+
+	inline public static function calculateCrochet(bpm:Float)
+		return (60 / bpm) * 1000;
 
 	public static function getBPMFromSeconds(time:Float)
 	{
