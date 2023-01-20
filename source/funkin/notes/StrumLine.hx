@@ -2,6 +2,7 @@ package funkin.notes;
 
 import base.Conductor;
 import flixel.FlxBasic;
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
@@ -18,6 +19,9 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	public var notesGroup(default, null):FlxTypedGroup<Note>;
 	public var holdGroup(default, null):FlxTypedGroup<Note>;
 	public var allNotes(default, null):FlxTypedGroup<Note>;
+
+	public var onBotHit(default, null):FlxTypedSignal<Note->Void> = new FlxTypedSignal<Note->Void>();
+
 	public var botPlay:Bool = false;
 	public var lineSpeed:Float = 0;
 	public var downScroll:Bool = false;
@@ -59,6 +63,17 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	{
 		(newNote.isSustain ? holdGroup.add(newNote) : notesGroup.add(newNote));
 		allNotes.add(newNote);
+	}
+
+	public function destroyNote(note:Note)
+	{
+		note.active = false;
+		note.exists = false;
+
+		note.kill();
+		allNotes.remove(note, true);
+		(note.isSustain ? holdGroup.remove(note, true) : notesGroup.remove(note, true));
+		note.destroy();
 	}
 
 	override public function update(elapsed:Float)
@@ -122,6 +137,15 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 						strumNote.clipRect = swagRect;
 					}
 				}
+			}
+
+			if (botPlay || (!strumNote.mustPress && strumNote.wasGoodHit))
+				onBotHit.dispatch(strumNote);
+
+			if ((strumNote.y < -strumNote.height || strumNote.y > FlxG.height + strumNote.height)
+				&& (strumNote.tooLate || strumNote.wasGoodHit))
+			{
+				destroyNote(strumNote);
 			}
 		});
 	}

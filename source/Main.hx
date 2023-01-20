@@ -2,15 +2,20 @@ package;
 
 import base.Controls;
 import base.SaveData;
+import base.display.FramerateCounter;
+import base.display.MemoryCounter;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
 import flixel.graphics.FlxGraphic;
+import flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode;
 import openfl.Lib;
-import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.display.StageScaleMode;
 import openfl.events.Event;
+#if cpp
+import cpp.NativeGc;
+#end
 
 class Main extends Sprite
 {
@@ -22,7 +27,8 @@ class Main extends Sprite
 	var skipSplash:Bool = true;
 	var startFullscreen:Bool = false;
 
-	public static var fpsCounter:FPS;
+	public static var fpsCounter:FramerateCounter;
+	public static var memoryCounter:MemoryCounter;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -59,6 +65,10 @@ class Main extends Sprite
 			gameHeight = Math.ceil(stageHeight / zoom);
 		}
 
+		#if cpp
+		NativeGc.enable(true);
+		#end
+
 		// I Love sucking cocks
 		FlxGraphic.defaultPersist = true;
 		Controls.init();
@@ -67,6 +77,9 @@ class Main extends Sprite
 		Lib.current.stage.align = TOP_LEFT;
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 
+		// ayooo this looks sicks af bro
+		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
+
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
@@ -74,13 +87,17 @@ class Main extends Sprite
 		FlxG.mouse.useSystemCursor = true;
 		#end
 
-		fpsCounter = new FPS(10, 8, 0xFFFFFF);
+		fpsCounter = new FramerateCounter(10, 8);
 		fpsCounter.width = gameWidth;
 		addChild(fpsCounter);
 		if (fpsCounter != null)
-		{
 			fpsCounter.visible = true;
-		}
+
+		memoryCounter = new MemoryCounter(10, (fpsCounter.textHeight + fpsCounter.y) - 1);
+		memoryCounter.width = gameWidth;
+		addChild(memoryCounter);
+		if (memoryCounter != null)
+			memoryCounter.visible = true;
 
 		FlxG.save.bind("funkin_engine", "sanicbtw");
 		SaveData.loadSettings();

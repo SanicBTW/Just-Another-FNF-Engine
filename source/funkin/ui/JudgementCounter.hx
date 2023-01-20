@@ -7,6 +7,7 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import funkin.Ratings;
 
+// fix for non html targets
 class JudgementCounter extends FlxSpriteGroup
 {
 	// var name, counter name, color

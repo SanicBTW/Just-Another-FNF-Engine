@@ -13,7 +13,7 @@ using StringTools;
 
 #if cpp
 import cpp.NativeGc;
-#elseif java
+#elseif android
 import java.vm.Gc;
 #end
 
@@ -224,7 +224,7 @@ class Paths
 		#if cpp
 		NativeGc.compact();
 		NativeGc.run(true);
-		#elseif java
+		#elseif android
 		Gc.run();
 		#end
 	}

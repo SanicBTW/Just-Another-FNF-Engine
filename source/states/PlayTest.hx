@@ -102,6 +102,7 @@ class PlayTest extends MusicBeatState
 		strumLines = new FlxTypedGroup<StrumLine>();
 		var separation:Float = FlxG.width / 4;
 		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
+		opponentStrums.onBotHit.add(opponentHit);
 		strumLines.add(opponentStrums);
 		playerStrums = new StrumLine((FlxG.width / 2) + separation, 4);
 		strumLines.add(playerStrums);
@@ -180,52 +181,6 @@ class PlayTest extends MusicBeatState
 				if (strumLine != null)
 					strumLine.push(unspawnNote);
 			}, -(16 * Conductor.stepCrochet));
-
-			for (strumLine in strumLines)
-			{
-				strumLine.allNotes.forEachAlive(function(strumNote:Note)
-				{
-					if (!strumNote.mustPress && strumNote.wasGoodHit)
-						opponentHit(strumNote);
-
-					if (strumNote.mustPress && strumNote.tooLate)
-					{
-						if (!strumNote.isSustain)
-						{
-							playerMissPress(strumNote.noteData);
-						}
-
-						if (strumNote.isParent)
-						{
-							trace("missed a full hold");
-							for (note in strumNote.children)
-							{
-								note.alpha = 0.3;
-								note.canBeHit = false;
-							}
-						}
-						else
-						{
-							if (!strumNote.wasGoodHit && strumNote.isSustain && strumNote.spotInLine != strumNote.parent.children.length)
-							{
-								trace("hold fell over at " + strumNote.spotInLine);
-								for (note in strumNote.parent.children)
-								{
-									note.alpha = 0.3;
-									note.canBeHit = false;
-								}
-								playerMissPress(strumNote.noteData);
-							}
-						}
-					}
-
-					if ((strumNote.y < -strumNote.height || strumNote.y > FlxG.height + strumNote.height)
-						&& (strumNote.tooLate || strumNote.wasGoodHit))
-					{
-						destroyNote(strumLine, strumNote);
-					}
-				});
-			}
 
 			playerStrums.holdGroup.forEachAlive(function(coolNote:Note)
 			{

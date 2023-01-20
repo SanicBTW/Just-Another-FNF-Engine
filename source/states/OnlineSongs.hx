@@ -45,14 +45,7 @@ class OnlineSongs extends ScriptableState
 			var songShit:Array<base.pocketbase.Collections.Funkin> = cast Json.parse(data).items;
 			for (song in songShit)
 			{
-				var id:String = Request.filesExt.replace(":id", song.id).replace(":col", currentCollection);
-				var chart:String = Request.base + id.replace(":file", song.chart);
-				var inst:String = Request.base + id.replace(":file", song.inst);
-				var voices:String = "";
-				if (song.voices != "")
-					voices = Request.base + id.replace(":file", song.voices);
-
-				songDetails.set(song.song, [chart, inst, voices]);
+				songDetails.set(song.song, [song.id, song.chart, song.inst, song.voices]);
 				songArray.push(song.song);
 			}
 			regenMenu();
@@ -81,17 +74,17 @@ class OnlineSongs extends ScriptableState
 					var details:Array<String> = songDetails.get(songArray[curSelected]);
 					persistentUpdate = false;
 					blockInputs = true;
-					Request.get(details[0], function(data)
+					Request.getFile(currentCollection, details[0], details[1], function(data)
 					{
 						ChartLoader.netChart = data;
-						Sound.loadFromFile(details[1]).onComplete(function(sound)
+						Request.getSound(currentCollection, details[0], details[2], function(sound)
 						{
 							ChartLoader.netInst = sound;
 						});
 
 						if (details[2] != "")
 						{
-							Sound.loadFromFile(details[2]).onComplete(function(sound)
+							Request.getSound(currentCollection, details[0], details[3], function(sound)
 							{
 								ChartLoader.netVoices = sound;
 								ScriptableState.switchState(new PlayTest());
