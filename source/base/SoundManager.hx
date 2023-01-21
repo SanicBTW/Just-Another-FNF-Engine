@@ -51,7 +51,14 @@ class SoundManager
 	}
 
 	public static function clearSoundList()
+	{
+		for (sound in soundList)
+		{
+			sound.stop();
+			sound = null;
+		}
 		soundList = [];
+	}
 
 	public static function addSound(sound:AudioStream)
 		soundList.push(sound);

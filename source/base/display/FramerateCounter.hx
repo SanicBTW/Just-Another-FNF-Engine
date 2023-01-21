@@ -1,8 +1,5 @@
 package base.display;
 
-import flixel.FlxG;
-import flixel.math.FlxMath;
-import haxe.Timer;
 import openfl.events.Event;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
@@ -62,7 +59,7 @@ class FramerateCounter extends TextField
 		}
 
 		var currentCount = times.length;
-		currentFPS = FlxMath.bound(Math.round(currentCount + cacheCount), 0, FlxG.updateFramerate);
+		currentFPS = Math.round((currentCount + cacheCount) / 2);
 
 		if (currentCount != cacheCount)
 			text = "FPS: " + currentFPS;

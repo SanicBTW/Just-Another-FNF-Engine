@@ -105,12 +105,12 @@ class ChartLoader
 						newNote.mustPress = hitNote;
 						unspawnedNoteList.push(newNote);
 
-						if (noteStrumTimes[strumLine].contains(Math.round(stepTime)))
+						if (noteStrumTimes[strumLine].contains(stepTime))
 						{
 							newNote.doubleNote = true;
-							noteStrumTimes[strumLine].push(Math.round(stepTime));
+							noteStrumTimes[strumLine].push(stepTime);
 						}
-						noteStrumTimes[strumLine].push(Math.round(stepTime));
+						noteStrumTimes[strumLine].push(stepTime);
 						if (holdStep > 0)
 						{
 							newNote.isParent = true;
@@ -130,12 +130,12 @@ class ChartLoader
 									sustainNote.isSustainEnd = true;
 								unspawnedNoteList.push(sustainNote);
 
-								if (noteStrumTimes[strumLine].contains(Math.round(stepTime)))
+								if (noteStrumTimes[strumLine].contains(stepTime))
 								{
 									sustainNote.doubleNote = true;
-									noteStrumTimes[strumLine].push(Math.round(stepTime));
+									noteStrumTimes[strumLine].push(stepTime);
 								}
-								noteStrumTimes[strumLine].push(Math.round(stepTime));
+								noteStrumTimes[strumLine].push(stepTime);
 								spot++;
 							}
 						}
