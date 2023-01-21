@@ -4,6 +4,7 @@ import base.Alphabet;
 import base.Controls;
 import base.SaveData;
 import base.ScriptableState;
+import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -17,11 +18,17 @@ using StringTools;
 
 class OnlineSongs extends ScriptableState
 {
-	var currentCollection:String = "funkin";
+	var collections:Array<String> = ["funkin", "old_fnf_charts"];
+	var curColl(default, set):Int = 0;
 	var grpSongs:FlxTypedGroup<Alphabet>;
 	var songArray:Array<String> = [];
 	var songDetails:Map<String, Array<String>> = [];
 	var curSelected:Int = 0;
+
+	private function set_curColl(value:Int):Int
+	{
+		return value;
+	}
 
 	override public function create()
 	{
@@ -74,17 +81,17 @@ class OnlineSongs extends ScriptableState
 					var details:Array<String> = songDetails.get(songArray[curSelected]);
 					persistentUpdate = false;
 					blockInputs = true;
-					Request.getFile(currentCollection, details[0], details[1], function(data)
+					Request.getFile(collections[curColl], details[0], details[1], function(data)
 					{
 						ChartLoader.netChart = data;
-						Request.getSound(currentCollection, details[0], details[2], function(sound)
+						Request.getSound(collections[curColl], details[0], details[2], function(sound)
 						{
 							ChartLoader.netInst = sound;
 						});
 
 						if (details[2] != "")
 						{
-							Request.getSound(currentCollection, details[0], details[3], function(sound)
+							Request.getSound(collections[curColl], details[0], details[3], function(sound)
 							{
 								ChartLoader.netVoices = sound;
 								ScriptableState.switchState(new PlayTest());
@@ -123,8 +130,22 @@ class OnlineSongs extends ScriptableState
 		}
 	}
 
+	function changeCollection(change:Int = 0)
+	{
+		curColl += change;
+
+		if (curColl < 0)
+			curColl = collections.length - 1;
+		if (curColl >= collections.length)
+			curColl = 0;
+	}
+
 	private function regenMenu()
 	{
+		for (i in 0...grpSongs.members.length)
+		{
+			grpSongs.remove(grpSongs.members[0], true);
+		}
 		for (i in 0...songArray.length)
 		{
 			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songArray[i], true, false);
