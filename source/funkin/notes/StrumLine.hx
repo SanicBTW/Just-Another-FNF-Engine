@@ -82,23 +82,12 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 		var downscrollMultiplier:Int = (!downScroll ? 1 : -1) * FlxMath.signOf(lineSpeed);
 
-		for (receptor in receptors)
-		{
-			if (botPlay && receptor.animation.finished)
-				receptor.playAnim('static');
-		}
-
 		allNotes.forEachAlive(function(strumNote:Note)
 		{
 			if (strumNote.tooLate)
 			{
 				strumNote.active = false;
 				strumNote.visible = false;
-			}
-			else
-			{
-				strumNote.visible = true;
-				strumNote.active = true;
 			}
 
 			strumNote.noteSpeed = Math.abs(lineSpeed);

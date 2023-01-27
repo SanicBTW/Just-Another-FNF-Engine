@@ -30,7 +30,7 @@ class UI extends FlxSpriteGroup
 			judgementsArray.insert(Ratings.judgements.get(i)[0], i);
 		judgementsArray.sort(sortByJudgement);
 
-		var curY:Float = (FlxG.height / 2) + 130;
+		var curY:Float = (FlxG.height / 2) + 140;
 		for (i in 0...judgementsArray.length)
 		{
 			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 60, curY, judgementsArray[i]);

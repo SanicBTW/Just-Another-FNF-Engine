@@ -15,23 +15,28 @@ typedef BPMChangeEvent =
 
 class Conductor
 {
+	// song shit
 	public static var songPosition:Float = 0;
+
+	// steps and beats
 	public static var stepPosition:Int = 0;
 	public static var beatPosition:Int = 0;
 
-	public static var bpm:Float = 0;
-	public static var crochet:Float = ((60 / bpm) * 1000);
-	public static var stepCrochet:Float = crochet / 4;
-
-	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
-
+	// for resync??
+	public static final comparisonThreshold:Float = 20;
 	public static var lastStep:Float = -1;
 	public static var lastBeat:Float = -1;
 
+	// bpm shit
+	public static var bpm:Float = 0;
+	public static var crochet:Float = ((60 / bpm) * 1000);
+	public static var stepCrochet:Float = crochet / 4;
+	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
+
+	// the audio shit and the state
 	public static var boundSong:AudioStream;
 	public static var boundVocals:AudioStream;
 	public static var boundState:MusicHandler;
-	public static final comparisonThreshold:Float = 20;
 
 	public function new() {}
 
@@ -40,6 +45,7 @@ class Conductor
 		boundSong = new AudioStream();
 		boundSong.source = newSong;
 		SoundManager.addSound(boundSong);
+		// boundVocals = new AudioStream(); // gotta test this
 		if (newVocals != null)
 		{
 			boundVocals = new AudioStream();
@@ -51,19 +57,8 @@ class Conductor
 		changeBPM(songBPM);
 
 		songPosition = 0;
-		lastStep = -1;
-		lastBeat = -1;
-	}
-
-	// idk why not lol
-	public static function bindCustom(newState:MusicHandler, song:AudioStream, songBPM:Float)
-	{
-		boundSong = song;
-		boundState = newState;
-
-		changeBPM(songBPM);
-
-		songPosition = 0;
+		stepPosition = 0;
+		beatPosition = 0;
 		lastStep = -1;
 		lastBeat = -1;
 	}
@@ -109,19 +104,18 @@ class Conductor
 		{
 			songPosition += elapsed * 1000;
 
-			/*
-				var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
-				var swag:Float = ((Conductor.songPosition - lastChange.songTime) / lastChange.stepCrochet);
+			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
 
-				stepPosition = lastChange.stepTime + Math.floor(swag); */
-
-			stepPosition = Math.floor(songPosition / stepCrochet);
+			stepPosition = Math.floor(lastChange.stepTime / lastChange.stepCrochet)
+				- Math.floor((songPosition - lastChange.stepTime) / lastChange.stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
+
 			if (stepPosition > lastStep)
 			{
 				if ((Math.abs(boundSong.time - songPosition) > comparisonThreshold)
 					|| (boundVocals != null && Math.abs(boundVocals.time - songPosition) > comparisonThreshold))
 					resyncTime();
+
 				boundState.stepHit();
 				lastStep = stepPosition;
 			}

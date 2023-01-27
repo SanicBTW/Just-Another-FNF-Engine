@@ -45,7 +45,7 @@ class Init extends ScriptableState
 
 		if (timeLeft <= 0)
 		{
-			ScriptableState.switchState(new states.OnlineSongs());
+			ScriptableState.switchState(new states.MainState());
 		}
 
 		shitPrompt.footer.text = 'You will be redirected in ${timeLeft}s';

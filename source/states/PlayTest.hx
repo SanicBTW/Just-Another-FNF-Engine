@@ -39,7 +39,6 @@ using StringTools;
 
 class PlayTest extends MusicBeatState
 {
-	public static var SONG:Song;
 	public static var stage:Stage;
 
 	public var camHUD:FlxCamera;
@@ -51,16 +50,6 @@ class PlayTest extends MusicBeatState
 
 	private var opponentStrums:StrumLine;
 	private var playerStrums:StrumLine;
-
-	@:isVar private var curStep(get, null):Int;
-
-	private function get_curStep():Int
-		return Conductor.stepPosition;
-
-	@:isVar private var curBeat(get, null):Int;
-
-	private function get_curBeat():Int
-		return Conductor.beatPosition;
 
 	public var downscroll:Bool = false;
 
@@ -301,6 +290,11 @@ class PlayTest extends MusicBeatState
 			FlxG.camera.zoom += 0.015;
 			camHUD.zoom += 0.05;
 		}
+
+		if (SONG.notes[Std.int(curStep / 16)].changeBPM)
+		{
+			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+		}
 	}
 
 	private function opponentHit(note:Note)
@@ -485,7 +479,7 @@ class PlayTest extends MusicBeatState
 			Conductor.boundVocals.stop();
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
-			ScriptableState.switchState(new OnlineSongs());
+			ScriptableState.switchState(new MainState());
 		};
 		Conductor.boundSong.play();
 		if (SONG.needsVoices)

@@ -73,7 +73,7 @@ class PauseState extends ScriptableSubState
 							Conductor.boundVocals.stop();
 							ChartLoader.netInst = null;
 							ChartLoader.netVoices = null;
-							ScriptableState.switchState(new states.OnlineSongs());
+							ScriptableState.switchState(new states.MainState());
 					}
 				}
 		}

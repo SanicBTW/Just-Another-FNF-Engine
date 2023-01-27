@@ -1,9 +1,20 @@
 package base;
 
 import base.ScriptableState.ScriptableSubState;
+import funkin.ChartLoader.Song;
 
 class MusicBeatState extends ScriptableState implements MusicHandler
 {
+	public var SONG:Song;
+	@:isVar public var curStep(get, never):Int = 0;
+	@:isVar public var curBeat(get, never):Int = 0;
+
+	private function get_curStep():Int
+		return Conductor.stepPosition;
+
+	private function get_curBeat():Int
+		return Conductor.beatPosition;
+
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -17,13 +28,23 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 			Conductor.updateTimePosition(elapsed);
 	}
 
-	public function beatHit() {}
-
 	public function stepHit() {}
+
+	public function beatHit() {}
 }
 
 class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 {
+	public var SONG:Song;
+	@:isVar public var curStep(get, never):Int = 0;
+	@:isVar public var curBeat(get, never):Int = 0;
+
+	private function get_curStep():Int
+		return Conductor.stepPosition;
+
+	private function get_curBeat():Int
+		return Conductor.beatPosition;
+
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -37,14 +58,21 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 			Conductor.updateTimePosition(elapsed);
 	}
 
-	public function beatHit() {}
-
 	public function stepHit() {}
+
+	public function beatHit() {}
 }
 
 interface MusicHandler
 {
 	public function updateContent(elapsed:Float):Void;
-	public function beatHit():Void;
+	public var SONG:Song;
+
+	public var curStep(get, never):Int;
+	private function get_curStep():Int;
 	public function stepHit():Void;
+
+	public var curBeat(get, never):Int;
+	private function get_curBeat():Int;
+	public function beatHit():Void;
 }

@@ -133,12 +133,8 @@ class Note extends FlxSprite
 			else
 				canBeHit = false;
 
-			// check
 			if (stepTime < Conductor.stepPosition - (Ratings.msThreshold / Conductor.stepCrochet) && !wasGoodHit)
-			{
 				tooLate = true;
-				flixel.FlxG.log.add('Note at ' + Conductor.stepPosition + " too late");
-			}
 		}
 		else
 		{
