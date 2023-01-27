@@ -532,6 +532,12 @@ class PlayTest extends MusicBeatState
 		daCopy.alpha = 0.5;
 		daCopy.animation.play(anim, true);
 		insert(members.indexOf(char) - 1, daCopy); // LOVE YOU SANCO
-		FlxTween.tween(daCopy, {alpha: 0}, 0.5, {onComplete: function(_) daCopy.destroy()});
+		FlxTween.tween(daCopy, {alpha: 0}, 0.5, {
+			onComplete: function(_)
+			{
+				daCopy.destroy();
+				daCopy = null;
+			}
+		});
 	}
 }

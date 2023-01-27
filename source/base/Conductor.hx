@@ -107,7 +107,7 @@ class Conductor
 			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
 
 			stepPosition = Math.floor(lastChange.stepTime / lastChange.stepCrochet)
-				- Math.floor((songPosition - lastChange.stepTime) / lastChange.stepCrochet);
+				+ Math.floor((songPosition - lastChange.stepTime) / lastChange.stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)
