@@ -65,8 +65,7 @@ class Shader extends openfl.display.Shader
 		uniform bool hasTransform;
 		uniform bool hasColorTransform;
 
-        uniform float screenWidth;
-        uniform float screenHeight;
+		uniform vec2 screen;
         uniform float elapsed;
 
         vec4 flixel_texture2D(sampler2D bitmap, vec2 coord)

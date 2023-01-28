@@ -1,5 +1,6 @@
 package funkin.ui;
 
+import base.Conductor;
 import base.SaveData;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
@@ -14,6 +15,7 @@ import states.PlayTest;
 class UI extends FlxSpriteGroup
 {
 	private var accuracyText:FlxText;
+	private var debugText:FlxText;
 
 	public function new()
 	{
@@ -25,12 +27,18 @@ class UI extends FlxSpriteGroup
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.5);
 		add(accuracyText);
 
+		debugText = new FlxText(30, (FlxG.height / 2) + (accuracyText.height), 0, 'Accuracy 0%', 24);
+		debugText.scrollFactor.set();
+		debugText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
+		debugText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.5);
+		add(debugText);
+
 		var judgementsArray:Array<String> = [];
 		for (i in Ratings.judgements.keys())
 			judgementsArray.insert(Ratings.judgements.get(i)[0], i);
 		judgementsArray.sort(sortByJudgement);
 
-		var curY:Float = (FlxG.height / 2) + 140;
+		var curY:Float = (FlxG.height / 2) + 150;
 		for (i in 0...judgementsArray.length)
 		{
 			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 60, curY, judgementsArray[i]);
@@ -46,5 +54,6 @@ class UI extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 		accuracyText.text = 'Accuracy ${Math.floor(Ratings.accuracy * 100) / 100}%';
+		debugText.text = 'Step ${Conductor.stepPosition}\nBeat ${Conductor.beatPosition}\nSong Position ${Conductor.songPosition}\n';
 	}
 }

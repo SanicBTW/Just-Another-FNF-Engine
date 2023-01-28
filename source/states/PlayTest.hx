@@ -33,14 +33,14 @@ import funkin.ui.UI;
 import openfl.filters.ShaderFilter;
 import openfl.media.Sound;
 import shader.*;
+import shader.ChromaticAberration.ChromaticAbberationShader;
 import substates.PauseState;
 
 using StringTools;
 
 class PlayTest extends MusicBeatState
 {
-	public static var stage:Stage;
-
+	// public static var stage:Stage;
 	public var camHUD:FlxCamera;
 	public var camHUD2:FlxCamera;
 	public var camGame:FlxCamera;
@@ -70,6 +70,8 @@ class PlayTest extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
+	var shad:ChromaticAbberationShader = new ChromaticAbberationShader();
+
 	override function create()
 	{
 		Paths.clearStoredMemory();
@@ -78,6 +80,7 @@ class PlayTest extends MusicBeatState
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
+		camGame.bgColor = FlxColor.GRAY;
 		FlxCamera.defaultCameras = [camGame];
 
 		camHUD = new FlxCamera();
@@ -98,8 +101,9 @@ class PlayTest extends MusicBeatState
 		add(strumLines);
 		strumLines.cameras = [camHUD];
 
-		stage = new Stage("stage");
-		add(stage);
+		/*
+			stage = new Stage("stage");
+			add(stage); */
 
 		player = new Character(750, 100, true, "bf");
 		add(player);
@@ -115,6 +119,10 @@ class PlayTest extends MusicBeatState
 
 		generateSong();
 
+		/*
+			var shaderFilt:ShaderFilter = new ShaderFilter(shad);
+			FlxG.camera.setFilters([shaderFilt]); */
+
 		var camPos:FlxPoint = new FlxPoint(player.x + (player.width / 2), player.y + (player.height / 2));
 
 		camFollow = new FlxObject(0, 0, 1, 1);
@@ -126,7 +134,7 @@ class PlayTest extends MusicBeatState
 		add(camFollowPos);
 
 		FlxG.camera.follow(camFollowPos, LOCKON, 1);
-		FlxG.camera.zoom = stage.cameraZoom;
+		FlxG.camera.zoom = /*stage.cameraZoom*/ 0.7;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -141,10 +149,12 @@ class PlayTest extends MusicBeatState
 	{
 		super.update(elapsed);
 
+		// shad.elapsed.value = [FlxG.game.ticks / 1000];
+
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
-		FlxG.camera.zoom = FlxMath.lerp(stage.cameraZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
+		FlxG.camera.zoom = FlxMath.lerp(/*stage.cameraZoom*/ 0.7, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
@@ -524,13 +534,17 @@ class PlayTest extends MusicBeatState
 	// gotta check if this shit is actually lag free - move to character maybe?
 	function trail(char:Character, note:Note):Void
 	{
-		var daCopy:FlxSprite = char.clone();
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
-		daCopy.setPosition(char.x, char.y);
-		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
+		var daCopy:FlxSprite = char.clone();
+
 		daCopy.active = false;
 		daCopy.alpha = 0.5;
+
+		daCopy.setPosition(char.x, char.y);
+		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
+
 		daCopy.animation.play(anim, true);
+
 		insert(members.indexOf(char) - 1, daCopy); // LOVE YOU SANCO
 		FlxTween.tween(daCopy, {alpha: 0}, 0.5, {
 			onComplete: function(_)

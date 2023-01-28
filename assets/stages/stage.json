@@ -23,6 +23,7 @@
             "name": "stageLight1",
             "position": [-125, -100],
             "graphic": "stage_light",
+            "active": false,
             "size": ["getObj(stageLight1, width) * 1.1"]
         },
         {
@@ -30,6 +31,7 @@
             "position": [1225, -100],
             "graphic": "stage_light",
             "flipX": true,
+            "active": false,
             "size": ["getObj(stageLight2, width) * 1.1"]
         },
         {

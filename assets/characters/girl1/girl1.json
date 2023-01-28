@@ -1,82 +1,82 @@
 {
-    "animations":
+	"animations": 
     [
-        {
-            "offsets":
+		{
+			"loop": false,
+			"offsets": 
             [
-                0,
-                0
-            ],
-            "loop": false,
-            "anim": "idle",
-            "fps": 24,
-            "name": "Girl1 IDLE"
-        },
-        {
-            "offsets":
+				30,
+				310
+			],
+			"fps": 24,
+			"anim": "idle",
+			"name": "Girl1 IDLE"
+		},
+		{
+			"loop": false,
+			"offsets": 
             [
-                -9,
-                10
-            ],
-            "loop": false,
-            "anim": "singLEFT",
-            "fps": 24,
-            "name": "Girl1 LEFT"
-        },
-        {
-            "offsets":
+				80,
+				310
+			],
+			"fps": 24,
+			"anim": "singLEFT",
+			"name": "Girl1 LEFT"
+		},
+		{
+			"loop": false,
+			"offsets": 
             [
-                820,
-                10
-            ],
-            "loop": false,
-            "anim": "singRIGHT",
-            "fps": 24,
-            "name": "Girl1 RIGHT"
-        },
-        {
-            "offsets":
+				392,
+				510
+			],
+			"fps": 24,
+			"anim": "singRIGHT",
+			"name": "Girl1 RIGHT"
+		},
+		{
+			"loop": false,
+			"offsets": 
             [
-                0,
-                10
-            ],
-            "loop": false,
-            "anim": "singUP",
-            "fps": 24,
-            "name": "Girl1 UP"
-        },
-        {
-            "offsets":
+				540,
+				480
+			],
+			"fps": 24,
+			"anim": "singUP",
+			"name": "Girl1 UP"
+		},
+		{
+			"loop": false,
+			"offsets": 
             [
-                0,
-                -10
-            ],
-            "loop": false,
-            "anim": "singDOWN",
-            "fps": 24,
-            "name": "Girl1 DOWN"
-        }
-    ],
-    "no_antialiasing": false,
-    "image": "characters/Girl1",
-    "position":
+				210,
+				-170
+			],
+			"fps": 24,
+			"anim": "singDOWN",
+			"name": "Girl1 DOWN"
+		}
+	],
+	"no_antialiasing": false,
+	"image": "characters/Girl1",
+	"position": 
     [
-        0,
-        0
-    ],
-    "healthicon": "dad",
-    "flip_x": false,
-    "healthbar_colors":
+		0,
+		0
+	],
+	"healthicon": "dad",
+	"flip_x": false,
+	"healthbar_colors": 
     [
-        0,
-        0,
-        0
-    ],
-    "camera_position":
+		175,
+		102,
+		206
+	],
+	"camera_position": 
     [
-        0,
-        0
-    ],
-    "sing_duration": 8,
-    "scale": 1
+		-115,
+		-340
+	],
+	"sing_duration": 10,
+	"scale": 1
 }

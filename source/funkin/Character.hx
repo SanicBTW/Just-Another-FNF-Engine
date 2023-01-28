@@ -71,7 +71,7 @@ class Character extends FlxSprite
 
 		curCharacter = character;
 
-		var json:CharacterFile = cast haxe.Json.parse(Assets.getText(getCharPath()));
+		var json:CharacterFile = cast haxe.Json.parse(sys.io.File.getContent(haxe.io.Path.join([Sys.getCwd(), "assets", "characters", curCharacter, '$curCharacter.json'])));
 		frames = Paths.getForcedSparrowAtlas(curCharacter + "/" + json.image.replace("characters/", ""), "characters");
 
 		if (json.scale != 1)
@@ -149,6 +149,7 @@ class Character extends FlxSprite
 		playAnim('idle', forced);
 	}
 
+	// todo: improve
 	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)
 	{
 		animation.play(AnimName, Force, Reversed, Frame);
