@@ -104,7 +104,7 @@ class PlayTest extends MusicBeatState
 		player = new Character(750, 100, true, "bf");
 		add(player);
 
-		opponent = new Character(50, 100, false, "dad");
+		opponent = new Character(50, 100, false, "girl1");
 		add(opponent);
 
 		Conductor.songPosition = -5000;

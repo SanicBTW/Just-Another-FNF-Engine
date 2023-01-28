@@ -1,0 +1,82 @@
+{
+    "animations":
+    [
+        {
+            "offsets":
+            [
+                0,
+                0
+            ],
+            "loop": false,
+            "anim": "idle",
+            "fps": 24,
+            "name": "Girl1 IDLE"
+        },
+        {
+            "offsets":
+            [
+                -9,
+                10
+            ],
+            "loop": false,
+            "anim": "singLEFT",
+            "fps": 24,
+            "name": "Girl1 LEFT"
+        },
+        {
+            "offsets":
+            [
+                820,
+                10
+            ],
+            "loop": false,
+            "anim": "singRIGHT",
+            "fps": 24,
+            "name": "Girl1 RIGHT"
+        },
+        {
+            "offsets":
+            [
+                0,
+                10
+            ],
+            "loop": false,
+            "anim": "singUP",
+            "fps": 24,
+            "name": "Girl1 UP"
+        },
+        {
+            "offsets":
+            [
+                0,
+                -10
+            ],
+            "loop": false,
+            "anim": "singDOWN",
+            "fps": 24,
+            "name": "Girl1 DOWN"
+        }
+    ],
+    "no_antialiasing": false,
+    "image": "characters/Girl1",
+    "position":
+    [
+        0,
+        0
+    ],
+    "healthicon": "dad",
+    "flip_x": false,
+    "healthbar_colors":
+    [
+        0,
+        0,
+        0
+    ],
+    "camera_position":
+    [
+        0,
+        0
+    ],
+    "sing_duration": 8,
+    "scale": 1
+}
