@@ -48,6 +48,10 @@
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 	<haxedef name="FLX_NO_SOUND_SYSTEM" />
 
+	<haxedef name="HXCPP_GC_BIG_BLOCKS" />
+	<haxedef name="HXCPP_GC_DYNAMIC_SIZE" />
+	<haxedef name="HXCPP_GC_MOVING" />
+
 	<!-- _________________________________ Custom _______________________________ -->
 
 	<define name="FS_ACCESS" if="windows" />

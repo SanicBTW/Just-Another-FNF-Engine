@@ -27,7 +27,7 @@ class UI extends FlxSpriteGroup
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.5);
 		add(accuracyText);
 
-		debugText = new FlxText(30, (FlxG.height / 2) + (accuracyText.height), 0, 'Accuracy 0%', 24);
+		debugText = new FlxText(30, (FlxG.height / 2) + (accuracyText.height), 0, 'BPM ${Conductor.bpm}\n', 24);
 		debugText.scrollFactor.set();
 		debugText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
 		debugText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.5);
@@ -54,6 +54,5 @@ class UI extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 		accuracyText.text = 'Accuracy ${Math.floor(Ratings.accuracy * 100) / 100}%';
-		debugText.text = 'Step ${Conductor.stepPosition}\nBeat ${Conductor.beatPosition}\nSong Position ${Conductor.songPosition}\n';
 	}
 }

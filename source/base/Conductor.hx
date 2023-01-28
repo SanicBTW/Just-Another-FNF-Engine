@@ -104,9 +104,16 @@ class Conductor
 		{
 			songPosition += elapsed * 1000;
 
-			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
+			/*
+				stepPosition = Math.floor(lastChange.stepTime / lastChange.stepCrochet)
+					+ Math.floor(lastChange.stepTime + ((songPosition - lastChange.songTime) / lastChange.stepCrochet));
+				/*var fuck = (songPosition - lastChange.songTime) / lastChange.stepCrochet;
 
-			stepPosition = Math.floor((songPosition + (lastChange.songTime / lastChange.stepCrochet)) / stepCrochet);
+					stepPosition = lastChange.stepTime + Math.floor(fuck); */
+
+			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
+			stepPosition = Math.floor(songPosition / stepCrochet);
+			// stepPosition = Math.floor(((lastChange.stepTime / stepCrochet) + songPosition) / stepCrochet) * Math.floor(lastChange.songTime / 10);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)
