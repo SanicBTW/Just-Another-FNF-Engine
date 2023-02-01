@@ -1,10 +1,9 @@
 package funkin.ui;
 
-import base.Alphabet;
 import base.SaveData;
-import base.ui.TextComponent;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import funkin.Ratings;
 
@@ -25,10 +24,8 @@ class JudgementCounter extends FlxSpriteGroup
 	private var judgementVar:String;
 
 	private var counterBG:FlxSprite;
-	/*private var counterText:TextComponent;*/
-	private var counterText:Alphabet;
-
-	private var counterTxtSize:Float = 0.5;
+	private var counterText:FlxText;
+	private var counterTxtSize:Int = 24;
 
 	public function new(x:Float, y:Float, judgement:String)
 	{
@@ -45,13 +42,12 @@ class JudgementCounter extends FlxSpriteGroup
 		counterBG.antialiasing = antialiasing; // dawg wtf
 		add(counterBG);
 
-		counterText = new Alphabet((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7),
-			judgements.get(judgement)[1], true, false, 0.05, counterTxtSize);
+		counterText = new FlxText((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
+			judgements.get(judgement)[1], counterTxtSize);
+		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK, CENTER);
+		counterText.autoSize = false;
+		counterText.antialiasing = antialiasing; // dawg wtf
 		add(counterText);
-		/*
-			counterText = new TextComponent((counterBG.width + counterBG.x) / 2, (counterBG.height + counterBG.y) / 2, counterBG.width,
-				judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
-			(cast(openfl.Lib.current.getChildAt(0), Main)).addChild(counterText); */
 	}
 
 	override public function update(elapsed:Float)
@@ -59,7 +55,6 @@ class JudgementCounter extends FlxSpriteGroup
 		super.update(elapsed);
 
 		if (Reflect.field(Ratings, judgementVar) > 0)
-			counterText.changeText('${Reflect.field(Ratings, judgementVar)}');
-		// counterText.text = '${Reflect.field(Ratings, judgementVar)}';
+			counterText.text = '${Reflect.field(Ratings, judgementVar)}';
 	}
 }

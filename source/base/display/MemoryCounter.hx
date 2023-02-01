@@ -1,9 +1,5 @@
 package base.display;
 
-import flixel.FlxG;
-import flixel.math.FlxMath;
-import haxe.Timer;
-import openfl.events.Event;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 #if flash

@@ -2,8 +2,7 @@ package;
 
 import base.Controls;
 import base.SaveData;
-import base.display.FramerateCounter;
-import base.display.MemoryCounter;
+import base.display.*;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
@@ -29,6 +28,7 @@ class Main extends Sprite
 
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
+	public static var debugCounter:DebugCounter;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -98,6 +98,12 @@ class Main extends Sprite
 		addChild(memoryCounter);
 		if (memoryCounter != null)
 			memoryCounter.visible = true;
+
+		debugCounter = new DebugCounter(10, (memoryCounter.textHeight + memoryCounter.y) + 14);
+		debugCounter.width = gameWidth;
+		addChild(debugCounter);
+		if (debugCounter != null)
+			debugCounter.visible = true;
 
 		FlxG.save.bind("funkin_engine", "sanicbtw");
 		SaveData.loadSettings();

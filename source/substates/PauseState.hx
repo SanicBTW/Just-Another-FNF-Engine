@@ -3,7 +3,6 @@ package substates;
 import base.Alphabet;
 import base.Conductor;
 import base.Controls;
-import base.ScriptableState.ScriptableSubState;
 import base.ScriptableState;
 import flixel.FlxG;
 import flixel.FlxSprite;

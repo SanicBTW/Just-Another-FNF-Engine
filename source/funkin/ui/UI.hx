@@ -1,21 +1,21 @@
 package funkin.ui;
 
 import base.Conductor;
-import base.SaveData;
+import base.ui.Bar;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
+import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import funkin.Ratings;
 import funkin.ui.JudgementCounter;
-import states.PlayTest;
 
 // more components are expected to be added and moved to their respective files
 class UI extends FlxSpriteGroup
 {
 	private var accuracyText:FlxText;
-	private var debugText:FlxText;
+	private var timeBar:Bar;
 
 	public function new()
 	{
@@ -24,14 +24,14 @@ class UI extends FlxSpriteGroup
 		accuracyText = new FlxText(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
 		accuracyText.scrollFactor.set();
 		accuracyText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
-		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.5);
+		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
 		add(accuracyText);
 
-		debugText = new FlxText(30, (FlxG.height / 2) + (accuracyText.height), 0, 'BPM ${Conductor.bpm}\n', 24);
-		debugText.scrollFactor.set();
-		debugText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
-		debugText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.5);
-		add(debugText);
+		timeBar = new Bar(0, 0, FlxG.width, 10);
+		timeBar.screenCenter();
+		timeBar.y = FlxG.height - 10;
+		timeBar.screenCenter(X);
+		add(timeBar);
 
 		var judgementsArray:Array<String> = [];
 		for (i in Ratings.judgements.keys())
@@ -54,5 +54,6 @@ class UI extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 		accuracyText.text = 'Accuracy ${Math.floor(Ratings.accuracy * 100) / 100}%';
+		timeBar.value = FlxMath.lerp((Conductor.songPosition / Conductor.boundSong.length) * 100, timeBar.value, (elapsed * 2.4));
 	}
 }

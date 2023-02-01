@@ -108,7 +108,7 @@ class PlayTest extends MusicBeatState
 		player = new Character(750, 100, true, "bf");
 		add(player);
 
-		opponent = new Character(50, 100, false, "girl1");
+		opponent = new Character(50, 100, false, "dad");
 		add(opponent);
 
 		Conductor.songPosition = -5000;
@@ -138,6 +138,8 @@ class PlayTest extends MusicBeatState
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
+
+		Main.debugCounter.text = 'Alpha 0.0.4';
 
 		super.create();
 
@@ -340,8 +342,6 @@ class PlayTest extends MusicBeatState
 		if (!note.wasGoodHit)
 		{
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
-			if (note.isSustain && note.isSustainEnd)
-				getReceptor(playerStrums, note.noteData).playAnim('pressed');
 
 			if (!note.isSustain)
 			{
@@ -545,8 +545,9 @@ class PlayTest extends MusicBeatState
 
 		daCopy.animation.play(anim, true);
 
+		// (Conductor.stepCrochet * 0.001 * char.singDuration)
 		insert(members.indexOf(char) - 1, daCopy); // LOVE YOU SANCO
-		FlxTween.tween(daCopy, {alpha: 0}, 0.5, {
+		FlxTween.tween(daCopy, {alpha: 0}, (Conductor.stepCrochet * char.singDuration) / 1000, {
 			onComplete: function(_)
 			{
 				daCopy.destroy();

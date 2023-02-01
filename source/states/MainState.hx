@@ -15,6 +15,7 @@ import flixel.util.FlxColor;
 import funkin.ChartLoader;
 import haxe.Json;
 import openfl.media.Sound;
+import substates.LoadingState;
 
 using StringTools;
 
@@ -61,23 +62,40 @@ class MainState extends ScriptableState
 		if (curPage >= pages.length)
 			curPage = 0;
 
-		if (pages[curPage] == "funkin" || pages[curPage] == "old_fnf_charts")
+		switch (pages[curPage])
 		{
-			var isOld:Bool = (pages[curPage] == "old_fnf_charts");
-			Request.getRecords(pages[curPage], function(data:String)
-			{
-				menuArray = [];
-
-				var songShit:Array<Funkin & Funkin_Old> = cast Json.parse(data).items;
-				for (song in songShit)
+			case "funkin" | "old_fnf_charts":
 				{
-					songDetails.set((isOld ? song.song_name : song.song),
-						new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart), song.inst, song.voices));
-					menuArray.push((isOld ? song.song_name : song.song));
+					var isOld:Bool = (pages[curPage] == "old_fnf_charts");
+					Request.getRecords(pages[curPage], function(data:String)
+					{
+						menuArray = [];
+
+						var songShit:Array<Funkin & Funkin_Old> = cast Json.parse(data).items;
+						for (song in songShit)
+						{
+							songDetails.set((isOld ? song.song_name : song.song),
+								new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart), song.inst,
+									song.voices));
+							menuArray.push((isOld ? song.song_name : song.song));
+						}
+						regenMenu();
+					});
 				}
-				regenMenu();
-			});
+			case "osu!" | "quaver" | "settings":
+				{
+					menuArray = ["Work in progress"];
+					regenMenu();
+				}
+				/*
+					case "settings":
+						{
+							menuArray = ["Keybindings", "Trails", "Time Bar"];
+							regenMenu();
+				}*/
 		}
+
+		Main.debugCounter.text = 'Current page: ${pages[curPage]}';
 
 		return value;
 	}
@@ -88,11 +106,10 @@ class MainState extends ScriptableState
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 
-		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuSDefault"));
+		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuSDefault2"));
 		bg.screenCenter();
 		bg.antialiasing = SaveData.antialiasing;
 		bg.alpha = 0.5;
-		bg.color = FlxColor.CYAN;
 		bg.setGraphicSize(FlxG.width, FlxG.height);
 		add(bg);
 
@@ -125,35 +142,15 @@ class MainState extends ScriptableState
 				curPage = 1;
 			case "confirm":
 				{
-					if (pages[curPage] == "funkin" || pages[curPage] == "old_fnf_charts")
+					switch (pages[curPage])
 					{
-						var pbObject:PocketBaseObject = songDetails.get(menuArray[curSelected]);
-						persistentUpdate = false;
-						blockInputs = true;
-
-						Request.getFile(pages[curPage], pbObject.id, pbObject.chart, function(chart)
-						{
-							ChartLoader.netChart = chart;
-
-							Request.getSound(pages[curPage], pbObject.id, pbObject.inst, function(sound)
+						case "funkin" | "old_fnf_charts":
 							{
-								ChartLoader.netInst = sound;
-							});
-
-							if (pbObject.voices != "")
-							{
-								Request.getSound(pages[curPage], pbObject.id, pbObject.voices, function(sound)
-								{
-									ChartLoader.netVoices = sound;
-									ScriptableState.switchState(new PlayTest());
-								});
+								var pbObject:PocketBaseObject = songDetails.get(menuArray[curSelected]);
+								persistentUpdate = false;
+								blockInputs = true;
+								openSubState(new LoadingState(pages[curPage], pbObject));
 							}
-							else
-							{
-								ChartLoader.netVoices = null;
-								ScriptableState.switchState(new PlayTest());
-							}
-						});
 					}
 				}
 		}

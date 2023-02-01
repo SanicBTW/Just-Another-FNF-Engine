@@ -71,7 +71,7 @@ class Character extends FlxSprite
 
 		curCharacter = character;
 
-		var json:CharacterFile = cast haxe.Json.parse(sys.io.File.getContent(haxe.io.Path.join([Sys.getCwd(), "assets", "characters", curCharacter, '$curCharacter.json'])));
+		var json:CharacterFile = cast haxe.Json.parse(Assets.getText(getCharPath()));
 		frames = Paths.getForcedSparrowAtlas(curCharacter + "/" + json.image.replace("characters/", ""), "characters");
 
 		if (json.scale != 1)

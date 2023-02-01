@@ -42,10 +42,10 @@ class Controls
 	];
 
 	private static var noteActions:StringMap<Array<Null<Int>>> = [
-		"note_left" => [Keyboard.D, Keyboard.LEFT],
-		"note_down" => [Keyboard.F, Keyboard.DOWN],
-		"note_up" => [Keyboard.J, Keyboard.UP],
-		"note_right" => [Keyboard.K, Keyboard.RIGHT],
+		"note_left" => [Keyboard.D, Keyboard.LEFT, Keyboard.Z],
+		"note_down" => [Keyboard.F, Keyboard.DOWN, Keyboard.X],
+		"note_up" => [Keyboard.J, Keyboard.UP, Keyboard.COMMA],
+		"note_right" => [Keyboard.K, Keyboard.RIGHT, Keyboard.PERIOD],
 	];
 
 	public static var keyPressed:Array<Int> = [];
