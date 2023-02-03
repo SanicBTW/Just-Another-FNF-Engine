@@ -43,13 +43,12 @@ class Conductor
 	public static function bindSong(newState:MusicHandler, newSong:Sound, songBPM:Float, ?newVocals:Sound)
 	{
 		boundSong = new AudioStream();
-		boundSong.source = newSong;
+		boundSong.audioSource = newSong;
 		SoundManager.addSound(boundSong);
-		// boundVocals = new AudioStream(); // gotta test this
+		boundVocals = new AudioStream();
 		if (newVocals != null)
 		{
-			boundVocals = new AudioStream();
-			boundVocals.source = newVocals;
+			boundVocals.audioSource = newVocals;
 			SoundManager.addSound(boundVocals);
 		}
 		boundState = newState;
@@ -100,7 +99,7 @@ class Conductor
 
 	public static function updateTimePosition(elapsed:Float)
 	{
-		if (boundSong.playing)
+		if (boundSong.isPlaying)
 		{
 			songPosition += elapsed * 1000;
 
@@ -118,8 +117,8 @@ class Conductor
 
 			if (stepPosition > lastStep)
 			{
-				if ((Math.abs(boundSong.time - songPosition) > comparisonThreshold)
-					|| (boundVocals != null && Math.abs(boundVocals.time - songPosition) > comparisonThreshold))
+				if ((Math.abs(boundSong.playbackTime - songPosition) > comparisonThreshold)
+					|| (boundVocals.audioSource != null && Math.abs(boundVocals.playbackTime - songPosition) > comparisonThreshold))
 					resyncTime();
 
 				boundState.stepHit();
@@ -137,15 +136,15 @@ class Conductor
 
 	public static function resyncTime()
 	{
-		trace('Resyncing song time ${boundSong.time}');
-		if (boundVocals != null)
+		trace('Resyncing song time ${boundSong.playbackTime}');
+		if (boundVocals.audioSource != null)
 			boundVocals.stop();
 
 		boundSong.play();
-		songPosition = boundSong.time;
-		if (boundVocals != null)
+		songPosition = boundSong.playbackTime;
+		if (boundVocals.audioSource != null)
 		{
-			boundVocals.time = songPosition;
+			boundVocals.playbackTime = songPosition;
 			boundVocals.play();
 		}
 		trace('New song time $songPosition');

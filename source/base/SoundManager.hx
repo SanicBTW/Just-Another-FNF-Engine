@@ -1,6 +1,7 @@
 package base;
 
 import flixel.tweens.FlxTween;
+import flixel.util.FlxSignal.FlxTypedSignal;
 import openfl.events.Event;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
@@ -27,9 +28,9 @@ class SoundManager
 		if (globalVolume < 0)
 			globalVolume = 0;
 		for (sound in soundList)
-			sound.volume = globalVolume;
+			sound.audioVolume = globalVolume;
 		if (backgroundMusic != null)
-			backgroundMusic.volume = globalVolume;
+			backgroundMusic.audioVolume = globalVolume;
 		return value;
 	}
 
@@ -62,141 +63,120 @@ class SoundManager
 
 	public static function addSound(sound:AudioStream)
 		soundList.push(sound);
-
-	// uses a custom var to avoid having it cleaned up
-	public static function setBGMusic(asset:String, baseVol:Float, ?loopTime:Float, ?library:String)
-	{
-		backgroundMusic = new AudioStream();
-		backgroundMusic.source = Paths.music(asset, library);
-		backgroundMusic.loop = true;
-		if (loopTime != null)
-			backgroundMusic.loopTime = loopTime;
-		backgroundMusic.play();
-		backgroundMusic.volume = baseVol;
-	}
-
-	public static function fadeInBGMusic(duration:Float = 1, from:Float = 0, to:Float = 1)
-	{
-		FlxTween.num(from, to, duration, null, function(f:Float)
-		{
-			backgroundMusic.volume = f;
-		});
-	}
 }
 
 class AudioStream
 {
-	var sound:Sound;
-	var channel:SoundChannel;
+	// Important shit
+	private var sound:Sound;
+	private var channel:SoundChannel;
 
-	public var playing:Bool = false;
-	@:isVar public var time(get, set):Float = 0;
-	public var volume(default, set):Float = 1;
-	public var length:Float = 0;
-	public var lastTime:Float = 0;
-	public var onComplete:Void->Void;
-	public var source(default, set):Dynamic = null;
-	public var loop:Bool = false;
-	public var loopTime:Float = 0;
+	// Metadata
+	public var audioLength:Float = 0;
+	public var loopAudio:Bool = false;
+	public var onFinish(default, never):FlxTypedSignal<Void->Void> = new FlxTypedSignal<Void->Void>();
+	public var audioSource(default, set):Dynamic = null;
+
+	private var lastTime:Float = 0;
+
+	// public var loopTime:Float = 0;
+	// Playback
+	public var isPlaying:Bool = false;
+	@:isVar public var playbackTime(get, set):Float = 0;
+	public var audioVolume(default, set):Float = 1;
 
 	public function new()
 	{
 		sound = new Sound();
 	}
 
-	public function play()
+	public function play(volume:Float = 1, ?startTime:Float)
 	{
-		if (channel == null && sound != null)
-		{
-			channel = sound.play(lastTime);
-			channel.soundTransform = new SoundTransform(SoundManager.globalVolume);
-			channel.addEventListener(Event.SOUND_COMPLETE, onSoundComplete);
-			playing = true;
-		}
+		if (channel != null)
+			return;
+		if (sound == null)
+			return;
+		if (audioSource == null)
+			return;
+
+		channel = sound.play((startTime != null) ? startTime : lastTime);
+		channel.addEventListener(Event.SOUND_COMPLETE, audioCompleted);
+		isPlaying = true;
+		audioVolume = volume;
 	}
 
 	public function stop()
 	{
-		if (channel != null)
-		{
-			lastTime = channel.position;
-			channel.removeEventListener(Event.SOUND_COMPLETE, onSoundComplete);
-			channel.stop();
-			channel = null;
-			playing = false;
-		}
+		if (channel == null)
+			return;
+
+		lastTime = channel.position;
+		channel.removeEventListener(Event.SOUND_COMPLETE, audioCompleted);
+		channel.stop();
+		channel = null;
+		isPlaying = false;
 	}
 
-	private function onSoundComplete(?_)
+	private function audioCompleted(?_)
 	{
-		if (loop)
-		{
-			time = loopTime;
-			trace("looped!");
-		}
+		if (loopAudio)
+			playbackTime = 0;
 		else
 		{
 			stop();
 			sound = null;
-			if (onComplete != null)
-				onComplete();
+			onFinish.dispatch();
 		}
 	}
 
-	function set_volume(value:Float):Float
-	{
-		if (!playing)
-		{
-			trace("Audio is not playing!");
-			return volume;
-		}
-
-		if (volume > SoundManager.globalVolume)
-			channel.soundTransform = new SoundTransform(SoundManager.globalVolume);
-		else
-			channel.soundTransform = new SoundTransform(value);
-		return value;
-	}
-
-	function get_time():Float
+	private function get_playbackTime():Float
 	{
 		if (channel != null)
 			return channel.position;
 		else
-			return lastTime;
+			return playbackTime;
 	}
 
-	function set_time(value:Float):Float
+	private function set_playbackTime(newTime:Float):Float
 	{
 		stop();
-		lastTime = value;
-		if (lastTime > length)
-			lastTime = 0;
-		play();
-		return lastTime;
+		playbackTime = newTime;
+		lastTime = (lastTime > audioLength ? 0 : newTime);
+		play(audioVolume, newTime);
+		return newTime;
 	}
 
-	function set_source(value:Dynamic):Dynamic
+	private function set_audioVolume(newVolume:Float):Float
 	{
+		if (!isPlaying)
+			return audioVolume;
+
+		audioVolume = (newVolume > SoundManager.globalVolume) ? SoundManager.globalVolume : newVolume;
+		channel.soundTransform = new SoundTransform(audioVolume);
+
+		return audioVolume;
+	}
+
+	private function set_audioSource(newSource:Dynamic):Dynamic
+	{
+		audioSource = newSource;
+
 		if (sound == null)
 			return null;
 
-		if (value is Sound)
-			sound = value;
+		if (newSource is Sound)
+			sound = newSource;
 
-		if (value is String)
+		// netowkr shit
+		if (newSource is String)
 		{
-			var shitString = Std.string(value);
-			if (shitString.contains("assets"))
-				sound = Assets.getSound(value);
-			if (shitString.contains("http://"))
-				sound = new Sound(new URLRequest(value));
+			var sourceString:String = Std.string(newSource);
 		}
 
 		lastTime = 0;
-		length = sound.length;
-		playing = false;
+		audioLength = sound.length;
+		isPlaying = false;
 
-		return value;
+		return audioSource;
 	}
 }

@@ -19,10 +19,6 @@ class Bar extends FlxSprite
 	private var barWidth(default, null):Int;
 	private var barHeight(default, null):Int;
 
-	private var range(default, null):Float = 0;
-	private var max(default, null):Float = 100;
-	private var min(default, null):Float = 0;
-
 	public var value:Float = 0;
 
 	public function new(x:Float = 0, y:Float = 0, width:Int = 100, height:Int = 10, bgColor:FlxColor, fgColor:FlxColor)
@@ -50,7 +46,6 @@ class Bar extends FlxSprite
 		makeGraphic(width, height, FlxColor.TRANSPARENT, true);
 	}
 
-	// use cache disposal
 	override public function destroy()
 	{
 		_bgBarBit = null;
@@ -75,28 +70,8 @@ class Bar extends FlxSprite
 		_fgBarRect.width = barWidth;
 		_fgBarRect.height = barHeight;
 
-		_fgBarRect.width = (((value - min) / range) * barWidth);
+		_fgBarRect.width = (value * barWidth);
 
 		pixels.copyPixels(_fgBarBit, _fgBarRect, _fgBarPoint, null, null, true);
-	}
-
-	public function setRange(max:Float, min:Float)
-	{
-		if (max <= min)
-		{
-			throw "Max cannot be less than or equal to min";
-			return;
-		}
-
-		this.max = max;
-		this.min = min;
-		this.range = max - min;
-
-		if (!Math.isNaN(value))
-		{
-			value = Math.max(min, Math.min(value, max));
-		}
-		else
-			value = min;
 	}
 }

@@ -4,6 +4,7 @@ import base.Alphabet;
 import base.Conductor;
 import base.Controls;
 import base.ScriptableState;
+import base.SoundManager;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -17,8 +18,14 @@ class PauseState extends ScriptableSubState
 {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = ['Resume', 'Reset song', 'Exit'];
+	var menuItems:Array<String> = [
+		'Resume',
+		'Reset song',
+		PlayTest.instance.playerStrums.botPlay ? "Disable botplay" : "Enable botplay",
+		'Exit'
+	];
 	var curSelected:Int = 0;
+	var bgMusic:AudioStream;
 
 	public function new()
 	{
@@ -30,6 +37,11 @@ class PauseState extends ScriptableSubState
 		bg.scrollFactor.set();
 		add(bg);
 
+		bgMusic = new AudioStream();
+		bgMusic.audioSource = Paths.music("tea-time");
+		bgMusic.play(0, FlxG.random.int(0, Std.int(bgMusic.audioLength / 2)));
+		SoundManager.addSound(bgMusic);
+
 		FlxTween.tween(bg, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});
 
 		grpMenuShit = new FlxTypedGroup<Alphabet>();
@@ -40,12 +52,21 @@ class PauseState extends ScriptableSubState
 			var pauseItem:Alphabet = new Alphabet(0, (70 * i) + 30, menuItems[i].toString(), true, false);
 			pauseItem.isMenuItem = true;
 			pauseItem.targetY = i;
+			pauseItem.ID = i;
 			grpMenuShit.add(pauseItem);
 		}
 
 		changeSelection();
 
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+	}
+
+	override public function update(elapsed:Float)
+	{
+		if (bgMusic.audioVolume < 0.5)
+			bgMusic.audioVolume += 0.01 * elapsed;
+
+		super.update(elapsed);
 	}
 
 	override public function onActionPressed(action:String)
@@ -64,10 +85,16 @@ class PauseState extends ScriptableSubState
 					{
 						case "Resume":
 							Controls.setActions(NOTES);
+							bgMusic.stop();
 							close();
+						case 'Enable botplay' | "Disable botplay":
+							PlayTest.instance.playerStrums.botPlay = !PlayTest.instance.playerStrums.botPlay;
+							grpMenuShit.members[2].changeText(PlayTest.instance.playerStrums.botPlay ? "Disable botplay" : "Enable botplay");
 						case 'Reset song':
+							bgMusic.stop();
 							ScriptableState.switchState(new PlayTest());
 						case 'Exit':
+							bgMusic.stop();
 							Conductor.boundSong.stop();
 							Conductor.boundVocals.stop();
 							ChartLoader.netInst = null;

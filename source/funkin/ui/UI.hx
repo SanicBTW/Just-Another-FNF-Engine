@@ -28,7 +28,6 @@ class UI extends FlxSpriteGroup
 		add(accuracyText);
 
 		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
-		timeBar.setRange(100, 0);
 		timeBar.screenCenter();
 		timeBar.y = FlxG.height - 10;
 		timeBar.screenCenter(X);
@@ -55,6 +54,6 @@ class UI extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 		accuracyText.text = 'Accuracy ${Math.floor(Ratings.accuracy * 100) / 100}%';
-		timeBar.value = FlxMath.lerp((Conductor.songPosition / Conductor.boundSong.length) * 100, timeBar.value, (elapsed * 2.4));
+		timeBar.value = FlxMath.lerp((Conductor.songPosition / Conductor.boundSong.audioLength), timeBar.value, 0.95);
 	}
 }

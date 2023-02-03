@@ -128,7 +128,11 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				}
 			}
 
-			if (botPlay || (!strumNote.mustPress && strumNote.wasGoodHit))
+			// goofy
+			if (botPlay
+				&& !strumNote.tooLate
+				&& strumNote.stepTime * Conductor.stepCrochet <= Conductor.songPosition
+				|| (!strumNote.mustPress && strumNote.wasGoodHit))
 				onBotHit.dispatch(strumNote);
 
 			if ((strumNote.y < -strumNote.height || strumNote.y > FlxG.height + strumNote.height)

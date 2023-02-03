@@ -48,7 +48,8 @@ class PlayTest extends MusicBeatState
 	var strumLines:FlxTypedGroup<StrumLine>;
 
 	private var opponentStrums:StrumLine;
-	private var playerStrums:StrumLine;
+
+	public var playerStrums:StrumLine;
 
 	public var downscroll:Bool = false;
 
@@ -69,12 +70,16 @@ class PlayTest extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
+	public static var instance:PlayTest;
+
 	var shad:ChromaticAbberationShader = new ChromaticAbberationShader();
 
 	override function create()
 	{
 		Controls.setActions(NOTES);
 		Ratings.call();
+
+		instance = this;
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -95,6 +100,7 @@ class PlayTest extends MusicBeatState
 		opponentStrums.onBotHit.add(opponentHit);
 		strumLines.add(opponentStrums);
 		playerStrums = new StrumLine((FlxG.width / 2) + separation, 4);
+		playerStrums.onBotHit.add(playerBotHit);
 		strumLines.add(playerStrums);
 		add(strumLines);
 		strumLines.cameras = [camHUD];
@@ -139,6 +145,7 @@ class PlayTest extends MusicBeatState
 
 		super.create();
 
+		Paths.music("tea-time"); // precache the sound lol
 		FadeTransition.nextCamera = camOther;
 	}
 
@@ -212,6 +219,9 @@ class PlayTest extends MusicBeatState
 			openSubState(new PauseState());
 			return;
 		}
+
+		if (playerStrums.botPlay)
+			return;
 
 		var data:Int = -1;
 
@@ -298,16 +308,17 @@ class PlayTest extends MusicBeatState
 			camHUD.zoom += 0.05;
 		}
 
-		if (SONG.notes[Std.int(curStep / 16)].changeBPM)
-		{
-			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
-		}
+		/*
+			if (SONG.notes[Std.int(curStep / 16)].changeBPM)
+			{
+				Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+		}*/
 	}
 
 	private function opponentHit(note:Note)
 	{
 		if (SONG.needsVoices)
-			Conductor.boundVocals.volume = 1;
+			Conductor.boundVocals.audioVolume = 1;
 
 		var time:Float = 0.15;
 		if (note.isSustain && !note.isSustainEnd)
@@ -330,6 +341,12 @@ class PlayTest extends MusicBeatState
 
 		if (!note.isSustain)
 			destroyNote(opponentStrums, note);
+		else
+		{
+			var targetHold:Float = (Conductor.stepCrochet * opponent.singDuration) / 1000;
+			if (opponent.holdTimer + 0.2 > targetHold)
+				opponent.holdTimer = targetHold - 0.2;
+		}
 	}
 
 	private function playerHit(note:Note)
@@ -361,17 +378,50 @@ class PlayTest extends MusicBeatState
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)
-				Conductor.boundVocals.volume = 1;
+				Conductor.boundVocals.audioVolume = 1;
 
 			if (!note.isSustain)
 				destroyNote(playerStrums, note);
 		}
 	}
 
+	// fix
+	private function playerBotHit(note:Note)
+	{
+		if (!note.wasGoodHit)
+		{
+			var time:Float = 0.15;
+			if (note.isSustain && !note.isSustainEnd)
+				time += 0.15;
+			receptorPlayAnim(false, note.noteData, time);
+
+			if (!note.doubleNote)
+			{
+				player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+				player.holdTimer = 0;
+			}
+			else
+				trail(player, note);
+
+			note.wasGoodHit = true;
+			if (SONG.needsVoices)
+				Conductor.boundVocals.audioVolume = 1;
+
+			if (!note.isSustain)
+				destroyNote(playerStrums, note);
+			else
+			{
+				var targetHold:Float = (Conductor.stepCrochet * player.singDuration) / 1000;
+				if (player.holdTimer + 0.2 > targetHold)
+					player.holdTimer = targetHold - 0.2;
+			}
+		}
+	}
+
 	private function playerMissPress(direction:Int = 1)
 	{
 		if (SONG.needsVoices)
-			Conductor.boundVocals.volume = 0;
+			Conductor.boundVocals.audioVolume = 0;
 
 		player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
 
@@ -478,14 +528,14 @@ class PlayTest extends MusicBeatState
 
 		generatedMusic = true;
 
-		Conductor.boundSong.onComplete = function()
+		Conductor.boundSong.onFinish.add(() ->
 		{
 			Conductor.boundSong.stop();
 			Conductor.boundVocals.stop();
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
 			ScriptableState.switchState(new MainState());
-		};
+		});
 		Conductor.boundSong.play();
 		if (SONG.needsVoices)
 			Conductor.boundVocals.play();
@@ -547,7 +597,6 @@ class PlayTest extends MusicBeatState
 		if (!note.isSustain)
 			insert(members.indexOf(char) - 1, daCopy);
 
-		FlxG.log.add(time);
 		if (!note.isSustain)
 			runTween(daCopy, char.singDuration, time);
 	}

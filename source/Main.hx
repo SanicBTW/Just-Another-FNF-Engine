@@ -22,7 +22,7 @@ class Main extends Sprite
 	var gameHeight:Int = 720;
 	var initialClass:Class<FlxState> = Init;
 	var zoom:Float = -1;
-	var framerate:Int = #if !html5 250 #else 60 #end;
+	var framerate:Int = #if !html5 120 #else 60 #end;
 	var skipSplash:Bool = true;
 	var startFullscreen:Bool = false;
 
@@ -77,7 +77,7 @@ class Main extends Sprite
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 
 		// ayooo this looks sicks af bro
-		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
+		// FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 
 		FlxG.fixedTimestep = false;
 		#if !android
