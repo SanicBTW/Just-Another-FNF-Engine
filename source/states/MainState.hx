@@ -95,16 +95,12 @@ class MainState extends ScriptableState
 				}*/
 		}
 
-		Main.debugCounter.text = 'Current page: ${pages[curPage]}';
-
 		return value;
 	}
 
 	override public function create()
 	{
 		Controls.setActions(UI);
-		Paths.clearStoredMemory();
-		Paths.clearUnusedMemory();
 
 		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuSDefault2"));
 		bg.screenCenter();

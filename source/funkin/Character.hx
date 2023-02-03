@@ -1,6 +1,6 @@
 package funkin;
 
-// got lazy so everything from here is just psych shit lol
+// got lazy so everything from here is just psych shit lol, improve, do custom and add flxanimate support
 import base.Conductor;
 import base.SaveData;
 import flixel.FlxSprite;
@@ -32,16 +32,13 @@ typedef AnimArray =
 	var loop:Bool;
 	var indices:Array<Int>;
 	var offsets:Array<Int>;
-	var camera_position:Array<Float>;
 }
 
 class Character extends FlxSprite
 {
-	public var animOffsets:Map<String, Array<Dynamic>>;
-
-	private var cameraPositions:Map<String, FlxPoint>;
-
 	private static final DEFAULT:String = "bf";
+
+	public var animOffsets:Map<String, Array<Dynamic>>;
 
 	public var isPlayer:Bool = false;
 	public var curCharacter:String = DEFAULT;
@@ -65,7 +62,6 @@ class Character extends FlxSprite
 	public function setChar(x:Float, y:Float, character:String = 'bf')
 	{
 		animOffsets = new Map();
-		cameraPositions = new Map();
 		cameraPosition = new FlxPoint(0, 0);
 		characterPosition = new FlxPoint(0, 0);
 
@@ -81,8 +77,7 @@ class Character extends FlxSprite
 		}
 
 		characterPosition.set(json.position[0], json.position[1]);
-		cameraPositions["default"] = new FlxPoint(json.camera_position[0], json.camera_position[1]);
-		cameraPosition = cameraPositions["default"];
+		cameraPosition = new FlxPoint(json.camera_position[0], json.camera_position[1]);
 		singDuration = json.sing_duration;
 		flipX = json.flip_x;
 		if (json.no_antialiasing)
@@ -104,9 +99,6 @@ class Character extends FlxSprite
 
 				if (anim.offsets != null && anim.offsets.length > 1)
 					animOffsets[animAnim] = [anim.offsets[0], anim.offsets[1]];
-
-				if (anim.camera_position != null && anim.camera_position.length > 1)
-					cameraPositions[animAnim] = new FlxPoint(anim.camera_position[0], anim.camera_position[1]);
 			}
 		}
 
@@ -158,11 +150,6 @@ class Character extends FlxSprite
 			offset.set(animOffsets[AnimName][0], animOffsets[AnimName][1]);
 		else
 			offset.set(0, 0);
-
-		if (cameraPositions.exists(AnimName))
-			cameraPosition = cameraPositions[AnimName];
-		else
-			cameraPosition = cameraPositions["default"];
 	}
 
 	private function getCharPath():String

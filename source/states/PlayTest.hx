@@ -12,7 +12,6 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
-import flixel.addons.effects.FlxTrail;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
@@ -74,7 +73,6 @@ class PlayTest extends MusicBeatState
 
 	override function create()
 	{
-		Paths.clearStoredMemory();
 		Controls.setActions(NOTES);
 		Ratings.call();
 
@@ -139,11 +137,8 @@ class PlayTest extends MusicBeatState
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
-		Main.debugCounter.text = 'Alpha 0.0.4';
-
 		super.create();
 
-		Paths.clearUnusedMemory();
 		FadeTransition.nextCamera = camOther;
 	}
 
@@ -324,7 +319,7 @@ class PlayTest extends MusicBeatState
 			opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
 			opponent.holdTimer = 0;
 		}
-		else if (note.doubleNote && !note.isSustain)
+		else
 			trail(opponent, note);
 
 		if (note.doubleNote && note.isSustain && opponent.animation.curAnim.name == "idle")
@@ -361,7 +356,7 @@ class PlayTest extends MusicBeatState
 				player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
 				player.holdTimer = 0;
 			}
-			else if (note.doubleNote && !note.isSustain)
+			else
 				trail(player, note);
 
 			note.wasGoodHit = true;
@@ -534,6 +529,7 @@ class PlayTest extends MusicBeatState
 	// gotta check if this shit is actually lag free - move to character maybe?
 	function trail(char:Character, note:Note):Void
 	{
+		var time:Float = 0;
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
 		var daCopy:FlxSprite = char.clone();
 
@@ -545,9 +541,21 @@ class PlayTest extends MusicBeatState
 
 		daCopy.animation.play(anim, true);
 
-		// (Conductor.stepCrochet * 0.001 * char.singDuration)
-		insert(members.indexOf(char) - 1, daCopy); // LOVE YOU SANCO
-		FlxTween.tween(daCopy, {alpha: 0}, (Conductor.stepCrochet * char.singDuration) / 1000, {
+		if (note.isSustain && !note.isSustainEnd)
+			time += 0.15;
+
+		if (!note.isSustain)
+			insert(members.indexOf(char) - 1, daCopy);
+
+		FlxG.log.add(time);
+		if (!note.isSustain)
+			runTween(daCopy, char.singDuration, time);
+	}
+
+	function runTween(daCopy:FlxSprite, singDuration:Float, delay:Float)
+	{
+		FlxTween.tween(daCopy, {alpha: 0}, (Conductor.stepCrochet * singDuration) / 1000, {
+			startDelay: delay,
 			onComplete: function(_)
 			{
 				daCopy.destroy();

@@ -27,7 +27,8 @@ class UI extends FlxSpriteGroup
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
 		add(accuracyText);
 
-		timeBar = new Bar(0, 0, FlxG.width, 10);
+		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
+		timeBar.setRange(100, 0);
 		timeBar.screenCenter();
 		timeBar.y = FlxG.height - 10;
 		timeBar.screenCenter(X);
