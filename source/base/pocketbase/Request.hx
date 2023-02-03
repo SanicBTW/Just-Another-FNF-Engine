@@ -42,6 +42,20 @@ class Request
 	public static function getSound(collection:String, id:String, file:String, callback:Sound->Void)
 	{
 		var soundURL:String = base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file);
+
+		#if html5
+		if (Cache.setNetworkCache(soundURL) != null)
+		{
+			callback(Cache.setNetworkCache(soundURL));
+			return;
+		}
+
+		Sound.loadFromFile(soundURL).onComplete((sound) ->
+		{
+			Cache.setNetworkCache(soundURL, sound);
+			callback(sound);
+		});
+		#else
 		var sound = new Sound();
 
 		if (Cache.setNetworkCache(soundURL) != null)
@@ -59,5 +73,6 @@ class Request
 			callback(sound);
 		}
 		http.request();
+		#end
 	}
 }
