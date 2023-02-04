@@ -28,19 +28,16 @@ class Bar extends FlxSprite
 		this.barWidth = width;
 		this.barHeight = height;
 
-		Cache.setBitmap("bgBarBitmap", new BitmapData(barWidth, barHeight, true, bgColor));
-		Cache.setBitmap("fgBarBitmap", new BitmapData(barWidth, barHeight, true, fgColor));
-
 		_bgBarRect = new Rectangle();
 		_zeroOffset = new Point();
 
 		_fgBarRect = new Rectangle();
 		_fgBarPoint = new Point();
 
-		_bgBarBit = Cache.setBitmap("bgBarBitmap");
+		_bgBarBit = Cache.setBitmap("bgBarBitmap", new BitmapData(barWidth, barHeight, true, bgColor));
 		_bgBarRect.setTo(0, 0, barWidth, barHeight);
 
-		_fgBarBit = Cache.setBitmap("fgBarBitmap");
+		_fgBarBit = Cache.setBitmap("fgBarBitmap", new BitmapData(barWidth, barHeight, true, fgColor));
 		_fgBarRect.setTo(0, 0, barWidth, barHeight);
 
 		makeGraphic(width, height, FlxColor.TRANSPARENT, true);

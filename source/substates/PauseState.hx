@@ -40,6 +40,7 @@ class PauseState extends ScriptableSubState
 		bgMusic = new AudioStream();
 		bgMusic.audioSource = Paths.music("tea-time");
 		bgMusic.play(0, FlxG.random.int(0, Std.int(bgMusic.audioLength / 2)));
+		bgMusic.loopAudio = true;
 		SoundManager.addSound(bgMusic);
 
 		FlxTween.tween(bg, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});

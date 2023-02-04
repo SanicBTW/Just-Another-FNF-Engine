@@ -6,68 +6,113 @@ import openfl.display.BitmapData;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.text.TextField;
+import openfl.text.TextFieldAutoSize;
 import openfl.text.TextFormat;
 
+// kind of based off flxtext schema but modified to only use one bitmap and reuse it, draws into the pixels of the sprite - i couldnt really like update the graphic cuz i dont want to cache a bunch of shit lol so just gonna mult fieldwitdh by 2 on bitmap
+// todo: improve the width shit
 class TextComponent extends FlxSprite
 {
-	private var _bgBit:BitmapData;
-	private var _bgRect:Rectangle;
+	// Needed for drawing
+	private var _bitmap:BitmapData;
+	private var _drawRect:Rectangle;
 	private var _zeroOffset:Point;
+	private var textField:TextField;
 
-	private var txtField:TextField;
+	private static inline final VERTICAL_GUTTER:Int = 4;
 
-	public var text(default, set):String;
+	// Variables to modify text field
+	public var text(get, set):String;
+	public var fieldWidth(get, set):Float;
+	public var autoSize(get, set):Bool;
 
-	private function set_text(newText:String):String
+	private function get_text():String
+		return (textField != null) ? textField.text : "";
+
+	private function set_text(Text:String):String
 	{
-		if (text == newText)
+		if (text == Text)
 			return text;
 
-		if (txtField == null)
+		if (textField == null)
 			return text;
 
-		text = newText;
-		txtField.text = text;
+		textField.text = Text;
 
-		return text;
+		return Text;
 	}
 
-	public function new(X:Float = 0, Y:Float = 0, Width:Int = 0, Height:Int = 0, Text:String = "", Size:Int = 12, Font:String = "vcr.ttf")
+	private function get_fieldWidth():Float
+		return (textField != null) ? textField.width : 0;
+
+	private function set_fieldWidth(value:Float):Float
 	{
-		super(x, y);
+		if (textField == null)
+			return value;
 
-		this.width = Width;
-		this.height = Height;
+		if (value <= 0)
+		{
+			textField.wordWrap = false;
+			autoSize = true;
+		}
+		else
+		{
+			autoSize = false;
+			textField.wordWrap = true;
+			textField.width = value;
+		}
 
-		Cache.setBitmap("bgTxtBitmap", new BitmapData(Width, Height, true, FlxColor.TRANSPARENT));
+		return value;
+	}
 
-		txtField = new TextField();
-		txtField.selectable = false;
-		txtField.mouseEnabled = false;
-		txtField.multiline = true;
-		txtField.wordWrap = true;
-		txtField.text = Text;
-		txtField.sharpness = 400;
-		txtField.width = Width;
-		txtField.height = Height;
-		txtField.defaultTextFormat = new TextFormat(Paths.font(Font), Size, 0xFFFFFF);
-		txtField.defaultTextFormat.align = CENTER;
+	private function get_autoSize():Bool
+		return (textField != null) ? (textField.autoSize != TextFieldAutoSize.NONE) : false;
 
-		_bgBit = Cache.setBitmap("bgTxtBitmap");
-		_bgRect = new Rectangle(0, 0, Width, Height);
+	private function set_autoSize(value:Bool):Bool
+	{
+		if (textField == null)
+			return value;
+
+		textField.autoSize = value ? TextFieldAutoSize.LEFT : TextFieldAutoSize.NONE;
+		return value;
+	}
+
+	public function new(X:Float = 0, Y:Float = 0, FieldWidth:Float = 0, Text:String = "placeholder", Size:Int = 12, Font:String = "vcr.ttf")
+	{
+		super(X, Y);
+
+		allowCollisions = NONE;
+		moves = false;
+
+		textField = new TextField();
+		textField.selectable = false;
+		textField.mouseEnabled = false;
+		textField.multiline = true;
+		textField.wordWrap = true;
+		textField.embedFonts = true;
+		textField.defaultTextFormat = new TextFormat(Paths.font(Font), Size, 0xFFFFFF);
+		textField.sharpness = 400;
+
+		text = Text;
+		fieldWidth = FieldWidth;
+
+		Cache.setBitmap("txtBitmap", new BitmapData(Std.int(fieldWidth * 2), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT));
+
+		_bitmap = Cache.setBitmap("txtBitmap");
+		_drawRect = new Rectangle(0, 0, fieldWidth * 2, textField.textHeight + VERTICAL_GUTTER);
 		_zeroOffset = new Point();
 
-		makeGraphic(Width, Height, FlxColor.TRANSPARENT, true);
+		makeGraphic(Std.int(_drawRect.width), Std.int(_drawRect.height), FlxColor.TRANSPARENT, true);
 	}
 
 	override public function destroy()
 	{
-		_bgBit = null;
-		Cache.disposeBitmap("bgTxtBitmap");
-		_bgRect = null;
+		_bitmap = null;
+		Cache.disposeBitmap("txtBitmap");
+		_drawRect = null;
 		_zeroOffset = null;
 
-		txtField = null;
+		textField = null;
 
 		super.destroy();
 	}
@@ -76,8 +121,8 @@ class TextComponent extends FlxSprite
 	{
 		super.update(elapsed);
 
-		_bgBit.fillRect(_bgRect, FlxColor.TRANSPARENT);
-		_bgBit.draw(txtField);
-		pixels.copyPixels(_bgBit, _bgRect, _zeroOffset);
+		_bitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
+		_bitmap.draw(textField);
+		pixels.copyPixels(_bitmap, _drawRect, _zeroOffset);
 	}
 }

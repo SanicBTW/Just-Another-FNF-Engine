@@ -576,7 +576,6 @@ class PlayTest extends MusicBeatState
 		super.closeSubState();
 	}
 
-	// gotta check if this shit is actually lag free - move to character maybe?
 	function trail(char:Character, note:Note):Void
 	{
 		var time:Float = 0;

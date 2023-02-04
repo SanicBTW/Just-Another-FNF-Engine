@@ -6,7 +6,6 @@ import base.ui.TextComponent;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
-import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import funkin.Ratings;
@@ -23,15 +22,10 @@ class UI extends FlxSpriteGroup
 	{
 		super();
 
-		accuracyText = new TextComponent(30, (FlxG.height / 2), 100, 100, 'Accuracy 0%', 24);
+		// @:access use to access private fields¿¿
+		accuracyText = new TextComponent(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
 		accuracyText.scrollFactor.set();
 		add(accuracyText);
-		/*
-			accuracyText = new FlxText(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
-			accuracyText.scrollFactor.set();
-			accuracyText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
-			accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
-			add(accuracyText); */
 
 		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
 		timeBar.screenCenter();

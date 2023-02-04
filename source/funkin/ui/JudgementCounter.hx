@@ -1,11 +1,13 @@
 package funkin.ui;
 
 import base.SaveData;
+import base.ui.TextComponent;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import funkin.Ratings;
+import openfl.text.TextFormatAlign;
 
 // fix for non html targets
 class JudgementCounter extends FlxSpriteGroup
@@ -24,7 +26,7 @@ class JudgementCounter extends FlxSpriteGroup
 	private var judgementVar:String;
 
 	private var counterBG:FlxSprite;
-	private var counterText:FlxText;
+	private var counterText:TextComponent;
 	private var counterTxtSize:Int = 24;
 
 	public function new(x:Float, y:Float, judgement:String)
@@ -42,11 +44,10 @@ class JudgementCounter extends FlxSpriteGroup
 		counterBG.antialiasing = antialiasing; // dawg wtf
 		add(counterBG);
 
-		counterText = new FlxText((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
-			judgements.get(judgement)[1], counterTxtSize);
-		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK, CENTER);
+		counterText = new TextComponent((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
+			judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
 		counterText.autoSize = false;
-		counterText.antialiasing = antialiasing; // dawg wtf
+		counterText.color = FlxColor.BLACK;
 		add(counterText);
 	}
 
