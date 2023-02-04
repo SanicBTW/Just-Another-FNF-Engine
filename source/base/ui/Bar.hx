@@ -28,8 +28,8 @@ class Bar extends FlxSprite
 		this.barWidth = width;
 		this.barHeight = height;
 
-		Cache.setBitmap("bgBitmap", new BitmapData(barWidth, barHeight, true, bgColor));
-		Cache.setBitmap("fgBitmap", new BitmapData(barWidth, barHeight, true, fgColor));
+		Cache.setBitmap("bgBarBitmap", new BitmapData(barWidth, barHeight, true, bgColor));
+		Cache.setBitmap("fgBarBitmap", new BitmapData(barWidth, barHeight, true, fgColor));
 
 		_bgBarRect = new Rectangle();
 		_zeroOffset = new Point();
@@ -37,10 +37,10 @@ class Bar extends FlxSprite
 		_fgBarRect = new Rectangle();
 		_fgBarPoint = new Point();
 
-		_bgBarBit = Cache.setBitmap("bgBitmap");
+		_bgBarBit = Cache.setBitmap("bgBarBitmap");
 		_bgBarRect.setTo(0, 0, barWidth, barHeight);
 
-		_fgBarBit = Cache.setBitmap("fgBitmap");
+		_fgBarBit = Cache.setBitmap("fgBarBitmap");
 		_fgBarRect.setTo(0, 0, barWidth, barHeight);
 
 		makeGraphic(width, height, FlxColor.TRANSPARENT, true);
@@ -49,12 +49,12 @@ class Bar extends FlxSprite
 	override public function destroy()
 	{
 		_bgBarBit = null;
-		Cache.disposeBitmap("bgBitmap");
+		Cache.disposeBitmap("bgBarBitmap");
 		_bgBarRect = null;
 		_zeroOffset = null;
 
 		_fgBarBit = null;
-		Cache.disposeBitmap("fgBitmap");
+		Cache.disposeBitmap("fgBarBitmap");
 		_fgBarRect = null;
 		_fgBarRect = null;
 
@@ -63,14 +63,14 @@ class Bar extends FlxSprite
 
 	override public function update(elapsed:Float)
 	{
+		super.update(elapsed);
+
 		// update bg
 		pixels.copyPixels(_bgBarBit, _bgBarRect, _zeroOffset);
 
 		// update fg
-		_fgBarRect.width = barWidth;
-		_fgBarRect.height = barHeight;
-
 		_fgBarRect.width = (value * barWidth);
+		_fgBarRect.height = barHeight;
 
 		pixels.copyPixels(_fgBarBit, _fgBarRect, _fgBarPoint, null, null, true);
 	}
