@@ -11,6 +11,8 @@ import openfl.text.TextField;
 import openfl.text.TextFieldAutoSize;
 import openfl.text.TextFormat;
 
+using flixel.util.FlxColorTransformUtil;
+
 // kind of based off flxtext schema but modified to only use one bitmap and reuse it, draws into the pixels of the sprite - i couldnt really like update the graphic cuz i dont want to cache a bunch of shit lol so just gonna mult fieldwitdh by 2 on bitmap
 // todo: improve the width shit
 class TextComponent extends FlxSprite
@@ -24,6 +26,8 @@ class TextComponent extends FlxSprite
 
 	// Border drawing
 	private var _borderBitmap:BitmapData;
+	private var _borderColorTransform:ColorTransform;
+	private var _hasBorderAlpha:Bool = false;
 
 	// The text
 	private var textField:TextField;
@@ -34,6 +38,8 @@ class TextComponent extends FlxSprite
 	public var text(get, set):String;
 	public var fieldWidth(get, set):Float;
 	public var autoSize(get, set):Bool;
+	public var borderSize:Float = 1;
+	public var borderColor(default, set):FlxColor;
 
 	private function get_text():String
 		return (textField != null) ? textField.text : "";
@@ -86,6 +92,22 @@ class TextComponent extends FlxSprite
 		return value;
 	}
 
+	private function set_borderColor(Color:FlxColor):FlxColor
+	{
+		if (borderColor == Color)
+			return Color;
+
+		if (borderSize <= 0)
+			return Color;
+
+		if (_borderColorTransform == null)
+			_borderColorTransform = new ColorTransform();
+
+		_hasBorderAlpha = Color.alphaFloat < 1;
+		_borderColorTransform.setMultipliers(Color.redFloat, Color.greenFloat, Color.blueFloat, Color.alphaFloat);
+		return borderColor = Color;
+	}
+
 	public function new(X:Float = 0, Y:Float = 0, FieldWidth:Float = 0, Text:String = "placeholder", Size:Int = 12, Font:String = "vcr.ttf")
 	{
 		super(X, Y);
@@ -108,7 +130,7 @@ class TextComponent extends FlxSprite
 		_bitmap = Cache.setBitmap("txtBitmap",
 			new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT));
 		_borderBitmap = Cache.setBitmap("txtBBitmap",
-			new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.BLACK));
+			new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT));
 		_drawRect = new Rectangle(0, 0, fieldWidth * 1.5, textField.textHeight + VERTICAL_GUTTER);
 		_zeroOffset = new Point();
 		_swagMatrix = new Matrix();
@@ -135,23 +157,27 @@ class TextComponent extends FlxSprite
 
 		// Clean buffers
 		_bitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
-		_borderBitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
+		if (_hasBorderAlpha)
+			_borderBitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
 
 		// Restart matrix and set borders
 		_swagMatrix.identity();
-		showBorder(1);
+		showBorder();
+		borderTrans();
 
 		// Draw the text field into the bitmap and copy pixels
 		_bitmap.draw(textField, _swagMatrix);
 		pixels.copyPixels(_bitmap, _drawRect, _zeroOffset);
 	}
 
-	private function showBorder(size:Float)
+	private function showBorder()
 	{
-		var iterations:Int = Std.int(size * 1);
+		var iterations:Int = Std.int(borderSize * 1);
 		if (iterations <= 0)
 			iterations = 1;
-		var delta:Float = size / iterations;
+		var delta:Float = borderSize / iterations;
+
+		applyFormat()
 
 		var curDelta:Float = delta;
 		for (i in 0...iterations)
@@ -170,9 +196,39 @@ class TextComponent extends FlxSprite
 		}
 	}
 
-	public function copyWithOffset(x:Float, y:Float)
+	private function borderTrans()
+	{
+		if (!_hasBorderAlpha)
+			return;
+
+		if (_borderColorTransform == null)
+			_borderColorTransform = new ColorTransform();
+
+		_borderColorTransform.alphaMultiplier = borderColor.alphaFloat;
+		_borderBitmap.colorTransform(_drawRect, _borderColorTransform);
+		_bitmap.draw(_borderBitmap);
+	}
+
+	private function copyWithOffset(x:Float, y:Float)
 	{
 		_swagMatrix.translate(x, y);
 		_borderBitmap.draw(textField, _swagMatrix);
+	}
+
+	private function applyFormat()
+	{
+		copyFormat(textField.defaultTextFormat,)
+	}
+
+	private function copyFormat(from:TextFormat, to:TextFormat, withAlign:Bool = true)
+	{
+		to.font = from.font;
+		to.bold = from.bold;
+		to.italic = from.italic;
+		to.size = from.size;
+		to.color = from.color;
+		to.leading = from.leading;
+		if (withAlign)
+			to.align = from.align;
 	}
 }
