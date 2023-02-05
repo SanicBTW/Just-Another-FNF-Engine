@@ -37,15 +37,18 @@ class JudgementCounter extends FlxSpriteGroup
 		scrollFactor.set();
 		this.judgement = judgement;
 		judgementVar = judgements.get(judgement)[0];
+		setGraphicSize(60, 60);
+		updateHitbox();
 
-		counterBG = new FlxSprite().loadGraphic(Paths.image("judgementCounter"));
+		counterBG = new FlxSprite(0, 0).loadGraphic(Paths.image("judgementCounter"));
 		counterBG.color = judgements.get(judgement)[2];
-		counterBG.setGraphicSize(55, 55);
+		counterBG.setGraphicSize(60, 60);
 		counterBG.antialiasing = antialiasing; // dawg wtf
 		add(counterBG);
 
-		counterText = new TextComponent((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
-			judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
+		counterText = new TextComponent(0, 0, 55, judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
+		counterText.centerOrigin();
+		counterText.setPosition((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7));
 		counterText.autoSize = false;
 		counterText.color = FlxColor.BLACK;
 		add(counterText);

@@ -41,9 +41,9 @@ class UI extends FlxSpriteGroup
 		var curY:Float = (FlxG.height / 2) + 150;
 		for (i in 0...judgementsArray.length)
 		{
-			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 60, curY, judgementsArray[i]);
+			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 65, curY, judgementsArray[i]);
 			add(counter);
-			curY -= 60;
+			curY -= 65;
 		}
 	}
 
