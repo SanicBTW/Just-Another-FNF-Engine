@@ -3,6 +3,8 @@ package base.ui;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
 import openfl.display.BitmapData;
+import openfl.geom.ColorTransform;
+import openfl.geom.Matrix;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.text.TextField;
@@ -17,6 +19,13 @@ class TextComponent extends FlxSprite
 	private var _bitmap:BitmapData;
 	private var _drawRect:Rectangle;
 	private var _zeroOffset:Point;
+
+	private var _swagMatrix:Matrix;
+
+	// Border drawing
+	private var _borderBitmap:BitmapData;
+
+	// The text
 	private var textField:TextField;
 
 	private static inline final VERTICAL_GUTTER:Int = 4;
@@ -96,11 +105,13 @@ class TextComponent extends FlxSprite
 		text = Text;
 		fieldWidth = FieldWidth;
 
-		Cache.setBitmap("txtBitmap", new BitmapData(Std.int(fieldWidth * 2), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT));
-
-		_bitmap = Cache.setBitmap("txtBitmap");
-		_drawRect = new Rectangle(0, 0, fieldWidth * 2, textField.textHeight + VERTICAL_GUTTER);
+		_bitmap = Cache.setBitmap("txtBitmap",
+			new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT));
+		_borderBitmap = Cache.setBitmap("txtBBitmap",
+			new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.BLACK));
+		_drawRect = new Rectangle(0, 0, fieldWidth * 1.5, textField.textHeight + VERTICAL_GUTTER);
 		_zeroOffset = new Point();
+		_swagMatrix = new Matrix();
 
 		makeGraphic(Std.int(_drawRect.width), Std.int(_drawRect.height), FlxColor.TRANSPARENT, true);
 	}
@@ -109,6 +120,7 @@ class TextComponent extends FlxSprite
 	{
 		_bitmap = null;
 		Cache.disposeBitmap("txtBitmap");
+		Cache.disposeBitmap("txtBBitmap");
 		_drawRect = null;
 		_zeroOffset = null;
 
@@ -121,8 +133,46 @@ class TextComponent extends FlxSprite
 	{
 		super.update(elapsed);
 
+		// Clean buffers
 		_bitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
-		_bitmap.draw(textField);
+		_borderBitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
+
+		// Restart matrix and set borders
+		_swagMatrix.identity();
+		showBorder(1);
+
+		// Draw the text field into the bitmap and copy pixels
+		_bitmap.draw(textField, _swagMatrix);
 		pixels.copyPixels(_bitmap, _drawRect, _zeroOffset);
+	}
+
+	private function showBorder(size:Float)
+	{
+		var iterations:Int = Std.int(size * 1);
+		if (iterations <= 0)
+			iterations = 1;
+		var delta:Float = size / iterations;
+
+		var curDelta:Float = delta;
+		for (i in 0...iterations)
+		{
+			copyWithOffset(-curDelta, -curDelta);
+			copyWithOffset(curDelta, 0);
+			copyWithOffset(curDelta, 0);
+			copyWithOffset(0, curDelta);
+			copyWithOffset(0, curDelta);
+			copyWithOffset(-curDelta, 0);
+			copyWithOffset(-curDelta, 0);
+			copyWithOffset(0, -curDelta);
+
+			_swagMatrix.translate(curDelta, 0);
+			curDelta += delta;
+		}
+	}
+
+	public function copyWithOffset(x:Float, y:Float)
+	{
+		_swagMatrix.translate(x, y);
+		_borderBitmap.draw(textField, _swagMatrix);
 	}
 }

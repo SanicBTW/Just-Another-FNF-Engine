@@ -27,7 +27,7 @@ class MemoryCounter extends TextField
 		selectable = false;
 		mouseEnabled = false;
 		defaultTextFormat = new TextFormat("_sans", 12, 0xFFFFFF);
-		text = "Memory: ";
+		text = "";
 
 		#if flash
 		addEventListener(Event.ENTER_FRAME, function(e)
@@ -48,7 +48,7 @@ class MemoryCounter extends TextField
 		if (mem > memoryPeak)
 			memoryPeak = mem;
 
-		text = "Memory: " + getInterval(mem) + "\nMemory peak: " + getInterval(memoryPeak);
+		text = getInterval(mem) + " / " + getInterval(memoryPeak);
 	}
 
 	private static function getInterval(size:Float)
