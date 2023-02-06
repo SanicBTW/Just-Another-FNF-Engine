@@ -11,8 +11,6 @@ import openfl.text.TextField;
 import openfl.text.TextFieldAutoSize;
 import openfl.text.TextFormat;
 
-using flixel.util.FlxColorTransformUtil;
-
 // kind of based off flxtext schema but modified to only use one bitmap and reuse it, draws into the pixels of the sprite - i couldnt really like update the graphic cuz i dont want to cache a bunch of shit lol so just gonna mult fieldwitdh by 2 on bitmap
 // todo: improve the width shit
 // some stuff is literally straight up copied from flx text my bad
@@ -22,6 +20,7 @@ class TextComponent extends FlxSprite
 	private var _bitmap:BitmapData;
 	private var _drawRect:Rectangle;
 	private var _zeroOffset:Point;
+	private var _regen:Bool = true;
 
 	private var _swagMatrix:Matrix;
 
@@ -41,7 +40,7 @@ class TextComponent extends FlxSprite
 	public var text(get, set):String;
 	public var fieldWidth(get, set):Float;
 	public var autoSize(get, set):Bool;
-	public var borderSize:Float = 1;
+	public var borderSize(default, set):Float = 1;
 	public var borderColor(default, set):FlxColor;
 
 	private function get_text():String
@@ -49,13 +48,12 @@ class TextComponent extends FlxSprite
 
 	private function set_text(Text:String):String
 	{
-		if (text == Text)
+		if (text == Text || textField == null)
 			return text;
 
-		if (textField == null)
-			return text;
-
+		var old:String = textField.text;
 		textField.text = Text;
+		_regen = (textField.text != old) || _regen;
 
 		return Text;
 	}
@@ -80,6 +78,7 @@ class TextComponent extends FlxSprite
 			textField.width = value;
 		}
 
+		_regen = true;
 		return value;
 	}
 
@@ -92,20 +91,28 @@ class TextComponent extends FlxSprite
 			return value;
 
 		textField.autoSize = value ? TextFieldAutoSize.LEFT : TextFieldAutoSize.NONE;
+		_regen = true;
 		return value;
+	}
+
+	private function set_borderSize(Value:Float):Float
+	{
+		if (Value == borderSize)
+			return Value;
+
+		_regen = true;
+		return borderSize = Value;
 	}
 
 	private function set_borderColor(Color:FlxColor):FlxColor
 	{
-		if (borderColor == Color)
-			return Color;
-
-		if (borderSize <= 0)
+		if (borderColor == Color || borderSize <= 0)
 			return Color;
 
 		if (_borderColorTransform == null)
 			_borderColorTransform = new ColorTransform();
 
+		_regen = true;
 		_hasBorderAlpha = Color.alphaFloat < 1;
 		return borderColor = Color;
 	}
@@ -157,8 +164,23 @@ class TextComponent extends FlxSprite
 		super.destroy();
 	}
 
+	override public function drawFrame(Force:Bool = false)
+	{
+		_regen = _regen || Force;
+		super.drawFrame(_regen);
+	}
+
 	override public function draw()
 	{
+		regen();
+		super.draw();
+	}
+
+	private function regen()
+	{
+		if (textField == null || !_regen)
+			return;
+
 		// Clean buffers
 		_bitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
 		if (_hasBorderAlpha)
@@ -176,7 +198,8 @@ class TextComponent extends FlxSprite
 		// Draw the text field into the bitmap and copy pixels
 		_bitmap.draw(textField, _swagMatrix);
 		pixels.copyPixels(_bitmap, _drawRect, _zeroOffset);
-		super.draw();
+
+		_regen = false;
 	}
 
 	private function showBorder()
