@@ -2,11 +2,14 @@ package;
 
 import base.SaveData;
 import base.ScriptableState;
-import base.pocketbase.Request;
+import base.ui.RoundedSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import funkin.ChartLoader;
 import funkin.Prompt;
+#if !fast_start
+import base.pocketbase.Request;
+import funkin.ChartLoader;
+#end
 
 // shitiest init state lmao
 class Init extends ScriptableState
@@ -27,6 +30,10 @@ class Init extends ScriptableState
 			'You will be redirected in ${timeLeft}s');
 		shitPrompt.screenCenter();
 		add(shitPrompt);
+
+		var shit:RoundedSprite = new RoundedSprite(0, 0, 250, 250, flixel.util.FlxColor.LIME);
+		shit.screenCenter();
+		add(shit);
 
 		super.create();
 	}
