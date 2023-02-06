@@ -82,6 +82,12 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 		var downscrollMultiplier:Int = (!downScroll ? 1 : -1) * FlxMath.signOf(lineSpeed);
 
+		for (receptor in receptors)
+		{
+			if (botPlay && receptor.animation.finished)
+				receptor.playAnim('static');
+		}
+
 		allNotes.forEachAlive(function(strumNote:Note)
 		{
 			if (strumNote.tooLate)
@@ -128,11 +134,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				}
 			}
 
-			// goofy
-			if (botPlay
-				&& !strumNote.tooLate
-				&& strumNote.stepTime * Conductor.stepCrochet <= Conductor.songPosition
-				|| (!strumNote.mustPress && strumNote.wasGoodHit))
+			if (botPlay && !strumNote.tooLate && strumNote.stepTime * Conductor.stepCrochet <= Conductor.songPosition)
 				onBotHit.dispatch(strumNote);
 
 			if ((strumNote.y < -strumNote.height || strumNote.y > FlxG.height + strumNote.height)

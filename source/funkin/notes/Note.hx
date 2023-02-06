@@ -137,12 +137,7 @@ class Note extends FlxSprite
 				tooLate = true;
 		}
 		else
-		{
 			canBeHit = false;
-
-			if (stepTime * Conductor.stepCrochet <= Conductor.songPosition)
-				wasGoodHit = true;
-		}
 
 		if (tooLate && !wasGoodHit)
 		{

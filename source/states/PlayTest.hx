@@ -39,7 +39,8 @@ using StringTools;
 
 class PlayTest extends MusicBeatState
 {
-	// public static var stage:Stage;
+	public static var stage:Stage;
+
 	public var camHUD:FlxCamera;
 	public var camHUD2:FlxCamera;
 	public var camGame:FlxCamera;
@@ -97,6 +98,7 @@ class PlayTest extends MusicBeatState
 		strumLines = new FlxTypedGroup<StrumLine>();
 		var separation:Float = FlxG.width / 4;
 		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
+		opponentStrums.botPlay = true;
 		opponentStrums.onBotHit.add(opponentHit);
 		strumLines.add(opponentStrums);
 		playerStrums = new StrumLine((FlxG.width / 2) + separation, 4);
@@ -105,9 +107,8 @@ class PlayTest extends MusicBeatState
 		add(strumLines);
 		strumLines.cameras = [camHUD];
 
-		/*
-			stage = new Stage("stage");
-			add(stage); */
+		stage = new Stage("stage");
+		add(stage);
 
 		player = new Character(750, 100, true, "bf");
 		add(player);
@@ -138,7 +139,7 @@ class PlayTest extends MusicBeatState
 		add(camFollowPos);
 
 		FlxG.camera.follow(camFollowPos, LOCKON, 1);
-		FlxG.camera.zoom = /*stage.cameraZoom*/ 0.7;
+		FlxG.camera.zoom = stage.cameraZoom;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -158,7 +159,7 @@ class PlayTest extends MusicBeatState
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
-		FlxG.camera.zoom = FlxMath.lerp(/*stage.cameraZoom*/ 0.7, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
+		FlxG.camera.zoom = FlxMath.lerp(stage.cameraZoom, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
@@ -315,37 +316,42 @@ class PlayTest extends MusicBeatState
 		}*/
 	}
 
+	// private function handlePlayerHit(note:Note)
+
 	private function opponentHit(note:Note)
 	{
-		if (SONG.needsVoices)
-			Conductor.boundVocals.audioVolume = 1;
-
-		var time:Float = 0.15;
-		if (note.isSustain && !note.isSustainEnd)
-			time += 0.15;
-		receptorPlayAnim(true, note.noteData, time);
-
-		if (!note.doubleNote)
+		if (!note.wasGoodHit)
 		{
-			opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-			opponent.holdTimer = 0;
-		}
-		else
-			trail(opponent, note);
+			getReceptor(opponentStrums, note.noteData).playAnim('confirm');
+			if (note.isSustain && note.isSustainEnd)
+				getReceptor(opponentStrums, note.noteData).playAnim('static');
 
-		if (note.doubleNote && note.isSustain && opponent.animation.curAnim.name == "idle")
-		{
-			opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-			opponent.holdTimer = 0;
-		}
+			if (!note.doubleNote)
+			{
+				opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+				opponent.holdTimer = 0;
+			}
+			else
+				trail(opponent, note);
 
-		if (!note.isSustain)
-			destroyNote(opponentStrums, note);
-		else
-		{
-			var targetHold:Float = (Conductor.stepCrochet * opponent.singDuration) / 1000;
-			if (opponent.holdTimer + 0.2 > targetHold)
-				opponent.holdTimer = targetHold - 0.2;
+			if (note.doubleNote && note.isSustain && opponent.animation.curAnim.name == "idle")
+			{
+				opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+				opponent.holdTimer = 0;
+			}
+
+			note.wasGoodHit = true;
+			if (SONG.needsVoices)
+				Conductor.boundVocals.audioVolume = 1;
+
+			if (!note.isSustain)
+				destroyNote(opponentStrums, note);
+			else
+			{
+				var targetHold:Float = (Conductor.stepCrochet * opponent.singDuration) / 1000;
+				if (opponent.holdTimer + 0.2 > targetHold)
+					opponent.holdTimer = targetHold - 0.2;
+			}
 		}
 	}
 
@@ -385,15 +391,13 @@ class PlayTest extends MusicBeatState
 		}
 	}
 
-	// fix
 	private function playerBotHit(note:Note)
 	{
 		if (!note.wasGoodHit)
 		{
-			var time:Float = 0.15;
-			if (note.isSustain && !note.isSustainEnd)
-				time += 0.15;
-			receptorPlayAnim(false, note.noteData, time);
+			getReceptor(playerStrums, note.noteData).playAnim('confirm');
+			if (note.isSustain && note.isSustainEnd)
+				getReceptor(playerStrums, note.noteData).playAnim('static');
 
 			if (!note.doubleNote)
 			{
