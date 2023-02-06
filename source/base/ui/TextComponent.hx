@@ -15,6 +15,7 @@ using flixel.util.FlxColorTransformUtil;
 
 // kind of based off flxtext schema but modified to only use one bitmap and reuse it, draws into the pixels of the sprite - i couldnt really like update the graphic cuz i dont want to cache a bunch of shit lol so just gonna mult fieldwitdh by 2 on bitmap
 // todo: improve the width shit
+// some stuff is literally straight up copied from flx text my bad
 class TextComponent extends FlxSprite
 {
 	// Needed for drawing
@@ -31,6 +32,8 @@ class TextComponent extends FlxSprite
 
 	// The text
 	private var textField:TextField;
+	private var _defaultFormat:TextFormat;
+	private var _formatAdjusted:TextFormat;
 
 	private static inline final VERTICAL_GUTTER:Int = 4;
 
@@ -104,7 +107,6 @@ class TextComponent extends FlxSprite
 			_borderColorTransform = new ColorTransform();
 
 		_hasBorderAlpha = Color.alphaFloat < 1;
-		_borderColorTransform.setMultipliers(Color.redFloat, Color.greenFloat, Color.blueFloat, Color.alphaFloat);
 		return borderColor = Color;
 	}
 
@@ -121,7 +123,9 @@ class TextComponent extends FlxSprite
 		textField.multiline = true;
 		textField.wordWrap = true;
 		textField.embedFonts = true;
-		textField.defaultTextFormat = new TextFormat(Paths.font(Font), Size, 0xFFFFFF);
+		_defaultFormat = new TextFormat(Paths.font(Font), Size, 0xFFFFFF);
+		textField.defaultTextFormat = _defaultFormat;
+		_formatAdjusted = new TextFormat();
 		textField.sharpness = 400;
 
 		text = Text;
@@ -144,6 +148,8 @@ class TextComponent extends FlxSprite
 		Cache.disposeBitmap("txtBitmap");
 		Cache.disposeBitmap("txtBBitmap");
 		_drawRect = null;
+		_defaultFormat = null;
+		_formatAdjusted = null;
 		_zeroOffset = null;
 
 		textField = null;
@@ -151,23 +157,26 @@ class TextComponent extends FlxSprite
 		super.destroy();
 	}
 
-	override public function update(elapsed:Float)
+	override public function draw()
 	{
-		super.update(elapsed);
-
 		// Clean buffers
 		_bitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
 		if (_hasBorderAlpha)
 			_borderBitmap.fillRect(_drawRect, FlxColor.TRANSPARENT);
 
-		// Restart matrix and set borders
+		// Set necessary stuff
+		copyFormat(_defaultFormat, _formatAdjusted);
+
 		_swagMatrix.identity();
+
 		showBorder();
 		borderTrans();
+		applyFormat(_formatAdjusted, false);
 
 		// Draw the text field into the bitmap and copy pixels
 		_bitmap.draw(textField, _swagMatrix);
 		pixels.copyPixels(_bitmap, _drawRect, _zeroOffset);
+		super.draw();
 	}
 
 	private function showBorder()
@@ -177,7 +186,7 @@ class TextComponent extends FlxSprite
 			iterations = 1;
 		var delta:Float = borderSize / iterations;
 
-		applyFormat()
+		applyFormat(_formatAdjusted, true);
 
 		var curDelta:Float = delta;
 		for (i in 0...iterations)
@@ -211,13 +220,16 @@ class TextComponent extends FlxSprite
 
 	private function copyWithOffset(x:Float, y:Float)
 	{
+		var graphic:BitmapData = _hasBorderAlpha ? _borderBitmap : _bitmap;
 		_swagMatrix.translate(x, y);
-		_borderBitmap.draw(textField, _swagMatrix);
+		graphic.draw(textField, _swagMatrix);
 	}
 
-	private function applyFormat()
+	private function applyFormat(FormatAdjusted:TextFormat, UseBorderColor:Bool = false)
 	{
-		copyFormat(textField.defaultTextFormat,)
+		copyFormat(_defaultFormat, FormatAdjusted, false);
+		FormatAdjusted.color = UseBorderColor ? borderColor.to24Bit() : _defaultFormat.color;
+		textField.setTextFormat(FormatAdjusted);
 	}
 
 	private function copyFormat(from:TextFormat, to:TextFormat, withAlign:Bool = true)

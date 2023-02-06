@@ -50,6 +50,7 @@ class JudgementCounter extends FlxSpriteGroup
 		counterText.centerOrigin();
 		counterText.setPosition((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7));
 		counterText.autoSize = false;
+		counterText.borderSize = 0;
 		counterText.color = FlxColor.BLACK;
 		add(counterText);
 	}
