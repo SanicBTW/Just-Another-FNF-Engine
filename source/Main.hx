@@ -6,6 +6,7 @@ import base.display.*;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
+import flixel.addons.transition.FlxTransitionableState;
 import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode;
 import openfl.Lib;
@@ -71,6 +72,7 @@ class Main extends Sprite
 		// I Love sucking cocks
 		FlxGraphic.defaultPersist = true;
 		Controls.init();
+		FlxTransitionableState.skipNextTransIn = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
 
 		Lib.current.stage.align = TOP_LEFT;

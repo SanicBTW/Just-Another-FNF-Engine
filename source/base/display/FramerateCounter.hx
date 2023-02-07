@@ -1,10 +1,10 @@
 package base.display;
 
-import openfl.events.Event;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 #if flash
 import openfl.Lib;
+import openfl.events.Event;
 #end
 
 #if !openfl_debug
