@@ -10,7 +10,7 @@ using StringTools;
 
 class Request
 {
-	public static final base:String = #if html5 "https://pb.sancopublic.tk/api/" #else "http://sancopublic.ddns.net:5430/api/" #end; // im chill like that - its probably unnecessary actually
+	public static final base:String = "https://pb.sancopublic.tk/api/";
 	public static final recordsExt:String = "collections/:col/records";
 	public static final filesExt:String = "files/:col/:id/:file";
 
