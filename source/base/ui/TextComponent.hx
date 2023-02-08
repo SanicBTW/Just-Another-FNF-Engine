@@ -129,11 +129,10 @@ class TextComponent extends FlxSprite
 		textField.mouseEnabled = false;
 		textField.multiline = true;
 		textField.wordWrap = true;
-		textField.embedFonts = true;
 		_defaultFormat = new TextFormat(Paths.font(Font), Size, 0xFFFFFF);
 		textField.defaultTextFormat = _defaultFormat;
 		_formatAdjusted = new TextFormat();
-		textField.sharpness = 400;
+		textField.sharpness = 100;
 
 		text = Text;
 		fieldWidth = FieldWidth;

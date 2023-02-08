@@ -1,12 +1,8 @@
 package;
 
-import base.SoundManager;
-import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.Assets;
-import openfl.display.BitmapData;
-import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
 
 using StringTools;
@@ -64,7 +60,7 @@ class Paths
 	}
 
 	public static inline function font(key:String)
-		return getPath('fonts/$key');
+		return 'assets/fonts/$key';
 
 	public static inline function music(key:String, ?library:String):Sound
 		return Cache.getSound(getPath('music/$key.ogg', library));

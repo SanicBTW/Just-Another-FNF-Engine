@@ -22,7 +22,7 @@ class Init extends ScriptableState
 	private var sineLoops:Int = 0;
 	private var iconSine:Float;
 
-	private var shitPrompt:Prompt;
+	private var rounded:RoundedSprite;
 	private var shitTimer:Timer;
 
 	override function create()
@@ -42,43 +42,35 @@ class Init extends ScriptableState
 		icon.screenCenter();
 		add(icon);
 
-		shitPrompt = new Prompt("Hey there!", "This engine is in a really early state and might be unstable\nPlease report any issue you find",
-			'You will be redirected in 5s');
-		shitPrompt.screenCenter();
-		shitPrompt.alpha = 0;
-		add(shitPrompt);
+		rounded = new RoundedSprite(0, 0, FlxG.width - 150, FlxG.height - 150, FlxColor.GRAY);
+		rounded.screenCenter();
+		rounded.alpha = 0;
+		rounded.scale.y = 0;
+		add(rounded);
 
 		shitTimer = new Timer(5, function()
 		{
 			icon.alpha = 0;
 			icon = null;
 			FlxTween.tween(bbg, {alpha: 0}, 1.2);
-			FlxTween.tween(shitPrompt, {alpha: 1}, 0.8, {
+			FlxTween.tween(rounded.scale, {y: 1}, 0.9, {
+				ease: FlxEase.quartInOut,
+				startDelay: 1.2
+			});
+			FlxTween.tween(rounded, {alpha: 0.8}, 0.8, {
 				ease: FlxEase.quartInOut,
 				startDelay: 1.2,
 				onComplete: function(_)
 				{
 					shitTimer.restart(5, function()
 					{
-						#if !fast_start
-						ScriptableState.switchState(new states.MainState());
-						#else
-						Request.getFile("funkin", "yixzwztgjxfsmj1", "double_kill_hard_OfVOJgFZJQ.json", function(chart)
-						{
-							ChartLoader.netChart = chart;
-
-							Request.getSound("funkin", "yixzwztgjxfsmj1", "inst_zUVNG1UAQT.ogg", function(sound)
+						FlxTween.tween(rounded.scale, {y: 0}, 0.8, {
+							ease: FlxEase.quartInOut,
+							onComplete: function(_)
 							{
-								ChartLoader.netInst = sound;
-							});
-
-							Request.getSound("funkin", "yixzwztgjxfsmj1", "voices_HrnHFmsQZ0.ogg", function(sound)
-							{
-								ChartLoader.netVoices = sound;
-								ScriptableState.switchState(new states.PlayTest());
-							});
+								end();
+							}
 						});
-						#end
 					});
 				}
 			});
@@ -87,7 +79,7 @@ class Init extends ScriptableState
 			if (icon != null)
 			{
 				iconSine += 150 * elapsed;
-				icon.alpha = 0.8 * Math.sin((Math.PI * iconSine) / 150);
+				icon.alpha = 0.7 * Math.sin((Math.PI * iconSine) / 150);
 			}
 		});
 		add(shitTimer);
@@ -99,11 +91,35 @@ class Init extends ScriptableState
 
 	override function update(elapsed:Float)
 	{
-		if (icon == null && shitPrompt.alpha == 1)
-		{
-			shitPrompt.footer.text = 'You will be redirected in ${shitTimer.timeLeft}s';
-		}
+		/*
+			if (icon == null && shitPrompt.alpha == 1)
+			{
+				shitPrompt.footer.text = 'You will be redirected in ${shitTimer.timeLeft}s';
+		}*/
 
 		super.update(elapsed);
+	}
+
+	function end()
+	{
+		#if !fast_start
+		ScriptableState.switchState(new states.MainState());
+		#else
+		Request.getFile("funkin", "yixzwztgjxfsmj1", "double_kill_hard_OfVOJgFZJQ.json", function(chart)
+		{
+			ChartLoader.netChart = chart;
+
+			Request.getSound("funkin", "yixzwztgjxfsmj1", "inst_zUVNG1UAQT.ogg", function(sound)
+			{
+				ChartLoader.netInst = sound;
+			});
+
+			Request.getSound("funkin", "yixzwztgjxfsmj1", "voices_HrnHFmsQZ0.ogg", function(sound)
+			{
+				ChartLoader.netVoices = sound;
+				ScriptableState.switchState(new states.PlayTest());
+			});
+		});
+		#end
 	}
 }
