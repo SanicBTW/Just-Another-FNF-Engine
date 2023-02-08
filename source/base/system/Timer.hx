@@ -2,50 +2,57 @@ package base.system;
 
 import flixel.FlxBasic;
 
-// what
 class Timer extends FlxBasic
 {
-	private var hold:Float = 0;
+	private var waitTime:Float = 0;
+	private var timerStopped:Bool = false;
 
-	public var left:Int = 0;
+	public var timeLeft:Int = 0;
 
-	private var finish:Void->Void;
-	private var stopped:Bool = false;
+	private var onFinish:Void->Void;
+	private var onUpdate:Float->Void;
 
-	public function new(time:Int, finishCallback:Void->Void)
+	public function new(time:Int, onFinish:Void->Void, ?onUpdate:Float->Void)
 	{
 		super();
-		this.left = time;
-		this.finish = finishCallback;
+		timeLeft = time;
+		this.onFinish = onFinish;
+		if (onUpdate != null)
+			this.onUpdate = onUpdate;
 	}
 
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		if (stopped)
+		if (timerStopped)
 			return;
 
-		hold += elapsed;
-		if (hold >= 1)
+		waitTime += elapsed;
+		if (waitTime >= 1)
 		{
-			hold = 0;
-			left--;
+			waitTime = 0;
+			timeLeft--;
 		}
 
-		if (left <= 0)
+		if (onUpdate != null)
+			onUpdate(elapsed);
+
+		if (timeLeft <= 0)
 		{
-			stopped = true;
-			finish();
+			timerStopped = true;
+			onFinish();
 		}
 	}
 
-	public function restart(newTime:Int, ?newFinishCallback:Void->Void)
+	public function restart(newTime:Int, ?newFinishCallback:Void->Void, ?newUpdateCallback:Float->Void)
 	{
-		this.left = newTime;
+		timeLeft = newTime;
 		if (newFinishCallback != null)
-			this.finish = newFinishCallback;
-		hold = 0;
-		stopped = false;
+			onFinish = newFinishCallback;
+		if (newUpdateCallback != null)
+			onUpdate = newUpdateCallback;
+		waitTime = 0;
+		timerStopped = false;
 	}
 }
