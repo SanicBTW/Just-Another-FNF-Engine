@@ -1,15 +1,17 @@
 package funkin.ui;
 
 import base.SaveData;
-import base.ui.TextComponent;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
-import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import funkin.Ratings;
 import openfl.text.TextFormatAlign;
+#if use_flx_text
+import flixel.text.FlxText;
+#else
+import base.ui.TextComponent;
+#end
 
-// fix for non html targets
 class JudgementCounter extends FlxSpriteGroup
 {
 	// var name, counter name, color
@@ -26,7 +28,11 @@ class JudgementCounter extends FlxSpriteGroup
 	private var judgementVar:String;
 
 	private var counterBG:FlxSprite;
+	#if use_flx_text
+	private var counterText:FlxText;
+	#else
 	private var counterText:TextComponent;
+	#end
 	private var counterTxtSize:Int = 24;
 
 	public function new(x:Float, y:Float, judgement:String)
@@ -46,12 +52,19 @@ class JudgementCounter extends FlxSpriteGroup
 		counterBG.antialiasing = antialiasing; // dawg wtf
 		add(counterBG);
 
+		#if use_flx_text
+		counterText = new FlxText((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
+			judgements.get(judgement)[1], counterTxtSize);
+		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK);
+		counterText.autoSize = false;
+		#else
 		counterText = new TextComponent(0, 0, 55, judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
 		counterText.centerOrigin();
 		counterText.setPosition((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7));
 		counterText.autoSize = false;
 		counterText.borderSize = 0;
 		counterText.color = FlxColor.BLACK;
+		#end
 		add(counterText);
 	}
 

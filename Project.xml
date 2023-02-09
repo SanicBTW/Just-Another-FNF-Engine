@@ -55,6 +55,10 @@
 	<!-- _________________________________ Custom _______________________________ -->
 
 	<define name="FS_ACCESS" if="windows" />
+
+	<!--<define name="fast_start"/>--> <!-- uncomment this to play double kill directly -->
+	<!--<define name="use_flx_text"/>--> <!-- uncomment this to use flx text instead of the built in text rendering -->
+
 	<icon path="icons/icon8.png" size='8'/>
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>
