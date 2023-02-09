@@ -29,6 +29,8 @@ class UI extends FlxSpriteGroup
 	{
 		super();
 
+		new UISkin("default");
+
 		#if use_flx_text
 		accuracyText = new FlxText(30, (FlxG.height / 2), 0, "Accuracy 0%", 24);
 		accuracyText.scrollFactor.set();

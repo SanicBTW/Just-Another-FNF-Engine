@@ -5,7 +5,6 @@ import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import haxe.DynamicAccess;
 import haxe.Json;
-import haxe.iterators.DynamicAccessIterator;
 import openfl.Assets;
 
 using StringTools;
