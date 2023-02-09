@@ -1,12 +1,15 @@
 package base.pocketbase;
 
 import haxe.Http;
-import haxe.Json;
-import haxe.io.Bytes;
 import openfl.media.Sound;
-import openfl.net.URLRequest;
 
 using StringTools;
+
+#if !html5
+import haxe.Json;
+import haxe.io.Bytes;
+import openfl.net.URLRequest;
+#end
 
 class Request
 {

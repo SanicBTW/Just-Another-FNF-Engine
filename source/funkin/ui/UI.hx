@@ -15,14 +15,12 @@ import funkin.ui.JudgementCounter;
 class UI extends FlxSpriteGroup
 {
 	private var accuracyText:TextComponent;
-	// private var accuracyText:FlxText;
 	private var timeBar:Bar;
 
 	public function new()
 	{
 		super();
 
-		// @:access use to access private fields¿¿
 		accuracyText = new TextComponent(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
 		accuracyText.scrollFactor.set();
 		accuracyText.borderColor = FlxColor.BLACK;

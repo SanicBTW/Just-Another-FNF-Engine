@@ -2,6 +2,7 @@ package base.ui;
 
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
+import openfl.Assets;
 import openfl.display.BitmapData;
 import openfl.geom.ColorTransform;
 import openfl.geom.Matrix;
@@ -10,6 +11,7 @@ import openfl.geom.Rectangle;
 import openfl.text.TextField;
 import openfl.text.TextFieldAutoSize;
 import openfl.text.TextFormat;
+import openfl.utils.AssetType;
 
 // kind of based off flxtext schema but modified to only use one bitmap and reuse it, draws into the pixels of the sprite - i couldnt really like update the graphic cuz i dont want to cache a bunch of shit lol so just gonna mult fieldwitdh by 2 on bitmap
 // todo: improve the width shit
@@ -33,6 +35,7 @@ class TextComponent extends FlxSprite
 	private var textField:TextField;
 	private var _defaultFormat:TextFormat;
 	private var _formatAdjusted:TextFormat;
+	private var _font:String;
 
 	private static inline final VERTICAL_GUTTER:Int = 4;
 
@@ -42,6 +45,7 @@ class TextComponent extends FlxSprite
 	public var autoSize(get, set):Bool;
 	public var borderSize(default, set):Float = 1;
 	public var borderColor(default, set):FlxColor;
+	public var font(get, set):String;
 
 	private function get_text():String
 		return (textField != null) ? textField.text : "";
@@ -117,6 +121,24 @@ class TextComponent extends FlxSprite
 		return borderColor = Color;
 	}
 
+	private function get_font():String
+		return _font;
+
+	private function set_font(Font:String):String
+	{
+		if (Font == null)
+			return Font;
+
+		textField.embedFonts = true;
+		var newFontName:String = Font;
+		if (Assets.exists(Font, AssetType.FONT))
+			newFontName = Assets.getFont(Font).fontName;
+		_defaultFormat.font = newFontName;
+
+		updateFormat();
+		return _font = _defaultFormat.font;
+	}
+
 	public function new(X:Float = 0, Y:Float = 0, FieldWidth:Float = 0, Text:String = "placeholder", Size:Int = 12, Font:String = "vcr.ttf")
 	{
 		super(X, Y);
@@ -129,10 +151,11 @@ class TextComponent extends FlxSprite
 		textField.mouseEnabled = false;
 		textField.multiline = true;
 		textField.wordWrap = true;
-		_defaultFormat = new TextFormat(Paths.font(Font), Size, 0xFFFFFF);
+		_defaultFormat = new TextFormat(null, Size, 0xFFFFFF);
+		font = Paths.font(Font);
 		textField.defaultTextFormat = _defaultFormat;
 		_formatAdjusted = new TextFormat();
-		textField.sharpness = 100;
+		textField.sharpness = 400;
 
 		text = Text;
 		fieldWidth = FieldWidth;
@@ -157,6 +180,7 @@ class TextComponent extends FlxSprite
 		_defaultFormat = null;
 		_formatAdjusted = null;
 		_zeroOffset = null;
+		_font = null;
 
 		textField = null;
 
@@ -245,6 +269,13 @@ class TextComponent extends FlxSprite
 		var graphic:BitmapData = _hasBorderAlpha ? _borderBitmap : _bitmap;
 		_swagMatrix.translate(x, y);
 		graphic.draw(textField, _swagMatrix);
+	}
+
+	private function updateFormat()
+	{
+		textField.defaultTextFormat = _defaultFormat;
+		textField.setTextFormat(_defaultFormat);
+		_regen = true;
 	}
 
 	private function applyFormat(FormatAdjusted:TextFormat, UseBorderColor:Bool = false)
