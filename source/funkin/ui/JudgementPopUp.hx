@@ -45,8 +45,9 @@ class JudgementPopUp extends FlxSpriteGroup
 
 		updateHitbox();
 
-		comboSprite.y -= judgementSprite.height / 2;
-		judgementSprite.y += comboSprite.height / 2;
+		/*
+			comboSprite.y -= judgementSprite.height / 2;
+			judgementSprite.y -= comboSprite.height / 2; */
 	}
 
 	public function showCombo(number:String, marv:Bool, scoreInt:Int)
@@ -83,7 +84,10 @@ class JudgementPopUp extends FlxSpriteGroup
 	public function showJudgement(ratingName:String, marv:Bool, timing:String)
 	{
 		if (judgementTwnY != null)
+		{
+			judgementSprite.y = 0;
 			judgementTwnY.cancel();
+		}
 
 		if (judgementTwnScale != null)
 			judgementTwnScale.cancel();
@@ -104,7 +108,7 @@ class JudgementPopUp extends FlxSpriteGroup
 				judgementTwnY = null;
 			}
 		});
-		judgementTwnScale = FlxTween.tween(judgementSprite, {"scale.x": 0, "scale.y": 0}, 0.1, {
+		judgementTwnScale = FlxTween.tween(judgementSprite, {alpha: 0}, 0.1, {
 			onComplete: function(_)
 			{
 				judgementTwnScale = null;
