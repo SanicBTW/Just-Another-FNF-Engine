@@ -2,7 +2,10 @@ package base.system;
 
 import haxe.Json;
 
-class JSONAnalyzer<T>
+class JSONAnalyzer
 {
-	public function new(object:T) {}
+	public function new(object:Dynamic, parse:Dynamic, objectMap:Map<String, T>)
+	{
+		objectMap.set(object.name,)
+	}
 }

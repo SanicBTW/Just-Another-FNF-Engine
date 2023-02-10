@@ -25,7 +25,7 @@ class Stage extends FlxTypedGroup<FlxBasic>
 	{
 		super();
 
-		var rawStage:String = Assets.getText(Paths.getPath('stages/$stage.json')).trim();
+		var rawStage:String = Assets.getText(Paths.getPreloadPath('stages/$stage.json')).trim();
 		var stageJSON:StageFile = cast Json.parse(rawStage);
 
 		cameraZoom = stageJSON.defaultZoom;

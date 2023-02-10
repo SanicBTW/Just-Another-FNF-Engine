@@ -1,6 +1,12 @@
 {
-    "accuracy":
-    {
-        "position": [30, "FlxG.height / 2"]
-    }
+    "elements": 
+    [
+        {
+            "name": "accuracyText",
+            "type": "TextComponent",
+            "tracks": "Ratings.accuracy",
+            "parse": ["position"],
+            "position": [30, "FlxG.height / 2"]
+        }
+    ]
 }
