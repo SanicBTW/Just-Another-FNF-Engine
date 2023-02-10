@@ -25,21 +25,22 @@ class UI extends FlxSpriteGroup
 	#end
 	private var timeBar:Bar;
 
+	public var popUp:JudgementPopUp;
+
 	public function new()
 	{
 		super();
 
 		#if use_flx_text
 		accuracyText = new FlxText(30, (FlxG.height / 2), 0, "Accuracy 0%", 24);
-		accuracyText.scrollFactor.set();
 		accuracyText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
 		#else
 		accuracyText = new TextComponent(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
-		accuracyText.scrollFactor.set();
 		accuracyText.borderColor = FlxColor.BLACK;
-		accuracyText.borderSize = 1;
+		accuracyText.borderSize = 1.25;
 		#end
+		accuracyText.scrollFactor.set();
 		add(accuracyText);
 
 		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
@@ -60,6 +61,10 @@ class UI extends FlxSpriteGroup
 			add(counter);
 			curY -= 65;
 		}
+
+		popUp = new JudgementPopUp(0, 0);
+		popUp.screenCenter();
+		add(popUp);
 	}
 
 	private function sortByJudgement(Obj1:String, Obj2:String)
@@ -69,6 +74,6 @@ class UI extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 		accuracyText.text = 'Accuracy ${Math.floor(Ratings.accuracy * 100) / 100}%';
-		timeBar.value = FlxMath.lerp((Conductor.songPosition / Conductor.boundSong.audioLength), timeBar.value, 0.95);
+		timeBar.value = (Conductor.songPosition / Conductor.boundSong.audioLength);
 	}
 }

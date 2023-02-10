@@ -1,6 +1,7 @@
 package base.ui;
 
 import flixel.FlxSprite;
+import flixel.text.FlxText.FlxTextAlign;
 import flixel.util.FlxColor;
 import openfl.Assets;
 import openfl.display.BitmapData;
@@ -43,9 +44,10 @@ class TextComponent extends FlxSprite
 	public var text(get, set):String;
 	public var fieldWidth(get, set):Float;
 	public var autoSize(get, set):Bool;
-	public var borderSize(default, set):Float = 1;
+	public var borderSize(default, set):Float = 0;
 	public var borderColor(default, set):FlxColor;
 	public var font(get, set):String;
+	public var alignment(get, set):FlxTextAlign;
 
 	private function get_text():String
 		return (textField != null) ? textField.text : "";
@@ -139,10 +141,21 @@ class TextComponent extends FlxSprite
 		return _font = _defaultFormat.font;
 	}
 
+	private function get_alignment():FlxTextAlign
+		return FlxTextAlign.fromOpenFL(_defaultFormat.align);
+
+	private function set_alignment(Alignment:FlxTextAlign):FlxTextAlign
+	{
+		_defaultFormat.align = FlxTextAlign.toOpenFL(Alignment);
+		updateFormat();
+		return Alignment;
+	}
+
 	public function new(X:Float = 0, Y:Float = 0, FieldWidth:Float = 0, Text:String = "placeholder", Size:Int = 12, Font:String = "vcr.ttf")
 	{
 		super(X, Y);
 
+		antialiasing = SaveData.antialiasing;
 		allowCollisions = NONE;
 		moves = false;
 

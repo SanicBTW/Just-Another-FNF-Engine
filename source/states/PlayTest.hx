@@ -364,9 +364,11 @@ class PlayTest extends MusicBeatState
 			if (!note.isSustain)
 			{
 				var noteDiff:Float = Math.abs((note.stepTime * Conductor.stepCrochet) - Conductor.songPosition);
-				Ratings.updateAccuracy(Ratings.judgements[Ratings.judge(noteDiff)][1]);
+				var judgement:String = Ratings.judge(noteDiff);
+				Ratings.updateAccuracy(Ratings.judgements[judgement][1]);
 				if (note.children.length > 0)
 					Ratings.notesHit++;
+				hud.popUp.showJudgement(judgement, judgement == "marvelous", "late");
 			}
 			else
 			{

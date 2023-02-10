@@ -24,7 +24,6 @@ class JudgementCounter extends FlxSpriteGroup
 		"miss" => ["misses", "MS", FlxColor.fromRGB(204, 66, 66)]
 	];
 
-	private var judgement:String;
 	private var judgementVar:String;
 
 	private var counterBG:FlxSprite;
@@ -35,13 +34,12 @@ class JudgementCounter extends FlxSpriteGroup
 	#end
 	private var counterTxtSize:Int = 24;
 
-	public function new(x:Float, y:Float, judgement:String)
+	public function new(X:Float, Y:Float, judgement:String)
 	{
-		super(x, y);
+		super(X, Y);
 
 		antialiasing = SaveData.antialiasing;
 		scrollFactor.set();
-		this.judgement = judgement;
 		judgementVar = judgements.get(judgement)[0];
 		setGraphicSize(60, 60);
 		updateHitbox();
@@ -50,21 +48,23 @@ class JudgementCounter extends FlxSpriteGroup
 		counterBG.color = judgements.get(judgement)[2];
 		counterBG.setGraphicSize(60, 60);
 		counterBG.antialiasing = antialiasing; // dawg wtf
+		counterBG.scrollFactor.set();
 		add(counterBG);
 
+		var positions:Array<Float> = [
+			(-(counterBG.width / 2) + (counterBG.width / 2)),
+			(counterBG.height / 2) - (counterTxtSize - 7)
+		];
 		#if use_flx_text
-		counterText = new FlxText((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7), counterBG.width,
-			judgements.get(judgement)[1], counterTxtSize);
+		counterText = new FlxText(positions[0], positions[1], counterBG.width, judgements.get(judgement)[1], counterTxtSize);
 		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK);
-		counterText.autoSize = false;
 		#else
-		counterText = new TextComponent(0, 0, 55, judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
-		counterText.centerOrigin();
-		counterText.setPosition((-(counterBG.width / 2) + (counterBG.width / 2)), (counterBG.height / 2) - (counterTxtSize - 7));
-		counterText.autoSize = false;
-		counterText.borderSize = 0;
+		counterText = new TextComponent(positions[0], positions[1], counterBG.width, judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
 		counterText.color = FlxColor.BLACK;
+		counterText.alignment = CENTER;
 		#end
+		counterText.scrollFactor.set();
+		counterText.autoSize = false;
 		add(counterText);
 	}
 
