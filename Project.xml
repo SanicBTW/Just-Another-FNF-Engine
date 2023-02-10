@@ -31,9 +31,6 @@
 	<library name="characters" preload="true"/>
 	<assets path="assets/characters" library="characters"/>
 
-	<library name="ui_skin" preload="true"/>
-	<assets path="assets/ui_skin" library="ui_skin"/>
-
 	<assets path="assets/fonts" embed='true'/>
 
 	<!-- _______________________________ Libraries ______________________________ -->
