@@ -48,7 +48,7 @@ class Init extends ScriptableState
 		rounded.scale.y = 0;
 		add(rounded);
 
-		shitTimer = new Timer(5, function()
+		shitTimer = new Timer(3, function()
 		{
 			icon.alpha = 0;
 			icon = null;

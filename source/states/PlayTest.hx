@@ -309,14 +309,11 @@ class PlayTest extends MusicBeatState
 			camHUD.zoom += 0.05;
 		}
 
-		/*
-			if (SONG.notes[Std.int(curStep / 16)].changeBPM)
-			{
-				Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
-		}*/
+		if (SONG.notes[Std.int(curStep / 16)].changeBPM)
+		{
+			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+		}
 	}
-
-	// private function handlePlayerHit(note:Note)
 
 	private function opponentHit(note:Note)
 	{

@@ -23,7 +23,7 @@ class Conductor
 	public static var beatPosition:Int = 0;
 
 	// for resync??
-	public static final comparisonThreshold:Float = 20;
+	public static final comparisonThreshold:Float = 30;
 	public static var lastStep:Float = -1;
 	public static var lastBeat:Float = -1;
 
@@ -103,16 +103,8 @@ class Conductor
 		{
 			songPosition += elapsed * 1000;
 
-			/*
-				stepPosition = Math.floor(lastChange.stepTime / lastChange.stepCrochet)
-					+ Math.floor(lastChange.stepTime + ((songPosition - lastChange.songTime) / lastChange.stepCrochet));
-				/*var fuck = (songPosition - lastChange.songTime) / lastChange.stepCrochet;
-
-					stepPosition = lastChange.stepTime + Math.floor(fuck); */
-
 			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
-			stepPosition = Math.floor(songPosition / stepCrochet);
-			// stepPosition = Math.floor(((lastChange.stepTime / stepCrochet) + songPosition) / stepCrochet) * Math.floor(lastChange.songTime / 10);
+			stepPosition = Math.floor(lastChange.songTime / stepCrochet) + Math.floor((songPosition - lastChange.songTime) / stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)

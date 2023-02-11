@@ -6,7 +6,6 @@ import openfl.media.Sound;
 using StringTools;
 
 #if !html5
-import haxe.Json;
 import haxe.io.Bytes;
 import openfl.net.URLRequest;
 #end

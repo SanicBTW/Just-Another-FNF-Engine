@@ -3,6 +3,7 @@ package;
 import base.Controls;
 import base.SaveData;
 import base.display.*;
+import base.system.DatabaseManager;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
@@ -72,6 +73,7 @@ class Main extends Sprite
 		// I Love sucking cocks
 		FlxGraphic.defaultPersist = true;
 		Controls.init();
+		DatabaseManager.Initialize();
 		FlxTransitionableState.skipNextTransIn = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
 

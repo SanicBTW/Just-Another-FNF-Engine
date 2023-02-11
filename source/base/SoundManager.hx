@@ -113,6 +113,7 @@ class AudioStream
 		lastTime = channel.position;
 		channel.removeEventListener(Event.SOUND_COMPLETE, audioCompleted);
 		channel.stop();
+		@:privateAccess channel.__dispose();
 		channel = null;
 		isPlaying = false;
 	}
@@ -124,6 +125,7 @@ class AudioStream
 		else
 		{
 			stop();
+			sound.close();
 			sound = null;
 			onFinish.dispatch();
 		}

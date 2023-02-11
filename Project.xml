@@ -44,13 +44,13 @@
 
 	<haxedef name="FLX_NO_GAMEPAD" />
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
-	<haxedef name="FLX_NO_DEBUG" unless="debug" />
+	<haxedef name="FLX_NO_DEBUG"/>
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 	<haxedef name="FLX_NO_SOUND_SYSTEM" />
 
-	<haxedef name="HXCPP_GC_BIG_BLOCKS" />
-	<haxedef name="HXCPP_GC_DYNAMIC_SIZE" />
-	<haxedef name="HXCPP_GC_MOVING" />
+	<hxcpp name="HXCPP_GC_BIG_BLOCKS" />
+	<hxcpp name="HXCPP_GC_DYNAMIC_SIZE" />
+	<hxcpp name="HXCPP_GC_MOVING" />
 
 	<!-- _________________________________ Custom _______________________________ -->
 

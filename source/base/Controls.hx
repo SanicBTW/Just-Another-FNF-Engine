@@ -2,6 +2,7 @@ package base;
 
 import flixel.FlxG;
 import haxe.ds.StringMap;
+import lime.app.Application;
 import lime.app.Event;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
@@ -53,8 +54,16 @@ class Controls
 	// TODO: set custom actions based on the users save data
 	public static function init()
 	{
-		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+		Application.current.window.onKeyDown.add((keyCode, mod) ->
+		{
+			@:privateAccess
+			onKeyDown(Keyboard.__convertKeyCode(keyCode));
+		});
+		Application.current.window.onKeyUp.add((keyCode, mod) ->
+		{
+			@:privateAccess
+			onKeyUp(Keyboard.__convertKeyCode(keyCode));
+		});
 		setActions(UI);
 	}
 
@@ -106,33 +115,27 @@ class Controls
 		return null;
 	}
 
-	private static function onKeyDown(evt:KeyboardEvent)
+	private static function onKeyDown(keyCode:Int)
 	{
-		if (FlxG.keys.enabled && FlxG.state.active)
+		if (!keyPressed.contains(keyCode))
 		{
-			if (!keyPressed.contains(evt.keyCode))
-			{
-				keyPressed.push(evt.keyCode);
+			keyPressed.push(keyCode);
 
-				var pressedAction:Null<String> = getActionFromKey(evt.keyCode);
-				if (pressedAction != null)
-					onActionPressed.dispatch(pressedAction);
-			}
+			var pressedAction:Null<String> = getActionFromKey(keyCode);
+			if (pressedAction != null)
+				onActionPressed.dispatch(pressedAction);
 		}
 	}
 
-	private static function onKeyUp(evt:KeyboardEvent)
+	private static function onKeyUp(keyCode:Int)
 	{
-		if (FlxG.keys.enabled && FlxG.state.active)
+		if (keyPressed.contains(keyCode))
 		{
-			if (keyPressed.contains(evt.keyCode))
-			{
-				keyPressed.remove(evt.keyCode);
+			keyPressed.remove(keyCode);
 
-				var releasedAction:Null<String> = getActionFromKey(evt.keyCode);
-				if (releasedAction != null)
-					onActionReleased.dispatch(releasedAction);
-			}
+			var releasedAction:Null<String> = getActionFromKey(keyCode);
+			if (releasedAction != null)
+				onActionReleased.dispatch(releasedAction);
 		}
 	}
 }
