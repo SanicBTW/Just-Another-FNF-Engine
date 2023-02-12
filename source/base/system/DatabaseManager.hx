@@ -1,5 +1,7 @@
 package base.system;
 
+import Type.ValueType;
+import base.system.database.keybinds.KeybindsDBCache;
 import flixel.FlxG;
 import lime.app.Application;
 
@@ -19,7 +21,7 @@ class DatabaseManager
 {
 	public static var DatabasePath(default, null):String;
 	public static var Connection(default, null):#if sys Connection #else FlxSave #end;
-	private static final DBToLoad:Map<String, String> = ["keybinds" => "database.keybinds.KeybindsDBCache"];
+	public static var TypeMap:Map<ValueType, String> = [TNull => "TEXT", TInt => "INTEGER", TFloat => "FLOAT", TBool => "BIT"];
 
 	public static function Initialize()
 	{
@@ -31,7 +33,7 @@ class DatabaseManager
 				.replace("MyApplication", Application.current.meta.get("file")),
 			"engine.db"
 		]);
-		trace("Database opening at" + DatabasePath);
+		trace("Database opening at " + DatabasePath);
 		Connection = Sqlite.open(DatabasePath);
 		#else
 		DatabasePath = '${Application.current.meta.get("company")}_${Application.current.meta.get("file")}';
@@ -40,27 +42,40 @@ class DatabaseManager
 		Connection.bind(DatabasePath, "SanicBTW");
 		#end
 
-		for (key => classPath in DBToLoad)
-		{
-			trace("Loading " + key + " with class path " + classPath);
-			final classRes:Class<Dynamic> = Type.resolveClass(classPath);
-
-			if (classRes == null)
-			{
-				trace("Class " + key + " doesn't exist");
-				continue;
-			}
-
-			cast(classRes, IDatabase).Load();
-			trace("Loaded " + key);
-		}
+		KeybindsDBCache.Initialize();
 	}
-}
 
-interface IDatabase
-{
-	public function Load():Void;
-	public function CreateTable():Void;
-	public function Update<T>(update:T):Void;
-	public function Delete<T>(delete:T):Void;
+	public static function createTable<T>(t:Class<T>, id:Null<Int>)
+	{
+		var instance:T = Type.createInstance(t, []);
+		// Type.getClassName(t); base.system.database.keybinds.Keybinds
+		// schema of folders is like base[0].system[1].database[2](parent2).db[3](parent).cache/db setup stuff[4]
+		var className:String = Type.getClassName(t).split(".")[3];
+		var classFields:Array<String> = Type.getInstanceFields(t);
+		var append:String = "";
+		for (field in classFields)
+		{
+			append += transform(instance, field);
+		}
+		var s:StringBuf = new StringBuf();
+		s.add('CREATE TABLE IF NOT EXISTS ${className}(
+				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+				${append}
+			)');
+		Connection.addValue(s, id);
+		trace("Created table (Table name " + className + ", fields/columns? " + classFields + " )");
+	}
+
+	public static function transform<T>(t:T, field:String):String
+	{
+		var type:String = TypeMap.get(Type.typeof(Reflect.field(t, field)));
+		return '${field} ${type}\r\n';
+	}
+
+	public static function createString(string:String):StringBuf
+	{
+		var stringBuf:StringBuf = new StringBuf();
+		stringBuf.add(string);
+		return stringBuf;
+	}
 }

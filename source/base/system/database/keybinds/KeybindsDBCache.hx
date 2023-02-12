@@ -1,14 +1,32 @@
 package base.system.database.keybinds;
 
-import base.system.DatabaseManager.IDatabase;
+import sys.db.ResultSet;
 
-class KeybindsDBCache implements IDatabase
+class Keybinds
 {
-	public function CreateTable():Void
+	public var action:String;
+	public var actionGroup:String;
+	public var keyCode:Int;
+
+	public function new() {}
+}
+
+class KeybindsDBCache
+{
+	public static function Initialize():Void
+	{
+		CreateTable();
+	}
+
+	public static function CreateTable():Void
 	{
 		try
 		{
-			DatabaseManager.Connection.addValue("Keybinds", {"ui_up" => ""});
+			DatabaseManager.createTable(Keybinds, 0);
+		}
+		catch (e)
+		{
+			throw e;
 		}
 	}
 }
