@@ -15,6 +15,7 @@ class SaveData
 				DatabaseManager.set(field, Reflect.field(SaveData, field));
 			}
 		}
+		DatabaseManager.save();
 	}
 
 	public static function loadSettings()
@@ -24,8 +25,10 @@ class SaveData
 			if (Type.typeof(Reflect.field(SaveData, field)) != TFunction)
 			{
 				var defaultValue:Dynamic = Reflect.field(SaveData, field);
-				var save:Dynamic = DatabaseManager.get(field);
-				Reflect.setField(SaveData, field, (save != null ? save : defaultValue));
+
+				var save = DatabaseManager.get(field #if sys, DatabaseManager.TypeMap.get(Type.typeof(Reflect.field(SaveData, field))) #end);
+				trace(Type.typeof(save));
+				// Reflect.setField(SaveData, field, (save != null ? save : defaultValue));
 			}
 		}
 	}
