@@ -32,6 +32,13 @@ class Request
 			callback(data);
 		}
 
+		request.onError = function(error:String)
+		{
+			trace("NETWORK REQUEST ERROR " + error);
+			Cache.setNetworkCache(url, "Failed to fetch");
+			callback("Failed to fetch");
+		}
+
 		request.request();
 	}
 

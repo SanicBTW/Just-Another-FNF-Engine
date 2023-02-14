@@ -59,9 +59,6 @@ class ScriptableState extends FlxUIState
 	{
 		switch (action)
 		{
-			case "save":
-				trace("HARD SAVE");
-				SaveData.saveSettings();
 			case "vol_up":
 				if (SoundManager.muted)
 					SoundManager.muted = false;

@@ -4,6 +4,7 @@ import base.Conductor;
 import base.Controls;
 import base.FadeTransition;
 import base.MusicBeatState;
+import base.SaveData;
 import base.ScriptableState.ScriptableSubState;
 import base.ScriptableState;
 import base.SoundManager.AudioStream;
@@ -52,8 +53,6 @@ class PlayTest extends MusicBeatState
 
 	public var playerStrums:StrumLine;
 
-	public var downscroll:Bool = false;
-
 	private var generatedMusic:Bool = false;
 
 	private var player:Character;
@@ -73,7 +72,15 @@ class PlayTest extends MusicBeatState
 
 	public static var instance:PlayTest;
 
-	var shad:ChromaticAbberationShader = new ChromaticAbberationShader();
+	// bruh
+	private var loadSong:Null<String> = "";
+
+	override public function new(?loadSong:String)
+	{
+		super();
+		if (loadSong != null)
+			this.loadSong = loadSong;
+	}
 
 	override function create()
 	{
@@ -101,9 +108,10 @@ class PlayTest extends MusicBeatState
 		opponentStrums.botPlay = true;
 		opponentStrums.onBotHit.add(opponentHit);
 		strumLines.add(opponentStrums);
-		playerStrums = new StrumLine((FlxG.width / 2) + separation, 4);
+		playerStrums = new StrumLine((SaveData.middleScroll ? (FlxG.width / 2) : (FlxG.width / 2) + separation), 4);
 		playerStrums.onBotHit.add(playerBotHit);
 		strumLines.add(playerStrums);
+		opponentStrums.visible = !SaveData.middleScroll;
 		add(strumLines);
 		strumLines.cameras = [camHUD];
 
@@ -522,7 +530,7 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, "", 2);
+		SONG = ChartLoader.loadChart(this, (loadSong != null ? loadSong : ""), 2);
 		Conductor.mapBPMChanges(SONG);
 		for (strumLine in strumLines)
 		{
@@ -581,6 +589,9 @@ class PlayTest extends MusicBeatState
 
 	function trail(char:Character, note:Note):Void
 	{
+		if (!SaveData.showTrails)
+			return;
+
 		var time:Float = 0;
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
 		var daCopy:FlxSprite = char.clone();

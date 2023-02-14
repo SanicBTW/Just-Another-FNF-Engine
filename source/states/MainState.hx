@@ -14,14 +14,16 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
 import funkin.ChartLoader;
 import haxe.Json;
+import lime.utils.Assets;
 import openfl.media.Sound;
+import states.config.EarlyConfig;
 import substates.LoadingState;
 
 using StringTools;
 
 class MainState extends ScriptableState
 {
-	var pages:Array<String> = ["funkin", "old_fnf_charts", "osu!", "quaver", "settings"];
+	var pages:Array<String> = ["internal", "funkin", "old_fnf_charts", "osu!", "quaver", "settings"];
 	var curPage(default, set):Int = 0;
 	var grpItems:FlxTypedGroup<Alphabet>;
 	var menuArray:Array<String> = [];
@@ -64,12 +66,30 @@ class MainState extends ScriptableState
 
 		switch (pages[curPage])
 		{
+			case "internal":
+				{
+					var shitShow:Array<String> = Assets.getLibrary("songs").list("TEXT");
+					for (shit in 0...shitShow.length)
+					{
+						shitShow[shit] = shitShow[shit].replace("assets/songs/", "");
+						shitShow[shit] = shitShow[shit].substring(shitShow[shit].lastIndexOf("/") + 1, shitShow[shit].indexOf("-"));
+					}
+					menuArray = shitShow;
+					regenMenu();
+				}
 			case "funkin" | "old_fnf_charts":
 				{
 					var isOld:Bool = (pages[curPage] == "old_fnf_charts");
 					Request.getRecords(pages[curPage], function(data:String)
 					{
 						menuArray = [];
+
+						if (data == "Failed to fetch")
+						{
+							menuArray.push("NETWORK ERROR");
+							regenMenu();
+							return;
+						}
 
 						var songShit:Array<Funkin & Funkin_Old> = cast Json.parse(data).items;
 						for (song in songShit)
@@ -82,17 +102,16 @@ class MainState extends ScriptableState
 						regenMenu();
 					});
 				}
-			case "osu!" | "quaver" | "settings":
+			case "osu!" | "quaver":
 				{
 					menuArray = ["Work in progress"];
 					regenMenu();
 				}
-				/*
-					case "settings":
-						{
-							menuArray = ["Keybindings", "Trails", "Time Bar"];
-							regenMenu();
-				}*/
+			case "settings":
+				{
+					menuArray = ["Go to settings"];
+					regenMenu();
+				}
 		}
 
 		return value;
@@ -140,12 +159,22 @@ class MainState extends ScriptableState
 				{
 					switch (pages[curPage])
 					{
+						case "internal":
+							{
+								ScriptableState.switchState(new PlayTest(menuArray[curSelected]));
+							}
 						case "funkin" | "old_fnf_charts":
 							{
+								if (menuArray[curSelected] == "NETWORK ERROR")
+									return;
 								var pbObject:PocketBaseObject = songDetails.get(menuArray[curSelected]);
 								persistentUpdate = false;
 								blockInputs = true;
 								openSubState(new LoadingState(pages[curPage], pbObject));
+							}
+						case "settings":
+							{
+								ScriptableState.switchState(new EarlyConfig());
 							}
 					}
 				}

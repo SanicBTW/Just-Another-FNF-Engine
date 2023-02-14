@@ -32,7 +32,6 @@ class Controls
 		"vol_up" => [187 /* mf wasnt in the keyboard list dunno why lol*/, Keyboard.NUMPAD_ADD],
 		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
 		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0],
-		"save" => [Keyboard.F10],
 	];
 
 	// ui actions

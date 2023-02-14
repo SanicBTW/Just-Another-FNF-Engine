@@ -1,6 +1,7 @@
 package funkin.notes;
 
 import base.Conductor;
+import base.SaveData;
 import flixel.FlxBasic;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -24,7 +25,6 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 	public var botPlay:Bool = false;
 	public var lineSpeed:Float = 0;
-	public var downScroll:Bool = false;
 
 	public function new(x:Float = 0, keyAmount:Int = 4)
 	{
@@ -37,7 +37,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 		for (i in 0...keyAmount)
 		{
-			var receptor:Receptor = new Receptor(x, 60, i);
+			var receptor:Receptor = new Receptor(x, (SaveData.downScroll ? FlxG.height - 150 : 60), i);
 			receptor.ID = i;
 
 			receptor.x -= ((keyAmount / 2) * Note.swagWidth);
@@ -80,7 +80,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	{
 		super.update(elapsed);
 
-		var downscrollMultiplier:Int = (!downScroll ? 1 : -1) * FlxMath.signOf(lineSpeed);
+		var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1) * FlxMath.signOf(lineSpeed);
 
 		for (receptor in receptors)
 		{

@@ -114,8 +114,5 @@ class Main extends Sprite
 			Cache.clearUnusedMemory();
 			Cache.runGC();
 		});
-
-		FlxG.save.bind("funkin_engine", "sanicbtw");
-		SaveData.loadSettings();
 	}
 }
