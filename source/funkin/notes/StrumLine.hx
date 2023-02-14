@@ -22,6 +22,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	public var allNotes(default, null):FlxTypedGroup<Note>;
 
 	public var onBotHit(default, null):FlxTypedSignal<Note->Void> = new FlxTypedSignal<Note->Void>();
+	public var onMiss(default, null):FlxTypedSignal<Note->Void> = new FlxTypedSignal<Note->Void>();
 
 	public var botPlay:Bool = false;
 	public var lineSpeed:Float = 0;
@@ -133,6 +134,9 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 					}
 				}
 			}
+
+			if (Conductor.songPosition > strumNote.stepTime * Conductor.stepCrochet && strumNote.tooLate)
+				onMiss.dispatch(strumNote);
 
 			if (botPlay && !strumNote.tooLate && strumNote.stepTime * Conductor.stepCrochet <= Conductor.songPosition)
 				onBotHit.dispatch(strumNote);

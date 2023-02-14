@@ -103,17 +103,21 @@ class PlayTest extends MusicBeatState
 		FlxG.cameras.add(camOther);
 
 		strumLines = new FlxTypedGroup<StrumLine>();
+		strumLines.cameras = [camHUD];
+
 		var separation:Float = FlxG.width / 4;
+
 		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
 		opponentStrums.botPlay = true;
+		opponentStrums.visible = !SaveData.middleScroll;
 		opponentStrums.onBotHit.add(opponentHit);
 		strumLines.add(opponentStrums);
+
 		playerStrums = new StrumLine((SaveData.middleScroll ? (FlxG.width / 2) : (FlxG.width / 2) + separation), 4);
 		playerStrums.onBotHit.add(playerBotHit);
+		playerStrums.onMiss.add(playerMissPress);
 		strumLines.add(playerStrums);
-		opponentStrums.visible = !SaveData.middleScroll;
 		add(strumLines);
-		strumLines.cameras = [camHUD];
 
 		stage = new Stage("stage");
 		add(stage);
@@ -429,8 +433,9 @@ class PlayTest extends MusicBeatState
 		}
 	}
 
-	private function playerMissPress(direction:Int = 1)
+	private function playerMissPress(note:Note)
 	{
+		var direction:Int = note.noteData;
 		if (SONG.needsVoices)
 			Conductor.boundVocals.audioVolume = 0;
 
