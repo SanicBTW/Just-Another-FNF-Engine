@@ -2,7 +2,7 @@ package base;
 
 import base.MusicBeatState.MusicHandler;
 import base.SoundManager.AudioStream;
-import funkin.ChartLoader.Song;
+import funkin.ChartLoader;
 import openfl.media.Sound;
 
 typedef BPMChangeEvent =
@@ -93,18 +93,27 @@ class Conductor
 	{
 		bpm = newBPM;
 
-		crochet = (60 / bpm) * 1000;
-		stepCrochet = crochet / 4;
+		crochet = calculateCrochet(newBPM);
+		stepCrochet = (crochet / 4);
 	}
 
 	public static function updateTimePosition(elapsed:Float)
 	{
 		if (boundSong.isPlaying)
 		{
-			songPosition += elapsed * 1000;
+			var lastChange:BPMChangeEvent = {
+				stepTime: 0,
+				songTime: 0,
+				bpm: 0,
+			};
 
-			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
-			stepPosition = Math.floor(lastChange.songTime / stepCrochet) + Math.floor((songPosition - lastChange.songTime) / stepCrochet);
+			for (i in 0...bpmChangeMap.length)
+			{
+				if (songPosition >= bpmChangeMap[i].songTime)
+					lastChange = bpmChangeMap[i];
+			}
+
+			stepPosition = lastChange.stepTime + Math.floor((Conductor.songPosition - lastChange.songTime) / stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)
@@ -123,12 +132,14 @@ class Conductor
 					boundState.beatHit();
 				lastBeat = beatPosition;
 			}
+
+			songPosition += elapsed * 1000;
 		}
 	}
 
 	public static function resyncTime()
 	{
-		trace('Resyncing song time ${boundSong.playbackTime}');
+		trace('Resyncing song time ${boundSong.playbackTime}, $songPosition');
 		if (boundVocals.audioSource != null)
 			boundVocals.stop();
 
@@ -139,27 +150,9 @@ class Conductor
 			boundVocals.playbackTime = songPosition;
 			boundVocals.play();
 		}
-		trace('New song time $songPosition');
+		trace('New song time ${boundSong.playbackTime} $songPosition');
 	}
 
 	inline public static function calculateCrochet(bpm:Float)
 		return (60 / bpm) * 1000;
-
-	public static function getBPMFromSeconds(time:Float)
-	{
-		var lastChange:BPMChangeEvent = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: bpm,
-			stepCrochet: stepCrochet
-		};
-
-		for (i in 0...Conductor.bpmChangeMap.length)
-		{
-			if (time >= Conductor.bpmChangeMap[i].songTime)
-				lastChange = Conductor.bpmChangeMap[i];
-		}
-
-		return lastChange;
-	}
 }

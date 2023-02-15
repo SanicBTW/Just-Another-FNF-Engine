@@ -12,6 +12,7 @@ import openfl.utils.Assets;
 using StringTools;
 
 // FIX: Trying to turn down the volume while fading in will result on the audio applying the global volume after it ends
+// FIX: When muting, bg music or sound list isnt muted
 class SoundManager
 {
 	private static var soundList:Array<AudioStream> = [];
@@ -103,6 +104,10 @@ class AudioStream
 		channel.addEventListener(Event.SOUND_COMPLETE, audioCompleted);
 		isPlaying = true;
 		audioVolume = volume;
+
+		/*
+			@:privateAccess
+			lime.media.openal.AL.(this.channel.__source.__backend.handle, lime.media.openal.AL.CHANNELS, ) */
 	}
 
 	public function stop()

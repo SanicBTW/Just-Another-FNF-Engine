@@ -72,6 +72,8 @@ class PlayTest extends MusicBeatState
 
 	public static var instance:PlayTest;
 
+	public var spawnTime:Float = 2000;
+
 	// bruh
 	private var loadSong:Null<String> = "";
 
@@ -191,12 +193,18 @@ class PlayTest extends MusicBeatState
 			cameraDisplacement(player, true);
 			cameraDisplacement(opponent, false);
 
-			parseEventColumn(ChartLoader.unspawnedNoteList, function(unspawnNote:Note)
+			while ((ChartLoader.unspawnedNoteList[0] != null)
+				&& (ChartLoader.unspawnedNoteList[0].strumTime - Conductor.songPosition) < spawnTime)
 			{
-				var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
-				if (strumLine != null)
-					strumLine.push(unspawnNote);
-			}, -(16 * Conductor.stepCrochet));
+				var unspawnNote:Note = ChartLoader.unspawnedNoteList[0];
+				if (unspawnNote != null)
+				{
+					var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
+					if (strumLine != null)
+						strumLine.push(unspawnNote);
+				}
+				ChartLoader.unspawnedNoteList.splice(ChartLoader.unspawnedNoteList.indexOf(unspawnNote), 1);
+			}
 
 			playerStrums.holdGroup.forEachAlive(function(coolNote:Note)
 			{
@@ -259,7 +267,7 @@ class PlayTest extends MusicBeatState
 			if ((daNote.noteData == data) && !daNote.isSustain && daNote.canBeHit && !daNote.tooLate)
 				possibleNoteList.push(daNote);
 		});
-		possibleNoteList.sort((a, b) -> Std.int(a.stepTime - b.stepTime));
+		possibleNoteList.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
 
 		if (possibleNoteList.length > 0)
 		{
@@ -269,7 +277,7 @@ class PlayTest extends MusicBeatState
 			{
 				for (noteDouble in pressedNotes)
 				{
-					if (Math.abs(noteDouble.stepTime - coolNote.stepTime) < 0.1)
+					if (Math.abs(noteDouble.strumTime - coolNote.strumTime) < 10)
 						firstNote = false;
 					else
 						eligable = false;
@@ -309,9 +317,13 @@ class PlayTest extends MusicBeatState
 
 		if (curBeat % 2 == 0)
 		{
-			if (player.animation.curAnim.name.startsWith("idle") || player.animation.curAnim.name.startsWith("dance"))
+			if (player.animation.curAnim.name.startsWith("idle")
+				|| player.animation.curAnim.name.startsWith("dance")
+				&& !player.animation.curAnim.name.startsWith("sing"))
 				player.dance();
-			if (opponent.animation.curAnim.name.startsWith("idle") || opponent.animation.curAnim.name.startsWith("dance"))
+			if (opponent.animation.curAnim.name.startsWith("idle")
+				|| opponent.animation.curAnim.name.startsWith("dance")
+				&& !opponent.animation.curAnim.name.startsWith("sing"))
 				opponent.dance();
 		}
 
@@ -321,9 +333,12 @@ class PlayTest extends MusicBeatState
 			camHUD.zoom += 0.05;
 		}
 
-		if (SONG.notes[Std.int(curStep / 16)].changeBPM)
+		if (SONG.notes[Std.int(curStep / 16)] != null)
 		{
-			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+			if (SONG.notes[Std.int(curStep / 16)].changeBPM)
+			{
+				Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+			}
 		}
 	}
 
@@ -372,7 +387,7 @@ class PlayTest extends MusicBeatState
 
 			if (!note.isSustain)
 			{
-				var noteDiff:Float = Math.abs((note.stepTime * Conductor.stepCrochet) - Conductor.songPosition);
+				var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
 				var judgement:String = Ratings.judge(noteDiff);
 				Ratings.updateAccuracy(Ratings.judgements[judgement][1]);
 				if (note.children.length > 0)
@@ -467,20 +482,6 @@ class PlayTest extends MusicBeatState
 		strumLine.allNotes.remove(note, true);
 		(note.isSustain ? strumLine.holdGroup.remove(note, true) : strumLine.notesGroup.remove(note, true));
 		note.destroy();
-	}
-
-	public function parseEventColumn(eventColumn:Array<Dynamic>, functionToCall:Dynamic->Void, ?timeDelay:Float = 0)
-	{
-		// check if there even are events to begin with
-		if (eventColumn.length > 0)
-		{
-			while (eventColumn[0] != null && (eventColumn[0].stepTime + timeDelay / Conductor.stepCrochet) <= Conductor.stepPosition)
-			{
-				if (functionToCall != null)
-					functionToCall(eventColumn[0]);
-				eventColumn.splice(eventColumn.indexOf(eventColumn[0]), 1);
-			}
-		}
 	}
 
 	private function updateCamFollow(?elapsed:Float)

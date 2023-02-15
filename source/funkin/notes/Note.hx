@@ -11,7 +11,7 @@ class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;
 
-	public var stepTime:Float;
+	public var strumTime:Float;
 	public var noteData:Int = 0;
 	public var tooLate:Bool = false;
 	public var canBeHit:Bool = false;
@@ -23,8 +23,6 @@ class Note extends FlxSprite
 
 	public var parent:Note = null;
 	public var children:Array<Note> = [];
-	public var spotInLine:Int = 0;
-	public var isParent:Bool = false;
 	public var isSustain:Bool = false;
 	public var isSustainEnd:Bool = false;
 
@@ -43,7 +41,7 @@ class Note extends FlxSprite
 		return noteSpeed;
 	}
 
-	public function new(stepTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
+	public function new(strumTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
 		super();
 
@@ -53,7 +51,7 @@ class Note extends FlxSprite
 		this.prevNote = prevNote;
 		this.isSustain = isSustain;
 		this.noteData = noteData;
-		this.stepTime = stepTime;
+		this.strumTime = strumTime;
 		this.strumLine = strumLine;
 
 		y -= 2000;
@@ -127,17 +125,23 @@ class Note extends FlxSprite
 	{
 		if (mustPress)
 		{
-			if (stepTime > Conductor.stepPosition - (Ratings.msThreshold / Conductor.stepCrochet)
-				&& stepTime < Conductor.stepPosition + (Ratings.msThreshold / Conductor.stepCrochet))
-				canBeHit = true;
+			if (isSustain)
+			{
+				if (strumTime > ((Conductor.songPosition - Ratings.msThreshold) * 0.5)
+					&& strumTime < (Conductor.songPosition + Ratings.msThreshold))
+					canBeHit = true;
+				else
+					canBeHit = false;
+			}
 			else
-				canBeHit = false;
-
-			if (stepTime < Conductor.stepPosition - (Ratings.msThreshold / Conductor.stepCrochet) && !wasGoodHit)
-				tooLate = true;
+			{
+				if (strumTime > (Conductor.songPosition - Ratings.msThreshold)
+					&& strumTime < (Conductor.songPosition + Ratings.msThreshold))
+					canBeHit = true;
+				else
+					canBeHit = false;
+			}
 		}
-		else
-			canBeHit = false;
 
 		if (tooLate && !wasGoodHit)
 		{

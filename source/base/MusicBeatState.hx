@@ -17,9 +17,9 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		super.update(elapsed);
-
 		updateContent(elapsed);
+
+		super.update(elapsed);
 	}
 
 	public function updateContent(elapsed:Float)
@@ -47,9 +47,9 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		super.update(elapsed);
-
 		updateContent(elapsed);
+
+		super.update(elapsed);
 	}
 
 	public function updateContent(elapsed:Float)

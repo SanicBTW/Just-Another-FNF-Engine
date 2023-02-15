@@ -101,9 +101,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			var baseX:Float = receptors.members[Math.floor(strumNote.noteData)].x;
 			var baseY:Float = receptors.members[Math.floor(strumNote.noteData)].y;
 			strumNote.x = baseX + strumNote.offsetX;
-			strumNote.y = baseY
-				+ strumNote.offsetY
-				+ (downscrollMultiplier * -((Conductor.songPosition - (strumNote.stepTime * Conductor.stepCrochet)) * (0.45 * lineSpeed)));
+			strumNote.y = baseY + strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * (0.45 * lineSpeed)));
 
 			var center:Float = baseY + (Note.swagWidth / 2);
 			if (strumNote.isSustain)
@@ -112,6 +110,9 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 				if (downscrollMultiplier < 0)
 				{
+					if (strumNote.isSustainEnd)
+						strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 1.5;
+
 					strumNote.flipY = true;
 					if (strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
 						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
@@ -135,13 +136,47 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				}
 			}
 
-			if (Conductor.songPosition > strumNote.stepTime * Conductor.stepCrochet && strumNote.tooLate)
-				onMiss.dispatch(strumNote);
+			if (!strumNote.tooLate && strumNote.strumTime < (Conductor.songPosition - Ratings.msThreshold) && !strumNote.wasGoodHit)
+			{
+				strumNote.tooLate = true;
 
-			if (botPlay && !strumNote.tooLate && strumNote.stepTime * Conductor.stepCrochet <= Conductor.songPosition)
+				if (!strumNote.isSustain)
+				{
+					for (note in strumNote.children)
+						note.tooLate = true;
+					onMiss.dispatch(strumNote);
+				}
+				else
+				{
+					if (strumNote.parent != null)
+					{
+						var parent:Note = strumNote.parent;
+						if (!parent.tooLate)
+						{
+							var breakLate:Bool = false;
+							for (note in parent.children)
+							{
+								if (note.tooLate && !note.wasGoodHit)
+									breakLate = true;
+							}
+							if (!breakLate)
+							{
+								for (note in parent.children)
+									note.tooLate;
+								onMiss.dispatch(strumNote);
+							}
+						}
+					}
+				}
+			}
+
+			if (botPlay && !strumNote.tooLate && strumNote.strumTime <= Conductor.songPosition)
 				onBotHit.dispatch(strumNote);
 
-			if ((strumNote.y < -strumNote.height || strumNote.y > FlxG.height + strumNote.height)
+			if ((!SaveData.downScroll
+				&& (strumNote.y < -strumNote.height)
+				|| SaveData.downScroll
+				&& (strumNote.y > (FlxG.height + strumNote.height)))
 				&& (strumNote.tooLate || strumNote.wasGoodHit))
 			{
 				destroyNote(strumNote);

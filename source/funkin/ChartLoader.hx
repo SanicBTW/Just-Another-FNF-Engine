@@ -91,7 +91,7 @@ class ChartLoader
 				switch (songNotes[1])
 				{
 					default:
-						var stepTime:Float = (songNotes[0] / Conductor.stepCrochet);
+						var strumTime:Float = songNotes[0];
 						var noteData:Int = Std.int(songNotes[1] % 4);
 						var hitNote:Bool = section.mustHitSection;
 
@@ -101,42 +101,36 @@ class ChartLoader
 						var strumLine:Int = (hitNote ? 1 : 0);
 						var holdStep:Float = (songNotes[2] / Conductor.stepCrochet);
 
-						var newNote:Note = new Note(stepTime, noteData, strumLine);
+						var newNote:Note = new Note(strumTime, noteData, strumLine);
 						newNote.mustPress = hitNote;
 						unspawnedNoteList.push(newNote);
 
-						if (noteStrumTimes[strumLine].contains(stepTime))
+						if (noteStrumTimes[strumLine].contains(strumTime))
 						{
 							newNote.doubleNote = true;
-							noteStrumTimes[strumLine].push(stepTime);
+							noteStrumTimes[strumLine].push(strumTime);
 						}
-						noteStrumTimes[strumLine].push(stepTime);
+						noteStrumTimes[strumLine].push(strumTime);
 						if (holdStep > 0)
 						{
-							newNote.isParent = true;
-
-							var spot:Int = 0;
-
 							var floorStep:Int = Std.int(holdStep + 1);
 							for (i in 0...floorStep)
 							{
-								var sustainNote:Note = new Note(stepTime + (i + 1), noteData, strumLine,
+								var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * (i + 1)), noteData, strumLine,
 									unspawnedNoteList[Std.int(unspawnedNoteList.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 								sustainNote.parent = newNote;
-								sustainNote.spotInLine = spot;
 								newNote.children.push(sustainNote);
 								if (i == floorStep - 1)
 									sustainNote.isSustainEnd = true;
 								unspawnedNoteList.push(sustainNote);
 
-								if (noteStrumTimes[strumLine].contains(stepTime))
+								if (noteStrumTimes[strumLine].contains(strumTime))
 								{
 									sustainNote.doubleNote = true;
-									noteStrumTimes[strumLine].push(stepTime);
+									noteStrumTimes[strumLine].push(strumTime);
 								}
-								noteStrumTimes[strumLine].push(stepTime);
-								spot++;
+								noteStrumTimes[strumLine].push(strumTime);
 							}
 						}
 					case -1:
@@ -150,6 +144,6 @@ class ChartLoader
 
 	private static function sortByShit(Obj1:Note, Obj2:Note):Int
 	{
-		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.stepTime, Obj2.stepTime);
+		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
 	}
 }
