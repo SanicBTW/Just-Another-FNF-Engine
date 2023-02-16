@@ -119,7 +119,9 @@ class Conductor
 			if (stepPosition > lastStep)
 			{
 				if ((Math.abs(boundSong.playbackTime - songPosition) > comparisonThreshold)
-					|| (boundVocals.audioSource != null && Math.abs(boundVocals.playbackTime - songPosition) > comparisonThreshold))
+					|| (boundVocals != null
+						&& boundVocals.audioSource != null
+						&& Math.abs(boundVocals.playbackTime - songPosition) > comparisonThreshold))
 					resyncTime();
 
 				boundState.stepHit();
@@ -140,12 +142,12 @@ class Conductor
 	public static function resyncTime()
 	{
 		trace('Resyncing song time ${boundSong.playbackTime}, $songPosition');
-		if (boundVocals.audioSource != null)
+		if (boundVocals != null && boundVocals.audioSource != null)
 			boundVocals.stop();
 
 		boundSong.play();
 		songPosition = boundSong.playbackTime;
-		if (boundVocals.audioSource != null)
+		if (boundVocals != null && boundVocals.audioSource != null)
 		{
 			boundVocals.playbackTime = songPosition;
 			boundVocals.play();

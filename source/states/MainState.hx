@@ -4,6 +4,7 @@ import base.Alphabet;
 import base.Controls;
 import base.SaveData;
 import base.ScriptableState;
+import base.osu.BeatmapConverter;
 import base.pocketbase.Collections.Funkin;
 import base.pocketbase.Collections.Funkin_Old;
 import base.pocketbase.Collections.PocketBaseObject;
@@ -77,6 +78,20 @@ class MainState extends ScriptableState
 					menuArray = shitShow;
 					regenMenu();
 				}
+			case "osu!":
+				{
+					menuArray = sys.FileSystem.readDirectory(haxe.io.Path.join([Sys.getCwd(), "assets", "osu!beatmaps"]));
+					regenMenu();
+					/*
+						var shitShow:Array<String> = Assets.getLibrary("osu!beatmaps").list("TEXT");
+						for (shit in 0...shitShow.length)
+						{
+							shitShow[shit] = shitShow[shit].replace("assets/osu!beatmaps/", "");
+							shitShow[shit] = shitShow[shit].substring(shitShow[shit].lastIndexOf("/") + 1, shitShow[shit].indexOf(".osu"));
+						}
+						menuArray = shitShow;
+						regenMenu(); */
+				}
 			case "funkin" | "old_fnf_charts":
 				{
 					var isOld:Bool = (pages[curPage] == "old_fnf_charts");
@@ -102,7 +117,7 @@ class MainState extends ScriptableState
 						regenMenu();
 					});
 				}
-			case "osu!" | "quaver":
+			case "quaver":
 				{
 					menuArray = ["Work in progress"];
 					regenMenu();
@@ -162,6 +177,10 @@ class MainState extends ScriptableState
 						case "internal":
 							{
 								ScriptableState.switchState(new PlayTest(menuArray[curSelected]));
+							}
+						case "osu!":
+							{
+								ScriptableState.switchState(new OSUTest(BeatmapConverter.convert(menuArray[curSelected])));
 							}
 						case "funkin" | "old_fnf_charts":
 							{

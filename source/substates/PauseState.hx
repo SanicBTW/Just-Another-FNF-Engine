@@ -18,12 +18,7 @@ class PauseState extends ScriptableSubState
 {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = [
-		'Resume',
-		'Reset song',
-		PlayTest.instance.playerStrums.botPlay ? "Disable botplay" : "Enable botplay",
-		'Exit'
-	];
+	var menuItems:Array<String> = ['Resume', 'Reset song', 'Exit'];
 	var curSelected:Int = 0;
 	var bgMusic:AudioStream;
 
