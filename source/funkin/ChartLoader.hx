@@ -64,12 +64,12 @@ class ChartLoader
 			var rawChart:String = Assets.getText(Paths.getPath('$formattedSongName/$formattedSongName${difficultyMap[difficulty][0]}.json', "songs")).trim();
 			swagSong = CoolUtil.loadSong(rawChart);
 
-			Conductor.bindSong(state, Paths.inst(songName), swagSong.bpm, Paths.voices(songName));
+			Conductor.bindSong(state, Paths.inst(songName), swagSong, Paths.voices(songName));
 		}
 		else
 		{
 			swagSong = CoolUtil.loadSong(netChart);
-			Conductor.bindSong(state, netInst, swagSong.bpm, netVoices);
+			Conductor.bindSong(state, netInst, swagSong, netVoices);
 		}
 
 		parseNotes(swagSong);

@@ -29,18 +29,6 @@ class Note extends FlxSprite
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
-	public var noteSpeed(default, set):Float = 2;
-
-	private function set_noteSpeed(value:Float):Float
-	{
-		if (noteSpeed != value)
-		{
-			noteSpeed = value;
-			updateSustainScale();
-		}
-		return noteSpeed;
-	}
-
 	public function new(strumTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
 		super();
@@ -82,7 +70,7 @@ class Note extends FlxSprite
 				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
 				prevNote.updateHitbox();
 
-				prevNote.scale.y *= (Conductor.stepCrochet / 100 * 1.05) * noteSpeed;
+				prevNote.scale.y *= (Conductor.stepCrochet / 100 * 1.05) * (Conductor.songSpeed / 0.45);
 				prevNote.updateHitbox();
 			}
 		}
@@ -111,7 +99,7 @@ class Note extends FlxSprite
 			{
 				if (prevNote.isSustain)
 				{
-					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (1.07 / 0.7)) * noteSpeed;
+					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (1.07 / 0.7)) * (Conductor.songSpeed / 0.45);
 					prevNote.updateHitbox();
 					offsetX = prevNote.offsetX;
 				}

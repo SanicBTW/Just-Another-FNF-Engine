@@ -4,7 +4,6 @@ import base.Conductor;
 import base.SaveData;
 import flixel.FlxBasic;
 import flixel.FlxG;
-import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
@@ -12,7 +11,6 @@ import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxSignal.FlxTypedSignal;
-import states.PlayTest;
 
 class StrumLine extends FlxTypedGroup<FlxBasic>
 {
@@ -25,7 +23,6 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	public var onMiss(default, null):FlxTypedSignal<Note->Void> = new FlxTypedSignal<Note->Void>();
 
 	public var botPlay:Bool = false;
-	public var lineSpeed:Float = 0;
 
 	public function new(x:Float = 0, keyAmount:Int = 4)
 	{
@@ -81,7 +78,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	{
 		super.update(elapsed);
 
-		var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1) * FlxMath.signOf(lineSpeed);
+		var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1) * FlxMath.signOf(Conductor.songSpeed / 0.45);
 
 		for (receptor in receptors)
 		{
@@ -97,11 +94,10 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				strumNote.visible = false;
 			}
 
-			strumNote.noteSpeed = Math.abs(lineSpeed);
 			var baseX:Float = receptors.members[Math.floor(strumNote.noteData)].x;
 			var baseY:Float = receptors.members[Math.floor(strumNote.noteData)].y;
 			strumNote.x = baseX + strumNote.offsetX;
-			strumNote.y = baseY + strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * (0.45 * lineSpeed)));
+			strumNote.y = baseY + strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
 
 			var center:Float = baseY + (Note.swagWidth / 2);
 			if (strumNote.isSustain)

@@ -3,12 +3,16 @@ package base.system;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
+import flixel.util.FlxSignal.FlxTypedSignal;
 import lime.app.Application;
 
+// will be deleted on next commit
 class Scroll
 {
 	public static var CROCHET:FlxSprite;
 	public static var POSITION(default, null):Float = 0;
+	public static var SPEED:Float = 0;
+	public static var ON_UPDATE(default, null):FlxTypedSignal<Float->Void> = new FlxTypedSignal<Float->Void>();
 	private static var DIRECTION(default, null):ScrollDirection = (SaveData.downScroll ? DOWN : UP);
 
 	public static function init()
@@ -21,11 +25,14 @@ class Scroll
 	public static function stop()
 	{
 		Application.current.onUpdate.remove(updatePos);
+		ON_UPDATE.removeAll();
 	}
 
 	private static function updatePos(_)
 	{
-		POSITION += FlxG.elapsed * 1000;
+		// bpm / 100 or position / speed or position * speed or literally set the speed to bpm / 100
+		POSITION += FlxG.elapsed * Conductor.stepCrochet;
+		ON_UPDATE.dispatch(FlxG.elapsed);
 	}
 }
 

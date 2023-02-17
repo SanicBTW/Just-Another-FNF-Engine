@@ -538,11 +538,7 @@ class PlayTest extends MusicBeatState
 	{
 		SONG = ChartLoader.loadChart(this, (loadSong != null ? loadSong : ""), 2);
 		Conductor.mapBPMChanges(SONG);
-		for (strumLine in strumLines)
-		{
-			strumLine.lineSpeed = SONG.speed;
-		}
-
+		Conductor.changeBPM(SONG.bpm);
 		generatedMusic = true;
 
 		Conductor.boundSong.onFinish.add(() ->

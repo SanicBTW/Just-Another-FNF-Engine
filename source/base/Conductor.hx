@@ -17,6 +17,8 @@ class Conductor
 {
 	// song shit
 	public static var songPosition:Float = 0;
+	private static var baseSpeed:Float = 2;
+	public static var songSpeed:Float = 2;
 
 	// steps and beats
 	public static var stepPosition:Int = 0;
@@ -40,7 +42,7 @@ class Conductor
 
 	public function new() {}
 
-	public static function bindSong(newState:MusicHandler, newSong:Sound, songBPM:Float, ?newVocals:Sound)
+	public static function bindSong(newState:MusicHandler, newSong:Sound, SONG:Song, ?newVocals:Sound)
 	{
 		boundSong = new AudioStream();
 		boundSong.audioSource = newSong;
@@ -53,7 +55,8 @@ class Conductor
 		}
 		boundState = newState;
 
-		changeBPM(songBPM);
+		baseSpeed = SONG.speed;
+		changeBPM(SONG.bpm);
 
 		songPosition = 0;
 		stepPosition = 0;
@@ -95,6 +98,12 @@ class Conductor
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
+		songSpeed = (0.45 * (baseSpeed + (((bpm / 60) / songSpeed) * (stepCrochet / 1000))));
+		for (note in ChartLoader.unspawnedNoteList)
+		{
+			if (note.isSustain)
+				note.updateSustainScale();
+		}
 	}
 
 	public static function updateTimePosition(elapsed:Float)
@@ -113,7 +122,7 @@ class Conductor
 					lastChange = bpmChangeMap[i];
 			}
 
-			stepPosition = lastChange.stepTime + Math.floor((Conductor.songPosition - lastChange.songTime) / stepCrochet);
+			stepPosition = lastChange.stepTime + Math.floor((songPosition - lastChange.songTime) / stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)
