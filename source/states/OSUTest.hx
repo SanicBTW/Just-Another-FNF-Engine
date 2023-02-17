@@ -52,11 +52,6 @@ class OSUTest extends MusicBeatState
 
 	private var generatedMusic:Bool = false;
 
-	private var hud:UI;
-
-	public static var paused:Bool = false;
-	public static var canPause:Bool = true;
-
 	override public function new(bindBeatmap:Beatmap)
 	{
 		super();
@@ -81,16 +76,8 @@ class OSUTest extends MusicBeatState
 		FlxG.cameras.add(camOther);
 
 		playerStrums = new StrumLine((FlxG.width / 2), 4);
-		playerStrums.onBotHit.add(playerBotHit);
-		playerStrums.onMiss.add(playerMissPress);
 		playerStrums.cameras = [camHUD];
 		add(playerStrums);
-
-		Conductor.songPosition = -5000;
-
-		hud = new UI();
-		add(hud);
-		hud.cameras = [camHUD];
 
 		generateSong();
 
@@ -106,23 +93,18 @@ class OSUTest extends MusicBeatState
 
 		if (generatedMusic)
 		{
-			while ((beatmap.Notes[0] != null) && (beatmap.Notes[0].strumTime - Conductor.songPosition) < 20000)
+			for (note in beatmap.Notes)
 			{
-				var unspawnNote:Note = beatmap.Notes[0];
-				if (unspawnNote != null)
-				{
-					playerStrums.push(unspawnNote);
-				}
-				beatmap.Notes.splice(beatmap.Notes.indexOf(unspawnNote), 1);
-			}
+				var baseX:Float = playerStrums.receptors.members[Math.floor(note.noteData)].x;
+				var baseY:Float = playerStrums.receptors.members[Math.floor(note.noteData)].y;
+				note.x = baseX + note.offsetX;
+				note.y = baseY + note.offsetY + (-(Scroll.POSITION - note.strumTime)) * (Conductor.bpm / 100);
+				note.visible = true;
+				note.active = true;
 
-			playerStrums.holdGroup.forEachAlive(function(coolNote:Note)
-			{
-				if (coolNote.isSustain && coolNote.canBeHit && keys[coolNote.noteData])
-				{
-					playerHit(coolNote);
-				}
-			});
+				if (note.isSustain && note.canBeHit && keys[note.noteData])
+					playerHit(note);
+			}
 		}
 	}
 
@@ -134,17 +116,6 @@ class OSUTest extends MusicBeatState
 	override public function onActionPressed(action:String)
 	{
 		super.onActionPressed(action);
-
-		if (action == "confirm" && canPause)
-		{
-			persistentUpdate = false;
-			persistentDraw = true;
-			openSubState(new PauseState());
-			return;
-		}
-
-		if (playerStrums.botPlay)
-			return;
 
 		var data:Int = -1;
 
@@ -164,11 +135,11 @@ class OSUTest extends MusicBeatState
 		var possibleNoteList:Array<Note> = [];
 		var pressedNotes:Array<Note> = [];
 
-		playerStrums.notesGroup.forEachAlive(function(daNote:Note)
+		for (daNote in beatmap.Notes)
 		{
-			if ((daNote.noteData == data) && !daNote.isSustain && daNote.canBeHit && !daNote.tooLate)
+			if ((daNote.noteData == data) && !daNote.isSustain && daNote.canBeHit && !daNote.tooLate && daNote.alive)
 				possibleNoteList.push(daNote);
-		});
+		}
 		possibleNoteList.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
 
 		if (possibleNoteList.length > 0)
@@ -219,48 +190,11 @@ class OSUTest extends MusicBeatState
 		{
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
-			if (!note.isSustain)
-			{
-				var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
-				var judgement:String = Ratings.judge(noteDiff);
-				Ratings.updateAccuracy(Ratings.judgements[judgement][1]);
-				if (note.children.length > 0)
-					Ratings.notesHit++;
-			}
-			else
-			{
-				if (note.parent != null)
-					Ratings.updateAccuracy(100, true, note.parent.children.length);
-			}
-
 			note.wasGoodHit = true;
 
 			if (!note.isSustain)
 				destroyNote(playerStrums, note);
 		}
-	}
-
-	private function playerBotHit(note:Note)
-	{
-		if (!note.wasGoodHit)
-		{
-			getReceptor(playerStrums, note.noteData).playAnim('confirm');
-			if (note.isSustain && note.isSustainEnd)
-				getReceptor(playerStrums, note.noteData).playAnim('static');
-
-			note.wasGoodHit = true;
-
-			if (!note.isSustain)
-				destroyNote(playerStrums, note);
-		}
-	}
-
-	private function playerMissPress(note:Note)
-	{
-		var direction:Int = note.noteData;
-
-		Ratings.misses++;
-		Ratings.updateAccuracy(Ratings.judgements.get("miss")[1]);
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
@@ -287,36 +221,7 @@ class OSUTest extends MusicBeatState
 			ScriptableState.switchState(new MainState());
 		});
 		Conductor.boundSong.play();
+		Scroll.init();
 		Conductor.resyncTime();
-	}
-
-	override function openSubState(SubState:FlxSubState)
-	{
-		if (!paused)
-		{
-			if (Conductor.boundSong != null)
-				Conductor.boundSong.stop();
-
-			paused = true;
-			canPause = false;
-		}
-
-		super.openSubState(SubState);
-	}
-
-	override function closeSubState()
-	{
-		if (paused)
-		{
-			if (Conductor.boundSong != null)
-				Conductor.boundSong.play();
-
-			Conductor.resyncTime();
-
-			paused = false;
-			canPause = true;
-		}
-
-		super.closeSubState();
 	}
 }

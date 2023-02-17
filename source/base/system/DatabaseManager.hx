@@ -13,7 +13,7 @@ class DatabaseManager
 
 	public static function Initialize()
 	{
-		FlxG.save.close();
+		// FlxG.save.close();
 
 		_save = new FlxSave();
 		_save.bind("db", null);

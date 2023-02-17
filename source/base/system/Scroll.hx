@@ -1,23 +1,35 @@
 package base.system;
 
+import flixel.FlxG;
+import flixel.FlxSprite;
+import flixel.util.FlxColor;
+import lime.app.Application;
+
 class Scroll
 {
-	// The default span of time visible by the length of the scrolling axes.
-	private static var TIME_SPAN_DEFAULT(default, null):Float = 1500;
+	public static var CROCHET:FlxSprite;
+	public static var POSITION(default, null):Float = 0;
+	private static var DIRECTION(default, null):ScrollDirection = (SaveData.downScroll ? DOWN : UP);
 
-	// The minimum span of time that may be visible by the length of the scrolling axes.
-	private static var TIME_SPAN_MIN(default, null):Float = 50;
+	public static function init()
+	{
+		if (CROCHET == null)
+			CROCHET = new FlxSprite(FlxG.width / 2, (DIRECTION == -1 ? FlxG.height - 150 : 60)).makeGraphic(Std.int(FlxG.width / 2), 10, FlxColor.WHITE, true);
+		Application.current.onUpdate.add(updatePos);
+	}
 
-	// The maximum span of time that may be visible by the length of the scrolling axes.
-	private static var TIME_SPAN_MAX(default, null):Float = 20000;
+	public static function stop()
+	{
+		Application.current.onUpdate.remove(updatePos);
+	}
 
-	// The step increase/decrease of the span of time visible by the length of the scrolling axes.
-	private static var TIME_SPAN_STEP(default, null):Float = 200;
-
-	private static var DIRECTION(default, null):ScrollDirection = UP;
+	private static function updatePos(_)
+	{
+		POSITION += FlxG.elapsed * 1000;
+	}
 }
 
-enum abstract ScrollDirection(Int)
+enum abstract ScrollDirection(Int) to Int
 {
 	var UP = 1;
 	var DOWN = -1;

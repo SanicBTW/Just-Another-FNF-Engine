@@ -29,7 +29,7 @@ class Note extends FlxSprite
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
-	public var noteSpeed(default, set):Float;
+	public var noteSpeed(default, set):Float = 2;
 
 	private function set_noteSpeed(value:Float):Float
 	{
