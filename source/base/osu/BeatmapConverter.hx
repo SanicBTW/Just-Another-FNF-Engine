@@ -53,11 +53,28 @@ class BeatmapConverter
 
 		for (i in (beatmap.find("[HitObjects]") + 1)...map.length)
 		{
-			var noteHold:Int = Std.parseInt(beatmap.line(map[i], 5, ','));
+			var noteTime:Float = Std.parseFloat(beatmap.line(map[i], 2, ','));
+			var noteHold:Float = (Std.parseFloat(beatmap.line(map[i], 5, ',')) / Conductor.stepCrochet);
+			var noteData:Int = convertNote(beatmap.line(map[i], 0, ","));
 
-			beatmap.Notes.push(new Note(Std.parseInt(beatmap.line(map[i], 2, ',')) * (4 * (1000 * 60 / beatmap.BPM))
-				+ (noteHold > 0 ? (Conductor.stepCrochet * (i + 1)) : 0),
-				convertNote(beatmap.line(map[i], 0, ",")), 0, (noteHold > 0 ? beatmap.Notes[Std.int(beatmap.Notes.length - 1)] : null), (noteHold > 0)));
+			var note:Note = new Note(noteTime, noteData, 0);
+			note.mustPress = true;
+			beatmap.Notes.push(note);
+
+			if (noteHold > 0)
+			{
+				var floorHold:Int = Std.int(noteHold + 1);
+				for (j in 0...floorHold)
+				{
+					var sustNote:Note = new Note(noteTime + (Conductor.stepCrochet * (j + 1)), noteData, 0, beatmap.Notes[beatmap.Notes.length - 1], true);
+					sustNote.mustPress = true;
+					sustNote.parent = note;
+					note.children.push(sustNote);
+					if (j == floorHold - 1)
+						sustNote.isSustainEnd = true;
+					beatmap.Notes.push(sustNote);
+				}
+			}
 		}
 
 		Conductor.boundSong = new AudioStream();
