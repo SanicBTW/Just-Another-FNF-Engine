@@ -12,10 +12,8 @@ class JudgementPopUp extends FlxSpriteGroup
 	private var comboSprite:FlxSprite;
 	private var judgementSprite:FlxSprite;
 
-	private var comboTwnY:FlxTween;
 	private var comboTwnScale:FlxTween;
 
-	private var judgementTwnY:FlxTween;
 	private var judgementTwnScale:FlxTween;
 
 	public function new(X:Float, Y:Float)
@@ -39,21 +37,15 @@ class JudgementPopUp extends FlxSpriteGroup
 		judgementSprite.antialiasing = antialiasing;
 		judgementSprite.setGraphicSize(Std.int(judgementSprite.width * 0.7));
 		judgementSprite.updateHitbox();
-		judgementSprite.setGraphicSize(Std.int(judgementSprite.width * 0.7));
-		judgementSprite.updateHitbox();
 		add(judgementSprite);
 
 		updateHitbox();
-
-		/*
-			comboSprite.y -= judgementSprite.height / 2;
-			judgementSprite.y -= comboSprite.height / 2; */
 	}
 
 	public function showCombo(number:String, marv:Bool, scoreInt:Int)
 	{
-		if (comboTwnY != null)
-			comboTwnY.cancel();
+		if (comboSprite.alpha == 0)
+			comboSprite.alpha = 1;
 
 		if (comboTwnScale != null)
 			comboTwnScale.cancel();
@@ -62,17 +54,9 @@ class JudgementPopUp extends FlxSpriteGroup
 			comboSprite.animation.remove('base');
 		comboSprite.animation.add('base', [(Std.parseInt(number) != null ? Std.parseInt(number) + 1 : 0) + (!marv ? 0 : 11)], 0, false);
 		comboSprite.animation.play('base');
-		comboSprite.alpha = 1;
+		comboSprite.scale.set(0.75, 0.75);
 
-		comboTwnY = FlxTween.tween(comboSprite, {y: comboSprite.y + 20}, 0.2, {
-			type: FlxTweenType.BACKWARD,
-			ease: FlxEase.circOut,
-			onComplete: function(_)
-			{
-				comboTwnY = null;
-			}
-		});
-		comboTwnScale = FlxTween.tween(comboSprite, {"scale.x": 0, "scale.y": 0}, 0.1, {
+		comboTwnScale = FlxTween.tween(comboSprite, {"scale.x": 0.5, "scale.y": 0.5}, 0.1, {
 			onComplete: function(_)
 			{
 				comboTwnScale = null;
@@ -83,11 +67,8 @@ class JudgementPopUp extends FlxSpriteGroup
 
 	public function showJudgement(ratingName:String, marv:Bool, timing:String)
 	{
-		if (judgementTwnY != null)
-		{
-			judgementSprite.y = 0;
-			judgementTwnY.cancel();
-		}
+		if (judgementSprite.alpha == 0)
+			judgementSprite.alpha = 1;
 
 		if (judgementTwnScale != null)
 			judgementTwnScale.cancel();
@@ -98,17 +79,9 @@ class JudgementPopUp extends FlxSpriteGroup
 			Std.int((Ratings.judgements.get(ratingName)[0] * 2) + (marv ? 0 : 2) + (timing == "late" ? 1 : 0))
 		], 24, false);
 		judgementSprite.animation.play('base');
-		judgementSprite.alpha = 1;
 
-		judgementTwnY = FlxTween.tween(judgementSprite, {y: judgementSprite.y + 20}, 0.2, {
-			type: FlxTweenType.BACKWARD,
-			ease: FlxEase.circOut,
-			onComplete: function(_)
-			{
-				judgementTwnY = null;
-			}
-		});
-		judgementTwnScale = FlxTween.tween(judgementSprite, {alpha: 0}, 0.1, {
+		judgementSprite.scale.set(0.5, 0.5);
+		judgementTwnScale = FlxTween.tween(judgementSprite, {"scale.x": 0, "scale.y": 0, alpha: 0}, 0.1, {
 			onComplete: function(_)
 			{
 				judgementTwnScale = null;

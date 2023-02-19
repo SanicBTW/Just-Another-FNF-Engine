@@ -392,7 +392,7 @@ class PlayTest extends MusicBeatState
 				Ratings.updateAccuracy(Ratings.judgements[judgement][1]);
 				if (note.children.length > 0)
 					Ratings.notesHit++;
-				// hud.popUp.showJudgement(judgement, judgement == "marvelous", "late");
+				hud.popUp.showJudgement((judgement == "marvelous" ? "sick" : judgement), judgement == "marvelous", "late");
 			}
 			else
 			{

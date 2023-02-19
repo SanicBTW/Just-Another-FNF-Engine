@@ -63,7 +63,6 @@ class UI extends FlxSpriteGroup
 		}
 
 		popUp = new JudgementPopUp(0, 0);
-		popUp.screenCenter();
 		add(popUp);
 	}
 
