@@ -1,17 +1,18 @@
 package funkin.ui;
 
-#if use_flx_text
-import flixel.text.FlxText;
-#else
-import base.ui.TextComponent;
-#end
 import base.Conductor;
 import base.ui.Bar;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
+import flixel.util.FlxSort;
 import funkin.ui.JudgementCounter;
+#if use_flx_text
+import flixel.text.FlxText;
+#else
+import base.ui.TextComponent;
+#end
 
 // more components are expected to be added and moved to their respective files
 class UI extends FlxSpriteGroup
@@ -39,7 +40,6 @@ class UI extends FlxSpriteGroup
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
 		#else
 		accuracyText = new TextComponent(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
-		accuracyText.fieldWidth *= 1.5;
 		accuracyText.borderColor = FlxColor.BLACK;
 		accuracyText.borderSize = 1.25;
 		#end
@@ -52,7 +52,7 @@ class UI extends FlxSpriteGroup
 		scoreText.scrollFactor.set();
 		add(scoreText);
 
-		rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A", 24);
+		rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A | [Clear] ", 24);
 		rankText.borderColor = FlxColor.BLACK;
 		rankText.borderSize = 1.25;
 		rankText.scrollFactor.set();
@@ -64,16 +64,26 @@ class UI extends FlxSpriteGroup
 		timeBar.screenCenter(X);
 		add(timeBar);
 
+		var judgementsArray:Array<String> = [];
+		for (idx => judge in Timings.Judgements)
+			judgementsArray.insert(idx, judge.Name);
+		judgementsArray.sort(sortJudgements);
+
 		var curY:Float = (FlxG.height / 2) + 150;
-		for (i in 0...Timings.Judgements.length)
+		for (i in 0...judgementsArray.length)
 		{
-			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 65, curY, Timings.Judgements[i].Name);
+			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 65, curY, judgementsArray[i]);
 			add(counter);
 			curY -= 65;
 		}
 
 		popUp = new JudgementPopUp(0, 0);
 		add(popUp);
+	}
+
+	private function sortJudgements(Obj1:String, Obj2:String)
+	{
+		return FlxSort.byValues(FlxSort.DESCENDING, Timings.getJudgementIndex(Obj1), Timings.getJudgementIndex(Obj2));
 	}
 
 	override public function update(elapsed:Float)
@@ -84,9 +94,9 @@ class UI extends FlxSpriteGroup
 
 	public function updateText()
 	{
-		var fcDisplay:String = (Timings.CurFC != null ? '[${Timings.CurFC}]' : '');
-		accuracyText.text = 'Accuracy ${Timings.returnAccuracy()} ${fcDisplay}';
+		var fcDisplay:String = (Timings.CurFC != null ? ' | [${Timings.CurFC}]' : '');
+		accuracyText.text = 'Accuracy ${Timings.returnAccuracy()}';
 		scoreText.text = 'Score ${Timings.Score}';
-		rankText.text = 'Rank ${Timings.CurRating}';
+		rankText.text = 'Rank ${Timings.CurRating}${fcDisplay}';
 	}
 }

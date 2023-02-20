@@ -377,6 +377,7 @@ class PlayTest extends MusicBeatState
 		}
 	}
 
+	// rewrite this shit function or something please
 	private function playerHit(note:Note)
 	{
 		if (!note.wasGoodHit)
@@ -388,12 +389,10 @@ class PlayTest extends MusicBeatState
 			{
 				var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
 				var judgement:Judgement = Timings.judge(noteDiff);
-				/* how do i use this
-					for (i in 0...Timings.Judgements.length)
-					{
-						if (i > Timings.HighestFC)
-							Timings.HighestFC = i;
-				}*/
+				var index:Int = Timings.getJudgementIndex(judgement.Name);
+
+				if (Timings.HighestFC != index && Timings.HighestFC < index)
+					Timings.HighestFC = index;
 
 				Timings.CurrentCombo++;
 				Timings.TotalHits++;

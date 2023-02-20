@@ -19,7 +19,7 @@ typedef Judgement =
 	var Color:FlxColor; // The judgement color
 }
 
-// Tried basing all of it on Quaver stuff lol
+// Tried basing all of it on Quaver stuff lol - bruh think about better names or something dawg
 class Timings
 {
 	// For note stuff
@@ -131,12 +131,17 @@ class Timings
 	{
 		HighestCombo = 0;
 		CurrentCombo = 0;
+		HighestFC = 0;
 
 		Health = 1;
 		Score = 0;
 
 		TotalHits = 0;
 		NotesAccuracy = 0;
+
+		// reset the combo stored in the object
+		for (judgement in Judgements)
+			judgement.Combo = 0;
 	}
 
 	public static function judge(ms:Float):Judgement
