@@ -30,7 +30,7 @@ class Cache
 
 	// tracking and exclusions
 	private static var localTracked:Array<String> = [];
-	private static var dumpExclusions:Array<String> = ['assets/music/freakyMenu.ogg',];
+	private static var dumpExclusions:Array<String> = ['assets/music/freakyMenu.ogg', 'fonts:assets/fonts/VCR/VCR.png'];
 
 	public static function getBitmap(file:String):Null<BitmapData>
 	{

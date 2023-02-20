@@ -46,12 +46,12 @@ class Conductor
 	{
 		boundSong = new AudioStream();
 		boundSong.audioSource = newSong;
-		SoundManager.addSound(boundSong);
+		SoundManager.setSound("inst", boundSong);
 		boundVocals = new AudioStream();
 		if (newVocals != null)
 		{
 			boundVocals.audioSource = newVocals;
-			SoundManager.addSound(boundVocals);
+			SoundManager.setSound("voices", boundVocals);
 		}
 		boundState = newState;
 

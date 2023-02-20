@@ -12,11 +12,11 @@ import openfl.utils.Assets;
 using StringTools;
 
 // FIX: Trying to turn down the volume while fading in will result on the audio applying the global volume after it ends
-// FIX: When muting, bg music or sound list isnt muted
 class SoundManager
 {
-	private static var soundList:Array<AudioStream> = [];
-	public static var backgroundMusic:AudioStream;
+	private static var sounds:Map<String, AudioStream> = [];
+	public static var music:AudioStream;
+
 	public static var globalVolume(default, set):Float = 1;
 	private static var oldVolume:Float = 1;
 	public static var muted(default, set):Bool = false;
@@ -28,18 +28,20 @@ class SoundManager
 			globalVolume = 1;
 		if (globalVolume < 0)
 			globalVolume = 0;
-		for (sound in soundList)
+
+		for (name => sound in sounds)
+		{
+			trace("Setting " + name + " volume to " + globalVolume);
 			sound.audioVolume = globalVolume;
-		if (backgroundMusic != null)
-			backgroundMusic.audioVolume = globalVolume;
-		return value;
+		}
+		if (music != null)
+			music.audioVolume = globalVolume;
+		return globalVolume;
 	}
 
 	private static function set_muted(value:Bool):Bool
 	{
-		muted = value;
-		// so sorry for this if cond :skull:
-		if (muted)
+		if (value)
 		{
 			oldVolume = globalVolume;
 			globalVolume = 0;
@@ -49,21 +51,42 @@ class SoundManager
 			globalVolume = oldVolume;
 			oldVolume = 0;
 		}
-		return value;
+		return muted = value;
 	}
 
 	public static function clearSoundList()
 	{
-		for (sound in soundList)
+		for (name => sound in sounds)
 		{
+			trace("Deleting " + name + " from the sound manager");
 			sound.stop();
 			sound = null;
 		}
-		soundList = [];
+		sounds = [];
 	}
 
-	public static function addSound(sound:AudioStream)
-		soundList.push(sound);
+	public static function setSound(?name:String, ?audio:AudioStream):AudioStream
+	{
+		if (audio == null)
+			audio = new AudioStream();
+
+		if (name != null && !sounds.exists(name))
+			sounds.set(name, audio);
+
+		if (name == null)
+		{
+			var soundNNumber:Int = 0;
+			for (soundName in sounds.keys())
+			{
+				if (soundName.contains("sound_"))
+					soundNNumber = Std.parseInt(soundName.split("_")[1]);
+			}
+			name = 'sound_${soundNNumber}';
+			sounds.set(name, audio);
+		}
+
+		return sounds.get(name);
+	}
 }
 
 class AudioStream
@@ -107,7 +130,10 @@ class AudioStream
 
 		/*
 			@:privateAccess
-			lime.media.openal.AL.(this.channel.__source.__backend.handle, lime.media.openal.AL.CHANNELS, ) */
+			lime.media.howlerjs.Howler.ctx.
+			/*
+				@:privateAccess
+				lime.media.openal.AL.(this.channel.__source.__backend.handle, lime.media.openal.AL.CHANNELS, ) */
 	}
 
 	public function stop()
