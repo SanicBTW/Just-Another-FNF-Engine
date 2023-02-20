@@ -24,8 +24,8 @@ import flixel.util.FlxColor;
 import funkin.Character;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
-import funkin.Ratings;
 import funkin.Stage;
+import funkin.Timings;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
@@ -87,7 +87,7 @@ class PlayTest extends MusicBeatState
 	override function create()
 	{
 		Controls.setActions(NOTES);
-		Ratings.call();
+		Timings.call();
 
 		instance = this;
 
@@ -138,10 +138,6 @@ class PlayTest extends MusicBeatState
 
 		generateSong();
 
-		/*
-			var shaderFilt:ShaderFilter = new ShaderFilter(shad);
-			FlxG.camera.setFilters([shaderFilt]); */
-
 		var camPos:FlxPoint = new FlxPoint(player.x + (player.width / 2), player.y + (player.height / 2));
 
 		camFollow = new FlxObject(0, 0, 1, 1);
@@ -167,8 +163,6 @@ class PlayTest extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		// shad.elapsed.value = [FlxG.game.ticks / 1000];
 
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
@@ -208,7 +202,11 @@ class PlayTest extends MusicBeatState
 
 			playerStrums.holdGroup.forEachAlive(function(coolNote:Note)
 			{
-				if (coolNote.isSustain && coolNote.canBeHit && keys[coolNote.noteData])
+				if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
+					&& coolNote.canBeHit
+					&& !coolNote.wasGoodHit
+					&& !coolNote.tooLate
+					&& keys[coolNote.noteData])
 				{
 					playerHit(coolNote);
 				}
@@ -383,21 +381,32 @@ class PlayTest extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
+			note.wasGoodHit = true;
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
 			if (!note.isSustain)
 			{
 				var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
-				var judgement:String = Ratings.judge(noteDiff);
-				Ratings.updateAccuracy(Ratings.judgements[judgement][1]);
+				var judgement:Judgement = Timings.judge(noteDiff);
+				/* how do i use this
+					for (i in 0...Timings.Judgements.length)
+					{
+						if (i > Timings.HighestFC)
+							Timings.HighestFC = i;
+				}*/
+
+				Timings.CurrentCombo++;
+				Timings.TotalHits++;
+
+				Timings.NotesAccuracy += judgement.Weight;
+				Timings.Score += judgement.Score;
+
 				if (note.children.length > 0)
-					Ratings.notesHit++;
-				hud.popUp.showJudgement((judgement == "marvelous" ? "sick" : judgement), judgement == "marvelous", "late");
+					Timings.TotalHits++;
 			}
-			else
+			else if (note.parent != null)
 			{
-				if (note.parent != null)
-					Ratings.updateAccuracy(100, true, note.parent.children.length);
+				Timings.NotesAccuracy += 100 / note.parent.children.length;
 			}
 
 			if (!note.doubleNote)
@@ -408,12 +417,13 @@ class PlayTest extends MusicBeatState
 			else
 				trail(player, note);
 
-			note.wasGoodHit = true;
 			if (SONG.needsVoices)
 				Conductor.boundVocals.audioVolume = 1;
 
 			if (!note.isSustain)
 				destroyNote(playerStrums, note);
+
+			hud.updateText();
 		}
 	}
 
@@ -456,8 +466,7 @@ class PlayTest extends MusicBeatState
 
 		player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
 
-		Ratings.misses++;
-		Ratings.updateAccuracy(Ratings.judgements.get("miss")[1]);
+		Timings.judge(9000);
 	}
 
 	private function receptorPlayAnim(opponent:Bool, noteData:Int, time:Float)

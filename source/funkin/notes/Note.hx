@@ -115,16 +115,15 @@ class Note extends FlxSprite
 		{
 			if (isSustain)
 			{
-				if (strumTime > ((Conductor.songPosition - Ratings.msThreshold) * 0.5)
-					&& strumTime < (Conductor.songPosition + Ratings.msThreshold))
+				if (strumTime > ((Conductor.songPosition - Timings.Threshold) * 0.5)
+					&& strumTime < (Conductor.songPosition + Timings.Threshold))
 					canBeHit = true;
 				else
 					canBeHit = false;
 			}
 			else
 			{
-				if (strumTime > (Conductor.songPosition - Ratings.msThreshold)
-					&& strumTime < (Conductor.songPosition + Ratings.msThreshold))
+				if (strumTime > (Conductor.songPosition - Timings.Threshold) && strumTime < (Conductor.songPosition + Timings.Threshold))
 					canBeHit = true;
 				else
 					canBeHit = false;

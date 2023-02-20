@@ -11,8 +11,6 @@ import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
-import flixel.util.FlxSort;
-import funkin.Ratings;
 import funkin.ui.JudgementCounter;
 
 // more components are expected to be added and moved to their respective files
@@ -23,6 +21,10 @@ class UI extends FlxSpriteGroup
 	#else
 	private var accuracyText:TextComponent;
 	#end
+
+	private var scoreText:TextComponent;
+	private var rankText:TextComponent;
+
 	private var timeBar:Bar;
 
 	public var popUp:JudgementPopUp;
@@ -37,11 +39,24 @@ class UI extends FlxSpriteGroup
 		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
 		#else
 		accuracyText = new TextComponent(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
+		accuracyText.fieldWidth *= 1.5;
 		accuracyText.borderColor = FlxColor.BLACK;
 		accuracyText.borderSize = 1.25;
 		#end
 		accuracyText.scrollFactor.set();
 		add(accuracyText);
+
+		scoreText = new TextComponent(30, (accuracyText.y + accuracyText.height) - 5, 0, "Score 000000", 24);
+		scoreText.borderColor = FlxColor.BLACK;
+		scoreText.borderSize = 1.25;
+		scoreText.scrollFactor.set();
+		add(scoreText);
+
+		rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A", 24);
+		rankText.borderColor = FlxColor.BLACK;
+		rankText.borderSize = 1.25;
+		rankText.scrollFactor.set();
+		add(rankText);
 
 		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
 		timeBar.screenCenter();
@@ -49,15 +64,10 @@ class UI extends FlxSpriteGroup
 		timeBar.screenCenter(X);
 		add(timeBar);
 
-		var judgementsArray:Array<String> = [];
-		for (i in Ratings.judgements.keys())
-			judgementsArray.insert(Ratings.judgements.get(i)[0], i);
-		judgementsArray.sort(sortByJudgement);
-
 		var curY:Float = (FlxG.height / 2) + 150;
-		for (i in 0...judgementsArray.length)
+		for (i in 0...Timings.Judgements.length)
 		{
-			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 65, curY, judgementsArray[i]);
+			var counter:JudgementCounter = new JudgementCounter(FlxG.width - 65, curY, Timings.Judgements[i].Name);
 			add(counter);
 			curY -= 65;
 		}
@@ -66,13 +76,17 @@ class UI extends FlxSpriteGroup
 		add(popUp);
 	}
 
-	private function sortByJudgement(Obj1:String, Obj2:String)
-		return FlxSort.byValues(FlxSort.DESCENDING, Ratings.judgements.get(Obj1)[0], Ratings.judgements.get(Obj2)[0]);
-
 	override public function update(elapsed:Float)
 	{
-		super.update(elapsed);
-		accuracyText.text = 'Accuracy ${Math.floor(Ratings.accuracy * 100) / 100}%';
 		timeBar.value = (Conductor.songPosition / Conductor.boundSong.audioLength);
+		super.update(elapsed);
+	}
+
+	public function updateText()
+	{
+		var fcDisplay:String = (Timings.CurFC != null ? '[${Timings.CurFC}]' : '');
+		accuracyText.text = 'Accuracy ${Timings.returnAccuracy()} ${fcDisplay}';
+		scoreText.text = 'Score ${Timings.Score}';
+		rankText.text = 'Rank ${Timings.CurRating}';
 	}
 }

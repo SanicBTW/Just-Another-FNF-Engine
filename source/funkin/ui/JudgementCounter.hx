@@ -4,7 +4,7 @@ import base.SaveData;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
-import funkin.Ratings;
+import funkin.Timings;
 import openfl.text.TextFormatAlign;
 #if use_flx_text
 import flixel.text.FlxText;
@@ -14,17 +14,7 @@ import base.ui.TextComponent;
 
 class JudgementCounter extends FlxSpriteGroup
 {
-	// var name, counter name, color
-	public static var judgements:Map<String, Array<Dynamic>> = [
-		"marvelous" => ["marvs", "MV", FlxColor.fromRGB(255, 255, 153)],
-		"sick" => ["sicks", "SK", FlxColor.fromRGB(255, 255, 51)],
-		"good" => ["goods", "GD", FlxColor.fromRGB(30, 144, 255)],
-		"bad" => ["bads", "BD", FlxColor.fromRGB(148, 0, 211)],
-		"shit" => ["shits", "ST", FlxColor.fromRGB(178, 34, 34)],
-		"miss" => ["misses", "MS", FlxColor.fromRGB(204, 66, 66)]
-	];
-
-	private var judgementVar:String;
+	private var judgementIdx:Int;
 
 	private var counterBG:FlxSprite;
 	#if use_flx_text
@@ -40,12 +30,12 @@ class JudgementCounter extends FlxSpriteGroup
 
 		antialiasing = SaveData.antialiasing;
 		scrollFactor.set();
-		judgementVar = judgements.get(judgement)[0];
+		judgementIdx = Timings.getJudgementIndex(judgement);
 		setGraphicSize(60, 60);
 		updateHitbox();
 
 		counterBG = new FlxSprite(0, 0).loadGraphic(Paths.image("judgementCounter"));
-		counterBG.color = judgements.get(judgement)[2];
+		counterBG.color = Timings.Judgements[judgementIdx].Color;
 		counterBG.setGraphicSize(60, 60);
 		counterBG.antialiasing = antialiasing; // dawg wtf
 		counterBG.scrollFactor.set();
@@ -59,7 +49,7 @@ class JudgementCounter extends FlxSpriteGroup
 		counterText = new FlxText(positions[0], positions[1], counterBG.width, judgements.get(judgement)[1], counterTxtSize);
 		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK);
 		#else
-		counterText = new TextComponent(positions[0], positions[1], counterBG.width, judgements.get(judgement)[1], counterTxtSize, "funkin.otf");
+		counterText = new TextComponent(positions[0], positions[1], counterBG.width, Timings.Judgements[judgementIdx].Short, counterTxtSize, "funkin.otf");
 		counterText.color = FlxColor.BLACK;
 		counterText.alignment = CENTER;
 		#end
@@ -70,9 +60,9 @@ class JudgementCounter extends FlxSpriteGroup
 
 	override public function update(elapsed:Float)
 	{
-		super.update(elapsed);
+		if (Timings.Judgements[judgementIdx].Combo > 0)
+			counterText.text = '${Timings.Judgements[judgementIdx].Combo}';
 
-		if (Reflect.field(Ratings, judgementVar) > 0)
-			counterText.text = '${Reflect.field(Ratings, judgementVar)}';
+		super.update(elapsed);
 	}
 }

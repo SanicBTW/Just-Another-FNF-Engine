@@ -65,7 +65,7 @@ class JudgementPopUp extends FlxSpriteGroup
 		});
 	}
 
-	public function showJudgement(ratingName:String, marv:Bool, timing:String)
+	public function showJudgement(judgement:String, marv:Bool, timing:String)
 	{
 		if (judgementSprite.alpha == 0)
 			judgementSprite.alpha = 1;
@@ -76,7 +76,7 @@ class JudgementPopUp extends FlxSpriteGroup
 		if (judgementSprite.animation.exists('base'))
 			judgementSprite.animation.remove('base');
 		judgementSprite.animation.add('base', [
-			Std.int((Ratings.judgements.get(ratingName)[0] * 2) + (marv ? 0 : 2) + (timing == "late" ? 1 : 0))
+			Std.int((Timings.getJudgementIndex(judgement) * 2) + (marv ? 0 : 2) + (timing == "late" ? 1 : 0))
 		], 24, false);
 		judgementSprite.animation.play('base');
 
