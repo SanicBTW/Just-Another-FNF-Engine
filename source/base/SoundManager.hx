@@ -11,6 +11,13 @@ import openfl.utils.Assets;
 
 using StringTools;
 
+#if js
+import js.html.audio.ChannelMergerNode;
+import js.html.audio.ChannelSplitterNode;
+import js.html.audio.GainNode;
+import lime.media.howlerjs.Howler;
+#end
+
 // FIX: Trying to turn down the volume while fading in will result on the audio applying the global volume after it ends
 class SoundManager
 {
@@ -213,3 +220,36 @@ class AudioStream
 		return audioSource;
 	}
 }
+
+#if js
+class PlaybackGraph
+{
+	private var channelSplitter:ChannelSplitterNode;
+	private var channelMerger:ChannelMergerNode;
+
+	private var vibroGain:GainNode;
+	private var musicGain:GainNode;
+
+	public function new()
+	{
+		channelSplitter = new ChannelSplitterNode(Howler.ctx, {numberOfOutputs: 2});
+		channelMerger = new ChannelMergerNode(Howler.ctx, {numberOfInputs: 2});
+
+		vibroGain = new GainNode(Howler.ctx, {gain: SoundManager.globalVolume});
+		musicGain = new GainNode(Howler.ctx, {gain: SoundManager.globalVolume});
+
+		Howler.masterGain.disconnect(Howler.ctx.destination);
+
+		Howler.masterGain.connect(channelSplitter, 0);
+		channelSplitter.connect(vibroGain, 0);
+		channelSplitter.connect(musicGain, 1);
+
+		vibroGain.connect(channelMerger, 0, 0);
+		musicGain.connect(channelMerger, 0, 1);
+
+		musicGain.context.createBufferSource().buffer.getChannelData(0);
+
+		channelMerger.connect(Howler.ctx.destination);
+	}
+}
+#end

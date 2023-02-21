@@ -14,7 +14,7 @@ import cpp.NativeGc;
 import java.vm.Gc;
 #end
 
-// add network shit
+// properly work on name setting and format
 class Cache
 {
 	// graphics related stuff
