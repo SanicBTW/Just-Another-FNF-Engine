@@ -79,7 +79,7 @@ class SoundManager
 			for (soundName in sounds.keys())
 			{
 				if (soundName.contains("sound_"))
-					soundNNumber = Std.parseInt(soundName.split("_")[1]);
+					soundNNumber = Std.parseInt(soundName.split("_")[1]) + 1;
 			}
 			name = 'sound_${soundNNumber}';
 			sounds.set(name, audio);

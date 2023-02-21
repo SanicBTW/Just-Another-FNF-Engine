@@ -27,9 +27,9 @@ class UI extends FlxSpriteGroup
 	#end
 
 	private var scoreText:TextComponent;
-	private var rankText:FlxBitmapText;
+	private var rankText:TextComponent;
 
-	// private var rankText:TextComponent;
+	// private var rankText:FlxBitmapText;
 	private var timeBar:Bar;
 
 	public var popUp:JudgementPopUp;
@@ -56,20 +56,20 @@ class UI extends FlxSpriteGroup
 		scoreText.scrollFactor.set();
 		add(scoreText);
 
-		rankText = new FlxBitmapText(Fonts.VCR());
-		rankText.setPosition(30, (accuracyText.y - accuracyText.height) + 5);
-		rankText.text = "Rank N/A";
-		rankText.setGraphicSize(Std.int(rankText.width * 0.4));
-		rankText.updateHitbox();
-		rankText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
-		rankText.scrollFactor.set();
-		add(rankText);
 		/*
-			rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A | [Clear] ", 24);
-			rankText.borderColor = FlxColor.BLACK;
-			rankText.borderSize = 1.25;
+			rankText = new FlxBitmapText(Fonts.VCR());
+			rankText.setPosition(30, (accuracyText.y - accuracyText.height) + 5);
+			rankText.text = "Rank N/A";
+			rankText.setGraphicSize(Std.int(rankText.width * 0.4));
+			rankText.updateHitbox();
+			rankText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
 			rankText.scrollFactor.set();
 			add(rankText); */
+		rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A | [Clear] ", 24);
+		rankText.borderColor = FlxColor.BLACK;
+		rankText.borderSize = 1.25;
+		rankText.scrollFactor.set();
+		add(rankText);
 
 		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
 		timeBar.screenCenter();
