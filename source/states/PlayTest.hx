@@ -57,6 +57,7 @@ class PlayTest extends MusicBeatState
 
 	private var player:Character;
 	private var opponent:Character;
+	private var girlfriend:Character;
 
 	private var camFollow:FlxObject;
 	private var camFollowPos:FlxObject;
@@ -123,6 +124,10 @@ class PlayTest extends MusicBeatState
 
 		stage = new Stage("stage");
 		add(stage);
+
+		girlfriend = new Character(400, 130, false, "gf");
+		girlfriend.scrollFactor.set(0.95, 0.95);
+		add(girlfriend);
 
 		player = new Character(750, 100, true, "bf");
 		add(player);
@@ -323,6 +328,10 @@ class PlayTest extends MusicBeatState
 				|| opponent.animation.curAnim.name.startsWith("dance")
 				&& !opponent.animation.curAnim.name.startsWith("sing"))
 				opponent.dance();
+			if (girlfriend.animation.curAnim.name.startsWith("idle")
+				|| girlfriend.animation.curAnim.name.startsWith("dance")
+				&& !girlfriend.animation.curAnim.name.startsWith("sing"))
+				girlfriend.dance();
 		}
 
 		if (curBeat % 4 == 0)
@@ -465,7 +474,7 @@ class PlayTest extends MusicBeatState
 
 		player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
 
-		Timings.judge(9000);
+		Timings.judge(164);
 	}
 
 	private function receptorPlayAnim(opponent:Bool, noteData:Int, time:Float)

@@ -1,6 +1,7 @@
 package funkin.ui;
 
 import base.Conductor;
+import base.SaveData;
 import base.system.Fonts;
 import base.ui.Bar;
 import flixel.FlxG;
@@ -26,9 +27,10 @@ class UI extends FlxSpriteGroup
 	private var accuracyText:TextComponent;
 	#end
 
+	// private var accuracyText:FlxBitmapText;
 	private var scoreText:TextComponent;
-	private var rankText:TextComponent;
 
+	private var rankText:TextComponent;
 	// private var rankText:FlxBitmapText;
 	private var timeBar:Bar;
 
@@ -47,6 +49,17 @@ class UI extends FlxSpriteGroup
 		accuracyText.borderColor = FlxColor.BLACK;
 		accuracyText.borderSize = 1.25;
 		#end
+		/*
+			accuracyText = new FlxBitmapText(Fonts.VCR());
+			accuracyText.setGraphicSize(Std.int(accuracyText.width * 0.5));
+			accuracyText.centerOrigin();
+			accuracyText.setPosition(30, FlxG.width / 2);
+			accuracyText.text = "Accuracy 0%";
+			accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
+			accuracyText.antialiasing = SaveData.antialiasing;
+			accuracyText.scrollFactor.set();
+			accuracyText.updateHitbox();
+			add(accuracyText); */
 		accuracyText.scrollFactor.set();
 		add(accuracyText);
 
@@ -60,11 +73,12 @@ class UI extends FlxSpriteGroup
 			rankText = new FlxBitmapText(Fonts.VCR());
 			rankText.setPosition(30, (accuracyText.y - accuracyText.height) + 5);
 			rankText.text = "Rank N/A";
-			rankText.setGraphicSize(Std.int(rankText.width * 0.4));
-			rankText.updateHitbox();
+			// rankText.setGraphicSize(Std.int(rankText.width * 0.4));
+			// rankText.updateHitbox();
 			rankText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
 			rankText.scrollFactor.set();
 			add(rankText); */
+
 		rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A | [Clear] ", 24);
 		rankText.borderColor = FlxColor.BLACK;
 		rankText.borderSize = 1.25;
@@ -109,6 +123,8 @@ class UI extends FlxSpriteGroup
 	{
 		var fcDisplay:String = (Timings.CurFC != null ? ' | [${Timings.CurFC}]' : '');
 		accuracyText.text = 'Accuracy ${Timings.returnAccuracy()}';
+		// accuracyText.centerOrigin();
+		// accuracyText.setPosition(30, FlxG.width / 2);
 		scoreText.text = 'Score ${Timings.Score}';
 		rankText.text = 'Rank ${Timings.CurRating}${fcDisplay}';
 	}

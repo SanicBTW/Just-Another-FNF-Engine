@@ -47,6 +47,10 @@ class Character extends FlxSprite
 	public var singDuration:Float = 4;
 	public var danceEveryNumBeats:Int = 2;
 
+	// GF Dance shit
+	public var danceIdle:Bool = false;
+	public var danced:Bool = false;
+
 	public var cameraPosition:FlxPoint;
 	public var characterPosition:FlxPoint;
 
@@ -105,6 +109,7 @@ class Character extends FlxSprite
 		if (isPlayer)
 			flipX = !flipX;
 
+		danceIdle = (animation.getByName('danceLeft') != null && animation.getByName('danceRight') != null);
 		dance();
 
 		setPosition(x, y);
@@ -114,23 +119,26 @@ class Character extends FlxSprite
 
 	override public function update(elapsed:Float)
 	{
-		if (!isPlayer)
+		if (animation.curAnim != null)
 		{
-			if (animation.curAnim.name.startsWith("sing"))
-				holdTimer += elapsed;
-
-			if (holdTimer >= (Conductor.stepCrochet * singDuration) / 1000)
+			if (!isPlayer)
 			{
-				dance();
-				holdTimer = 0;
+				if (animation.curAnim.name.startsWith("sing"))
+					holdTimer += elapsed;
+
+				if (holdTimer >= (Conductor.stepCrochet * singDuration) / 1000)
+				{
+					dance();
+					holdTimer = 0;
+				}
 			}
-		}
-		else
-		{
-			if (animation.curAnim.name.startsWith("sing"))
-				holdTimer += elapsed;
 			else
-				holdTimer = 0;
+			{
+				if (animation.curAnim.name.startsWith("sing"))
+					holdTimer += elapsed;
+				else
+					holdTimer = 0;
+			}
 		}
 
 		super.update(elapsed);
@@ -138,7 +146,14 @@ class Character extends FlxSprite
 
 	public function dance(forced:Bool = false)
 	{
-		playAnim('idle', forced);
+		if (danceIdle)
+		{
+			danced = !danced;
+
+			playAnim('dance${danced ? 'Right' : 'Left'}', forced);
+		}
+		else
+			playAnim('idle', forced);
 	}
 
 	// todo: improve

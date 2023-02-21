@@ -170,13 +170,13 @@ class Timings
 
 	private static function updateRank()
 	{
-		var lastAcc:Float = 0;
+		// bro some shit working on windows and then breaking on fucking js wtf dawg
 		for (rating => condition in scoreRating)
 		{
-			if ((condition <= Accuracy) && (condition >= lastAcc))
+			if (Accuracy < condition)
 			{
-				lastAcc = Accuracy;
 				CurRating = rating;
+				break;
 			}
 		}
 
