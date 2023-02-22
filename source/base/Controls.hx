@@ -54,16 +54,8 @@ class Controls
 	// TODO: set custom actions based on the users save data
 	public static function init()
 	{
-		Application.current.window.onKeyDown.add((keyCode, mod) ->
-		{
-			@:privateAccess
-			onKeyDown(Keyboard.__convertKeyCode(keyCode));
-		});
-		Application.current.window.onKeyUp.add((keyCode, mod) ->
-		{
-			@:privateAccess
-			onKeyUp(Keyboard.__convertKeyCode(keyCode));
-		});
+		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 		setActions(UI);
 	}
 
@@ -115,25 +107,25 @@ class Controls
 		return null;
 	}
 
-	private static function onKeyDown(keyCode:Int)
+	private static function onKeyDown(evt:KeyboardEvent)
 	{
-		if (!keyPressed.contains(keyCode))
+		if (!keyPressed.contains(evt.keyCode))
 		{
-			keyPressed.push(keyCode);
+			keyPressed.push(evt.keyCode);
 
-			var pressedAction:Null<String> = getActionFromKey(keyCode);
+			var pressedAction:Null<String> = getActionFromKey(evt.keyCode);
 			if (pressedAction != null)
 				onActionPressed.dispatch(pressedAction);
 		}
 	}
 
-	private static function onKeyUp(keyCode:Int)
+	private static function onKeyUp(evt:KeyboardEvent)
 	{
-		if (keyPressed.contains(keyCode))
+		if (keyPressed.contains(evt.keyCode))
 		{
-			keyPressed.remove(keyCode);
+			keyPressed.remove(evt.keyCode);
 
-			var releasedAction:Null<String> = getActionFromKey(keyCode);
+			var releasedAction:Null<String> = getActionFromKey(evt.keyCode);
 			if (releasedAction != null)
 				onActionReleased.dispatch(releasedAction);
 		}

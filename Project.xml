@@ -51,9 +51,9 @@
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 	<haxedef name="FLX_NO_SOUND_SYSTEM" />
 
-	<hxcpp name="HXCPP_GC_BIG_BLOCKS" />
-	<hxcpp name="HXCPP_GC_DYNAMIC_SIZE" />
-	<hxcpp name="HXCPP_GC_MOVING" />
+	<haxedef name="HXCPP_GC_BIG_BLOCKS" />
+	<haxedef name="HXCPP_GC_DYNAMIC_SIZE" />
+	<haxedef name="HXCPP_GC_MOVING" />
 
 	<!-- _________________________________ Custom _______________________________ -->
 

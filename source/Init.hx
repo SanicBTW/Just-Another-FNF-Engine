@@ -11,7 +11,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import funkin.Prompt;
-#if !fast_start
+#if fast_start
 import base.pocketbase.Request;
 import funkin.ChartLoader;
 #end

@@ -27,11 +27,9 @@ class UI extends FlxSpriteGroup
 	private var accuracyText:TextComponent;
 	#end
 
-	// private var accuracyText:FlxBitmapText;
 	private var scoreText:TextComponent;
 
 	private var rankText:TextComponent;
-	// private var rankText:FlxBitmapText;
 	private var timeBar:Bar;
 
 	public var popUp:JudgementPopUp;
@@ -40,26 +38,9 @@ class UI extends FlxSpriteGroup
 	{
 		super();
 
-		#if use_flx_text
-		accuracyText = new FlxText(30, (FlxG.height / 2), 0, "Accuracy 0%", 24);
-		accuracyText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
-		accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 2);
-		#else
 		accuracyText = new TextComponent(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
 		accuracyText.borderColor = FlxColor.BLACK;
 		accuracyText.borderSize = 1.25;
-		#end
-		/*
-			accuracyText = new FlxBitmapText(Fonts.VCR());
-			accuracyText.setGraphicSize(Std.int(accuracyText.width * 0.5));
-			accuracyText.centerOrigin();
-			accuracyText.setPosition(30, FlxG.width / 2);
-			accuracyText.text = "Accuracy 0%";
-			accuracyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
-			accuracyText.antialiasing = SaveData.antialiasing;
-			accuracyText.scrollFactor.set();
-			accuracyText.updateHitbox();
-			add(accuracyText); */
 		accuracyText.scrollFactor.set();
 		add(accuracyText);
 
@@ -68,16 +49,6 @@ class UI extends FlxSpriteGroup
 		scoreText.borderSize = 1.25;
 		scoreText.scrollFactor.set();
 		add(scoreText);
-
-		/*
-			rankText = new FlxBitmapText(Fonts.VCR());
-			rankText.setPosition(30, (accuracyText.y - accuracyText.height) + 5);
-			rankText.text = "Rank N/A";
-			// rankText.setGraphicSize(Std.int(rankText.width * 0.4));
-			// rankText.updateHitbox();
-			rankText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
-			rankText.scrollFactor.set();
-			add(rankText); */
 
 		rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A | [Clear] ", 24);
 		rankText.borderColor = FlxColor.BLACK;
