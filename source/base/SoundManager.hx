@@ -169,12 +169,7 @@ class AudioStream
 	}
 
 	private function get_playbackTime():Float
-	{
-		if (channel != null)
-			return channel.position;
-		else
-			return playbackTime;
-	}
+		return (channel != null ? channel.position : playbackTime);
 
 	private function set_playbackTime(newTime:Float):Float
 	{
@@ -221,12 +216,16 @@ class AudioStream
 }
 
 #if js
+// TODO: Make it get the spaces that a bar can be on the whole width of the screen
 class PlaybackGraph extends FlxSpriteGroup
 {
 	private var ana:AnalyserNode;
 
 	private var SampleData:Uint8Array;
 	private var buflength:Int;
+
+	private var barWidth:Int = 25;
+	private var barIterator:Int;
 
 	override public function new()
 	{
@@ -240,20 +239,22 @@ class PlaybackGraph extends FlxSpriteGroup
 		buflength = ana.frequencyBinCount;
 		SampleData = new Uint8Array(ana.frequencyBinCount);
 
-		for (i in 0...buflength)
+		barIterator = Std.int(flixel.FlxG.width / buflength * 5);
+
+		for (i in 0...barIterator)
 		{
-			var sprite:FlxSprite = new FlxSprite(i * 25, 0).makeGraphic(20, 120, FlxColor.WHITE);
+			var sprite:FlxSprite = new FlxSprite(i * barWidth, 0).makeGraphic(barWidth - 5, 120, FlxColor.WHITE);
 			sprite.alpha = 0.45;
-			screenCenter();
 			add(sprite);
 		}
+		screenCenter();
 	}
 
 	override public function update(elapsed:Float)
 	{
 		ana.getByteFrequencyData(SampleData);
 
-		for (i in 0...buflength)
+		for (i in 0...barIterator)
 		{
 			members[i].scale.y = SampleData[i] / flixel.FlxG.height * 14;
 		}

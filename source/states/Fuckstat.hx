@@ -13,7 +13,7 @@ class Fuckstat extends ScriptableState
 	override public function create()
 	{
 		var fuck = SoundManager.setSound("test", null);
-		fuck.audioSource = Paths.inst('recursed');
+		fuck.audioSource = Paths.music("freakyMenu");
 		fuck.loopAudio = true;
 		fuck.play();
 
