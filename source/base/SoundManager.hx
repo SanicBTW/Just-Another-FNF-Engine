@@ -217,6 +217,7 @@ class AudioStream
 
 #if js
 // TODO: Make it get the spaces that a bar can be on the whole width of the screen
+// TODO: Make it bind the max height with an offset
 class PlaybackGraph extends FlxSpriteGroup
 {
 	private var ana:AnalyserNode;
@@ -256,7 +257,7 @@ class PlaybackGraph extends FlxSpriteGroup
 
 		for (i in 0...barIterator)
 		{
-			members[i].scale.y = SampleData[i] / flixel.FlxG.height * 14;
+			members[i].scale.y = SampleData[i] / flixel.FlxG.height * 15;
 		}
 	}
 }
