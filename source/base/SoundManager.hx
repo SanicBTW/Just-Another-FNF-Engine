@@ -233,7 +233,7 @@ class PlaybackGraph extends FlxSpriteGroup
 		super();
 
 		ana = Howler.ctx.createAnalyser();
-		ana.fftSize = 254;
+		ana.fftSize = 256;
 		Howler.masterGain.connect(ana);
 		ana.connect(Howler.ctx.destination);
 
