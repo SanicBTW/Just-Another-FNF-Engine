@@ -1,7 +1,13 @@
 package base;
 
+import flixel.FlxSprite;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxColor;
 import flixel.util.FlxSignal.FlxTypedSignal;
+import js.html.audio.AnalyserNode;
+import js.lib.Float32Array;
+import js.lib.Uint8Array;
+import lime.media.AudioBuffer;
 import openfl.events.Event;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
@@ -230,26 +236,67 @@ class PlaybackGraph
 	private var vibroGain:GainNode;
 	private var musicGain:GainNode;
 
+	private var ana:AnalyserNode;
+
+	private var SampleData:Uint8Array;
+	private var buflength:Int;
+
+	public var bars:Array<FlxSprite> = [];
+
 	public function new()
 	{
-		channelSplitter = new ChannelSplitterNode(Howler.ctx, {numberOfOutputs: 2});
-		channelMerger = new ChannelMergerNode(Howler.ctx, {numberOfInputs: 2});
+		/*
+			channelSplitter = new ChannelSplitterNode(Howler.ctx, {numberOfOutputs: 2});
+			channelMerger = new ChannelMergerNode(Howler.ctx, {numberOfInputs: 2});
 
-		vibroGain = new GainNode(Howler.ctx, {gain: SoundManager.globalVolume});
-		musicGain = new GainNode(Howler.ctx, {gain: SoundManager.globalVolume});
+			vibroGain = new GainNode(Howler.ctx, {gain: SoundManager.globalVolume});
+			musicGain = new GainNode(Howler.ctx, {gain: SoundManager.globalVolume});
 
-		Howler.masterGain.disconnect(Howler.ctx.destination);
+			Howler.masterGain.disconnect(Howler.ctx.destination);
 
-		Howler.masterGain.connect(channelSplitter, 0);
-		channelSplitter.connect(vibroGain, 0);
-		channelSplitter.connect(musicGain, 1);
+			Howler.masterGain.connect(channelSplitter, 0);
+			channelSplitter.connect(vibroGain, 0);
+			channelSplitter.connect(musicGain, 1);
 
-		vibroGain.connect(channelMerger, 0, 0);
-		musicGain.connect(channelMerger, 0, 1);
+			vibroGain.connect(channelMerger, 0, 0);
+			musicGain.connect(channelMerger, 0, 1);
 
-		musicGain.context.createBufferSource().buffer.getChannelData(0);
+			channelMerger.connect(Howler.ctx.destination); */
 
-		channelMerger.connect(Howler.ctx.destination);
+		ana = Howler.ctx.createAnalyser();
+		ana.connect(Howler.ctx.destination);
+
+		buflength = ana.frequencyBinCount;
+		SampleData = new Uint8Array(ana.frequencyBinCount);
+
+		for (i in 0...8)
+		{
+			var sprite:FlxSprite = new FlxSprite(i * 25, 0).makeGraphic(20, 120, FlxColor.WHITE);
+			sprite.alpha = 0.45;
+			bars.push(sprite);
+		}
+	}
+
+	public function Update(?elapsed:Float)
+	{
+		if (elapsed == null)
+			elapsed = flixel.FlxG.elapsed;
+
+		ana.getByteFrequencyData(SampleData);
+
+		/*
+			var i:Int = 0;
+			while(i < buflength)
+			{
+				i++;
+
+				bars[i % 8].scale.y = SampleData[i];
+		}*/
+
+		for (i in 0...buflength)
+		{
+			bars[i % 8].scale.y = SampleData[i];
+		}
 	}
 }
 #end

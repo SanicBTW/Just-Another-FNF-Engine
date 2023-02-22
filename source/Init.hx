@@ -48,7 +48,7 @@ class Init extends ScriptableState
 		rounded.scale.y = 0;
 		add(rounded);
 
-		shitTimer = new Timer(3, function()
+		shitTimer = new Timer(2, function()
 		{
 			icon.alpha = 0;
 			icon = null;
@@ -103,7 +103,7 @@ class Init extends ScriptableState
 	function end()
 	{
 		#if !fast_start
-		ScriptableState.switchState(new states.MainState());
+		ScriptableState.switchState(new states.Fuckstat());
 		#else
 		Request.getFile("funkin", "yixzwztgjxfsmj1", "double_kill_hard_OfVOJgFZJQ.json", function(chart)
 		{
