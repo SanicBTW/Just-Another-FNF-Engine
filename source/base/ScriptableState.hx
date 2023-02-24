@@ -55,22 +55,7 @@ class ScriptableState extends FlxUIState
 		FlxG.switchState(nextState);
 	}
 
-	function onActionPressed(action:String)
-	{
-		switch (action)
-		{
-			case "vol_up":
-				if (SoundManager.muted)
-					SoundManager.muted = false;
-				SoundManager.globalVolume += 0.1;
-			case "vol_down":
-				if (SoundManager.muted)
-					SoundManager.muted = false;
-				SoundManager.globalVolume -= 0.1;
-			case "mute":
-				SoundManager.muted = !SoundManager.muted;
-		}
-	}
+	function onActionPressed(action:String) {}
 
 	function onActionReleased(action:String) {}
 }
@@ -91,22 +76,7 @@ class ScriptableSubState extends FlxUISubState
 		super.destroy();
 	}
 
-	function onActionPressed(action:String)
-	{
-		switch (action)
-		{
-			case "vol_up":
-				if (SoundManager.muted)
-					SoundManager.muted = false;
-				SoundManager.globalVolume += 0.1;
-			case "vol_down":
-				if (SoundManager.muted)
-					SoundManager.muted = false;
-				SoundManager.globalVolume -= 0.1;
-			case "mute":
-				SoundManager.muted = !SoundManager.muted;
-		}
-	}
+	function onActionPressed(action:String) {}
 
 	function onActionReleased(action:String) {}
 }

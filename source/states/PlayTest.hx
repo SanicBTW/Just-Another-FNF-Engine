@@ -127,14 +127,14 @@ class PlayTest extends MusicBeatState
 			stage = new Stage("stage");
 			add(stage);
 
-			girlfriend = new Character(400, 130, false, "gf");
+			girlfriend = new Character(400, 130, false, "gfthic");
 			girlfriend.scrollFactor.set(0.95, 0.95);
 			add(girlfriend);
 
-			player = new Character(750, 100, true, "bf");
+			player = new Character(770, 100, true, "bf");
 			add(player);
 
-			opponent = new Character(50, 100, false, "dad");
+			opponent = new Character(100, 100, false, "dad");
 			add(opponent);
 		}
 
@@ -504,16 +504,6 @@ class PlayTest extends MusicBeatState
 
 		Timings.judge(164);
 		hud.updateText();
-	}
-
-	private function receptorPlayAnim(opponent:Bool, noteData:Int, time:Float)
-	{
-		var receptor:Receptor = getReceptor(opponent ? opponentStrums : playerStrums, noteData);
-		if (receptor != null)
-		{
-			receptor.playAnim('confirm', true);
-			receptor.resetAnim = time;
-		}
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor

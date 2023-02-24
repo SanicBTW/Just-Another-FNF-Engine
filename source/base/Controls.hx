@@ -115,7 +115,22 @@ class Controls
 
 			var pressedAction:Null<String> = getActionFromKey(evt.keyCode);
 			if (pressedAction != null)
+			{
+				switch (pressedAction)
+				{
+					case "vol_up":
+						if (SoundManager.muted)
+							SoundManager.muted = false;
+						SoundManager.globalVolume += 0.1;
+					case "vol_down":
+						if (SoundManager.muted)
+							SoundManager.muted = false;
+						SoundManager.globalVolume -= 0.1;
+					case "mute":
+						SoundManager.muted = !SoundManager.muted;
+				}
 				onActionPressed.dispatch(pressedAction);
+			}
 		}
 	}
 
