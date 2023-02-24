@@ -8,6 +8,7 @@ class SaveData
 	public static var showTrails:Bool = true;
 	public static var downScroll:Bool = false;
 	public static var middleScroll:Bool = false;
+	public static var onlyNotes:Bool = false;
 
 	public static function getSettings():Array<String>
 	{

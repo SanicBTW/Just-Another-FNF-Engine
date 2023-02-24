@@ -104,6 +104,11 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			{
 				strumNote.y -= ((Note.swagWidth / 2) * downscrollMultiplier);
 
+				if (strumNote.prevNote != null)
+				{
+					strumNote.y -= Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height) + 1.5);
+				}
+
 				if (downscrollMultiplier < 0)
 				{
 					if (strumNote.isSustainEnd)

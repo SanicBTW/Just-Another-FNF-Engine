@@ -94,7 +94,7 @@ class PlayTest extends MusicBeatState
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
-		camGame.bgColor = FlxColor.GRAY;
+		camGame.bgColor.alpha = 0;
 		FlxCamera.defaultCameras = [camGame];
 
 		camHUD = new FlxCamera();
@@ -122,18 +122,21 @@ class PlayTest extends MusicBeatState
 		strumLines.add(playerStrums);
 		add(strumLines);
 
-		stage = new Stage("stage");
-		add(stage);
+		if (!SaveData.onlyNotes)
+		{
+			stage = new Stage("stage");
+			add(stage);
 
-		girlfriend = new Character(400, 130, false, "gf");
-		girlfriend.scrollFactor.set(0.95, 0.95);
-		add(girlfriend);
+			girlfriend = new Character(400, 130, false, "gf");
+			girlfriend.scrollFactor.set(0.95, 0.95);
+			add(girlfriend);
 
-		player = new Character(750, 100, true, "bf");
-		add(player);
+			player = new Character(750, 100, true, "bf");
+			add(player);
 
-		opponent = new Character(50, 100, false, "dad");
-		add(opponent);
+			opponent = new Character(50, 100, false, "dad");
+			add(opponent);
+		}
 
 		Conductor.songPosition = -5000;
 
@@ -143,7 +146,10 @@ class PlayTest extends MusicBeatState
 
 		generateSong();
 
-		var camPos:FlxPoint = new FlxPoint(player.x + (player.width / 2), player.y + (player.height / 2));
+		var camPos:FlxPoint = new FlxPoint(0, 0);
+
+		if (!SaveData.onlyNotes)
+			camPos.set(player.x + (player.width / 2), player.y + (player.height / 2));
 
 		camFollow = new FlxObject(0, 0, 1, 1);
 		camFollow.setPosition(camPos.x, camPos.y);
@@ -154,7 +160,7 @@ class PlayTest extends MusicBeatState
 		add(camFollowPos);
 
 		FlxG.camera.follow(camFollowPos, LOCKON, 1);
-		FlxG.camera.zoom = stage.cameraZoom;
+		FlxG.camera.zoom = (stage != null) ? stage.cameraZoom : 1;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -172,7 +178,7 @@ class PlayTest extends MusicBeatState
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
-		FlxG.camera.zoom = FlxMath.lerp(stage.cameraZoom, FlxG.camera.zoom, 0.95);
+		FlxG.camera.zoom = FlxMath.lerp((stage != null) ? stage.cameraZoom : 1, FlxG.camera.zoom, 0.95);
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, 0.95);
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
@@ -188,9 +194,12 @@ class PlayTest extends MusicBeatState
 				}
 			}
 
-			updateCamFollow(elapsed);
-			cameraDisplacement(player, true);
-			cameraDisplacement(opponent, false);
+			if (!SaveData.onlyNotes)
+			{
+				updateCamFollow(elapsed);
+				cameraDisplacement(player, true);
+				cameraDisplacement(opponent, false);
+			}
 
 			while ((ChartLoader.unspawnedNoteList[0] != null)
 				&& (ChartLoader.unspawnedNoteList[0].strumTime - Conductor.songPosition) < spawnTime)
@@ -318,7 +327,7 @@ class PlayTest extends MusicBeatState
 	{
 		super.beatHit();
 
-		if (curBeat % 2 == 0)
+		if (curBeat % 2 == 0 && !SaveData.onlyNotes)
 		{
 			if (player.animation.curAnim.name.startsWith("idle")
 				|| player.animation.curAnim.name.startsWith("dance")
@@ -359,13 +368,16 @@ class PlayTest extends MusicBeatState
 
 			if (!note.doubleNote)
 			{
-				opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-				opponent.holdTimer = 0;
+				if (opponent != null)
+				{
+					opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+					opponent.holdTimer = 0;
+				}
 			}
 			else
 				trail(opponent, note);
 
-			if (note.doubleNote && note.isSustain && opponent.animation.curAnim.name == "idle")
+			if (note.doubleNote && note.isSustain && opponent != null && opponent.animation.curAnim.name == "idle")
 			{
 				opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
 				opponent.holdTimer = 0;
@@ -379,6 +391,9 @@ class PlayTest extends MusicBeatState
 				destroyNote(opponentStrums, note);
 			else
 			{
+				if (opponent == null)
+					return;
+
 				var targetHold:Float = (Conductor.stepCrochet * opponent.singDuration) / 1000;
 				if (opponent.holdTimer + 0.2 > targetHold)
 					opponent.holdTimer = targetHold - 0.2;
@@ -419,8 +434,11 @@ class PlayTest extends MusicBeatState
 
 			if (!note.doubleNote)
 			{
-				player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-				player.holdTimer = 0;
+				if (player != null)
+				{
+					player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+					player.holdTimer = 0;
+				}
 			}
 			else
 				trail(player, note);
@@ -445,8 +463,11 @@ class PlayTest extends MusicBeatState
 
 			if (!note.doubleNote)
 			{
-				player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-				player.holdTimer = 0;
+				if (player != null)
+				{
+					player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+					player.holdTimer = 0;
+				}
 			}
 			else
 				trail(player, note);
@@ -459,6 +480,9 @@ class PlayTest extends MusicBeatState
 				destroyNote(playerStrums, note);
 			else
 			{
+				if (player == null)
+					return;
+
 				var targetHold:Float = (Conductor.stepCrochet * player.singDuration) / 1000;
 				if (player.holdTimer + 0.2 > targetHold)
 					player.holdTimer = targetHold - 0.2;
@@ -472,9 +496,14 @@ class PlayTest extends MusicBeatState
 		if (SONG.needsVoices)
 			Conductor.boundVocals.audioVolume = 0;
 
-		player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
+		if (player != null)
+		{
+			player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
+			player.holdTimer = 0;
+		}
 
 		Timings.judge(164);
+		hud.updateText();
 	}
 
 	private function receptorPlayAnim(opponent:Bool, noteData:Int, time:Float)
@@ -611,37 +640,34 @@ class PlayTest extends MusicBeatState
 		if (!SaveData.showTrails)
 			return;
 
-		var time:Float = 0;
+		if (char == null)
+			return;
+
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
+		var targetHold:Float = (Conductor.stepCrochet * char.singDuration) / 1000;
+
 		var daCopy:FlxSprite = char.clone();
-
-		daCopy.active = false;
-		daCopy.alpha = 0.5;
-
+		daCopy.frames = char.frames;
+		daCopy.animation.copyFrom(char.animation);
+		daCopy.alpha = 0.6;
 		daCopy.setPosition(char.x, char.y);
+		daCopy.animation.play(anim, true);
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
-		daCopy.animation.play(anim, true);
-
-		if (note.isSustain && !note.isSustainEnd)
-			time += 0.15;
+		if (note.isSustain)
+			targetHold += 0.2;
 
 		if (!note.isSustain)
+		{
 			insert(members.indexOf(char) - 1, daCopy);
-
-		if (!note.isSustain)
-			runTween(daCopy, char.singDuration, time);
-	}
-
-	function runTween(daCopy:FlxSprite, singDuration:Float, delay:Float)
-	{
-		FlxTween.tween(daCopy, {alpha: 0}, (Conductor.stepCrochet * singDuration) / 1000, {
-			startDelay: delay,
-			onComplete: function(_)
-			{
-				daCopy.destroy();
-				daCopy = null;
-			}
-		});
+			FlxTween.tween(daCopy, {alpha: 0}, targetHold, {
+				ease: FlxEase.quadInOut,
+				onComplete: function(_)
+				{
+					daCopy.destroy();
+					daCopy = null;
+				}
+			});
+		}
 	}
 }

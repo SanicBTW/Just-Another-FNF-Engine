@@ -99,11 +99,6 @@ class Conductor
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
 		songSpeed = (0.45 * (baseSpeed + (((bpm / 60) / songSpeed) * (stepCrochet / 1000))));
-		for (note in ChartLoader.unspawnedNoteList)
-		{
-			if (note.isSustain)
-				note.updateSustainScale();
-		}
 	}
 
 	public static function updateTimePosition(elapsed:Float)
@@ -161,7 +156,7 @@ class Conductor
 			boundVocals.playbackTime = songPosition;
 			boundVocals.play();
 		}
-		trace('New song time ${boundSong.playbackTime} $songPosition');
+		trace('New song time ${boundSong.playbackTime}, $songPosition');
 	}
 
 	inline public static function calculateCrochet(bpm:Float)
