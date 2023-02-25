@@ -116,15 +116,15 @@ class Timings
 		}
 	];
 
-	public static var scoreRating:StringMap<Int> = [
-		"X" => 100,
-		"SS" => 99,
-		"S" => 98,
-		"A" => 94,
-		"B" => 89,
-		"C" => 79,
-		"D" => 69,
-		"F" => 60
+	public static var scoreRating:Array<Dynamic> = [
+		['X', 1],
+		['SS', 1],
+		['S', 0.98],
+		['A', 0.94],
+		['B', 0.89],
+		['C', 0.79],
+		['D', 0.69],
+		['F', 0.60]
 	];
 
 	public static function call()
@@ -170,13 +170,18 @@ class Timings
 
 	private static function updateRank()
 	{
-		// bro some shit working on windows and then breaking on fucking js wtf dawg
-		for (rating => condition in scoreRating)
+		trace(Accuracy);
+		if (TotalHits < 0)
+			CurRating = scoreRating[scoreRating.length - 1][0];
+		else
 		{
-			if (Accuracy < condition)
+			for (i in 0...scoreRating.length - 1)
 			{
-				CurRating = rating;
-				break;
+				if (Accuracy < scoreRating[i][1])
+				{
+					CurRating = scoreRating[i][0];
+					break;
+				}
 			}
 		}
 

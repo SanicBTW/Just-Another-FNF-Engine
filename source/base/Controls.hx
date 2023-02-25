@@ -1,5 +1,6 @@
 package base;
 
+import base.system.DatabaseManager;
 import flixel.FlxG;
 import haxe.ds.StringMap;
 import lime.app.Application;
@@ -25,35 +26,47 @@ class Controls
 		105 => "Numpad 9", 109 => "Numpad -", 107 => "Numpad +", 110 => "Numpad .", 106 => "Numpad *"
 	];
 
-	// global actions
+	// System/Base/Global/Current Actions
 	private static var actions:StringMap<Array<Null<Int>>> = [
-		"confirm" => [Keyboard.SPACE, Keyboard.ENTER],
+		"confirm" => [Keyboard.ENTER],
 		"back" => [Keyboard.BACKSPACE, Keyboard.ESCAPE],
-		"vol_up" => [187 /* mf wasnt in the keyboard list dunno why lol*/, Keyboard.NUMPAD_ADD],
+		"vol_up" => [187, Keyboard.NUMPAD_ADD],
 		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
 		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0],
 	];
 
-	// ui actions
-	private static var uiActions:StringMap<Array<Null<Int>>> = [
-		"ui_left" => [Keyboard.A, Keyboard.LEFT],
-		"ui_down" => [Keyboard.S, Keyboard.DOWN],
-		"ui_up" => [Keyboard.W, Keyboard.UP],
-		"ui_right" => [Keyboard.D, Keyboard.RIGHT],
+	// UI Actions
+	public static var uiActions:StringMap<Array<Null<Int>>> = [
+		"ui_left" => [Keyboard.LEFT, Keyboard.A],
+		"ui_down" => [Keyboard.DOWN, Keyboard.S],
+		"ui_up" => [Keyboard.UP, Keyboard.W],
+		"ui_right" => [Keyboard.RIGHT, Keyboard.D],
 	];
 
-	private static var noteActions:StringMap<Array<Null<Int>>> = [
-		"note_left" => [Keyboard.D, Keyboard.LEFT, Keyboard.Z],
-		"note_down" => [Keyboard.F, Keyboard.DOWN, Keyboard.X],
-		"note_up" => [Keyboard.J, Keyboard.UP, Keyboard.COMMA],
-		"note_right" => [Keyboard.K, Keyboard.RIGHT, Keyboard.PERIOD],
+	// Note Actions
+	public static var noteActions:StringMap<Array<Null<Int>>> = [
+		"note_left" => [Keyboard.LEFT, Keyboard.A],
+		"note_down" => [Keyboard.DOWN, Keyboard.S],
+		"note_up" => [Keyboard.UP, Keyboard.W],
+		"note_right" => [Keyboard.RIGHT, Keyboard.D],
 	];
 
 	public static var keyPressed:Array<Int> = [];
 
-	// TODO: set custom actions based on the users save data
 	public static function init()
 	{
+		if (DatabaseManager.get("ui_actions") == null)
+		{
+			trace("No UI Actions found on the save");
+			DatabaseManager.set("ui_actions", uiActions);
+		}
+
+		if (DatabaseManager.get("note_actions") == null)
+		{
+			trace("No NOTE Actions found on the save");
+			DatabaseManager.set("note_actions", noteActions);
+		}
+
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 		setActions(UI);
@@ -63,7 +76,6 @@ class Controls
 	public static function setActions(newActions:ActionType)
 	{
 		var mapToAdd = (newActions == UI ? uiActions : noteActions);
-		// to check if the action listeners already exists
 		var checkMap = (newActions == UI ? noteActions : uiActions);
 		for (action in checkMap.keys())
 		{

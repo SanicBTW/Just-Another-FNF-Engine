@@ -72,8 +72,8 @@ class Main extends Sprite
 
 		// I Love sucking cocks
 		FlxGraphic.defaultPersist = true;
-		Controls.init();
 		DatabaseManager.Initialize();
+		Controls.init();
 		FlxTransitionableState.skipNextTransIn = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
 

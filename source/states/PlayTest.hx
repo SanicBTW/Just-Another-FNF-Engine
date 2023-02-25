@@ -127,7 +127,7 @@ class PlayTest extends MusicBeatState
 			stage = new Stage("stage");
 			add(stage);
 
-			girlfriend = new Character(400, 130, false, "gfthic");
+			girlfriend = new Character(400, 130, false, "gf");
 			girlfriend.scrollFactor.set(0.95, 0.95);
 			add(girlfriend);
 

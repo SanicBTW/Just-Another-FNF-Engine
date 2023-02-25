@@ -1,10 +1,13 @@
 package base;
 
 import base.ScriptableState.ScriptableSubState;
+import base.SoundManager.AudioStream;
 import funkin.ChartLoader.Song;
 
 class MusicBeatState extends ScriptableState implements MusicHandler
 {
+	private var bgMusic:AudioStream;
+
 	public var SONG:Song;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
@@ -15,17 +18,19 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 	private function get_curBeat():Int
 		return Conductor.beatPosition;
 
-	override public function update(elapsed:Float)
+	override public function create()
 	{
-		updateContent(elapsed);
+		bgMusic = SoundManager.setSound("musicPERSIST");
 
-		super.update(elapsed);
+		super.create();
 	}
 
-	public function updateContent(elapsed:Float)
+	override public function update(elapsed:Float)
 	{
 		if (Conductor.boundState == this && Conductor.boundSong != null)
 			Conductor.updateTimePosition(elapsed);
+
+		super.update(elapsed);
 	}
 
 	public function stepHit() {}
@@ -47,15 +52,10 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		updateContent(elapsed);
-
-		super.update(elapsed);
-	}
-
-	public function updateContent(elapsed:Float)
-	{
 		if (Conductor.boundState == this && Conductor.boundSong != null)
 			Conductor.updateTimePosition(elapsed);
+
+		super.update(elapsed);
 	}
 
 	public function stepHit() {}
@@ -65,7 +65,6 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 
 interface MusicHandler
 {
-	public function updateContent(elapsed:Float):Void;
 	public var SONG:Song;
 
 	public var curStep(get, never):Int;

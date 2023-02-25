@@ -1,9 +1,12 @@
 package states;
 
 import base.Alphabet;
+import base.Conductor;
 import base.Controls;
+import base.MusicBeatState;
 import base.SaveData;
 import base.ScriptableState;
+import base.SoundManager;
 import base.pocketbase.Collections.Funkin;
 import base.pocketbase.Collections.Funkin_Old;
 import base.pocketbase.Collections.PocketBaseObject;
@@ -14,11 +17,12 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import haxe.Json;
 import lime.utils.Assets;
 import states.config.EarlyConfig;
+import states.config.KeybindsState;
 import substates.LoadingState;
 
 using StringTools;
 
-class MainState extends ScriptableState
+class MainState extends MusicBeatState
 {
 	var pages:Array<String> = ["internal", "funkin", "old_fnf_charts", "settings"];
 	var curPage(default, set):Int = 0;
@@ -101,7 +105,7 @@ class MainState extends ScriptableState
 				}
 			case "settings":
 				{
-					menuArray = ["Go to settings"];
+					menuArray = ["Go to settings", "Keybinds"];
 					regenMenu();
 				}
 		}
@@ -126,6 +130,12 @@ class MainState extends ScriptableState
 		curPage = 0;
 
 		super.create();
+
+		Conductor.boundSong = bgMusic;
+		Conductor.changeBPM(102);
+		bgMusic.audioSource = Paths.music("freakyMenu");
+		bgMusic.loopAudio = true;
+		bgMusic.play();
 	}
 
 	private var blockInputs = false;
@@ -153,20 +163,23 @@ class MainState extends ScriptableState
 					{
 						case "internal":
 							{
+								bgMusic.stop();
 								ScriptableState.switchState(new PlayTest(menuArray[curSelected]));
 							}
 						case "funkin" | "old_fnf_charts":
 							{
 								if (menuArray[curSelected] == "NETWORK ERROR")
 									return;
+
 								var pbObject:PocketBaseObject = songDetails.get(menuArray[curSelected]);
 								persistentUpdate = false;
 								blockInputs = true;
+								bgMusic.stop();
 								openSubState(new LoadingState(pages[curPage], pbObject));
 							}
 						case "settings":
 							{
-								ScriptableState.switchState(new EarlyConfig());
+								ScriptableState.switchState((menuArray[curSelected] == "Go to settings") ? new EarlyConfig() : new KeybindsState());
 							}
 					}
 				}

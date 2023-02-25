@@ -24,11 +24,11 @@ import js.lib.Uint8Array;
 import lime.media.howlerjs.Howler;
 #end
 
+// TODO: dispatch and event when the music is changed and show a notification )?
 // FIX: Trying to turn down the volume while fading in will result on the audio applying the global volume after it ends
 class SoundManager
 {
 	private static var sounds:Map<String, AudioStream> = [];
-	public static var music:AudioStream;
 
 	public static var globalVolume(default, set):Float = 1;
 	private static var oldVolume:Float = 1;
@@ -44,11 +44,9 @@ class SoundManager
 
 		for (name => sound in sounds)
 		{
-			trace("Setting " + name + " volume to " + globalVolume);
 			sound.audioVolume = globalVolume;
 		}
-		if (music != null)
-			music.audioVolume = globalVolume;
+
 		return globalVolume;
 	}
 
@@ -71,6 +69,9 @@ class SoundManager
 	{
 		for (name => sound in sounds)
 		{
+			if (name.contains("PERSIST"))
+				return;
+
 			trace("Deleting " + name + " from the sound manager");
 			sound.stop();
 			sound = null;
