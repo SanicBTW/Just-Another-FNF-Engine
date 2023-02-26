@@ -2,11 +2,13 @@ package;
 
 import base.SaveData;
 import base.ScriptableState;
+import base.system.Fonts;
 import base.system.Timer;
 import base.ui.RoundedSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.transition.FlxTransitionableState;
+import flixel.text.FlxBitmapText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
@@ -21,6 +23,7 @@ class Init extends ScriptableState
 	private var icon:FlxSprite;
 	private var sineLoops:Int = 0;
 	private var iconSine:Float;
+	private var shitText:FlxBitmapText;
 
 	private var rounded:RoundedSprite;
 	private var shitTimer:Timer;
@@ -48,6 +51,17 @@ class Init extends ScriptableState
 		rounded.scale.y = 0;
 		add(rounded);
 
+		shitText = new FlxBitmapText(Fonts.VCR());
+		shitText.text = 'The engine is in beta state and might be unstable\nPlease report any issue you find\n\n\n\n\n\n\n\n\n\n\n\n\nYou will be redirected in 5s';
+		shitText.alpha = 0;
+		shitText.fieldWidth = Std.int(rounded.width);
+		shitText.antialiasing = SaveData.antialiasing;
+		shitText.setGraphicSize(Std.int(shitText.width * 0.5));
+		shitText.centerOffsets();
+		shitText.updateHitbox();
+		shitText.setPosition(rounded.x + 10, rounded.y + 10);
+		add(shitText);
+
 		shitTimer = new Timer(2, function()
 		{
 			icon.alpha = 0;
@@ -57,6 +71,10 @@ class Init extends ScriptableState
 				ease: FlxEase.quartInOut,
 				startDelay: 1.2
 			});
+			FlxTween.tween(shitText, {alpha: 1}, 0.9, {
+				ease: FlxEase.quartInOut,
+				startDelay: 1.7
+			});
 			FlxTween.tween(rounded, {alpha: 0.8}, 0.8, {
 				ease: FlxEase.quartInOut,
 				startDelay: 1.2,
@@ -64,13 +82,20 @@ class Init extends ScriptableState
 				{
 					shitTimer.restart(5, function()
 					{
+						FlxTween.tween(shitText, {alpha: 0}, 0.5, {
+							ease: FlxEase.quartInOut
+						});
 						FlxTween.tween(rounded.scale, {y: 0}, 0.8, {
+							startDelay: 0.5,
 							ease: FlxEase.quartInOut,
 							onComplete: function(_)
 							{
 								end();
 							}
 						});
+					}, function(elapsed:Float)
+					{
+						shitText.text = 'The engine is in beta state and might be unstable\nPlease report any issue you find\n\n\n\n\n\n\n\n\n\n\n\n\nYou will be redirected in ${shitTimer.timeLeft}s';
 					});
 				}
 			});
@@ -87,17 +112,6 @@ class Init extends ScriptableState
 		super.create();
 
 		FlxTransitionableState.skipNextTransIn = false;
-	}
-
-	override function update(elapsed:Float)
-	{
-		/*
-			if (icon == null && shitPrompt.alpha == 1)
-			{
-				shitPrompt.footer.text = 'You will be redirected in ${shitTimer.timeLeft}s';
-		}*/
-
-		super.update(elapsed);
 	}
 
 	function end()
