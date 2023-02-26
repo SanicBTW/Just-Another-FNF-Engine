@@ -36,8 +36,6 @@ class KeybindsState extends MusicBeatState
 
 	private function set_currentState(newState:SelectionState):SelectionState
 	{
-		trace("NEW STATE " + newState);
-
 		var currentObject:KeybindSelector = currentActions.members[curSelected];
 		if (newState == SELECTING)
 		{
@@ -189,15 +187,6 @@ class KeybindsState extends MusicBeatState
 			bindedActions.add(newKeySelector);
 			i++;
 		}
-
-		var addKey:KeybindSelector = new KeybindSelector(0, (50 * i) + 10, 'Add bind', Std.int(object.width * 1.8), null);
-		addKey.targetY = i;
-		addKey.ID = i;
-		@:privateAccess
-		addKey.bitText.x = (FlxG.width / 2) - (addKey.width / 2) - 25;
-		addKey.forceX = (FlxG.width / 2) - (object.width / 2);
-		bindedActions.add(addKey);
-
 		curKeySelected = bindedActions.length + 1;
 	}
 
@@ -289,9 +278,6 @@ class KeybindsState extends MusicBeatState
 
 			actionMap.get(actionObject.action)[keyObject.ID] = Controls.keyPressed[0];
 			keyObject.subBitText.text = (newKey != null) ? newKey : keyObject.baseKey;
-			// this code should be when adding
-			// actionMap.get(actionObject.action).push(Controls.keyPressed[0]);
-			// actionObject.bitText.text = '${actionObject.action}\nBinds: [${actionMap.get(actionObject.action).length}]';
 
 			listening = false;
 			currentState = LISTING;
