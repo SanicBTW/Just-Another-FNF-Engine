@@ -45,8 +45,9 @@ class AlphabetSelector extends flixel.group.FlxSpriteGroup
 class KeybindSelector extends flixel.group.FlxSpriteGroup
 {
 	private var bg:flixel.FlxSprite;
-	private var bitText:flixel.text.FlxBitmapText;
-	private var subBitText:flixel.text.FlxBitmapText;
+
+	public var bitText:flixel.text.FlxBitmapText;
+	public var subBitText:flixel.text.FlxBitmapText;
 
 	public var action:String;
 	public var baseKey:String;

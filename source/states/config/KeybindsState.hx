@@ -1,19 +1,14 @@
 package states.config;
 
-import base.Conductor;
 import base.Controls;
 import base.MusicBeatState;
 import base.SaveData;
 import base.ScriptableState;
-import base.system.Fonts;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.math.FlxPoint;
-import flixel.text.FlxBitmapText;
 import funkin.Character;
 import funkin.Stage;
-import haxe.DynamicAccess;
 import haxe.ds.StringMap;
 import states.config.ConfigObjects.KeybindSelector;
 
@@ -257,9 +252,8 @@ class KeybindsState extends MusicBeatState
 								currentState = WAITING;
 								listening = true;
 								canPress = false;
-
-								@:privateAccess
-								bindedActions.members[curKeySelected].subBitText.text = "?";
+								if (bindedActions.members[curKeySelected].subBitText != null)
+									bindedActions.members[curKeySelected].subBitText.text = "?";
 							}
 					}
 				}
@@ -269,9 +263,8 @@ class KeybindsState extends MusicBeatState
 					{
 						listening = false;
 						currentState = LISTING;
-
-						@:privateAccess
-						bindedActions.members[curKeySelected].subBitText.text = bindedActions.members[curKeySelected].baseKey;
+						if (bindedActions.members[curKeySelected].subBitText != null)
+							bindedActions.members[curKeySelected].subBitText.text = bindedActions.members[curKeySelected].baseKey;
 					}
 				}
 		}
@@ -289,12 +282,17 @@ class KeybindsState extends MusicBeatState
 		// keyCode 13 seems to be Enter/Return
 		if (currentState == WAITING && listening == true && Controls.keyPressed.length > 0 && Controls.keyPressed[0] != 13)
 		{
-			// bruh these long ass
-			@:privateAccess
-			bindedActions.members[curKeySelected].subBitText.text = Controls.keyCodeToString(Controls.keyPressed[0]);
-			cast(Reflect.field(Controls, actions[curActions]), StringMap<Dynamic>).set(currentActions.members[curSelected].action, Controls.keyPressed);
-			@:privateAccess
-			currentActions.members[curSelected].bitText.text = '${currentActions.members[curSelected].action}\nBinds: [${cast (Reflect.field(Controls, actions[curActions]), StringMap<Dynamic>).get(currentActions.members[curSelected].action).length}]';
+			var actionObject:KeybindSelector = currentActions.members[curSelected];
+			var keyObject:KeybindSelector = bindedActions.members[curKeySelected];
+			var newKey:Null<String> = Controls.keyCodeToString(Controls.keyPressed[0]);
+			var actionMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, actions[curActions]);
+
+			actionMap.get(actionObject.action)[keyObject.ID] = Controls.keyPressed[0];
+			keyObject.subBitText.text = (newKey != null) ? newKey : keyObject.baseKey;
+			// this code should be when adding
+			// actionMap.get(actionObject.action).push(Controls.keyPressed[0]);
+			// actionObject.bitText.text = '${actionObject.action}\nBinds: [${actionMap.get(actionObject.action).length}]';
+
 			listening = false;
 			currentState = LISTING;
 		}

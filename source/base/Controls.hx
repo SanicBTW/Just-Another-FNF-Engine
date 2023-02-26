@@ -3,7 +3,6 @@ package base;
 import base.system.DatabaseManager;
 import flixel.FlxG;
 import haxe.ds.StringMap;
-import lime.app.Application;
 import lime.app.Event;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
@@ -55,18 +54,6 @@ class Controls
 
 	public static function init()
 	{
-		if (DatabaseManager.get("ui_actions") == null)
-		{
-			trace("No UI Actions found on the save");
-			DatabaseManager.set("ui_actions", uiActions);
-		}
-
-		if (DatabaseManager.get("note_actions") == null)
-		{
-			trace("No NOTE Actions found on the save");
-			DatabaseManager.set("note_actions", noteActions);
-		}
-
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 		setActions(UI);
@@ -87,6 +74,21 @@ class Controls
 		{
 			if (!actions.exists(action))
 				actions.set(action, keys);
+		}
+	}
+
+	public static function reloadActions()
+	{
+		var load:StringMap<Array<Null<Int>>> = DatabaseManager.get("ui_actions");
+		for (key => arr in load)
+		{
+			uiActions.set(key, arr);
+		}
+
+		load = DatabaseManager.get("note_actions");
+		for (key => arr in load)
+		{
+			noteActions.set(key, arr);
 		}
 	}
 
