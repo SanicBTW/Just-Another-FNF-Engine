@@ -4,6 +4,7 @@ import flixel.util.FlxColor;
 import haxe.ds.StringMap;
 
 // File rewritten to fit newest Forever Engine Rewrite schema
+// bruh i have to rewrite it again cuz nothing is working properly fuck
 
 typedef Judgement =
 {
@@ -12,7 +13,7 @@ typedef Judgement =
 	var Weight:Float; // The weight/accuracy of the judgement
 
 	var FCRating:Null<String>; // The FC rating aka MFC/SFC/FC
-	var Combo:Int; // The current judgement combo
+	var Combo:Null<Int>; // The current judgement combo
 	var Score:Int; // Given score by achieving the judgement
 	var Health:Float; // Amount of health given
 	var Short:String; // The initials? (what is displayed if there isn't any combo)
@@ -117,14 +118,14 @@ class Timings
 	];
 
 	public static var scoreRating:Array<Dynamic> = [
-		['X', 1],
-		['SS', 1],
-		['S', 0.98],
-		['A', 0.94],
-		['B', 0.89],
-		['C', 0.79],
-		['D', 0.69],
-		['F', 0.60]
+		['X', 100],
+		['SS', 100],
+		['S', 98],
+		['A', 94],
+		['B', 89],
+		['C', 79],
+		['D', 69],
+		['F', 60]
 	];
 
 	public static function call()
@@ -170,14 +171,13 @@ class Timings
 
 	private static function updateRank()
 	{
-		trace(Accuracy);
 		if (TotalHits < 0)
 			CurRating = scoreRating[scoreRating.length - 1][0];
 		else
 		{
 			for (i in 0...scoreRating.length - 1)
 			{
-				if (Accuracy < scoreRating[i][1])
+				if (Math.floor(Accuracy) < scoreRating[i][1])
 				{
 					CurRating = scoreRating[i][0];
 					break;
@@ -185,10 +185,9 @@ class Timings
 			}
 		}
 
+		CurFC = (Judgements[Judgements.length - 1].Combo < 10 ? "SDCB" : null);
 		if (Judgements[HighestFC].FCRating != null)
 			CurFC = Judgements[HighestFC].FCRating;
-		else
-			CurFC = (Judgements[Judgements.length - 1].Combo < 10 ? "SDCB" : null);
 	}
 
 	// dawg :sob:

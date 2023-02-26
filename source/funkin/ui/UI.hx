@@ -5,55 +5,39 @@ import base.SaveData;
 import base.system.Fonts;
 import base.ui.Bar;
 import flixel.FlxG;
-import flixel.graphics.frames.FlxBitmapFont;
 import flixel.group.FlxSpriteGroup;
-import flixel.math.FlxMath;
 import flixel.text.FlxBitmapText;
 import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 import funkin.ui.JudgementCounter;
-#if use_flx_text
-import flixel.text.FlxText;
-#else
-import base.ui.TextComponent;
-#end
 
-// more components are expected to be added and moved to their respective files
 class UI extends FlxSpriteGroup
 {
-	#if use_flx_text
-	private var accuracyText:FlxText;
-	#else
-	private var accuracyText:TextComponent;
-	#end
-
-	private var scoreText:TextComponent;
-
-	private var rankText:TextComponent;
+	private var accuracyText:FlxBitmapText;
+	private var scoreText:FlxBitmapText;
+	private var rankText:FlxBitmapText;
 	private var timeBar:Bar;
-
-	public var popUp:JudgementPopUp;
 
 	public function new()
 	{
 		super();
 
-		accuracyText = new TextComponent(30, (FlxG.height / 2), 0, 'Accuracy 0%', 24);
-		accuracyText.borderColor = FlxColor.BLACK;
-		accuracyText.borderSize = 1.25;
-		accuracyText.scrollFactor.set();
+		accuracyText = new FlxBitmapText(Fonts.VCR());
+		setTextProps(accuracyText);
+		accuracyText.setPosition(30, (FlxG.height / 2));
+		accuracyText.text = "Accuracy 0%";
 		add(accuracyText);
 
-		scoreText = new TextComponent(30, (accuracyText.y + accuracyText.height) - 5, 0, "Score 000000", 24);
-		scoreText.borderColor = FlxColor.BLACK;
-		scoreText.borderSize = 1.25;
-		scoreText.scrollFactor.set();
+		scoreText = new FlxBitmapText(Fonts.VCR());
+		setTextProps(scoreText);
+		scoreText.setPosition(30, (accuracyText.y + accuracyText.height) - 30);
+		scoreText.text = "Score 000000";
 		add(scoreText);
 
-		rankText = new TextComponent(30, (accuracyText.y - accuracyText.height) + 5, 0, "Rank N/A | [Clear] ", 24);
-		rankText.borderColor = FlxColor.BLACK;
-		rankText.borderSize = 1.25;
-		rankText.scrollFactor.set();
+		rankText = new FlxBitmapText(Fonts.VCR());
+		setTextProps(rankText);
+		rankText.setPosition(30, (accuracyText.y - accuracyText.height) + 30);
+		rankText.text = "Rank N/A";
 		add(rankText);
 
 		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
@@ -74,14 +58,24 @@ class UI extends FlxSpriteGroup
 			add(counter);
 			curY -= 65;
 		}
-
-		popUp = new JudgementPopUp(0, 0);
-		add(popUp);
 	}
 
 	private function sortJudgements(Obj1:String, Obj2:String)
 	{
 		return FlxSort.byValues(FlxSort.DESCENDING, Timings.getJudgementIndex(Obj1), Timings.getJudgementIndex(Obj2));
+	}
+
+	private function setTextProps(text:FlxBitmapText)
+	{
+		text.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
+		text.scrollFactor.set();
+		text.autoSize = false;
+		text.alignment = LEFT;
+		text.fieldWidth = FlxG.width;
+		text.antialiasing = SaveData.antialiasing;
+		text.setGraphicSize(Std.int(text.width * 0.35));
+		text.centerOrigin();
+		text.updateHitbox();
 	}
 
 	override public function update(elapsed:Float)
@@ -94,8 +88,6 @@ class UI extends FlxSpriteGroup
 	{
 		var fcDisplay:String = (Timings.CurFC != null ? ' | [${Timings.CurFC}]' : '');
 		accuracyText.text = 'Accuracy ${Timings.returnAccuracy()}';
-		// accuracyText.centerOrigin();
-		// accuracyText.setPosition(30, FlxG.width / 2);
 		scoreText.text = 'Score ${Timings.Score}';
 		rankText.text = 'Rank ${Timings.CurRating}${fcDisplay}';
 	}
