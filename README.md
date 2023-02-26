@@ -1,4 +1,4 @@
-# Funkin - 0.0.1
+# Funkin - 0.1.0
 
 Some rewrite of Friday Night Funkin' with Forever Engine Rewrite, Kade Engine 1.6.2 and my Psych Engine 0.3.2h fork
 
