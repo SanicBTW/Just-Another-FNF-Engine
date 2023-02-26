@@ -27,9 +27,6 @@
 	<library name="songs" preload="true"/>
 	<assets path="assets/songs" library="songs" exclude="*.mp3"/>
 
-	<library name="osu!beatmaps" preload="false"/>
-	<assets path="assets/osu!beatmaps" library="osu!beatmaps"/>
-
 	<library name="characters" preload="true"/>
 	<assets path="assets/characters" library="characters"/>
 
