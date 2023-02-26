@@ -14,14 +14,10 @@ import base.ui.TextComponent;
 
 class JudgementCounter extends FlxSpriteGroup
 {
-	private var judgementIdx:Int;
+	private var trackJudgement:String;
 
 	private var counterBG:FlxSprite;
-	#if use_flx_text
-	private var counterText:FlxText;
-	#else
 	private var counterText:TextComponent;
-	#end
 	private var counterTxtSize:Int = 24;
 
 	public function new(X:Float, Y:Float, judgement:String)
@@ -30,12 +26,14 @@ class JudgementCounter extends FlxSpriteGroup
 
 		antialiasing = SaveData.antialiasing;
 		scrollFactor.set();
-		judgementIdx = Timings.getJudgementIndex(judgement);
 		setGraphicSize(60, 60);
 		updateHitbox();
 
+		var judgement:Judgement = Timings.getJudgementByName(judgement);
+		trackJudgement = judgement.track;
+
 		counterBG = new FlxSprite(0, 0).loadGraphic(Paths.image("judgementCounter"));
-		counterBG.color = Timings.Judgements[judgementIdx].Color;
+		counterBG.color = judgement.color;
 		counterBG.setGraphicSize(60, 60);
 		counterBG.antialiasing = antialiasing; // dawg wtf
 		counterBG.scrollFactor.set();
@@ -49,7 +47,7 @@ class JudgementCounter extends FlxSpriteGroup
 		counterText = new FlxText(positions[0], positions[1], counterBG.width, judgements.get(judgement)[1], counterTxtSize);
 		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK);
 		#else
-		counterText = new TextComponent(positions[0], positions[1], counterBG.width, Timings.Judgements[judgementIdx].Short, counterTxtSize, "funkin.otf");
+		counterText = new TextComponent(positions[0], positions[1], counterBG.width, judgement.shortName, counterTxtSize, "funkin.otf");
 		counterText.color = FlxColor.BLACK;
 		counterText.alignment = CENTER;
 		#end
@@ -60,8 +58,8 @@ class JudgementCounter extends FlxSpriteGroup
 
 	override public function update(elapsed:Float)
 	{
-		if (Timings.Judgements[judgementIdx].Combo > 0)
-			counterText.text = '${Timings.Judgements[judgementIdx].Combo}';
+		if (Reflect.field(Timings, trackJudgement) > 0)
+			counterText.text = '${Reflect.field(Timings, trackJudgement)}';
 
 		super.update(elapsed);
 	}

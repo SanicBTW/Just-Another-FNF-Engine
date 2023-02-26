@@ -178,8 +178,8 @@ class PlayTest extends MusicBeatState
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
-		FlxG.camera.zoom = FlxMath.lerp((stage != null) ? stage.cameraZoom : 1, FlxG.camera.zoom, 0.95);
-		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, 0.95);
+		FlxG.camera.zoom = FlxMath.lerp((stage != null) ? stage.cameraZoom : 1, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
+		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
@@ -410,27 +410,7 @@ class PlayTest extends MusicBeatState
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
 			if (!note.isSustain)
-			{
-				var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
-				var judgement:Judgement = Timings.judge(noteDiff);
-				var index:Int = Timings.getJudgementIndex(judgement.Name);
-
-				if (Timings.HighestFC != index && Timings.HighestFC < index)
-					Timings.HighestFC = index;
-
-				Timings.CurrentCombo++;
-				Timings.TotalHits++;
-
-				Timings.NotesAccuracy += judgement.Weight;
-				Timings.Score += judgement.Score;
-
-				if (note.children.length > 0)
-					Timings.TotalHits++;
-			}
-			else if (note.parent != null)
-			{
-				Timings.NotesAccuracy += 100 / note.parent.children.length;
-			}
+				Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
 
 			if (!note.doubleNote)
 			{
@@ -634,7 +614,7 @@ class PlayTest extends MusicBeatState
 			return;
 
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
-		var targetHold:Float = (Conductor.stepCrochet * char.singDuration) / 1000;
+		var delay:Float = 0;
 
 		var daCopy:FlxSprite = char.clone();
 		daCopy.frames = char.frames;
@@ -645,12 +625,13 @@ class PlayTest extends MusicBeatState
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
 		if (note.isSustain)
-			targetHold += 0.2;
+			delay += ((Conductor.stepCrochet * char.singDuration) / 1000) + 0.2;
 
 		if (!note.isSustain)
 		{
 			insert(members.indexOf(char) - 1, daCopy);
-			FlxTween.tween(daCopy, {alpha: 0}, targetHold, {
+			FlxTween.tween(daCopy, {alpha: 0}, ((Conductor.stepCrochet * char.singDuration) / 1000), {
+				startDelay: delay,
 				ease: FlxEase.quadInOut,
 				onComplete: function(_)
 				{

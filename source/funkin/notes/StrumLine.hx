@@ -34,7 +34,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 		for (i in 0...keyAmount)
 		{
-			var receptor:Receptor = new Receptor(x, (SaveData.downScroll ? FlxG.height - 150 : 60), i);
+			var receptor:Receptor = new Receptor(x, (SaveData.downScroll ? FlxG.height - 150 : 50), i);
 			receptor.ID = i;
 
 			receptor.x -= ((keyAmount / 2) * Note.swagWidth);
@@ -103,7 +103,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			{
 				strumNote.y -= ((Note.swagWidth / 2) * downscrollMultiplier);
 
-				strumNote.y -= Math.ceil((strumNote.prevNote.height - strumNote.height)) * downscrollMultiplier;
+				// strumNote.y -= Math.ceil((strumNote.prevNote.height - strumNote.height) + strumNote.height) * downscrollMultiplier;
 
 				if (downscrollMultiplier < 0)
 				{
@@ -133,7 +133,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				}
 			}
 
-			if (!strumNote.tooLate && strumNote.strumTime < (Conductor.songPosition - Timings.Threshold) && !strumNote.wasGoodHit)
+			if (!strumNote.tooLate && strumNote.strumTime < (Conductor.songPosition - Timings.msThreshold) && !strumNote.wasGoodHit)
 			{
 				strumNote.tooLate = true;
 

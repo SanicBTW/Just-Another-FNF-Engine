@@ -99,6 +99,10 @@ class Conductor
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
 		songSpeed = (0.45 * (baseSpeed + (((bpm / 60) / songSpeed) * (stepCrochet / 1000))));
+		for (note in ChartLoader.unspawnedNoteList)
+		{
+			note.updateSustainScale();
+		}
 	}
 
 	public static function updateTimePosition(elapsed:Float)

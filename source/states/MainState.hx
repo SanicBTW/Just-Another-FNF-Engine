@@ -105,7 +105,7 @@ class MainState extends MusicBeatState
 				}
 			case "settings":
 				{
-					menuArray = ["Go to settings", "Keybinds"];
+					menuArray = ["Settings", "Keybinds"];
 					regenMenu();
 				}
 		}
@@ -179,7 +179,7 @@ class MainState extends MusicBeatState
 							}
 						case "settings":
 							{
-								ScriptableState.switchState((menuArray[curSelected] == "Go to settings") ? new EarlyConfig() : new KeybindsState());
+								ScriptableState.switchState((menuArray[curSelected] == "Settings") ? new EarlyConfig() : new KeybindsState());
 							}
 					}
 				}

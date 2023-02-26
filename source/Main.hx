@@ -80,9 +80,6 @@ class Main extends Sprite
 		Lib.current.stage.align = TOP_LEFT;
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 
-		// ayooo this looks sicks af bro
-		// FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
-
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;

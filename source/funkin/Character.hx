@@ -3,6 +3,7 @@ package funkin;
 // got lazy so everything from here is just psych shit lol, improve, do custom and add flxanimate support
 import base.Conductor;
 import base.SaveData;
+import base.ui.Sprite;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
 import openfl.Assets;
@@ -34,11 +35,9 @@ typedef AnimArray =
 	var offsets:Array<Int>;
 }
 
-class Character extends FlxSprite
+class Character extends Sprite
 {
 	private static final DEFAULT:String = "bf";
-
-	public var animOffsets:Map<String, Array<Dynamic>>;
 
 	public var isPlayer:Bool = false;
 	public var curCharacter:String = DEFAULT;
@@ -65,7 +64,6 @@ class Character extends FlxSprite
 	// create it on new
 	public function setChar(x:Float, y:Float, character:String = 'bf')
 	{
-		animOffsets = new Map();
 		cameraPosition = new FlxPoint(0, 0);
 		characterPosition = new FlxPoint(0, 0);
 
@@ -154,17 +152,6 @@ class Character extends FlxSprite
 		}
 		else
 			playAnim('idle', forced);
-	}
-
-	// todo: improve
-	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)
-	{
-		animation.play(AnimName, Force, Reversed, Frame);
-
-		if (animOffsets.exists(AnimName))
-			offset.set(animOffsets[AnimName][0], animOffsets[AnimName][1]);
-		else
-			offset.set(0, 0);
 	}
 
 	private function getCharPath():String

@@ -31,6 +31,9 @@ class KeybindsState extends MusicBeatState
 	var listening:Bool = false;
 	var currentState(default, set):SelectionState = SELECTING;
 
+	// shit isnt in order m8
+	var actionsOrder:Map<String, Int> = ["left" => 0, "down" => 1, "up" => 2, "right" => 3];
+
 	private function set_currentState(newState:SelectionState):SelectionState
 	{
 		var currentObject:KeybindSelector = currentActions.members[curSelected];
@@ -174,11 +177,12 @@ class KeybindsState extends MusicBeatState
 		for (action => keyArr in actionMap)
 		{
 			var newSelector:KeybindSelector = new KeybindSelector(0, (70 * i) + 30, '$action\nBinds: [${keyArr.length}]');
-			newSelector.targetY = i;
-			newSelector.ID = i;
+			var pos:Int = actionsOrder.get(action.split("_")[1]);
 			newSelector.forceX = 30;
 			newSelector.action = action;
-			currentActions.add(newSelector);
+			newSelector.targetY = pos;
+			newSelector.ID = pos;
+			currentActions.insert(pos, newSelector);
 			i++;
 		}
 		curSelected = currentActions.length + 1;

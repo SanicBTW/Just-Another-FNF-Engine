@@ -75,8 +75,8 @@ class SoundManager
 			trace("Deleting " + name + " from the sound manager");
 			sound.stop();
 			sound = null;
+			sounds.remove(name);
 		}
-		sounds = [];
 	}
 
 	public static function setSound(?name:String, ?audio:AudioStream):AudioStream

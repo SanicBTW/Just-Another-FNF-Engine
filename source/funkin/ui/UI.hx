@@ -30,13 +30,13 @@ class UI extends FlxSpriteGroup
 
 		scoreText = new FlxBitmapText(Fonts.VCR());
 		setTextProps(scoreText);
-		scoreText.setPosition(30, (accuracyText.y + accuracyText.height) - 30);
-		scoreText.text = "Score 000000";
+		scoreText.setPosition(30, ((accuracyText.y + accuracyText.height) - (accuracyText.height / 2)));
+		scoreText.text = "Score 0 | Combo 0";
 		add(scoreText);
 
 		rankText = new FlxBitmapText(Fonts.VCR());
 		setTextProps(rankText);
-		rankText.setPosition(30, (accuracyText.y - accuracyText.height) + 30);
+		rankText.setPosition(30, ((accuracyText.y - accuracyText.height) + (accuracyText.height / 2)));
 		rankText.text = "Rank N/A";
 		add(rankText);
 
@@ -47,8 +47,8 @@ class UI extends FlxSpriteGroup
 		add(timeBar);
 
 		var judgementsArray:Array<String> = [];
-		for (idx => judge in Timings.Judgements)
-			judgementsArray.insert(idx, judge.Name);
+		for (idx => judge in Timings.judgements)
+			judgementsArray.insert(idx, judge.name);
 		judgementsArray.sort(sortJudgements);
 
 		var curY:Float = (FlxG.height / 2) + 150;
@@ -86,9 +86,9 @@ class UI extends FlxSpriteGroup
 
 	public function updateText()
 	{
-		var fcDisplay:String = (Timings.CurFC != null ? ' | [${Timings.CurFC}]' : '');
-		accuracyText.text = 'Accuracy ${Timings.returnAccuracy()}';
-		scoreText.text = 'Score ${Timings.Score}';
-		rankText.text = 'Rank ${Timings.CurRating}${fcDisplay}';
+		var fcDisplay:String = (Timings.ratingFC != null ? ' | [${Timings.ratingFC}]' : '');
+		accuracyText.text = 'Accuracy ${Timings.getAccuracy()}';
+		scoreText.text = 'Score ${Timings.score} | Combo ${Timings.combo}';
+		rankText.text = 'Rank ${Timings.ratingName}${fcDisplay}';
 	}
 }
