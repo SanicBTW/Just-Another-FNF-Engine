@@ -4,10 +4,8 @@ import base.Controls;
 import base.MusicBeatState;
 import base.SaveData;
 import base.ScriptableState;
-import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import funkin.Character;
 import funkin.Stage;
 import haxe.ds.StringMap;
 import states.config.ConfigObjects.KeybindSelector;
@@ -16,9 +14,8 @@ using StringTools;
 
 class KeybindsState extends MusicBeatState
 {
-	var cam:FlxCamera;
+	var helpText:KeybindSelector;
 	var stage:Stage;
-	var bf:Character;
 
 	var currentActions:FlxTypedGroup<KeybindSelector>;
 	var bindedActions:FlxTypedGroup<KeybindSelector>;
@@ -45,6 +42,9 @@ class KeybindsState extends MusicBeatState
 			}
 			currentObject.forceX = 30;
 			currentObject.yAdd = 0;
+
+			if (helpText.alpha != 0)
+				helpText.alpha = 0;
 		}
 
 		if (newState == LISTING)
@@ -54,12 +54,17 @@ class KeybindsState extends MusicBeatState
 			if (bindedActions.length <= 0)
 				regenBinded(currentObject);
 
+			if (helpText.alpha != 1)
+				helpText.alpha = 1;
+			helpText.bitText.text = "Press R to restore a bind";
+
 			if (bindedActions.length > 0)
 				bindedActions.members[curKeySelected].scale.set(1, 1);
 		}
 
 		if (newState == WAITING)
 		{
+			helpText.bitText.text = "Press ESC to cancel binding";
 			bindedActions.members[curKeySelected].scale.set(1.1, 1.1);
 		}
 
@@ -148,6 +153,13 @@ class KeybindsState extends MusicBeatState
 		bindedActions = new FlxTypedGroup<KeybindSelector>();
 		add(bindedActions);
 		add(currentActions);
+
+		helpText = new KeybindSelector(0, 0, "Press ESC to cancel", FlxG.width - 40);
+		helpText.forceX = 20;
+		helpText.yMult = 0;
+		helpText.yAdd = -250 - helpText.height;
+		helpText.alpha = 0;
+		add(helpText);
 
 		curActions = 0;
 
