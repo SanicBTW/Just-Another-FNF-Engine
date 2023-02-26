@@ -29,6 +29,7 @@ class Controls
 	private static var actions:StringMap<Array<Null<Int>>> = [
 		"confirm" => [Keyboard.ENTER],
 		"back" => [Keyboard.BACKSPACE, Keyboard.ESCAPE],
+		"reset" => [Keyboard.R],
 		"vol_up" => [187, Keyboard.NUMPAD_ADD],
 		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
 		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0],
@@ -44,6 +45,18 @@ class Controls
 
 	// Note Actions
 	public static var noteActions:StringMap<Array<Null<Int>>> = [
+		"note_left" => [Keyboard.LEFT, Keyboard.A],
+		"note_down" => [Keyboard.DOWN, Keyboard.S],
+		"note_up" => [Keyboard.UP, Keyboard.W],
+		"note_right" => [Keyboard.RIGHT, Keyboard.D],
+	];
+
+	// All the Actions together to restore them in the future
+	public static var defaultActions:StringMap<Array<Null<Int>>> = [
+		"ui_left" => [Keyboard.LEFT, Keyboard.A],
+		"ui_down" => [Keyboard.DOWN, Keyboard.S],
+		"ui_up" => [Keyboard.UP, Keyboard.W],
+		"ui_right" => [Keyboard.RIGHT, Keyboard.D],
 		"note_left" => [Keyboard.LEFT, Keyboard.A],
 		"note_down" => [Keyboard.DOWN, Keyboard.S],
 		"note_up" => [Keyboard.UP, Keyboard.W],

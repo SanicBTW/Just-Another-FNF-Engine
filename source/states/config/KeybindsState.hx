@@ -244,6 +244,17 @@ class KeybindsState extends MusicBeatState
 								if (bindedActions.members[curKeySelected].subBitText != null)
 									bindedActions.members[curKeySelected].subBitText.text = "?";
 							}
+						case "reset":
+							{
+								var actionObject:KeybindSelector = currentActions.members[curSelected];
+								var keyObject:KeybindSelector = bindedActions.members[curKeySelected];
+								var actionMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, actions[curActions]);
+								var defaultKey:String = Controls.keyCodeToString(Controls.defaultActions.get(actionObject.action)[keyObject.ID]);
+
+								actionMap.get(actionObject.action)[keyObject.ID] = Controls.defaultActions.get(actionObject.action)[keyObject.ID];
+								if (keyObject.subBitText != null)
+									keyObject.subBitText.text = defaultKey;
+							}
 					}
 				}
 			case WAITING:
@@ -276,8 +287,14 @@ class KeybindsState extends MusicBeatState
 			var newKey:Null<String> = Controls.keyCodeToString(Controls.keyPressed[0]);
 			var actionMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, actions[curActions]);
 
+			if (newKey == null)
+			{
+				keyObject.subBitText.text = keyObject.baseKey;
+				return;
+			}
+
 			actionMap.get(actionObject.action)[keyObject.ID] = Controls.keyPressed[0];
-			keyObject.subBitText.text = (newKey != null) ? newKey : keyObject.baseKey;
+			keyObject.subBitText.text = newKey;
 
 			listening = false;
 			currentState = LISTING;

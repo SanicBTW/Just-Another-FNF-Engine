@@ -77,6 +77,8 @@ class KeybindSelector extends flixel.group.FlxSpriteGroup
 			subBitText = new flixel.text.FlxBitmapText(base.system.Fonts.VCR());
 			subBitText.text = subText;
 			subBitText.alignment = RIGHT;
+			subBitText.autoSize = false;
+			subBitText.fieldWidth = Std.int(bg.width);
 			subBitText.antialiasing = base.SaveData.antialiasing;
 			subBitText.x = ((bg.y + bg.width) - subBitText.width);
 		}
