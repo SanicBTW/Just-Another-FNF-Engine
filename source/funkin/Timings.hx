@@ -48,7 +48,7 @@ class Timings
 
 	// formulas:
 	// notesAccuracy / totalHits
-	// (notesAccuracy - misses) / totalHits
+	// (notesAccuracy - misses) / totalHits - i believe its working coolio
 	// score / ((notesAccuracy + misses) / totalHits)
 	private static function get_accuracy():Float
 		return (notesAccuracy - misses) / totalHits;
@@ -203,27 +203,18 @@ class Timings
 	{
 		var retString:String = "0%";
 		if (totalHits > 0)
+		{
 			retString = '${Math.floor(accuracy * 100) / 100}%';
-		updateRank();
+			updateRank();
+		}
 		return retString;
 	}
 
 	private static function updateRank()
 	{
-		/*
-			var lastAccuracy:Float = 0;
-			for (rating => accuracyCondition in accuracyRatings)
-			{
-				if ((accuracyCondition <= accuracy) && (accuracyCondition >= lastAccuracy))
-				{
-					lastAccuracy = accuracy;
-					ratingName = rating;
-				}
-		}*/
-
 		for (rating => condition in accuracyRatings)
 		{
-			if (accuracy < condition)
+			if (accuracy >= condition)
 			{
 				ratingName = rating;
 				break;
