@@ -1,7 +1,6 @@
 package funkin.notes;
 
-import base.Conductor;
-import base.SaveData;
+import base.system.Conductor;
 import flixel.FlxBasic;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;

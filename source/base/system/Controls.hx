@@ -1,4 +1,4 @@
-package base;
+package base.system;
 
 import base.system.DatabaseManager;
 import flixel.FlxG;

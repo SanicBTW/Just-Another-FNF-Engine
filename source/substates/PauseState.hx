@@ -1,10 +1,10 @@
 package substates;
 
-import base.Alphabet;
-import base.Conductor;
-import base.Controls;
 import base.ScriptableState;
-import base.SoundManager;
+import base.system.Conductor;
+import base.system.Controls;
+import base.system.SoundManager;
+import base.ui.Alphabet;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;

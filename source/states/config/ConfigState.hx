@@ -1,6 +1,5 @@
 package states.config;
 
-import base.SaveData;
 import base.ScriptableState;
 import flixel.FlxG;
 import flixel.FlxSprite;

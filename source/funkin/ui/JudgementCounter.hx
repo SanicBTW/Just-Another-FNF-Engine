@@ -1,6 +1,5 @@
 package funkin.ui;
 
-import base.SaveData;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;

@@ -1,7 +1,7 @@
 package funkin;
 
-import base.Conductor;
 import base.MusicBeatState.MusicHandler;
+import base.system.Conductor;
 import flixel.FlxG;
 import flixel.util.FlxSort;
 import funkin.CoolUtil;

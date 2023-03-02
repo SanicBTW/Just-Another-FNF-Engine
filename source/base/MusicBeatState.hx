@@ -1,7 +1,8 @@
 package base;
 
 import base.ScriptableState.ScriptableSubState;
-import base.SoundManager.AudioStream;
+import base.system.Conductor;
+import base.system.SoundManager;
 import funkin.ChartLoader.Song;
 
 class MusicBeatState extends ScriptableState implements MusicHandler

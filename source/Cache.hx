@@ -1,6 +1,6 @@
 package;
 
-import base.SoundManager;
+import base.system.SoundManager;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import openfl.Assets;

@@ -1,9 +1,8 @@
 package;
 
-import base.SaveData;
 import base.ScriptableState;
-import base.system.Fonts;
 import base.system.Timer;
+import base.ui.Fonts;
 import base.ui.RoundedSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;

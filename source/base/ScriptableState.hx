@@ -1,5 +1,6 @@
 package base;
 
+import base.system.Controls;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.addons.transition.FlxTransitionableState;

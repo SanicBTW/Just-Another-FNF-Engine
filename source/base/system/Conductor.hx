@@ -1,7 +1,7 @@
-package base;
+package base.system;
 
 import base.MusicBeatState.MusicHandler;
-import base.SoundManager.AudioStream;
+import base.system.SoundManager.AudioStream;
 import funkin.ChartLoader;
 import openfl.media.Sound;
 

@@ -1,9 +1,9 @@
 package substates;
 
-import base.Alphabet;
 import base.ScriptableState;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
+import base.ui.Alphabet;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;

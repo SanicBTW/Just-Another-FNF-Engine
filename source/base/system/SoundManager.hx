@@ -1,4 +1,4 @@
-package base;
+package base.system;
 
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -13,16 +13,6 @@ import openfl.net.URLRequest;
 import openfl.utils.Assets;
 
 using StringTools;
-
-#if js
-import js.html.audio.AnalyserNode;
-import js.html.audio.ChannelMergerNode;
-import js.html.audio.ChannelSplitterNode;
-import js.html.audio.GainNode;
-import js.lib.Float32Array;
-import js.lib.Uint8Array;
-import lime.media.howlerjs.Howler;
-#end
 
 // TODO: dispatch and event when the music is changed and show a notification )?
 // FIX: Trying to turn down the volume while fading in will result on the audio applying the global volume after it ends
@@ -202,12 +192,6 @@ class AudioStream
 		if (newSource is Sound)
 			sound = newSource;
 
-		// netowkr shit
-		if (newSource is String)
-		{
-			var sourceString:String = Std.string(newSource);
-		}
-
 		lastTime = 0;
 		audioLength = sound.length;
 		isPlaying = false;
@@ -215,51 +199,3 @@ class AudioStream
 		return audioSource;
 	}
 }
-
-#if js
-// TODO: Make it get the spaces that a bar can be on the whole width of the screen
-// TODO: Make it bind the max height with an offset
-class PlaybackGraph extends FlxSpriteGroup
-{
-	private var ana:AnalyserNode;
-
-	private var SampleData:Uint8Array;
-	private var buflength:Int;
-
-	private var barWidth:Int = 25;
-	private var barIterator:Int;
-
-	override public function new()
-	{
-		super();
-
-		ana = Howler.ctx.createAnalyser();
-		ana.fftSize = 256;
-		Howler.masterGain.connect(ana);
-		ana.connect(Howler.ctx.destination);
-
-		buflength = ana.frequencyBinCount;
-		SampleData = new Uint8Array(ana.frequencyBinCount);
-
-		barIterator = Std.int(flixel.FlxG.width / buflength * 5);
-
-		for (i in 0...barIterator)
-		{
-			var sprite:FlxSprite = new FlxSprite(i * barWidth, 0).makeGraphic(barWidth - 5, 120, FlxColor.WHITE);
-			sprite.alpha = 0.45;
-			add(sprite);
-		}
-		screenCenter();
-	}
-
-	override public function update(elapsed:Float)
-	{
-		ana.getByteFrequencyData(SampleData);
-
-		for (i in 0...barIterator)
-		{
-			members[i].scale.y = SampleData[i] / flixel.FlxG.height * 15;
-		}
-	}
-}
-#end

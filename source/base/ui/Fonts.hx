@@ -1,4 +1,4 @@
-package base.system;
+package base.ui;
 
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxBitmapFont;

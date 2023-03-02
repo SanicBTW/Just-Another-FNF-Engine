@@ -1,6 +1,5 @@
 package funkin.notes;
 
-import base.SaveData;
 import flixel.FlxSprite;
 
 class Receptor extends FlxSprite

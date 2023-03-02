@@ -1,9 +1,8 @@
 package states.config;
 
-import base.Alphabet;
-import base.Controls;
-import base.SaveData;
 import base.ScriptableState;
+import base.system.Controls;
+import base.ui.Alphabet;
 import base.ui.TextComponent;
 import flixel.FlxG;
 import flixel.FlxSprite;

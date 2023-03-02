@@ -1,4 +1,4 @@
-package base;
+package base.ui;
 
 import flash.media.Sound;
 import flixel.FlxG;

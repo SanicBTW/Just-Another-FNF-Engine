@@ -1,9 +1,8 @@
 package states.config;
 
-import base.Controls;
 import base.MusicBeatState;
-import base.SaveData;
 import base.ScriptableState;
+import base.system.Controls;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import funkin.Stage;

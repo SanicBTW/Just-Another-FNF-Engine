@@ -54,10 +54,10 @@ class MemoryCounter extends TextField
 	private static function getInterval(size:Float)
 	{
 		var data:Int = 0;
-		while (size > 1024 && data < intervalArray.length - 1)
+		while (size > 1000 && data < intervalArray.length - 1)
 		{
 			data++;
-			size = size / 1024;
+			size = size / 1000;
 		}
 		size = Math.round(size * 100) / 100;
 		return '$size ${intervalArray[data]}';

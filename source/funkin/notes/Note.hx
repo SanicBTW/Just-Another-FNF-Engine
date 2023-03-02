@@ -1,7 +1,6 @@
 package funkin.notes;
 
-import base.Conductor;
-import base.SaveData;
+import base.system.Conductor;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import states.PlayTest;
