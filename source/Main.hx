@@ -9,6 +9,7 @@ import flixel.FlxState;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode;
+import lime.app.Application;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.display.StageScaleMode;
@@ -70,9 +71,11 @@ class Main extends Sprite
 		#end
 
 		// I Love sucking cocks
-		FlxGraphic.defaultPersist = true;
 		DatabaseManager.Initialize();
 		Controls.init();
+
+		Application.current.window.title += ' - ${Application.current.meta.get("version")}';
+		FlxGraphic.defaultPersist = true;
 		FlxTransitionableState.skipNextTransIn = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
 
@@ -82,7 +85,7 @@ class Main extends Sprite
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
-		FlxG.mouse.visible = true;
+		FlxG.mouse.visible = false;
 		FlxG.mouse.useSystemCursor = true;
 		#end
 
