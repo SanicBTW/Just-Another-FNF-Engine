@@ -1,6 +1,8 @@
 package base.ui;
 
 import flixel.FlxSprite;
+import flixel.group.FlxSpriteGroup;
+import flixel.text.FlxBitmapText;
 import flixel.util.FlxColor;
 import openfl.geom.Rectangle;
 
@@ -60,5 +62,42 @@ class RoundedSprite extends FlxSprite
 		pixels.fillRect(new Rectangle((flipX ? antiX : 5), Math.abs(antiY - 3), 6, 1), Color);
 		pixels.fillRect(new Rectangle((flipX ? antiX : 6), Math.abs(antiY - 2), 5, 1), Color);
 		pixels.fillRect(new Rectangle((flipX ? antiX : 8), Math.abs(antiY - 1), 3, 1), Color);
+	}
+}
+
+// I didn't really think of any other way
+class RoundedSpriteText extends FlxSpriteGroup
+{
+	public var roundedSprite(default, null):RoundedSprite;
+	public var bitmapText(default, null):FlxBitmapText;
+	public var fontSize(default, set):Float;
+
+	override public function new(X:Float, Y:Float, Width:Float, Height:Float, Color:FlxColor, Text:String)
+	{
+		super();
+
+		roundedSprite = new RoundedSprite(X, Y, Width, Height, Color);
+		roundedSprite.antialiasing = SaveData.antialiasing;
+		add(roundedSprite);
+
+		bitmapText = new FlxBitmapText(Fonts.VCR());
+		bitmapText.text = Text;
+		bitmapText.fieldWidth = Std.int(width);
+		bitmapText.antialiasing = SaveData.antialiasing;
+		fontSize = 0.4;
+		add(bitmapText);
+	}
+
+	function set_fontSize(value:Float):Float
+	{
+		if (fontSize == value)
+			return value;
+
+		bitmapText.setGraphicSize(Std.int(bitmapText.width * value));
+		bitmapText.centerOffsets();
+		bitmapText.updateHitbox();
+		bitmapText.setPosition(roundedSprite.x + 10, roundedSprite.y + 10);
+
+		return fontSize = value;
 	}
 }

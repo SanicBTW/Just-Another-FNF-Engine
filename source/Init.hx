@@ -11,6 +11,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import states.MainState;
+import states.RewriteMenu;
 #if fast_start
 import base.pocketbase.Request;
 import funkin.ChartLoader;
@@ -115,7 +116,7 @@ class Init extends ScriptableState
 	function end()
 	{
 		#if !fast_start
-		ScriptableState.switchState(new MainState());
+		ScriptableState.switchState(new RewriteMenu());
 		#else
 		Request.getFile("funkin", "yixzwztgjxfsmj1", "double_kill_hard_OfVOJgFZJQ.json", function(chart)
 		{
