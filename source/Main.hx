@@ -1,12 +1,12 @@
 package;
 
+import base.ScriptableState;
 import base.display.*;
 import base.system.Controls;
 import base.system.DatabaseManager;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
-import flixel.addons.transition.FlxTransitionableState;
 import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode;
 import lime.app.Application;
@@ -74,9 +74,9 @@ class Main extends Sprite
 		DatabaseManager.Initialize();
 		Controls.init();
 
-		Application.current.window.title += ' - ${Application.current.meta.get("version")}';
+		Application.current.window.title = 'BETA ${Application.current.meta.get("version")}';
 		FlxGraphic.defaultPersist = true;
-		FlxTransitionableState.skipNextTransIn = true;
+		ScriptableState.skipTransIn = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
 
 		Lib.current.stage.align = TOP_LEFT;

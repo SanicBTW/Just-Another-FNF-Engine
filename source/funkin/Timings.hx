@@ -46,12 +46,8 @@ class Timings
 	public static var notesAccuracy:Float = 0;
 	public static var accuracy(get, never):Float;
 
-	// formulas:
-	// notesAccuracy / totalHits
-	// (notesAccuracy - misses) / totalHits - i believe its working coolio
-	// score / ((notesAccuracy + misses) / totalHits)
 	private static function get_accuracy():Float
-		return (notesAccuracy - misses) / totalHits;
+		return notesAccuracy / totalHits;
 
 	// HUD
 	public static var ratingName:String = "N/A";
@@ -176,15 +172,15 @@ class Timings
 				}
 
 				// Set more vars
-				if (judgement.name == "miss")
+				if (judgement.name == "miss" || judgement.name == "shit")
 					combo = 0;
 				else
 				{
 					combo++;
 					totalHits++;
-					notesAccuracy += judgement.weight;
 				}
 
+				notesAccuracy += judgement.weight;
 				score += judgement.score;
 				health += judgement.health;
 
@@ -221,11 +217,12 @@ class Timings
 			}
 		}
 
+		// shits should count as misses too ig
 		ratingFC = "";
 		if (getJudgementByName(lowestRating).fcStatus != null)
 			ratingFC = getJudgementByName(lowestRating).fcStatus;
 		else
-			ratingFC = (misses > 0 && misses < 10) ? "SDCB" : null;
+			ratingFC = ((misses > 0 || shits > 0) && (misses < 10 && shits < 10)) ? "SDCB" : null;
 	}
 
 	public static function getJudgementIndex(searchJudgement:String)

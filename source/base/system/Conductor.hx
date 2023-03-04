@@ -20,7 +20,8 @@ class Conductor
 	private static var baseSpeed:Float = 2;
 	public static var songSpeed:Float = 2;
 
-	// steps and beats
+	// sections, steps and beats
+	public static var sectionPosition:Int = 0;
 	public static var stepPosition:Int = 0;
 	public static var beatPosition:Int = 0;
 
@@ -65,40 +66,14 @@ class Conductor
 		lastBeat = -1;
 	}
 
-	public static function mapBPMChanges(song:Song)
-	{
-		bpmChangeMap = [];
-
-		var curBPM:Float = song.bpm;
-		var totalSteps:Int = 0;
-		var totalPos:Float = 0;
-		for (i in 0...song.notes.length)
-		{
-			if (song.notes[i].changeBPM && song.notes[i].bpm != curBPM)
-			{
-				curBPM = song.notes[i].bpm;
-				var event:BPMChangeEvent = {
-					stepTime: totalSteps,
-					songTime: totalPos,
-					bpm: curBPM,
-					stepCrochet: calculateCrochet(curBPM) / 4
-				};
-				bpmChangeMap.push(event);
-			}
-
-			var deltaSteps:Int = song.notes[i].lengthInSteps;
-			totalSteps += deltaSteps;
-			totalPos += (calculateCrochet(curBPM) / 4) * deltaSteps;
-		}
-	}
-
 	public static function changeBPM(newBPM:Float)
 	{
 		bpm = newBPM;
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
-		songSpeed = (0.45 * (baseSpeed + (((bpm / 60) / songSpeed) * (stepCrochet / 1000))));
+		var oldSpeed = songSpeed; // ?
+		songSpeed = flixel.math.FlxMath.roundDecimal((0.45 * (baseSpeed + ((bpm / 60) / oldSpeed) * (stepCrochet / 1000))), 2);
 		for (note in ChartLoader.unspawnedNoteList)
 		{
 			note.updateSustainScale();
@@ -109,19 +84,10 @@ class Conductor
 	{
 		if (boundSong.isPlaying)
 		{
-			var lastChange:BPMChangeEvent = {
-				stepTime: 0,
-				songTime: 0,
-				bpm: 0,
-			};
-
-			for (i in 0...bpmChangeMap.length)
-			{
-				if (songPosition >= bpmChangeMap[i].songTime)
-					lastChange = bpmChangeMap[i];
-			}
+			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
 
 			stepPosition = lastChange.stepTime + Math.floor((songPosition - lastChange.songTime) / stepCrochet);
+			sectionPosition = Math.floor(stepPosition / 16);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)
@@ -163,6 +129,24 @@ class Conductor
 		trace('New song time ${boundSong.playbackTime}, $songPosition');
 	}
 
-	inline public static function calculateCrochet(bpm:Float)
+	public static function getBPMFromSeconds(time:Float)
+	{
+		var lastChange:BPMChangeEvent = {
+			stepTime: 0,
+			songTime: 0,
+			bpm: bpm,
+			stepCrochet: stepCrochet
+		};
+
+		for (i in 0...Conductor.bpmChangeMap.length)
+		{
+			if (time >= Conductor.bpmChangeMap[i].songTime)
+				lastChange = Conductor.bpmChangeMap[i];
+		}
+
+		return lastChange;
+	}
+
+	public static inline function calculateCrochet(bpm:Float)
 		return (60 / bpm) * 1000;
 }

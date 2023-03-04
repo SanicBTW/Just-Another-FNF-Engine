@@ -3,19 +3,19 @@ package base;
 import base.system.Controls;
 import flixel.FlxG;
 import flixel.FlxState;
-import flixel.addons.transition.FlxTransitionableState;
-import flixel.addons.ui.FlxUIState;
-import flixel.addons.ui.FlxUISubState;
+import flixel.FlxSubState;
 
-// From FNF-Forever-Engine (My fork)
-class ScriptableState extends FlxUIState
+class ScriptableState extends FlxState
 {
+	public static var skipTransIn:Bool = false;
+	public static var skipTransOut:Bool = false;
+
 	override function create()
 	{
-		if (!FlxTransitionableState.skipNextTransOut)
+		if (!skipTransOut)
 			openSubState(new FadeTransition(0.7, true));
 
-		FlxTransitionableState.skipNextTransOut = false;
+		skipTransOut = false;
 
 		Controls.onActionPressed.add(onActionPressed);
 		Controls.onActionReleased.add(onActionReleased);
@@ -31,37 +31,29 @@ class ScriptableState extends FlxUIState
 
 	public static function switchState(nextState:FlxState)
 	{
-		var curState:Dynamic = FlxG.state;
-		var leState:ScriptableState = curState;
-		if (!FlxTransitionableState.skipNextTransIn)
+		var curState:ScriptableState = cast FlxG.state;
+		if (!skipTransIn)
 		{
-			leState.openSubState(new FadeTransition(0.6, false));
-			if (nextState == FlxG.state)
+			curState.openSubState(new FadeTransition(0.6, false));
+			FadeTransition.finishCallback = function()
 			{
-				FadeTransition.finishCallback = function()
-				{
+				if (nextState == curState)
 					FlxG.resetState();
-				};
-			}
-			else
-			{
-				FadeTransition.finishCallback = function()
-				{
+				else
 					FlxG.switchState(nextState);
-				};
-			}
+			};
 			return;
 		}
-		FlxTransitionableState.skipNextTransIn = false;
+		skipTransIn = false;
 		FlxG.switchState(nextState);
 	}
 
-	function onActionPressed(action:String) {}
+	private function onActionPressed(action:String) {}
 
-	function onActionReleased(action:String) {}
+	private function onActionReleased(action:String) {}
 }
 
-class ScriptableSubState extends FlxUISubState
+class ScriptableSubState extends FlxSubState
 {
 	override function create()
 	{
@@ -77,7 +69,7 @@ class ScriptableSubState extends FlxUISubState
 		super.destroy();
 	}
 
-	function onActionPressed(action:String) {}
+	private function onActionPressed(action:String) {}
 
-	function onActionReleased(action:String) {}
+	private function onActionReleased(action:String) {}
 }

@@ -53,6 +53,7 @@ class ChartLoader
 
 	public static function loadChart(state:MusicHandler, songName:String, difficulty:Int):Song
 	{
+		Conductor.bpmChangeMap = [];
 		unspawnedNoteList = [];
 		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
 
@@ -84,8 +85,26 @@ class ChartLoader
 	{
 		var noteStrumTimes:Map<Int, Array<Float>> = [0 => [], 1 => []];
 
+		var curBPM:Float = swagSong.bpm;
+		var totalSteps:Int = 0;
+		var totalPos:Float = 0;
 		for (section in swagSong.notes)
 		{
+			if (section.changeBPM && section.bpm != curBPM)
+			{
+				curBPM = section.bpm;
+				var bpmChange:BPMChangeEvent = {
+					stepTime: totalSteps,
+					songTime: totalPos,
+					bpm: curBPM,
+					stepCrochet: (Conductor.calculateCrochet(curBPM) / 4)
+				};
+				Conductor.bpmChangeMap.push(bpmChange);
+			}
+
+			totalSteps += section.lengthInSteps;
+			totalPos += (Conductor.calculateCrochet(curBPM) / 4) * section.lengthInSteps;
+
 			for (songNotes in section.sectionNotes)
 			{
 				switch (songNotes[1])

@@ -71,22 +71,21 @@ class LoadingState extends ScriptableSubState
 			Request.getSound(collection, pbObject.id, pbObject.inst, function(sound)
 			{
 				ChartLoader.netInst = sound;
-			});
-
-			if (pbObject.voices != "")
-			{
-				curLoading.changeText("Voices");
-				Request.getSound(collection, pbObject.id, pbObject.voices, function(sound)
+				if (pbObject.voices != "")
 				{
-					ChartLoader.netVoices = sound;
+					curLoading.changeText("Voices");
+					Request.getSound(collection, pbObject.id, pbObject.voices, function(sound)
+					{
+						ChartLoader.netVoices = sound;
+						ScriptableState.switchState(new PlayTest());
+					});
+				}
+				else
+				{
+					ChartLoader.netVoices = null;
 					ScriptableState.switchState(new PlayTest());
-				});
-			}
-			else
-			{
-				ChartLoader.netVoices = null;
-				ScriptableState.switchState(new PlayTest());
-			}
+				}
+			});
 		});
 	}
 }

@@ -6,7 +6,6 @@ import base.ui.Fonts;
 import base.ui.RoundedSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.addons.transition.FlxTransitionableState;
 import flixel.text.FlxBitmapText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -110,7 +109,7 @@ class Init extends ScriptableState
 
 		super.create();
 
-		FlxTransitionableState.skipNextTransIn = false;
+		ScriptableState.skipTransIn = false;
 	}
 
 	function end()
