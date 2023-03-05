@@ -11,6 +11,7 @@ import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode;
 import lime.app.Application;
 import openfl.Lib;
+import openfl.display.Graphics;
 import openfl.display.Sprite;
 import openfl.display.StageScaleMode;
 import openfl.events.Event;
@@ -24,12 +25,15 @@ class Main extends Sprite
 	var gameHeight:Int = 720;
 	var initialClass:Class<FlxState> = Init;
 	var zoom:Float = -1;
-	var framerate:Int = #if !html5 250 #else 60 #end;
+	var framerate:Int = #if !html5 120 #else 60 #end;
 	var skipSplash:Bool = true;
 	var startFullscreen:Bool = false;
 
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
+
+	public static var gfxSprite(default, null):Sprite = new Sprite();
+	public static var gfx(default, null):Graphics = gfxSprite.graphics;
 
 	public static function main()
 		Lib.current.addChild(new Main());

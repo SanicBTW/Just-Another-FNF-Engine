@@ -2,6 +2,7 @@ package states;
 
 import base.MusicBeatState;
 import base.system.Controls;
+import base.ui.CircularSprite;
 import base.ui.RoundedSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -41,9 +42,14 @@ class RewriteMenu extends MusicBeatState
 
 		for (option in options)
 		{
-			var item:RoundedSpriteText = new RoundedSpriteText(0, 0, 150, 25, FlxColor.RED, option);
+			var item:RoundedSpriteText = new RoundedSpriteText(0, 0, 325, 50, FlxColor.RED, option);
+			item.roundedSprite.cornerSize = 25;
 			groupItems.add(item);
 		}
+
+		var circ = new CircularSprite(0, 0, 300, 80, FlxColor.LIME);
+		circ.screenCenter();
+		add(circ);
 
 		super.create();
 	}

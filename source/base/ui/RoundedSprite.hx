@@ -4,13 +4,18 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxBitmapText;
 import flixel.util.FlxColor;
-import openfl.geom.Rectangle;
+import flixel.util.FlxSpriteUtil.DrawStyle;
+import flixel.util.FlxSpriteUtil.LineStyle;
 
-// totally not from https://github.com/SanicBTW/FNF-PsychEngine-0.5.2h/blob/master/source/Prompt.hx
+using flixel.util.FlxColorTransformUtil;
+
 class RoundedSprite extends FlxSprite
 {
-	private var cornerSize(default, set):Float = 10;
+	public var cornerSize(default, set):Float;
+
 	private var Color:FlxColor;
+
+	private var _regen:Bool = true;
 
 	private function set_cornerSize(Value:Float):Float
 	{
@@ -18,50 +23,81 @@ class RoundedSprite extends FlxSprite
 			return Value;
 
 		cornerSize = Value;
-		regen();
+
+		drawRoundRect({thickness: 0, color: FlxColor.TRANSPARENT}, {smoothing: true});
+		_regen = true;
 		return Value;
 	}
 
-	override public function new(X:Float, Y:Float, Width:Float, Height:Float, Color:FlxColor)
+	override public function new(X:Float, Y:Float, Width:Float, Height:Float, Color:FlxColor, Radius:Float = 15)
 	{
 		super(X, Y);
 		this.width = Width;
 		this.height = Height;
 		this.Color = Color;
 
-		makeGraphic(Std.int(width), Std.int(height), Color, true);
-		regen();
+		makeGraphic(Std.int(width), Std.int(height), FlxColor.TRANSPARENT, false);
+		this.cornerSize = Radius;
 	}
 
-	private function regen()
+	override public function drawFrame(Force:Bool = false)
 	{
-		pixels.fillRect(new Rectangle(0, 0, cornerSize, cornerSize), 0x0);
-		round(false, false);
-		pixels.fillRect(new Rectangle(width - cornerSize, 0, cornerSize, cornerSize), 0x0);
-		round(true, false);
-		pixels.fillRect(new Rectangle(0, height - cornerSize, cornerSize, cornerSize), 0x0);
-		round(false, true);
-		pixels.fillRect(new Rectangle(width - cornerSize, height - cornerSize, cornerSize, cornerSize), 0x0);
-		round(true, true);
+		_regen = _regen || Force;
+		super.drawFrame(_regen);
 	}
 
-	private function round(flipX:Bool, flipY:Bool)
+	override public function draw()
 	{
-		var antiX:Float = (width - cornerSize);
-		var antiY:Float = flipY ? (height - 1) : 0;
-		if (flipY)
-			antiY -= 2;
-		pixels.fillRect(new Rectangle((flipX ? antiX : 1), Math.abs(antiY - 8), 10, 3), Color);
-		if (flipY)
-			antiY += 1;
-		pixels.fillRect(new Rectangle((flipX ? antiX : 2), Math.abs(antiY - 6), 9, 2), Color);
-		if (flipY)
-			antiY += 1;
-		pixels.fillRect(new Rectangle((flipX ? antiX : 3), Math.abs(antiY - 5), 8, 1), Color);
-		pixels.fillRect(new Rectangle((flipX ? antiX : 4), Math.abs(antiY - 4), 7, 1), Color);
-		pixels.fillRect(new Rectangle((flipX ? antiX : 5), Math.abs(antiY - 3), 6, 1), Color);
-		pixels.fillRect(new Rectangle((flipX ? antiX : 6), Math.abs(antiY - 2), 5, 1), Color);
-		pixels.fillRect(new Rectangle((flipX ? antiX : 8), Math.abs(antiY - 1), 3, 1), Color);
+		// USE WITH THE UPCOMING POP UPS
+		// camera.startQuadBatch(Round.graphic, true, (colorTransform != null && colorTransform.hasRGBAOffsets()), blend, antialiasing, shader);
+
+		_regen = false;
+		super.draw();
+	}
+
+	private function drawRoundRect(?lineStyle:LineStyle, ?drawStyle:DrawStyle)
+	{
+		beginDraw(Color, lineStyle);
+		Main.gfx.drawRoundRectComplex(x, y, width, height, cornerSize, cornerSize, cornerSize, cornerSize);
+		endDraw(drawStyle);
+	}
+
+	private function beginDraw(FillColor:FlxColor, ?lineStyle:LineStyle)
+	{
+		Main.gfx.clear();
+		setLineStyle(lineStyle);
+
+		if (FillColor != FlxColor.TRANSPARENT)
+			Main.gfx.beginFill(FillColor.to24Bit(), FillColor.alphaFloat);
+	}
+
+	private function endDraw(?drawStyle:DrawStyle)
+	{
+		if (drawStyle == null)
+			drawStyle = {smoothing: false};
+		else if (drawStyle.smoothing == null)
+			drawStyle.smoothing = false;
+
+		pixels.draw(Main.gfxSprite, drawStyle.matrix, drawStyle.colorTransform, drawStyle.blendMode, drawStyle.clipRect, drawStyle.smoothing);
+		dirty = true;
+	}
+
+	private function setLineStyle(lineStyle:LineStyle)
+	{
+		if (lineStyle != null)
+		{
+			var color = (lineStyle.color == null) ? FlxColor.BLACK : lineStyle.color;
+
+			if (lineStyle.thickness == null)
+				lineStyle.thickness = 1;
+			if (lineStyle.pixelHinting == null)
+				lineStyle.pixelHinting = false;
+			if (lineStyle.miterLimit == null)
+				lineStyle.miterLimit = 3;
+
+			Main.gfx.lineStyle(lineStyle.thickness, color.to24Bit(), color.alphaFloat, lineStyle.pixelHinting, lineStyle.scaleMode, lineStyle.capsStyle,
+				lineStyle.jointStyle, lineStyle.miterLimit);
+		}
 	}
 }
 
