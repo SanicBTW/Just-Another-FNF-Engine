@@ -92,11 +92,14 @@ class Conductor
 
 			if (stepPosition > lastStep)
 			{
-				if ((Math.abs(boundSong.playbackTime - songPosition) > comparisonThreshold)
-					|| (boundVocals != null
-						&& boundVocals.audioSource != null
-						&& Math.abs(boundVocals.playbackTime - songPosition) > comparisonThreshold))
-					resyncTime();
+				if (boundSong.tag != "musicPERSIST")
+				{
+					if ((Math.abs(boundSong.playbackTime - songPosition) > comparisonThreshold)
+						|| (boundVocals != null
+							&& boundVocals.audioSource != null
+							&& Math.abs(boundVocals.playbackTime - songPosition) > comparisonThreshold))
+						resyncTime();
+				}
 
 				boundState.stepHit();
 				lastStep = stepPosition;

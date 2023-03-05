@@ -1,10 +1,14 @@
 package base.ui;
 
 import flixel.FlxSprite;
+import flixel.group.FlxSpriteGroup;
+import flixel.math.FlxMath;
+import flixel.text.FlxBitmapText;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil.DrawStyle;
 import flixel.util.FlxSpriteUtil.LineStyle;
+import funkin.CoolUtil;
 
 using flixel.util.FlxColorTransformUtil;
 
@@ -20,13 +24,12 @@ class CircularSprite extends FlxSprite
 		this.Color = Color;
 
 		makeGraphic(Std.int(width), Std.int(height), FlxColor.TRANSPARENT, false);
-		drawStuff((x), -1, (x + width), -1, {thickness: 1, color: FlxColor.BLACK}, {smoothing: true});
+		drawStuff((x), -1, (x + width), -1, {thickness: 0, color: FlxColor.TRANSPARENT}, null);
+		antialiasing = SaveData.antialiasing;
 	}
 
 	private function drawStuff(dX:Float = -1, dY:Float = -1, d2X:Float = -1, d2Y:Float = -1, ?lineStyle:LineStyle, ?drawStyle:DrawStyle)
 	{
-		beginDraw(Color, lineStyle);
-
 		if (dX == -1)
 			dX = getPos(X);
 
@@ -41,9 +44,13 @@ class CircularSprite extends FlxSprite
 
 		var minusVal = Math.min(frameWidth, frameHeight);
 
-		Main.gfx.drawRect(dX + (minusVal / 2), 0, frameWidth - (dX + (minusVal / 2)) - (d2X - (minusVal / 2)), frameHeight);
+		beginDraw(Color, lineStyle);
 		Main.gfx.drawCircle(dX + (minusVal / 2), dY, (minusVal / 2));
 		Main.gfx.drawCircle(d2X - (minusVal / 2), d2Y, (minusVal / 2));
+		endDraw(drawStyle);
+
+		beginDraw(Color, lineStyle);
+		Main.gfx.drawRect(dX + (minusVal / 2), 0, frameWidth - (2 * (minusVal / 2)), frameHeight);
 		endDraw(drawStyle);
 	}
 
@@ -99,5 +106,54 @@ class CircularSprite extends FlxSprite
 			Main.gfx.lineStyle(lineStyle.thickness, color.to24Bit(), color.alphaFloat, lineStyle.pixelHinting, lineStyle.scaleMode, lineStyle.capsStyle,
 				lineStyle.jointStyle, lineStyle.miterLimit);
 		}
+	}
+}
+
+class CircularSpriteText extends FlxSpriteGroup
+{
+	public var circularSprite(default, null):CircularSprite;
+	public var bitmapText(default, null):FlxBitmapText;
+	public var fontSize:Float;
+
+	// For menu stuff
+	public var selected:Bool = false;
+
+	override public function new(X:Float, Y:Float, Width:Float, Height:Float, Color:FlxColor, Text:String)
+	{
+		super(X, Y);
+
+		circularSprite = new CircularSprite(0, 0, Width, Height, Color);
+		circularSprite.alpha = 0.45;
+		add(circularSprite);
+
+		bitmapText = new FlxBitmapText(Fonts.VCR());
+		bitmapText.text = Text;
+		bitmapText.fieldWidth = Std.int(width);
+		bitmapText.antialiasing = SaveData.antialiasing;
+		setFontSize(X, Y, 0.4);
+		add(bitmapText);
+	}
+
+	function setFontSize(oX:Float, oY:Float, value:Float):Float
+	{
+		if (fontSize == value)
+			return value;
+
+		bitmapText.setGraphicSize(Std.int(bitmapText.width * value));
+		bitmapText.centerOffsets();
+		bitmapText.updateHitbox();
+		bitmapText.setPosition(10, 10);
+
+		return fontSize = value;
+	}
+
+	override public function update(elapsed:Float)
+	{
+		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 5.125), 0, 1);
+
+		circularSprite.alpha = FlxMath.lerp((selected ? 0.9 : 0.45), circularSprite.alpha, lerpVal);
+		bitmapText.alpha = FlxMath.lerp(circularSprite.alpha, bitmapText.alpha, lerpVal);
+
+		super.update(elapsed);
 	}
 }

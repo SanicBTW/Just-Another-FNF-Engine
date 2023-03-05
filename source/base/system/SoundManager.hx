@@ -75,7 +75,10 @@ class SoundManager
 			audio = new AudioStream();
 
 		if (name != null && !sounds.exists(name))
+		{
+			audio.tag = name;
 			sounds.set(name, audio);
+		}
 
 		if (name == null)
 		{
@@ -86,6 +89,7 @@ class SoundManager
 					soundNNumber = Std.parseInt(soundName.split("_")[1]) + 1;
 			}
 			name = 'sound_${soundNNumber}';
+			audio.tag = name;
 			sounds.set(name, audio);
 		}
 
@@ -104,6 +108,7 @@ class AudioStream
 	public var loopAudio:Bool = false;
 	public var onFinish(default, never):FlxTypedSignal<Void->Void> = new FlxTypedSignal<Void->Void>();
 	public var audioSource(default, set):Dynamic = null;
+	public var tag:String = "";
 
 	private var lastTime:Float = 0;
 
