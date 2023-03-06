@@ -2,6 +2,10 @@ package states;
 
 import base.MusicBeatState;
 import base.ScriptableState;
+import base.pocketbase.Collections.Funkin as FunkCollection;
+import base.pocketbase.Collections.Funkin_Old;
+import base.pocketbase.Collections.PocketBaseObject;
+import base.pocketbase.Request;
 import base.system.Conductor;
 import base.system.Controls;
 import base.system.DatabaseManager;
@@ -13,16 +17,21 @@ import flixel.graphics.tile.FlxGraphicsShader;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
 import funkin.Character;
+import haxe.Json;
 import openfl.filters.ShaderFilter;
 import shader.CoolShader;
 import shader.Noise.NoiseShader;
 import shader.PixelEffect;
 import states.config.KeybindsState;
+import substates.LoadingState;
 
 class RewriteMenu extends MusicBeatState
 {
-	var options:Array<String> = ["Online", "Settings", "Shaders", "Character selection"];
+	// Options available
+	var options:Array<String> = ["Assets", "Online", "Settings", "Shaders", "Character selection"];
 	var subOptions:Map<String, Array<Dynamic>> = [
+		// bruh
+		"Assets" => ["Select song"],
 		"Online" => ["Select song", "Choose collection"],
 		"Settings" => ["Options", "Keybinds"],
 		"Shaders" => ["Drug", "Pixel", "Noise", "Disable"],
@@ -30,17 +39,25 @@ class RewriteMenu extends MusicBeatState
 	];
 	var groupItems:FlxTypedGroup<CircularSpriteText>;
 
+	// Menu essentials
 	var canPress:Bool = true;
 	var pastStr:String;
 	var curStr:String;
 	var curState(default, set):SelectionState = SELECTING;
 	var curOption(default, set):Int = 0;
 
+	// da bf
 	var boyfriend:Character;
 
+	// Shaders
 	var shaderFilter:ShaderFilter;
 	var pixelShader:PixelEffect;
 	var noiseShader:NoiseShader;
+
+	// Online
+	var collections:Array<String> = ["New", "Old"];
+	var selectedCollection:String = "New";
+	var songStore:Map<String, PocketBaseObject> = new Map();
 
 	private function set_curOption(value:Int):Int
 	{
@@ -51,12 +68,21 @@ class RewriteMenu extends MusicBeatState
 		if (curOption >= groupItems.members.length)
 			curOption = 0;
 
+		var the:Int = 0;
+
 		for (item in groupItems)
 		{
 			item.selected = (item.ID == curOption);
+
+			if (item.menuItem)
+			{
+				item.targetY = the - curOption;
+				the++;
+			}
 		}
 
-		curStr = groupItems.members[curOption].bitmapText.text;
+		if (groupItems.members[curOption] != null)
+			curStr = groupItems.members[curOption].bitmapText.text;
 
 		return curOption;
 	}
@@ -66,7 +92,8 @@ class RewriteMenu extends MusicBeatState
 		canPress = false;
 		if (groupItems.members.length > 0)
 		{
-			pastStr = groupItems.members[curOption].bitmapText.text;
+			if (groupItems.members[curOption] != null)
+				pastStr = groupItems.members[curOption].bitmapText.text;
 
 			for (i in 0...groupItems.members.length)
 			{
@@ -95,7 +122,9 @@ class RewriteMenu extends MusicBeatState
 					}
 				}
 			case LISTING:
-				{}
+				{
+					regenListing();
+				}
 		}
 
 		curOption = groupItems.length + 1;
@@ -187,12 +216,12 @@ class RewriteMenu extends MusicBeatState
 					{
 						case "confirm":
 							{
-								trace("Pressed on listing");
+								handleListing();
 							}
 
 						case "back":
 							{
-								curState = SUB_SELECTION;
+								curState = SELECTING;
 							}
 
 						case "ui_up":
@@ -227,6 +256,77 @@ class RewriteMenu extends MusicBeatState
 		{
 			trace("beat hit");
 			boyfriend.dance();
+		}
+	}
+
+	private function regenListing()
+	{
+		switch (pastStr)
+		{
+			case "Select song":
+				{
+					songStore.clear();
+
+					var isOld:Bool = (selectedCollection == "Old");
+					Request.getRecords((isOld ? "old_fnf_charts" : "funkin"), (data:String) ->
+					{
+						if (data == "Failed to fetch")
+						{
+							var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
+							groupItems.add(item);
+							return;
+						}
+
+						var songShit:Array<FunkCollection & Funkin_Old> = cast Json.parse(data).items;
+						for (i in 0...songShit.length)
+						{
+							var song = songShit[i];
+							var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY,
+								(isOld ? song.song_name : song.song));
+							item.ID = i;
+							item.targetY = i;
+							item.menuItem = true;
+							songStore.set((isOld ? song.song_name : song.song),
+								new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart), song.inst,
+									song.voices));
+							groupItems.add(item);
+						}
+					});
+				}
+
+			case "Choose collection":
+				{
+					for (i in 0...collections.length)
+					{
+						var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, collections[i]);
+						item.ID = i;
+						groupItems.add(item);
+					}
+				}
+		}
+	}
+
+	private function handleListing()
+	{
+		switch (pastStr)
+		{
+			case "Select song":
+				{
+					if (curStr == "Error fetching")
+						return;
+
+					var pbObject:PocketBaseObject = songStore.get(curStr);
+					persistentUpdate = false;
+					canPress = false;
+					bgMusic.stop();
+					openSubState(new LoadingState(selectedCollection == "Old" ? "old_fnf_charts" : "funkin", pbObject));
+				}
+
+			case "Choose collection":
+				{
+					selectedCollection = curStr;
+					curState = SELECTING;
+				}
 		}
 	}
 

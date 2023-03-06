@@ -1,7 +1,5 @@
 package shader;
 
-// uh shit wasnt workin using FlxShader, because it was using FlxGraphicsShader which already had some definitions and it was crashing because of redefinitions and stuff
-// todo: make a variable for screen x and screen y for vec2?
 class Shader extends openfl.display.Shader
 {
 	@:glVertexHeader("

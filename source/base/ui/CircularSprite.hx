@@ -121,6 +121,8 @@ class CircularSpriteText extends FlxSpriteGroup
 
 	public var menuItem:Bool = false;
 	public var targetY:Float = 0;
+	public var yMult:Float = 70;
+	public var yAdd:Float = 0;
 
 	override public function new(X:Float, Y:Float, Width:Float, Height:Float, Color:FlxColor, Text:String)
 	{
@@ -163,7 +165,7 @@ class CircularSpriteText extends FlxSpriteGroup
 		if (menuItem)
 		{
 			var scaledY:Float = FlxMath.remapToRange(targetY, 0, 1, 0, 1.3);
-			y = FlxMath.lerp(y, (scaledY) + (FlxG.height * 0.48), slowLerp);
+			y = FlxMath.lerp(y, (scaledY * yMult) + (FlxG.height * 0.5), slowLerp);
 		}
 
 		super.update(elapsed);
