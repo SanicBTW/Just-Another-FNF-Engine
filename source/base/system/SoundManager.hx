@@ -106,17 +106,21 @@ class AudioStream
 	// Metadata
 	public var audioLength:Float = 0;
 	public var loopAudio:Bool = false;
-	public var onFinish(default, never):FlxTypedSignal<Void->Void> = new FlxTypedSignal<Void->Void>();
 	public var audioSource(default, set):Dynamic = null;
 	public var tag:String = "";
 
-	private var lastTime:Float = 0;
+	// Events
+	public var onFinish(default, never):FlxTypedSignal<Void->Void> = new FlxTypedSignal<Void->Void>();
+	public var onLoop(default, never):FlxTypedSignal<Void->Void> = new FlxTypedSignal<Void->Void>();
 
-	// public var loopTime:Float = 0;
 	// Playback
 	public var isPlaying:Bool = false;
 	@:isVar public var playbackTime(get, set):Float = 0;
 	public var audioVolume(default, set):Float = 1;
+
+	private var lastTime:Float = 0;
+
+	// public var loopTime:Float = 0;
 
 	public function new()
 	{
@@ -154,7 +158,10 @@ class AudioStream
 	private function audioCompleted(?_)
 	{
 		if (loopAudio)
+		{
 			playbackTime = 0;
+			onLoop.dispatch();
+		}
 		else
 		{
 			stop();

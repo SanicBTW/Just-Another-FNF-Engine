@@ -1,6 +1,6 @@
 package shader;
 
-class ChromaticAbberationShader extends Shader
+class NoiseShader extends Shader
 {
 	@:glFragmentSource('
         #pragma header
@@ -20,6 +20,6 @@ class ChromaticAbberationShader extends Shader
 	public function new()
 	{
 		super();
-		this.elapsed.value = [flixel.FlxG.elapsed];
+		this.elapsed.value = [flixel.FlxG.game.ticks / 1000];
 	}
 }

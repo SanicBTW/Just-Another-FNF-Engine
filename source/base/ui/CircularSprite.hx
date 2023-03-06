@@ -1,5 +1,6 @@
 package base.ui;
 
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
@@ -118,6 +119,9 @@ class CircularSpriteText extends FlxSpriteGroup
 	// For menu stuff
 	public var selected:Bool = false;
 
+	public var menuItem:Bool = false;
+	public var targetY:Float = 0;
+
 	override public function new(X:Float, Y:Float, Width:Float, Height:Float, Color:FlxColor, Text:String)
 	{
 		super(X, Y);
@@ -149,10 +153,18 @@ class CircularSpriteText extends FlxSpriteGroup
 
 	override public function update(elapsed:Float)
 	{
+		var slowLerp:Float = funkin.CoolUtil.boundTo(elapsed * 9.6, 0, 1);
 		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 5.125), 0, 1);
 
 		circularSprite.alpha = FlxMath.lerp((selected ? 0.9 : 0.45), circularSprite.alpha, lerpVal);
+		circularSprite.scale.x = FlxMath.lerp((selected ? 1.1 : 1), circularSprite.scale.x, lerpVal);
 		bitmapText.alpha = FlxMath.lerp(circularSprite.alpha, bitmapText.alpha, lerpVal);
+
+		if (menuItem)
+		{
+			var scaledY:Float = FlxMath.remapToRange(targetY, 0, 1, 0, 1.3);
+			y = FlxMath.lerp(y, (scaledY) + (FlxG.height * 0.48), slowLerp);
+		}
 
 		super.update(elapsed);
 	}

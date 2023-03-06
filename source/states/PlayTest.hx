@@ -31,8 +31,6 @@ import funkin.notes.StrumLine;
 import funkin.ui.UI;
 import openfl.filters.ShaderFilter;
 import openfl.media.Sound;
-import shader.*;
-import shader.ChromaticAberration.ChromaticAbberationShader;
 import substates.PauseState;
 
 using StringTools;

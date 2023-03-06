@@ -234,7 +234,7 @@ class KeybindsState extends MusicBeatState
 						case "back":
 							{
 								SaveData.saveSettings();
-								ScriptableState.switchState(new MainState());
+								ScriptableState.switchState(new RewriteMenu());
 							}
 					}
 				}

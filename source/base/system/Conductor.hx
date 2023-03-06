@@ -59,11 +59,7 @@ class Conductor
 		baseSpeed = SONG.speed;
 		changeBPM(SONG.bpm);
 
-		songPosition = 0;
-		stepPosition = 0;
-		beatPosition = 0;
-		lastStep = -1;
-		lastBeat = -1;
+		reset();
 	}
 
 	public static function changeBPM(newBPM:Float)
@@ -152,4 +148,13 @@ class Conductor
 
 	public static inline function calculateCrochet(bpm:Float)
 		return (60 / bpm) * 1000;
+
+	public static function reset()
+	{
+		songPosition = 0;
+		stepPosition = 0;
+		beatPosition = 0;
+		lastStep = -1;
+		lastBeat = -1;
+	}
 }

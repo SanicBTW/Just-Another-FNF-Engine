@@ -1,21 +1,29 @@
 package states;
 
 import base.MusicBeatState;
+import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
+import base.system.DatabaseManager;
 import base.ui.CircularSprite;
 import base.ui.RoundedSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.graphics.tile.FlxGraphicsShader;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
 import funkin.Character;
+import openfl.filters.ShaderFilter;
+import shader.CoolShader;
+import shader.Noise.NoiseShader;
+import shader.PixelEffect;
+import states.config.KeybindsState;
 
 class RewriteMenu extends MusicBeatState
 {
 	var options:Array<String> = ["Online", "Settings", "Shaders", "Character selection"];
 	var subOptions:Map<String, Array<Dynamic>> = [
-		"Online" => ["Select song", "Upload song", "Choose collection"],
+		"Online" => ["Select song", "Choose collection"],
 		"Settings" => ["Options", "Keybinds"],
 		"Shaders" => ["Drug", "Pixel", "Noise", "Disable"],
 		"Character selection" => ["soon"]
@@ -23,11 +31,16 @@ class RewriteMenu extends MusicBeatState
 	var groupItems:FlxTypedGroup<CircularSpriteText>;
 
 	var canPress:Bool = true;
+	var pastStr:String;
 	var curStr:String;
 	var curState(default, set):SelectionState = SELECTING;
 	var curOption(default, set):Int = 0;
 
 	var boyfriend:Character;
+
+	var shaderFilter:ShaderFilter;
+	var pixelShader:PixelEffect;
+	var noiseShader:NoiseShader;
 
 	private function set_curOption(value:Int):Int
 	{
@@ -43,6 +56,8 @@ class RewriteMenu extends MusicBeatState
 			item.selected = (item.ID == curOption);
 		}
 
+		curStr = groupItems.members[curOption].bitmapText.text;
+
 		return curOption;
 	}
 
@@ -51,8 +66,7 @@ class RewriteMenu extends MusicBeatState
 		canPress = false;
 		if (groupItems.members.length > 0)
 		{
-			curStr = groupItems.members[curOption].bitmapText.text;
-			trace(curStr);
+			pastStr = groupItems.members[curOption].bitmapText.text;
 
 			for (i in 0...groupItems.members.length)
 			{
@@ -104,10 +118,13 @@ class RewriteMenu extends MusicBeatState
 
 		curState = SELECTING;
 
-		boyfriend = new Character(770, 0, true, 'bf');
+		boyfriend = new Character(690, -100, true, 'bf');
+		boyfriend.scale.set(0.9, 0.9);
 		add(boyfriend);
 
 		super.create();
+
+		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
 
 		Conductor.boundSong = bgMusic;
 		Conductor.boundState = this;
@@ -149,7 +166,7 @@ class RewriteMenu extends MusicBeatState
 					{
 						case "confirm":
 							{
-								curState = LISTING;
+								checkSub();
 							}
 
 						case "back":
@@ -194,12 +211,82 @@ class RewriteMenu extends MusicBeatState
 		canPress = true;
 	}
 
+	override public function update(elapsed:Float)
+	{
+		if (noiseShader != null)
+			noiseShader.elapsed.value = [FlxG.game.ticks / 1000];
+
+		super.update(elapsed);
+	}
+
 	override public function beatHit()
 	{
 		super.beatHit();
 
 		if (curBeat % 2 == 0)
+		{
+			trace("beat hit");
 			boyfriend.dance();
+		}
+	}
+
+	private function checkSub()
+	{
+		if (pastStr == null)
+			return;
+
+		switch (pastStr)
+		{
+			default:
+				curState = LISTING;
+
+			case "Settings":
+				{
+					switch (curStr)
+					{
+						case "Options":
+						case "Keybinds":
+							ScriptableState.switchState(new KeybindsState());
+					}
+				}
+
+			case "Shaders":
+				{
+					applyShader(curStr);
+				}
+		}
+	}
+
+	private function applyShader(shader:String)
+	{
+		if (shaderFilter != null)
+			shaderFilter = null;
+
+		if (pixelShader != null)
+			pixelShader = null;
+
+		if (noiseShader != null)
+			noiseShader = null;
+
+		switch (shader)
+		{
+			case "Drug":
+				shaderFilter = new ShaderFilter(new CoolShader());
+			case "Pixel":
+				pixelShader = new PixelEffect();
+				pixelShader.PIXEL_FACTOR = 512.;
+				shaderFilter = new ShaderFilter(pixelShader.shader);
+			case "Noise":
+				noiseShader = new NoiseShader();
+				shaderFilter = new ShaderFilter(noiseShader);
+			case "Disable":
+				FlxG.camera.setFilters([]);
+		}
+
+		DatabaseManager.set("shader", shader);
+
+		if (shaderFilter != null)
+			FlxG.camera.setFilters([shaderFilter]);
 	}
 }
 
