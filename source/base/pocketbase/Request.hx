@@ -12,7 +12,7 @@ import openfl.net.URLRequest;
 
 class Request
 {
-	public static final base:String = "https://pb.sancopublic.tk/api/";
+	public static final base:String = "https://pb.sancopublic.com/api/";
 	public static final recordsExt:String = "collections/:col/records";
 	public static final filesExt:String = "files/:col/:id/:file";
 

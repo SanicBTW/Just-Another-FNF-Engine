@@ -25,7 +25,7 @@ class Bar extends FlxSpriteGroup
 		this.fgColor = fgColor;
 
 		_bgBar = new CircularSprite(x, y, barWidth, barHeight, bgColor);
-		_fgBar = new CircularSprite(x, y, barWidth, barHeight, fgColor);
+		_fgBar = new CircularSprite(x, y, barWidth / 2, barHeight, fgColor);
 
 		add(_bgBar);
 		add(_fgBar);
@@ -42,7 +42,5 @@ class Bar extends FlxSpriteGroup
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		_fgBar = new CircularSprite(x, y, (value * barWidth), barHeight, fgColor);
 	}
 }

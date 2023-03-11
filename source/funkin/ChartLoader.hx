@@ -15,6 +15,7 @@ using StringTools;
 typedef Section =
 {
 	var sectionNotes:Array<Dynamic>;
+	var sectionBeats:Null<Int>;
 	var lengthInSteps:Int;
 	var mustHitSection:Bool;
 	var gfSection:Bool;
@@ -102,8 +103,9 @@ class ChartLoader
 				Conductor.bpmChangeMap.push(bpmChange);
 			}
 
-			totalSteps += section.lengthInSteps;
-			totalPos += (Conductor.calculateCrochet(curBPM) / 4) * section.lengthInSteps;
+			var deltaSteps:Int = (section.sectionBeats != null ? Math.round(section.sectionBeats) * 4 : section.lengthInSteps);
+			totalSteps += deltaSteps;
+			totalPos += (Conductor.calculateCrochet(curBPM) / 4) * deltaSteps;
 
 			for (songNotes in section.sectionNotes)
 			{

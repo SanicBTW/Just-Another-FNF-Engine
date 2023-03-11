@@ -41,10 +41,11 @@ class RewriteMenu extends MusicBeatState
 
 	// Menu essentials
 	var canPress:Bool = true;
-	var pastStr:String;
-	var curStr:String;
 	var curState(default, set):SelectionState = SELECTING;
 	var curOption(default, set):Int = 0;
+	var curOptionStr:String;
+	var catStr:String;
+	var subStr:String;
 
 	// da bf
 	var boyfriend:Character;
@@ -82,7 +83,7 @@ class RewriteMenu extends MusicBeatState
 		}
 
 		if (groupItems.members[curOption] != null)
-			curStr = groupItems.members[curOption].bitmapText.text;
+			curOptionStr = groupItems.members[curOption].bitmapText.text;
 
 		return curOption;
 	}
@@ -92,9 +93,6 @@ class RewriteMenu extends MusicBeatState
 		canPress = false;
 		if (groupItems.members.length > 0)
 		{
-			if (groupItems.members[curOption] != null)
-				pastStr = groupItems.members[curOption].bitmapText.text;
-
 			for (i in 0...groupItems.members.length)
 			{
 				groupItems.remove(groupItems.members[0], true);
@@ -105,6 +103,7 @@ class RewriteMenu extends MusicBeatState
 		{
 			case SELECTING:
 				{
+					catStr = null;
 					for (i in 0...options.length)
 					{
 						var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, options[i]);
@@ -114,9 +113,11 @@ class RewriteMenu extends MusicBeatState
 				}
 			case SUB_SELECTION:
 				{
-					for (i in 0...subOptions.get(curStr).length)
+					if (curState != SELECTING)
+						catStr = curOptionStr;
+					for (i in 0...subOptions.get(catStr).length)
 					{
-						var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, subOptions.get(curStr)[i]);
+						var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, subOptions.get(catStr)[i]);
 						item.ID = i;
 						groupItems.add(item);
 					}
@@ -254,53 +255,58 @@ class RewriteMenu extends MusicBeatState
 
 		if (curBeat % 2 == 0)
 		{
-			trace("beat hit");
 			boyfriend.dance();
 		}
 	}
 
 	private function regenListing()
 	{
-		switch (pastStr)
+		switch (catStr)
 		{
-			case "Select song":
+			case "Online":
 				{
-					songStore.clear();
-
-					var isOld:Bool = (selectedCollection == "Old");
-					Request.getRecords((isOld ? "old_fnf_charts" : "funkin"), (data:String) ->
+					switch (curOptionStr)
 					{
-						if (data == "Failed to fetch")
-						{
-							var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
-							groupItems.add(item);
-							return;
-						}
+						case "Select song":
+							{
+								songStore.clear();
 
-						var songShit:Array<FunkCollection & Funkin_Old> = cast Json.parse(data).items;
-						for (i in 0...songShit.length)
-						{
-							var song = songShit[i];
-							var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY,
-								(isOld ? song.song_name : song.song));
-							item.ID = i;
-							item.targetY = i;
-							item.menuItem = true;
-							songStore.set((isOld ? song.song_name : song.song),
-								new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart), song.inst,
-									song.voices));
-							groupItems.add(item);
-						}
-					});
-				}
+								var isOld:Bool = (selectedCollection == "Old");
+								Request.getRecords((isOld ? "old_fnf_charts" : "funkin"), (data:String) ->
+								{
+									if (data == "Failed to fetch")
+									{
+										var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
+										groupItems.add(item);
+										return;
+									}
 
-			case "Choose collection":
-				{
-					for (i in 0...collections.length)
-					{
-						var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, collections[i]);
-						item.ID = i;
-						groupItems.add(item);
+									var songShit:Array<FunkCollection & Funkin_Old> = cast Json.parse(data).items;
+									for (i in 0...songShit.length)
+									{
+										var song = songShit[i];
+										var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY,
+											(isOld ? song.song_name : song.song));
+										item.ID = i;
+										item.targetY = i;
+										item.menuItem = true;
+										songStore.set((isOld ? song.song_name : song.song),
+											new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart),
+												song.inst, song.voices));
+										groupItems.add(item);
+									}
+								});
+							}
+
+						case "Choose collection":
+							{
+								for (i in 0...collections.length)
+								{
+									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, collections[i]);
+									item.ID = i;
+									groupItems.add(item);
+								}
+							}
 					}
 				}
 		}
@@ -308,41 +314,48 @@ class RewriteMenu extends MusicBeatState
 
 	private function handleListing()
 	{
-		switch (pastStr)
+		switch (catStr)
 		{
-			case "Select song":
+			case "Online":
 				{
-					if (curStr == "Error fetching")
-						return;
+					switch (curOptionStr)
+					{
+						case "Select song":
+							{
+								if (curOptionStr == "Error fetching")
+									return;
 
-					var pbObject:PocketBaseObject = songStore.get(curStr);
-					persistentUpdate = false;
-					canPress = false;
-					bgMusic.stop();
-					openSubState(new LoadingState(selectedCollection == "Old" ? "old_fnf_charts" : "funkin", pbObject));
-				}
+								var pbObject:PocketBaseObject = songStore.get(curOptionStr);
+								persistentUpdate = false;
+								canPress = false;
+								bgMusic.stop();
+								openSubState(new LoadingState(selectedCollection == "Old" ? "old_fnf_charts" : "funkin", pbObject));
+							}
 
-			case "Choose collection":
-				{
-					selectedCollection = curStr;
-					curState = SELECTING;
+						case "Choose collection":
+							{
+								selectedCollection = curOptionStr;
+								curState = SELECTING;
+							}
+					}
 				}
 		}
 	}
 
 	private function checkSub()
 	{
-		if (pastStr == null)
+		trace(catStr);
+		if (catStr == null)
 			return;
 
-		switch (pastStr)
+		switch (catStr)
 		{
 			default:
 				curState = LISTING;
 
 			case "Settings":
 				{
-					switch (curStr)
+					switch (curOptionStr)
 					{
 						case "Options":
 						case "Keybinds":
@@ -352,7 +365,7 @@ class RewriteMenu extends MusicBeatState
 
 			case "Shaders":
 				{
-					applyShader(curStr);
+					applyShader(curOptionStr);
 				}
 		}
 	}
