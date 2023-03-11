@@ -68,8 +68,7 @@ class Conductor
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
-		var oldSpeed = songSpeed; // ?
-		songSpeed = flixel.math.FlxMath.roundDecimal((0.45 * (baseSpeed + ((bpm / 60) / oldSpeed) * (stepCrochet / 1000))), 2);
+		songSpeed = flixel.math.FlxMath.roundDecimal((0.45 * (baseSpeed * (bpm / 100))), 2);
 		for (note in ChartLoader.unspawnedNoteList)
 		{
 			note.updateSustainScale();
