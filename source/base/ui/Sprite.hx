@@ -3,14 +3,31 @@ package base.ui;
 import flixel.FlxSprite;
 
 // https://github.com/SanicBTW/Forever-Engine-Archive/blob/rewrite/source/base/ForeverDependencies.hx
-class Sprite extends FlxSprite
+
+class DepthSprite extends FlxSprite
 {
-	public var animOffsets:Map<String, Array<Dynamic>>;
 	public var zDepth:Float = 0;
 
-	public function new(?x:Float, ?y:Float)
+	public function new(X:Float = 0, Y:Float = 0)
 	{
-		super(x, y);
+		super(X, Y);
+	}
+
+	public static inline function depthSorting<T:DepthSprite>(Order:Int, Obj1:T, Obj2:T)
+	{
+		if (Obj1.zDepth > Obj2.zDepth)
+			return -Order;
+		return Order;
+	}
+}
+
+class OffsettedSprite extends DepthSprite
+{
+	public var animOffsets:Map<String, Array<Dynamic>>;
+
+	public function new(X:Float = 0, Y:Float = 0)
+	{
+		super(X, Y);
 		animOffsets = new Map();
 	}
 
@@ -33,12 +50,5 @@ class Sprite extends FlxSprite
 			offset.set(animOffsets[AnimName][0], animOffsets[AnimName][1]);
 		else
 			offset.set(0, 0);
-	}
-
-	public static inline function depthSorting(Order:Int, Obj1:Sprite, Obj2:Sprite)
-	{
-		if (Obj1.zDepth > Obj2.zDepth)
-			return -Order;
-		return Order;
 	}
 }

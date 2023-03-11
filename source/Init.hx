@@ -116,7 +116,7 @@ class Init extends ScriptableState
 	function end()
 	{
 		#if !fast_start
-		ScriptableState.switchState(new RewriteMenu());
+		ScriptableState.switchState(new MainState());
 		#else
 		Request.getFile("funkin", "yixzwztgjxfsmj1", "double_kill_hard_OfVOJgFZJQ.json", function(chart)
 		{

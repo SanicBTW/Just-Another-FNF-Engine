@@ -72,7 +72,7 @@ class MainState extends MusicBeatState
 					for (shit in 0...shitShow.length)
 					{
 						shitShow[shit] = shitShow[shit].replace("assets/songs/", "");
-						shitShow[shit] = shitShow[shit].substring(shitShow[shit].lastIndexOf("/") + 1, shitShow[shit].indexOf("-"));
+						shitShow[shit] = shitShow[shit].substring(shitShow[shit].lastIndexOf("/") + 1, shitShow[shit].indexOf("-hard"));
 					}
 					menuArray = shitShow;
 					regenMenu();

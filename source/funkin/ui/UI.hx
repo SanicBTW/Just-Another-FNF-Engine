@@ -39,9 +39,9 @@ class UI extends FlxSpriteGroup
 		rankText.text = "Rank N/A";
 		add(rankText);
 
-		timeBar = new Bar(0, 0, FlxG.width, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
+		timeBar = new Bar(0, 0, FlxG.width - 50, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
 		timeBar.screenCenter();
-		timeBar.y = FlxG.height - 10;
+		timeBar.y = FlxG.height - 20;
 		timeBar.screenCenter(X);
 		add(timeBar);
 

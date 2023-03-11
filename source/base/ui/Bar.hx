@@ -1,23 +1,17 @@
 package base.ui;
 
-import flixel.FlxSprite;
+import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
-import openfl.display.BitmapData;
-import openfl.geom.Point;
-import openfl.geom.Rectangle;
 
-class Bar extends FlxSprite
+class Bar extends FlxSpriteGroup
 {
-	private var _bgBarBit:BitmapData;
-	private var _bgBarRect:Rectangle;
-	private var _zeroOffset:Point;
-
-	private var _fgBarBit:BitmapData;
-	private var _fgBarRect:Rectangle;
-	private var _fgBarPoint:Point;
+	private var _bgBar:CircularSprite;
+	private var _fgBar:CircularSprite;
 
 	private var barWidth(default, null):Int;
 	private var barHeight(default, null):Int;
+
+	private var fgColor:FlxColor;
 
 	public var value:Float = 0;
 
@@ -28,32 +22,19 @@ class Bar extends FlxSprite
 		this.barWidth = width;
 		this.barHeight = height;
 
-		_bgBarRect = new Rectangle();
-		_zeroOffset = new Point();
+		this.fgColor = fgColor;
 
-		_fgBarRect = new Rectangle();
-		_fgBarPoint = new Point();
+		_bgBar = new CircularSprite(x, y, barWidth, barHeight, bgColor);
+		_fgBar = new CircularSprite(x, y, barWidth, barHeight, fgColor);
 
-		_bgBarBit = Cache.setBitmap("bgBarBitmap", new BitmapData(barWidth, barHeight, true, bgColor));
-		_bgBarRect.setTo(0, 0, barWidth, barHeight);
-
-		_fgBarBit = Cache.setBitmap("fgBarBitmap", new BitmapData(barWidth, barHeight, true, fgColor));
-		_fgBarRect.setTo(0, 0, barWidth, barHeight);
-
-		makeGraphic(width, height, FlxColor.TRANSPARENT, true);
+		add(_bgBar);
+		add(_fgBar);
 	}
 
 	override public function destroy()
 	{
-		_bgBarBit = null;
-		Cache.disposeBitmap("bgBarBitmap");
-		_bgBarRect = null;
-		_zeroOffset = null;
-
-		_fgBarBit = null;
-		Cache.disposeBitmap("fgBarBitmap");
-		_fgBarRect = null;
-		_fgBarRect = null;
+		_bgBar = null;
+		_fgBar = null;
 
 		super.destroy();
 	}
@@ -62,13 +43,6 @@ class Bar extends FlxSprite
 	{
 		super.update(elapsed);
 
-		// update bg
-		pixels.copyPixels(_bgBarBit, _bgBarRect, _zeroOffset);
-
-		// update fg
-		_fgBarRect.width = (value * barWidth);
-		_fgBarRect.height = barHeight;
-
-		pixels.copyPixels(_fgBarBit, _fgBarRect, _fgBarPoint, null, null, true);
+		_fgBar = new CircularSprite(x, y, (value * barWidth), barHeight, fgColor);
 	}
 }

@@ -34,7 +34,7 @@ typedef AnimArray =
 	var offsets:Array<Int>;
 }
 
-class Character extends Sprite
+class Character extends OffsettedSprite
 {
 	private static final DEFAULT:String = "bf";
 
