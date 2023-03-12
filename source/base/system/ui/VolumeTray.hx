@@ -3,10 +3,7 @@ package base.system.ui;
 import base.system.SoundManager;
 import flixel.FlxG;
 import flixel.math.FlxMath;
-import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
-import flixel.util.FlxSpriteUtil.DrawStyle;
-import flixel.util.FlxSpriteUtil.LineStyle;
 import funkin.CoolUtil;
 import openfl.Assets;
 import openfl.Lib;
@@ -16,8 +13,6 @@ import openfl.display.Sprite;
 import openfl.geom.Point;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
-
-using flixel.util.FlxColorTransformUtil;
 
 // Based off FlxSoundTray
 // Make points use FlxPoint for better recycling?
@@ -45,9 +40,6 @@ class VolumeTray extends Sprite
 	private function get_elapsed():Float
 		return FlxG.elapsed;
 
-	// The volume tray open direction
-	private var direction:VolumeTrayDirection = TOP_DOWN;
-
 	// Sprites
 	private var _volTracker:TextField; // temp and the vol tracker?
 	private var _volBar:Bitmap;
@@ -57,14 +49,10 @@ class VolumeTray extends Sprite
 	{
 		super();
 
-		// Gets created after loading data sooo
-		if (DatabaseManager.get("volTrayDirection") != null)
-			direction = DatabaseManager.get("volTrayDirection");
-		else
-			DatabaseManager.set("volTrayDirection", direction);
-
 		visible = false;
-		setPos();
+		scaleX = _defaultScale;
+		scaleY = _defaultScale;
+		y = -Lib.current.stage.stageHeight;
 
 		var bg:Bitmap = new Bitmap(new BitmapData(_width, _height, true, 0x7F000000));
 		screenCenter();
@@ -96,21 +84,16 @@ class VolumeTray extends Sprite
 	{
 		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 5.125), 0, 1);
 
-		// Set proper lerp val
-		if (direction == LEFT_RIGHT || direction == RIGHT_LEFT)
-			x = FlxMath.lerp(targetX, y, lerpVal);
-		else if (direction == TOP_DOWN || direction == BOTTOM_UP)
-			y = FlxMath.lerp(targetY, y, lerpVal);
-
+		y = FlxMath.lerp(targetY, y, lerpVal);
 		_volBar.scaleX = FlxMath.lerp(SoundManager.globalVolume, _volBar.scaleX, lerpVal);
 
 		if (_visibleTime > 0)
 			_visibleTime -= elapsed;
-		else if (isVisible(false))
+		else if (y > -height)
 		{
-			updateTarget();
+			targetY -= elapsed * FlxG.height * _defaultScale;
 
-			if (isVisible(true))
+			if (y <= -height)
 			{
 				visible = false;
 				active = false;
@@ -120,64 +103,18 @@ class VolumeTray extends Sprite
 
 	public function show()
 	{
-		_visibleTime = 2;
-		setPos(false);
+		_visibleTime = 1.8;
+		targetY = 0;
 		_volTracker.text = '${Math.floor(SoundManager.globalVolume * 100)}%';
 		visible = true;
 		active = true;
-	}
-
-	// Helper functions
-	// Sets the starting position
-	private function setPos(start:Bool = true)
-	{
-		switch (direction)
-		{
-			case TOP_DOWN:
-				if (start)
-					y = -Lib.current.stage.stageHeight;
-				else
-					targetY = 0;
-			case LEFT_RIGHT | RIGHT_LEFT | BOTTOM_UP:
-		}
-	}
-
-	private function isVisible(hiddenCheck:Bool):Bool
-	{
-		switch (direction)
-		{
-			case TOP_DOWN:
-				return (hiddenCheck ? (y <= -height) : (y > -height));
-			case LEFT_RIGHT | RIGHT_LEFT | BOTTOM_UP:
-				return true;
-		}
-
-		return false;
-	}
-
-	private function updateTarget()
-	{
-		switch (direction)
-		{
-			case LEFT_RIGHT | RIGHT_LEFT | BOTTOM_UP:
-			case TOP_DOWN:
-				targetY -= elapsed * FlxG.height * _defaultScale;
-		}
 	}
 
 	public function screenCenter()
 	{
 		scaleX = _defaultScale;
 		scaleY = _defaultScale;
-		switch (direction)
-		{
-			// TopDown and BottomUp centers on the x axis
-			case TOP_DOWN | BOTTOM_UP:
-				x = (0.5 * (Lib.current.stage.stageWidth - _width * _defaultScale) - FlxG.game.x);
-			// LeftRight and RightLeft centers on the y axis
-			case LEFT_RIGHT | RIGHT_LEFT:
-				y = (0.5 * (Lib.current.stage.stageHeight - _height * _defaultScale) - FlxG.game.y);
-		}
+		x = (0.5 * (Lib.current.stage.stageWidth - _width * _defaultScale) - FlxG.game.x);
 	}
 
 	private function setTxtFieldProperties(field:TextField)
@@ -191,18 +128,4 @@ class VolumeTray extends Sprite
 		field.y = 5;
 		field.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("funkin.otf")).fontName, 10, 0xFFFFFF);
 	}
-}
-
-/**
-	TopDown -> From -height to 0
-	BottomUp -> From height to tray height (35)?
-	LeftRight -> From -x to 0?
-	RightLeft -> From x to tray width (100)?
-**/
-enum VolumeTrayDirection
-{
-	TOP_DOWN;
-	BOTTOM_UP;
-	LEFT_RIGHT;
-	RIGHT_LEFT;
 }
