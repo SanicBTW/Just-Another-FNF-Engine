@@ -559,7 +559,7 @@ class PlayTest extends MusicBeatState
 			Conductor.boundVocals.stop();
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
-			ScriptableState.switchState(new MainState());
+			ScriptableState.switchState(new RewriteMenu());
 		});
 		Conductor.boundSong.play();
 		if (SONG.needsVoices)

@@ -10,25 +10,28 @@ import base.system.Conductor;
 import base.system.Controls;
 import base.system.DatabaseManager;
 import base.ui.CircularSprite;
-import base.ui.RoundedSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.graphics.tile.FlxGraphicsShader;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
 import funkin.Character;
 import haxe.Json;
 import openfl.filters.ShaderFilter;
+import openfl.utils.Assets;
 import shader.CoolShader;
 import shader.Noise.NoiseShader;
 import shader.PixelEffect;
+import states.config.EarlyConfig;
 import states.config.KeybindsState;
 import substates.LoadingState;
 
+using StringTools;
+
+// I need to rewrite this shit :skull:
 class RewriteMenu extends MusicBeatState
 {
 	// Options available
-	var options:Array<String> = ["Assets", "Online", "Settings", "Shaders", "Character selection"];
+	var options:Array<String> = ["Assets", "Online", "Settings", "Shaders"];
 	var subOptions:Map<String, Array<Dynamic>> = [
 		// bruh
 		"Assets" => ["Select song"],
@@ -113,7 +116,7 @@ class RewriteMenu extends MusicBeatState
 				}
 			case SUB_SELECTION:
 				{
-					if (curState != SELECTING)
+					if (curState != LISTING)
 						catStr = curOptionStr;
 					for (i in 0...subOptions.get(catStr).length)
 					{
@@ -124,6 +127,7 @@ class RewriteMenu extends MusicBeatState
 				}
 			case LISTING:
 				{
+					subStr = curOptionStr;
 					regenListing();
 				}
 		}
@@ -222,7 +226,7 @@ class RewriteMenu extends MusicBeatState
 
 						case "back":
 							{
-								curState = SELECTING;
+								curState = SUB_SELECTION;
 							}
 
 						case "ui_up":
@@ -263,9 +267,31 @@ class RewriteMenu extends MusicBeatState
 	{
 		switch (catStr)
 		{
+			case "Assets":
+				{
+					switch (subStr)
+					{
+						case "Select song":
+							{
+								var songAssets:Array<String> = Assets.getLibrary("songs").list("TEXT");
+								for (i in 0...songAssets.length)
+								{
+									songAssets[i] = songAssets[i].replace("assets/songs/", "");
+									songAssets[i] = songAssets[i].substring(songAssets[i].lastIndexOf("/") + 1, songAssets[i].indexOf("-hard"));
+
+									var song:String = songAssets[i];
+									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY, song);
+									item.targetY = i;
+									item.ID = i;
+									item.menuItem = true;
+									groupItems.add(item);
+								}
+							}
+					}
+				}
 			case "Online":
 				{
-					switch (curOptionStr)
+					switch (subStr)
 					{
 						case "Select song":
 							{
@@ -316,9 +342,21 @@ class RewriteMenu extends MusicBeatState
 	{
 		switch (catStr)
 		{
+			case "Assets":
+				{
+					switch (subStr)
+					{
+						// Only entry lol
+						case "Select song":
+							{
+								bgMusic.stop();
+								ScriptableState.switchState(new PlayTest(curOptionStr));
+							}
+					}
+				}
 			case "Online":
 				{
-					switch (curOptionStr)
+					switch (subStr)
 					{
 						case "Select song":
 							{
@@ -335,7 +373,7 @@ class RewriteMenu extends MusicBeatState
 						case "Choose collection":
 							{
 								selectedCollection = curOptionStr;
-								curState = SELECTING;
+								curState = SUB_SELECTION;
 							}
 					}
 				}
@@ -344,7 +382,6 @@ class RewriteMenu extends MusicBeatState
 
 	private function checkSub()
 	{
-		trace(catStr);
 		if (catStr == null)
 			return;
 
@@ -358,6 +395,7 @@ class RewriteMenu extends MusicBeatState
 					switch (curOptionStr)
 					{
 						case "Options":
+							ScriptableState.switchState(new EarlyConfig());
 						case "Keybinds":
 							ScriptableState.switchState(new KeybindsState());
 					}

@@ -47,7 +47,7 @@ class Timings
 	public static var accuracy(get, never):Float;
 
 	private static function get_accuracy():Float
-		return notesAccuracy / totalHits;
+		return Math.min(100, Math.max(0, notesAccuracy / totalHits));
 
 	// HUD
 	public static var ratingName:String = "N/A";
@@ -208,12 +208,13 @@ class Timings
 
 	private static function updateRank()
 	{
-		for (rating => condition in accuracyRatings)
+		var biggest:Int = 0;
+		for (rating in accuracyRatings.keys())
 		{
-			if (accuracy >= condition)
+			if ((accuracyRatings.get(rating) <= accuracy) && (accuracyRatings.get(rating) >= biggest))
 			{
+				biggest = accuracyRatings.get(rating);
 				ratingName = rating;
-				break;
 			}
 		}
 
