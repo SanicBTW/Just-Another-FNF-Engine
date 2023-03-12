@@ -63,7 +63,7 @@ class VolumeTray extends Sprite
 		else
 			DatabaseManager.set("volTrayDirection", direction);
 
-		visible = true;
+		visible = false;
 		setPos();
 
 		var bg:Bitmap = new Bitmap(new BitmapData(_width, _height, true, 0x7F000000));
@@ -135,7 +135,7 @@ class VolumeTray extends Sprite
 		{
 			case TOP_DOWN:
 				if (start)
-					y = -height;
+					y = -Lib.current.stage.stageHeight;
 				else
 					targetY = 0;
 			case LEFT_RIGHT | RIGHT_LEFT | BOTTOM_UP:
