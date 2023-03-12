@@ -37,6 +37,9 @@ class SoundManager
 			sound.audioVolume = globalVolume;
 		}
 
+		if (Main.volumeTray != null)
+			Main.volumeTray.show();
+
 		return globalVolume;
 	}
 

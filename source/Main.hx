@@ -4,6 +4,7 @@ import base.ScriptableState;
 import base.display.*;
 import base.system.Controls;
 import base.system.DatabaseManager;
+import base.ui.VolumeTray;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
@@ -31,6 +32,7 @@ class Main extends Sprite
 
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
+	public static var volumeTray:VolumeTray;
 
 	public static var gfxSprite(default, null):Sprite = new Sprite();
 	public static var gfx(default, null):Graphics = gfxSprite.graphics;
@@ -107,6 +109,9 @@ class Main extends Sprite
 		if (memoryCounter != null)
 			memoryCounter.visible = true;
 
+		volumeTray = new VolumeTray();
+		addChild(volumeTray);
+
 		FlxG.signals.preStateCreate.add(function(state:FlxState)
 		{
 			Cache.clearStoredMemory();
@@ -118,6 +123,18 @@ class Main extends Sprite
 		{
 			Cache.clearUnusedMemory();
 			Cache.runGC();
+		});
+
+		FlxG.signals.gameResized.add((_, _) ->
+		{
+			if (volumeTray != null)
+				volumeTray.screenCenter();
+		});
+
+		Lib.application.onUpdate.add((_) ->
+		{
+			if (volumeTray != null && volumeTray.active)
+				volumeTray.update();
 		});
 	}
 }
