@@ -4,7 +4,7 @@ import base.ScriptableState;
 import base.display.*;
 import base.system.Controls;
 import base.system.DatabaseManager;
-import base.ui.VolumeTray;
+import base.system.ui.VolumeTray;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
@@ -125,12 +125,14 @@ class Main extends Sprite
 			Cache.runGC();
 		});
 
+		// Is this bad?
 		FlxG.signals.gameResized.add((_, _) ->
 		{
 			if (volumeTray != null)
 				volumeTray.screenCenter();
 		});
 
+		// Is this worse?
 		Lib.application.onUpdate.add((_) ->
 		{
 			if (volumeTray != null && volumeTray.active)
