@@ -35,7 +35,7 @@ class RewriteMenu extends MusicBeatState
 	var subOptions:Map<String, Array<Dynamic>> = [
 		// bruh
 		"Assets" => ["Select song"],
-		"Online" => ["Select song", "Choose collection"],
+		"Online" => ["Select song", "Choose collection", "Socket test"],
 		"Settings" => ["Options", "Keybinds"],
 		"Shaders" => ["Drug", "Pixel", "Noise", "Disable"],
 		"Character selection" => ["soon"]
@@ -332,6 +332,11 @@ class RewriteMenu extends MusicBeatState
 									item.ID = i;
 									groupItems.add(item);
 								}
+							}
+
+						case "Socket test":
+							{
+								ScriptableState.switchState(new OnlineState());
 							}
 					}
 				}

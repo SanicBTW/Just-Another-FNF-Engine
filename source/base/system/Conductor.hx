@@ -68,7 +68,7 @@ class Conductor
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
-		songSpeed = baseSpeed * (bpm / 100);
+		songSpeed = baseSpeed * (bpm * 0.5);
 		for (note in ChartLoader.unspawnedNoteList)
 		{
 			note.updateSustainScale();
