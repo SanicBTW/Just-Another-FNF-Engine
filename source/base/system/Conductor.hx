@@ -68,8 +68,7 @@ class Conductor
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
-		// Maybe instead of 0.8 (slows down to avoid ultra speed), calculate ratio?
-		songSpeed = flixel.math.FlxMath.roundDecimal((0.45 * (baseSpeed * ((bpm / 100) * 0.8))), 2);
+		songSpeed = baseSpeed * (bpm / 100);
 		for (note in ChartLoader.unspawnedNoteList)
 		{
 			note.updateSustainScale();

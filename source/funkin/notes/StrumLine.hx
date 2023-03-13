@@ -76,7 +76,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	{
 		super.update(elapsed);
 
-		var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1) * FlxMath.signOf(Conductor.songSpeed / 0.45);
+		var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1) * FlxMath.signOf(Conductor.songSpeed);
 
 		for (receptor in receptors)
 		{
