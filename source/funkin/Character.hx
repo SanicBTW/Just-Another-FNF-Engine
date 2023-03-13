@@ -55,9 +55,9 @@ class Character extends OffsettedSprite
 	public function new(x:Float, y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{
 		super(x, y);
-		antialiasing = SaveData.antialiasing;
 		this.isPlayer = isPlayer;
 		setChar(x, y, character);
+		antialiasing = SaveData.antialiasing;
 	}
 
 	// create it on new

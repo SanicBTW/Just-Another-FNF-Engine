@@ -124,14 +124,15 @@ class Timings
 	];
 
 	public static final accuracyRatings:Map<String, Int> = [
-		"S+" => 100,
-		"S" => 95,
-		"A" => 90,
-		"B" => 85,
-		"C" => 80,
-		"D" => 75,
-		"E" => 70,
-		"F" => 65
+		"Perfect!" => 100,
+		"Sick!" => 99,
+		"Great" => 90,
+		"Good" => 85,
+		"Okay" => 80,
+		"Meh" => 75,
+		"ayo" => 69,
+		"Bad" => 65,
+		"You Suck" => 60
 	];
 
 	public static function call()

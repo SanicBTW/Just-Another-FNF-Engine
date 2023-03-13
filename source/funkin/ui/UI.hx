@@ -87,7 +87,7 @@ class UI extends FlxSpriteGroup
 	{
 		var fcDisplay:String = (Timings.ratingFC != null ? ' | [${Timings.ratingFC}]' : '');
 		accuracyText.text = 'Accuracy ${Timings.getAccuracy()}';
-		scoreText.text = 'Score ${Timings.score} | Combo ${Timings.combo}';
+		scoreText.text = 'Score ${Timings.score}';
 		rankText.text = 'Rank ${Timings.ratingName}${fcDisplay}';
 	}
 }
