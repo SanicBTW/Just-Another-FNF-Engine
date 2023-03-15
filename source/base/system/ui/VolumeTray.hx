@@ -15,8 +15,6 @@ import openfl.text.TextField;
 import openfl.text.TextFormat;
 
 // Based off FlxSoundTray
-// Make points use FlxPoint for better recycling?
-// Move draw operations to a class extending Sprite (openfl) on CircularSprite
 class VolumeTray extends Sprite
 {
 	// If its active then update, apparently its expensive to update?
@@ -27,7 +25,7 @@ class VolumeTray extends Sprite
 
 	// Sizes
 	private var _width:Int = 120;
-	private var _height:Int = 35;
+	private var _height:Int = 30;
 	private var _defaultScale:Float = 2.0;
 
 	// For lerp
@@ -114,7 +112,7 @@ class VolumeTray extends Sprite
 	{
 		scaleX = _defaultScale;
 		scaleY = _defaultScale;
-		x = (0.5 * (Lib.current.stage.stageWidth - _width * _defaultScale) - FlxG.game.x);
+		x = (0.5 * (Lib.current.stage.stageWidth - _width * _defaultScale));
 	}
 
 	private function setTxtFieldProperties(field:TextField)
@@ -125,7 +123,7 @@ class VolumeTray extends Sprite
 		field.wordWrap = true;
 		field.selectable = false;
 		field.embedFonts = true;
-		field.y = 5;
+		field.y = 2.5;
 		field.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("funkin.otf")).fontName, 10, 0xFFFFFF);
 	}
 }
