@@ -17,7 +17,6 @@ class Conductor
 {
 	// song shit
 	public static var songPosition:Float = 0;
-	private static var baseSpeed:Float = 2;
 	public static var songSpeed:Float = 2;
 
 	// sections, steps and beats
@@ -43,7 +42,7 @@ class Conductor
 
 	public function new() {}
 
-	public static function bindSong(newState:MusicHandler, newSong:Sound, SONG:Song, ?newVocals:Sound)
+	public static function bindSong(newState:MusicHandler, newSong:Sound, bpm:Float, ?newVocals:Sound)
 	{
 		boundSong = new AudioStream();
 		boundSong.audioSource = newSong;
@@ -56,8 +55,7 @@ class Conductor
 		}
 		boundState = newState;
 
-		baseSpeed = SONG.speed;
-		changeBPM(SONG.bpm);
+		changeBPM(bpm);
 
 		reset();
 	}
@@ -68,7 +66,8 @@ class Conductor
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
-		songSpeed = baseSpeed * (bpm * 0.5);
+		if (boundState.SONG != null)
+			songSpeed = boundState.SONG.speed * (bpm / crochet);
 		for (note in ChartLoader.unspawnedNoteList)
 		{
 			note.updateSustainScale();
