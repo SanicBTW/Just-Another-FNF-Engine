@@ -3,7 +3,6 @@ package states.config;
 import base.ScriptableState;
 import base.system.Controls;
 import base.ui.Alphabet;
-import base.ui.TextComponent;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;

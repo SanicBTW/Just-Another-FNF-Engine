@@ -15,7 +15,6 @@ class Receptor extends FlxSprite
 		this.arrowType = arrowType;
 		super(x, y);
 
-		// my dumb ass was setting the frames before super :skull:
 		frames = Paths.getSparrowAtlas('NOTE_assets');
 		loadAnims();
 		updateHitbox();

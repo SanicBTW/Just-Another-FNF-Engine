@@ -1,8 +1,6 @@
 package base.system;
 
-import flixel.FlxG;
 import flixel.util.FlxSave;
-import lime.app.Application;
 
 using StringTools;
 

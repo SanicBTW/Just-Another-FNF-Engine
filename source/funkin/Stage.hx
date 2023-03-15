@@ -15,6 +15,7 @@ typedef StageFile =
 	var objects:Array<Dynamic>;
 }
 
+// I need to rewrite this for better support
 class Stage extends FlxTypedGroup<FlxBasic>
 {
 	public var cameraZoom:Float = 1;

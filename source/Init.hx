@@ -10,7 +10,6 @@ import flixel.text.FlxBitmapText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
-import states.MainState;
 import states.RewriteMenu;
 #if fast_start
 import base.pocketbase.Request;
@@ -89,7 +88,7 @@ class Init extends ScriptableState
 							ease: FlxEase.quartInOut,
 							onComplete: function(_)
 							{
-								end();
+								ScriptableState.switchState(new RewriteMenu());
 							}
 						});
 					}, function(elapsed:Float)
@@ -111,28 +110,5 @@ class Init extends ScriptableState
 		super.create();
 
 		ScriptableState.skipTransIn = false;
-	}
-
-	function end()
-	{
-		#if !fast_start
-		ScriptableState.switchState(new RewriteMenu());
-		#else
-		Request.getFile("funkin", "yixzwztgjxfsmj1", "double_kill_hard_OfVOJgFZJQ.json", function(chart)
-		{
-			ChartLoader.netChart = chart;
-
-			Request.getSound("funkin", "yixzwztgjxfsmj1", "inst_zUVNG1UAQT.ogg", function(sound)
-			{
-				ChartLoader.netInst = sound;
-			});
-
-			Request.getSound("funkin", "yixzwztgjxfsmj1", "voices_HrnHFmsQZ0.ogg", function(sound)
-			{
-				ChartLoader.netVoices = sound;
-				ScriptableState.switchState(new states.PlayTest());
-			});
-		});
-		#end
 	}
 }

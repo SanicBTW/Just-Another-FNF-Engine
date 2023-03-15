@@ -13,8 +13,6 @@ class RoundedSprite extends FlxSprite
 
 	private var Color:FlxColor;
 
-	private var _regen:Bool = true;
-
 	private function set_cornerSize(Value:Float):Float
 	{
 		if (cornerSize == Value)
@@ -23,7 +21,6 @@ class RoundedSprite extends FlxSprite
 		cornerSize = Value;
 
 		drawRoundRect({thickness: 0, color: FlxColor.TRANSPARENT}, {smoothing: true});
-		_regen = true;
 		return Value;
 	}
 
@@ -37,21 +34,6 @@ class RoundedSprite extends FlxSprite
 		makeGraphic(Std.int(width), Std.int(height), FlxColor.TRANSPARENT, false);
 		this.cornerSize = Radius;
 		antialiasing = SaveData.antialiasing;
-	}
-
-	override public function drawFrame(Force:Bool = false)
-	{
-		_regen = _regen || Force;
-		super.drawFrame(_regen);
-	}
-
-	override public function draw()
-	{
-		// USE WITH THE UPCOMING POP UPS
-		// camera.startQuadBatch(Round.graphic, true, (colorTransform != null && colorTransform.hasRGBAOffsets()), blend, antialiasing, shader);
-
-		_regen = false;
-		super.draw();
 	}
 
 	private function drawRoundRect(?lineStyle:LineStyle, ?drawStyle:DrawStyle)

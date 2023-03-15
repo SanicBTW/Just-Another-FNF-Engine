@@ -3,6 +3,7 @@ package base.pocketbase;
 // Class to save the type definitions of my PocketBase collections
 // do a global class to manage collections and stuff not this shit
 // to make collections support each other by using a singleton
+// Never going to do it apparently lol, I guess I'll do it soon or smth
 class PocketBaseObject
 {
 	public var id:String;

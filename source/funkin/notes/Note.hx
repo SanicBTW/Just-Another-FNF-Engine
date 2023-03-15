@@ -2,10 +2,7 @@ package funkin.notes;
 
 import base.system.Conductor;
 import flixel.FlxSprite;
-import flixel.math.FlxMath;
-import states.PlayTest;
 
-// todo: make receptor to be used as using
 class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;

@@ -30,7 +30,7 @@ class UI extends FlxSpriteGroup
 		scoreText = new FlxBitmapText(Fonts.VCR());
 		setTextProps(scoreText);
 		scoreText.setPosition(30, ((accuracyText.y + accuracyText.height) - (accuracyText.height / 2)));
-		scoreText.text = "Score 0 | Combo 0";
+		scoreText.text = "Score 0";
 		add(scoreText);
 
 		rankText = new FlxBitmapText(Fonts.VCR());

@@ -15,6 +15,7 @@ import java.vm.Gc;
 #end
 
 // properly work on name setting and format
+// rewrite soon
 class Cache
 {
 	// graphics related stuff

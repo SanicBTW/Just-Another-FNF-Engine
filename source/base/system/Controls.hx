@@ -7,7 +7,7 @@ import lime.app.Event;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
 
-// From FNF-Forever-Engine (My fork) - prob a rewrite coming soon
+// From FNF-Forever-Engine (My fork) - prob a rewrite coming soon (never probably)
 class Controls
 {
 	public static var onActionPressed:Event<String->Void> = new Event<String->Void>();

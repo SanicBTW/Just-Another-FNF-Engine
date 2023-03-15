@@ -1,21 +1,13 @@
 package base.system;
 
-import flixel.FlxSprite;
-import flixel.group.FlxSpriteGroup;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxColor;
 import flixel.util.FlxSignal.FlxTypedSignal;
 import openfl.events.Event;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
-import openfl.net.URLRequest;
-import openfl.utils.Assets;
 
 using StringTools;
 
-// TODO: dispatch and event when the music is changed and show a notification )?
-// FIX: Trying to turn down the volume while fading in will result on the audio applying the global volume after it ends
 class SoundManager
 {
 	private static var sounds:Map<String, AudioStream> = [];

@@ -43,7 +43,7 @@ class MemoryCounter extends TextField
 		if (!visible)
 			return;
 
-		var mem:Float = #if cpp cpp.vm.Gc.memInfo64(3) #elseif android java.vm.Gc.stats().heap #else openfl.system.System.totalMemory #end;
+		var mem:Float = openfl.system.System.totalMemory;
 
 		if (mem > memoryPeak)
 			memoryPeak = mem;

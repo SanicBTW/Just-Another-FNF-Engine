@@ -1,7 +1,6 @@
 package funkin;
 
 import flixel.util.FlxColor;
-import haxe.ds.StringMap;
 
 // File rewritten, ONCE AGAIN
 
@@ -209,6 +208,7 @@ class Timings
 
 	private static function updateRank()
 	{
+		// I didn't have a chance, had to copy the code from Forever lol
 		var biggest:Int = 0;
 		for (rating in accuracyRatings.keys())
 		{

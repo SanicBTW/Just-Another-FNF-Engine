@@ -3,7 +3,6 @@ package funkin;
 // got lazy so everything from here is just psych shit lol, improve, do custom and add flxanimate support
 import base.system.Conductor;
 import base.ui.Sprite;
-import flixel.FlxSprite;
 import flixel.math.FlxPoint;
 import openfl.Assets;
 

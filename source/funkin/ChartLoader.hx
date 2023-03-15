@@ -2,11 +2,9 @@ package funkin;
 
 import base.MusicBeatState.MusicHandler;
 import base.system.Conductor;
-import flixel.FlxG;
 import flixel.util.FlxSort;
 import funkin.CoolUtil;
 import funkin.notes.Note;
-import haxe.Json;
 import openfl.Assets;
 import openfl.media.Sound;
 

@@ -1,15 +1,11 @@
 package funkin.ui;
 
+import base.ui.TextComponent;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
 import funkin.Timings;
 import openfl.text.TextFormatAlign;
-#if use_flx_text
-import flixel.text.FlxText;
-#else
-import base.ui.TextComponent;
-#end
 
 class JudgementCounter extends FlxSpriteGroup
 {
@@ -42,14 +38,9 @@ class JudgementCounter extends FlxSpriteGroup
 			(-(counterBG.width / 2) + (counterBG.width / 2)),
 			(counterBG.height / 2) - (counterTxtSize - 7)
 		];
-		#if use_flx_text
-		counterText = new FlxText(positions[0], positions[1], counterBG.width, judgements.get(judgement)[1], counterTxtSize);
-		counterText.setFormat(Paths.font("funkin.otf"), counterTxtSize, FlxColor.BLACK);
-		#else
 		counterText = new TextComponent(positions[0], positions[1], counterBG.width, judgement.shortName, counterTxtSize, "funkin.otf");
 		counterText.color = FlxColor.BLACK;
 		counterText.alignment = CENTER;
-		#end
 		counterText.scrollFactor.set();
 		counterText.autoSize = false;
 		add(counterText);

@@ -9,7 +9,6 @@ import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxState;
 import flixel.graphics.FlxGraphic;
-import flixel.system.scaleModes.*;
 import lime.app.Application;
 import openfl.Lib;
 import openfl.display.Graphics;
@@ -84,8 +83,6 @@ class Main extends Sprite
 		FlxGraphic.defaultPersist = true;
 		ScriptableState.skipTransIn = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
-
-		// FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 
 		Lib.current.stage.align = TOP_LEFT;
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
