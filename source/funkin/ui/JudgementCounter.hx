@@ -1,8 +1,9 @@
 package funkin.ui;
 
-import base.ui.TextComponent;
+import base.ui.Fonts;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.text.FlxBitmapText;
 import flixel.util.FlxColor;
 import funkin.Timings;
 import openfl.text.TextFormatAlign;
@@ -12,8 +13,7 @@ class JudgementCounter extends FlxSpriteGroup
 	private var trackJudgement:String;
 
 	private var counterBG:FlxSprite;
-	private var counterText:TextComponent;
-	private var counterTxtSize:Int = 24;
+	private var counterText:FlxBitmapText;
 
 	public function new(X:Float, Y:Float, judgement:String)
 	{
@@ -34,15 +34,13 @@ class JudgementCounter extends FlxSpriteGroup
 		counterBG.scrollFactor.set();
 		add(counterBG);
 
-		var positions:Array<Float> = [
-			(-(counterBG.width / 2) + (counterBG.width / 2)),
-			(counterBG.height / 2) - (counterTxtSize - 7)
-		];
-		counterText = new TextComponent(positions[0], positions[1], counterBG.width, judgement.shortName, counterTxtSize, "funkin.otf");
-		counterText.color = FlxColor.BLACK;
+		counterText = new FlxBitmapText(Fonts.Funkin());
+		Fonts.setProperties(counterText, false, 0.5);
 		counterText.alignment = CENTER;
-		counterText.scrollFactor.set();
-		counterText.autoSize = false;
+		counterText.fieldWidth = Std.int(counterBG.width);
+		counterText.color = FlxColor.BLACK;
+		counterText.text = judgement.shortName;
+		counterText.setPosition(X, Y);
 		add(counterText);
 	}
 
