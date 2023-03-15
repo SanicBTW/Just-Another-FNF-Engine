@@ -4,7 +4,6 @@ import base.ScriptableState;
 import base.display.*;
 import base.system.Controls;
 import base.system.DatabaseManager;
-import base.system.Websocket;
 import base.system.ui.VolumeTray;
 import flixel.FlxG;
 import flixel.FlxGame;
@@ -34,8 +33,6 @@ class Main extends Sprite
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
 	public static var volumeTray:VolumeTray;
-	public static var socketDetails:SocketDetails;
-	public static var userID:String = "";
 
 	public static var gfxSprite(default, null):Sprite = new Sprite();
 	public static var gfx(default, null):Graphics = gfxSprite.graphics;
@@ -115,12 +112,6 @@ class Main extends Sprite
 		volumeTray = new VolumeTray();
 		addChild(volumeTray);
 
-		socketDetails = new SocketDetails(10, (memoryCounter.textHeight + memoryCounter.y) + 14);
-		socketDetails.width = gameWidth;
-		addChild(socketDetails);
-		if (socketDetails != null)
-			socketDetails.visible = true;
-
 		FlxG.signals.preStateCreate.add(function(state:FlxState)
 		{
 			Cache.clearStoredMemory();
@@ -147,7 +138,5 @@ class Main extends Sprite
 			if (volumeTray != null && volumeTray.active)
 				volumeTray.update();
 		});
-
-		Websocket.init();
 	}
 }

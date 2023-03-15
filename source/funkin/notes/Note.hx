@@ -68,6 +68,9 @@ class Note extends FlxSprite
 			{
 				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
 				prevNote.updateHitbox();
+
+				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * (1.07 / 0.7)) * (Conductor.songSpeed / 0.45);
+				prevNote.updateHitbox();
 			}
 		}
 		x += offsetX;
@@ -87,7 +90,7 @@ class Note extends FlxSprite
 		sprite.updateHitbox();
 	}
 
-	public function updateSustainScale()
+	public function updateSustainScale(ratio:Float)
 	{
 		if (isSustain)
 		{
@@ -95,7 +98,7 @@ class Note extends FlxSprite
 			{
 				if (prevNote.isSustain)
 				{
-					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (1.07 / 0.7)) * (Conductor.songSpeed);
+					prevNote.scale.y *= ratio;
 					prevNote.updateHitbox();
 					offsetX = prevNote.offsetX;
 				}

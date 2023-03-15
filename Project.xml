@@ -37,7 +37,7 @@
 
 	<haxelib name="flixel" />
 	<haxelib name="hscript"	/>
-	<haxelib name="hxWebSockets" />
+	<haxelib name="colyseus" />
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 

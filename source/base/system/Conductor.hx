@@ -17,7 +17,7 @@ class Conductor
 {
 	// song shit
 	public static var songPosition:Float = 0;
-	public static var songSpeed:Float = 2;
+	public static var songSpeed(default, set):Float = 2;
 
 	// sections, steps and beats
 	public static var sectionPosition:Int = 0;
@@ -60,18 +60,28 @@ class Conductor
 		reset();
 	}
 
+	private static function set_songSpeed(value:Float):Float
+	{
+		// IS THERE SOME WAY TO GET RID OF 0.45 *
+		var ratio:Float = value / songSpeed;
+		songSpeed = value;
+		for (note in ChartLoader.unspawnedNoteList)
+		{
+			note.updateSustainScale(ratio);
+		}
+		trace(songSpeed);
+		return value;
+	}
+
 	public static function changeBPM(newBPM:Float)
 	{
 		bpm = newBPM;
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
+
 		if (boundState.SONG != null)
-			songSpeed = boundState.SONG.speed * (bpm / crochet);
-		for (note in ChartLoader.unspawnedNoteList)
-		{
-			note.updateSustainScale();
-		}
+			songSpeed = 0.45 * (boundState.SONG.speed + (bpm / crochet));
 	}
 
 	public static function updateTimePosition(elapsed:Float)

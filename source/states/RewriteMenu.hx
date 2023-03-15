@@ -333,11 +333,6 @@ class RewriteMenu extends MusicBeatState
 									groupItems.add(item);
 								}
 							}
-
-						case "Socket test":
-							{
-								ScriptableState.switchState(new OnlineState());
-							}
 					}
 				}
 		}
