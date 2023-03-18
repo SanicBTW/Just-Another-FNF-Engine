@@ -53,7 +53,6 @@
 
 	<define name="FS_ACCESS" if="windows" />
 
-	<icon path="icons/icon8.png" size='8'/>
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>
 	<icon path="icons/icon64.png" size='64'/>
