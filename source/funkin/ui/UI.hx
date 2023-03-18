@@ -23,7 +23,7 @@ class UI extends FlxSpriteGroup
 
 		accuracyText = new FlxBitmapText(Fonts.VCR());
 		Fonts.setProperties(accuracyText);
-		accuracyText.setPosition(30, (FlxG.height / 2));
+		accuracyText.setPosition(30, (FlxG.height / 2) + (FlxG.height / 4));
 		accuracyText.text = "Accuracy 0%";
 		add(accuracyText);
 

@@ -136,11 +136,11 @@ class CircularSpriteText extends FlxSpriteGroup
 		bitmapText.text = Text;
 		bitmapText.fieldWidth = Std.int(width);
 		bitmapText.antialiasing = SaveData.antialiasing;
-		setFontSize(X, Y, 0.4);
+		setFontSize(0.4);
 		add(bitmapText);
 	}
 
-	function setFontSize(oX:Float, oY:Float, value:Float):Float
+	function setFontSize(value:Float):Float
 	{
 		if (fontSize == value)
 			return value;
