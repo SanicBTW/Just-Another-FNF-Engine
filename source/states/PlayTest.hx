@@ -66,7 +66,7 @@ class PlayTest extends MusicBeatState
 	public var spawnTime:Float = 2000;
 
 	// bruh
-	private var loadSong:Null<String> = "";
+	public var loadSong:Null<String> = "";
 
 	override public function new(?loadSong:String)
 	{
@@ -431,6 +431,9 @@ class PlayTest extends MusicBeatState
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(playerStrums, note.noteData).playAnim('static');
 
+			if (!note.isSustain)
+				Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
+
 			if (!note.doubleNote)
 			{
 				if (player != null)
@@ -457,6 +460,8 @@ class PlayTest extends MusicBeatState
 				if (player.holdTimer + 0.2 > targetHold)
 					player.holdTimer = targetHold - 0.2;
 			}
+
+			hud.updateText();
 		}
 	}
 

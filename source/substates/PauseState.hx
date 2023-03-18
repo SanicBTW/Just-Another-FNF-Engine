@@ -92,7 +92,7 @@ class PauseState extends ScriptableSubState
 							grpMenuShit.members[2].changeText(PlayTest.instance.playerStrums.botPlay ? "Disable botplay" : "Enable botplay");
 						case 'Reset song':
 							bgMusic.stop();
-							ScriptableState.switchState(new PlayTest());
+							ScriptableState.switchState(new PlayTest(PlayTest.instance.loadSong));
 						case 'Exit':
 							bgMusic.stop();
 							Conductor.boundSong.stop();

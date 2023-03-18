@@ -33,6 +33,7 @@ class Controls
 		"vol_up" => [187, Keyboard.NUMPAD_ADD],
 		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
 		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0],
+		"fullscreen" => [Keyboard.F11]
 	];
 
 	// UI Actions
@@ -141,6 +142,7 @@ class Controls
 			keyPressed.push(evt.keyCode);
 
 			var pressedAction:Null<String> = getActionFromKey(evt.keyCode);
+			// I hate this so much but it's the only way
 			if (pressedAction != null)
 			{
 				switch (pressedAction)
@@ -155,6 +157,8 @@ class Controls
 						SoundManager.globalVolume -= 0.1;
 					case "mute":
 						SoundManager.muted = !SoundManager.muted;
+					case "fullscreen":
+						FlxG.fullscreen = !FlxG.fullscreen;
 				}
 				onActionPressed.dispatch(pressedAction);
 			}
