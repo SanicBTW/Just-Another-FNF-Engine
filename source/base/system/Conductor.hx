@@ -69,7 +69,6 @@ class Conductor
 		{
 			note.updateSustainScale(ratio);
 		}
-		trace(songSpeed);
 		return value;
 	}
 
@@ -81,7 +80,7 @@ class Conductor
 		stepCrochet = (crochet / 4);
 
 		if (boundState.SONG != null)
-			songSpeed = 0.45 * (boundState.SONG.speed + (bpm / crochet));
+			songSpeed = 0.45 * boundState.SONG.speed;
 	}
 
 	public static function updateTimePosition(elapsed:Float)

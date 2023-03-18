@@ -4,6 +4,7 @@ A rewrite of Friday Night Funkin' mixing Forever Engine Rewrite, Kade Engine 1.6
 
 # Special thanks
 - SlacDeveloper for making most of the sprites
+- AndyDavinci for making the engine icon
 
 # Alpha Testers
 - ElDulceV
@@ -11,7 +12,6 @@ A rewrite of Friday Night Funkin' mixing Forever Engine Rewrite, Kade Engine 1.6
 - SlacDev
 - Bonndubz
 - Levi
-- Andy
 - EchidnaWeon
 
 # Experimental builds are published here (Experimental HUB)
