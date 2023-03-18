@@ -1,5 +1,6 @@
 package;
 
+import base.pocketbase.Request;
 import base.system.SoundManager;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
@@ -184,6 +185,7 @@ class Cache
 			var obj:Null<FlxGraphic> = FlxG.bitmap._cache.get(key);
 			if (obj != null && !trackedGraphics.exists(key))
 			{
+				trace(key);
 				Assets.cache.removeBitmapData(key);
 				FlxG.bitmap._cache.remove(key);
 				obj.dump();
@@ -205,6 +207,7 @@ class Cache
 
 		localTracked = [];
 		SoundManager.clearSoundList();
+		Request.clearSignals();
 	}
 
 	public static inline function runGC()

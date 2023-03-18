@@ -11,10 +11,6 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import states.RewriteMenu;
-#if fast_start
-import base.pocketbase.Request;
-import funkin.ChartLoader;
-#end
 
 class Init extends ScriptableState
 {

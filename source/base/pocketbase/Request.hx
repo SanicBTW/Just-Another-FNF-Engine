@@ -1,7 +1,9 @@
 package base.pocketbase;
 
+import flixel.util.FlxSignal.FlxTypedSignal;
 import haxe.Http;
 import openfl.media.Sound;
+import openfl.utils.Future;
 
 using StringTools;
 
@@ -17,16 +19,26 @@ class Request
 	public static final recordsExt:String = "collections/:col/records";
 	public static final filesExt:String = "files/:col/:id/:file";
 
-	public function new(url:String, callback:String->Void)
+	// The reason the given arg on dispatch is Array<Dynamic> is because it includes the request string (to avoid errors when dispatching and that shit) and the data of the request and stuff
+	// Globally used signal for request responses)?
+	public static var onSuccess(default, null):FlxTypedSignal<Array<Dynamic>->Void> = new FlxTypedSignal<Array<Dynamic>->Void>();
+
+	// Globally used signal for request errors)?
+	public static var onError(default, null):FlxTypedSignal<Array<Dynamic>->Void> = new FlxTypedSignal<Array<Dynamic>->Void>();
+
+	// Globally used signal for request progress)?
+	public static var onProgress(default, null):FlxTypedSignal<Array<Dynamic>->Void> = new FlxTypedSignal<Array<Dynamic>->Void>();
+
+	public function new(url:String)
 	{
 		#if sys
-		ThreadManager.setThread('netreq-$url', () -> doRequest(url, callback));
+		ThreadManager.setThread('netreq-$url', () -> doRequest(url));
 		#else
-		doRequest(url, callback);
+		doRequest(url);
 		#end
 	}
 
-	private function doRequest(url:String, callback:String->Void)
+	private function doRequest(url:String)
 	{
 		var request:Http = new Http(url);
 
@@ -35,7 +47,7 @@ class Request
 			#if sys
 			ThreadManager.removeThread('netreq-$url');
 			#end
-			callback(data);
+			onSuccess.dispatch([url, data]);
 		}
 
 		request.onError = function(error:String)
@@ -43,41 +55,74 @@ class Request
 			#if sys
 			ThreadManager.removeThread('netreq-$url');
 			#end
+
 			trace("network request error " + error);
-			callback("Failed to fetch");
+			onError.dispatch([url, "Failed to fetch", error]);
+		}
+
+		request.onBytes = function(data:Bytes)
+		{
+			trace(data.length);
+			trace(request.responseBytes.length);
+			trace(request.responseData);
 		}
 
 		request.request();
 	}
 
-	public static function getRecords(collection:String, callback:String->Void)
-		new Request(base + recordsExt.replace(":col", collection), callback);
+	public static function getRecords(collection:String)
+	{
+		new Request(base + recordsExt.replace(":col", collection));
+		return base + recordsExt.replace(":col", collection);
+	}
 
-	public static function getFile(collection:String, id:String, file:String, callback:String->Void)
-		new Request(base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file), callback);
+	public static function getFile(collection:String, id:String, file:String)
+	{
+		new Request(base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file));
+		return base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file);
+	}
 
-	public static function getSound(collection:String, id:String, file:String, callback:Sound->Void)
+	public static function getSound(collection:String, id:String, file:String)
 	{
 		var soundURL:String = base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file);
 
 		#if html5
-		Sound.loadFromFile(soundURL).onComplete((sound) ->
+		var soundFuture:Future<Sound>;
+		soundFuture = Sound.loadFromFile(soundURL);
+		soundFuture.onComplete((sound) ->
 		{
-			callback(sound);
+			onSuccess.dispatch([soundURL, sound]);
+			soundFuture = null;
+		});
+		soundFuture.onProgress((i1, i2) ->
+		{
+			trace('$i1/$i2');
 		});
 		#else
-		var sound = new Sound();
+		var sound:Sound = new Sound();
 
-		var http = new Http(soundURL);
+		var http:Http = new Http(soundURL);
+
 		http.onBytes = function(data:Bytes)
 		{
-			#if sys
+			trace(data.length);
+			trace(http.responseBytes.length);
+			trace(http.responseData);
+
 			ThreadManager.removeThread('netreq-$soundURL');
-			#end
 			sound.loadCompressedDataFromByteArray(data, data.length);
-			callback(sound);
+			onSuccess.dispatch([soundURL, sound]);
 		}
 		http.request();
 		#end
+
+		return soundURL;
+	}
+
+	public static function clearSignals()
+	{
+		onSuccess.removeAll();
+		onError.removeAll();
+		onProgress.removeAll();
 	}
 }
