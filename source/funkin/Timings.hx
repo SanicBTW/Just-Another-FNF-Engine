@@ -122,16 +122,14 @@ class Timings
 		}
 	];
 
+	// I don't understand how to set the ratings lol
 	public static final accuracyRatings:Map<String, Int> = [
 		"Perfect!" => 100,
-		"Sick!" => 99,
-		"Great" => 90,
-		"Good" => 85,
-		"Okay" => 80,
-		"Meh" => 75,
-		"ayo" => 69,
-		"Bad" => 65,
-		"You Suck" => 60
+		"Sick!" => 90,
+		"Good" => 80,
+		"Meh" => 70,
+		"Bad" => 60,
+		"You Suck" => 58
 	];
 
 	public static function call()
