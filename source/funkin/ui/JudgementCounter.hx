@@ -35,12 +35,16 @@ class JudgementCounter extends FlxSpriteGroup
 		add(counterBG);
 
 		counterText = new FlxBitmapText(Fonts.Funkin());
-		Fonts.setProperties(counterText, false, 0.5);
+		Fonts.setProperties(counterText, false, 0.38);
 		counterText.alignment = CENTER;
 		counterText.fieldWidth = Std.int(counterBG.width);
-		counterText.color = FlxColor.BLACK;
 		counterText.text = judgement.shortName;
-		counterText.setPosition(X, Y);
+		counterText.color = FlxColor.BLACK;
+		// I hate manually setting the positions
+		// 372.5, -25 -> 0.45 (Needs to be adjusted)
+		// 385, -15 -> 0.4 (Perfectly centered, over 200 size issue)
+		// 398, -14 -> 0.38 (Perfectly centered, perfect size apparently)
+		counterText.setPosition(398, -14);
 		add(counterText);
 	}
 
