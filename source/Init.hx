@@ -18,7 +18,6 @@ import funkin.ChartLoader;
 
 class Init extends ScriptableState
 {
-	private var icon:FlxSprite;
 	private var sineLoops:Int = 0;
 	private var iconSine:Float;
 	private var shitText:FlxBitmapText;
@@ -39,10 +38,6 @@ class Init extends ScriptableState
 		bbg.screenCenter();
 		add(bbg);
 
-		icon = new FlxSprite().loadGraphic(Paths.image("ui/hp"));
-		icon.screenCenter();
-		add(icon);
-
 		rounded = new RoundedSprite(0, 0, FlxG.width - 150, FlxG.height - 150, FlxColor.GRAY);
 		rounded.screenCenter();
 		rounded.alpha = 0;
@@ -62,8 +57,6 @@ class Init extends ScriptableState
 
 		shitTimer = new Timer(2, function()
 		{
-			icon.alpha = 0;
-			icon = null;
 			FlxTween.tween(bbg, {alpha: 0}, 1.2);
 			FlxTween.tween(rounded.scale, {y: 1}, 0.9, {
 				ease: FlxEase.quartInOut,
@@ -97,13 +90,6 @@ class Init extends ScriptableState
 					});
 				}
 			});
-		}, function(elapsed:Float)
-		{
-			if (icon != null)
-			{
-				iconSine += 150 * elapsed;
-				icon.alpha = 0.7 * Math.sin((Math.PI * iconSine) / 150);
-			}
 		});
 		add(shitTimer);
 

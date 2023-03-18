@@ -6,6 +6,7 @@ import openfl.media.Sound;
 using StringTools;
 
 #if !html5
+import base.system.ThreadManager;
 import haxe.io.Bytes;
 import openfl.net.URLRequest;
 #end
@@ -18,24 +19,31 @@ class Request
 
 	public function new(url:String, callback:String->Void)
 	{
-		var request:Http = new Http(url);
+		#if sys
+		ThreadManager.setThread('netreq-$url', () -> doRequest(url, callback));
+		#else
+		doRequest(url, callback);
+		#end
+	}
 
-		if (Cache.setNetworkCache(url) != null)
-		{
-			callback(Cache.setNetworkCache(url));
-			return;
-		}
+	private function doRequest(url:String, callback:String->Void)
+	{
+		var request:Http = new Http(url);
 
 		request.onData = function(data:String)
 		{
-			Cache.setNetworkCache(url, data);
+			#if sys
+			ThreadManager.removeThread('netreq-$url');
+			#end
 			callback(data);
 		}
 
 		request.onError = function(error:String)
 		{
-			trace("NETWORK REQUEST ERROR " + error);
-			Cache.setNetworkCache(url, "Failed to fetch");
+			#if sys
+			ThreadManager.removeThread('netreq-$url');
+			#end
+			trace("network request error " + error);
 			callback("Failed to fetch");
 		}
 
@@ -53,31 +61,19 @@ class Request
 		var soundURL:String = base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file);
 
 		#if html5
-		if (Cache.setNetworkCache(soundURL) != null)
-		{
-			callback(Cache.setNetworkCache(soundURL));
-			return;
-		}
-
 		Sound.loadFromFile(soundURL).onComplete((sound) ->
 		{
-			Cache.setNetworkCache(soundURL, sound);
 			callback(sound);
 		});
 		#else
 		var sound = new Sound();
 
-		if (Cache.setNetworkCache(soundURL) != null)
-		{
-			sound.loadCompressedDataFromByteArray(Cache.setNetworkCache(soundURL), Cache.setNetworkCache(soundURL).length);
-			callback(sound);
-			return;
-		}
-
 		var http = new Http(soundURL);
 		http.onBytes = function(data:Bytes)
 		{
-			Cache.setNetworkCache(soundURL, data);
+			#if sys
+			ThreadManager.removeThread('netreq-$soundURL');
+			#end
 			sound.loadCompressedDataFromByteArray(data, data.length);
 			callback(sound);
 		}

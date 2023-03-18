@@ -26,12 +26,13 @@ class Cache
 	// audio shit
 	private static var trackedSounds:Map<String, Sound> = new Map();
 
-	// network
-	private static var trackedNetworkCache:Map<String, Dynamic> = new Map();
-
 	// tracking and exclusions
 	private static var localTracked:Array<String> = [];
-	private static var dumpExclusions:Array<String> = ['assets/music/freakyMenu.ogg', 'fonts:assets/fonts/VCR/VCR.png'];
+	private static var dumpExclusions:Array<String> = [
+		'assets/music/freakyMenu.ogg',
+		'fonts:assets/fonts/VCR/VCR.png',
+		'fonts:assets/fonts/Funkin/Funkin.png'
+	];
 
 	public static function getBitmap(file:String):Null<BitmapData>
 	{
@@ -118,14 +119,6 @@ class Cache
 		return trackedSounds.get(file);
 	}
 
-	public static function setNetworkCache(id:String, ?toCache:Dynamic):Null<Dynamic>
-	{
-		if (!trackedNetworkCache.exists(id) && toCache != null)
-			trackedNetworkCache.set(id, toCache);
-		pushTracked(id);
-		return trackedNetworkCache.get(id);
-	}
-
 	public static function pushTracked(file:String)
 	{
 		if (!localTracked.contains(file))
@@ -177,15 +170,6 @@ class Cache
 					obj = null;
 					trackedBitmaps.remove(key);
 				}
-			}
-		}
-
-		for (key in trackedNetworkCache.keys())
-		{
-			if (!localTracked.contains(key) && !dumpExclusions.contains(key))
-			{
-				trackedNetworkCache.remove(key);
-				key = null;
 			}
 		}
 
