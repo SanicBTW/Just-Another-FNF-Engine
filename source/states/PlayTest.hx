@@ -5,6 +5,7 @@ import base.MusicBeatState;
 import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
+import base.system.DatabaseManager;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -24,6 +25,9 @@ import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
 import funkin.ui.UI;
+import openfl.filters.ShaderFilter;
+import shader.*;
+import shader.Noise.NoiseShader;
 import substates.PauseState;
 
 using StringTools;
@@ -33,7 +37,6 @@ class PlayTest extends MusicBeatState
 	public static var stage:Stage;
 
 	public var camHUD:FlxCamera;
-	public var camHUD2:FlxCamera;
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 
@@ -68,6 +71,10 @@ class PlayTest extends MusicBeatState
 	// bruh
 	public var loadSong:Null<String> = "";
 
+	var shaderFilter:ShaderFilter;
+	var pixelShader:PixelEffect;
+	var noiseShader:NoiseShader;
+
 	override public function new(?loadSong:String)
 	{
 		super();
@@ -85,15 +92,15 @@ class PlayTest extends MusicBeatState
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
 		camGame.bgColor.alpha = 0;
-		FlxCamera.defaultCameras = [camGame];
+		FlxG.cameras.setDefaultDrawTarget(camGame, true);
 
 		camHUD = new FlxCamera();
 		camHUD.bgColor.alpha = 0;
-		FlxG.cameras.add(camHUD);
+		FlxG.cameras.add(camHUD, false);
 
 		camOther = new FlxCamera();
 		camOther.bgColor.alpha = 0;
-		FlxG.cameras.add(camOther);
+		FlxG.cameras.add(camOther, false);
 
 		strumLines = new FlxTypedGroup<StrumLine>();
 		strumLines.cameras = [camHUD];
@@ -157,6 +164,7 @@ class PlayTest extends MusicBeatState
 
 		super.create();
 
+		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
 		Paths.music("tea-time"); // precache the sound lol
 		FadeTransition.nextCamera = camOther;
 	}
@@ -164,6 +172,9 @@ class PlayTest extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		if (noiseShader != null)
+			noiseShader.elapsed.value = [FlxG.game.ticks / 1000];
 
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
@@ -634,5 +645,35 @@ class PlayTest extends MusicBeatState
 				}
 			});
 		}
+	}
+
+	function applyShader(shader:String)
+	{
+		if (shaderFilter != null)
+			shaderFilter = null;
+
+		if (pixelShader != null)
+			pixelShader = null;
+
+		if (noiseShader != null)
+			noiseShader = null;
+
+		switch (shader)
+		{
+			case "Drug":
+				shaderFilter = new ShaderFilter(new CoolShader());
+			case "Pixel":
+				pixelShader = new PixelEffect();
+				pixelShader.PIXEL_FACTOR = 512.;
+				shaderFilter = new ShaderFilter(pixelShader.shader);
+			case "Noise":
+				noiseShader = new NoiseShader();
+				shaderFilter = new ShaderFilter(noiseShader);
+			case "Disable":
+				FlxG.camera.setFilters([]);
+		}
+
+		if (shaderFilter != null)
+			FlxG.camera.setFilters([shaderFilter]);
 	}
 }

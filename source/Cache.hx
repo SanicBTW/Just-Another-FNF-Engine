@@ -207,7 +207,6 @@ class Cache
 
 		localTracked = [];
 		SoundManager.clearSoundList();
-		Request.clearSignals();
 	}
 
 	public static inline function runGC()

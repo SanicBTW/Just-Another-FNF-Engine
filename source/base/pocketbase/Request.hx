@@ -1,16 +1,19 @@
 package base.pocketbase;
 
+import base.system.ThreadManager;
 import flixel.util.FlxSignal.FlxTypedSignal;
+import haxe.Exception;
 import haxe.Http;
+import openfl.events.Event;
 import openfl.media.Sound;
-import openfl.utils.Future;
 
 using StringTools;
 
 #if !html5
-import base.system.ThreadManager;
 import haxe.io.Bytes;
 import openfl.net.URLRequest;
+#else
+import openfl.utils.Future;
 #end
 
 class Request
@@ -19,110 +22,72 @@ class Request
 	public static final recordsExt:String = "collections/:col/records";
 	public static final filesExt:String = "files/:col/:id/:file";
 
-	// The reason the given arg on dispatch is Array<Dynamic> is because it includes the request string (to avoid errors when dispatching and that shit) and the data of the request and stuff
-	// Globally used signal for request responses)?
-	public static var onSuccess(default, null):FlxTypedSignal<Array<Dynamic>->Void> = new FlxTypedSignal<Array<Dynamic>->Void>();
+	public var onSuccess(default, null):FlxTypedSignal<Dynamic->Void> = new FlxTypedSignal<Dynamic->Void>();
+	public var onError(default, null):FlxTypedSignal<String->Void> = new FlxTypedSignal<String->Void>();
+	public var onProgress(default, null):FlxTypedSignal<Float->Void> = new FlxTypedSignal<Float->Void>();
 
-	// Globally used signal for request errors)?
-	public static var onError(default, null):FlxTypedSignal<Array<Dynamic>->Void> = new FlxTypedSignal<Array<Dynamic>->Void>();
-
-	// Globally used signal for request progress)?
-	public static var onProgress(default, null):FlxTypedSignal<Array<Dynamic>->Void> = new FlxTypedSignal<Array<Dynamic>->Void>();
-
-	public function new(url:String)
+	public function new(url:String, isSound:Bool = false)
 	{
-		#if sys
-		ThreadManager.setThread('netreq-$url', () -> doRequest(url));
+		// Only works if the target has system capabilities, if its HTML5 it will run an empty function lol
+		#if !html5
+		ThreadManager.setThread(url, () -> makeRequest(url, isSound));
 		#else
-		doRequest(url);
+		makeRequest(url, isSound);
 		#end
 	}
 
-	private function doRequest(url:String)
+	private function makeRequest(url:String, isSound:Bool)
 	{
-		var request:Http = new Http(url);
+		#if !html5
+		if (url.contains(".mp3"))
+			throw new Exception("MP3 is not supported");
+		#end
 
-		request.onData = function(data:String)
+		if (isSound)
 		{
-			#if sys
-			ThreadManager.removeThread('netreq-$url');
+			#if html5
+			var soundFuture:Future<Sound>;
+			soundFuture = Sound.loadFromFile(url);
+			soundFuture.onComplete((sound:Sound) ->
+			{
+				ThreadManager.removeThread(url);
+				onSuccess.dispatch(sound);
+				soundFuture = null;
+			});
+			#else
+			var sound:Sound = new Sound(new URLRequest(url));
+
+			sound.addEventListener(Event.COMPLETE, (_) ->
+			{
+				ThreadManager.removeThread(url);
+				onSuccess.dispatch(sound);
+			});
 			#end
-			onSuccess.dispatch([url, data]);
 		}
-
-		request.onError = function(error:String)
+		else
 		{
-			#if sys
-			ThreadManager.removeThread('netreq-$url');
-			#end
+			var request:Http = new Http(url);
 
-			trace("network request error " + error);
-			onError.dispatch([url, "Failed to fetch", error]);
+			request.onError = function(error:String)
+			{
+				ThreadManager.removeThread(url);
+				trace('Error happened while requesting ${url}: ${error}');
+				onError.dispatch("Failed to fetch");
+			}
+
+			request.onData = function(data:String)
+			{
+				ThreadManager.removeThread(url);
+				onSuccess.dispatch(data);
+			}
+
+			request.request();
 		}
-
-		request.onBytes = function(data:Bytes)
-		{
-			trace(data.length);
-			trace(request.responseBytes.length);
-			trace(request.responseData);
-		}
-
-		request.request();
 	}
 
 	public static function getRecords(collection:String)
-	{
-		new Request(base + recordsExt.replace(":col", collection));
-		return base + recordsExt.replace(":col", collection);
-	}
+		return new Request(base + recordsExt.replace(":col", collection));
 
-	public static function getFile(collection:String, id:String, file:String)
-	{
-		new Request(base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file));
-		return base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file);
-	}
-
-	public static function getSound(collection:String, id:String, file:String)
-	{
-		var soundURL:String = base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file);
-
-		#if html5
-		var soundFuture:Future<Sound>;
-		soundFuture = Sound.loadFromFile(soundURL);
-		soundFuture.onComplete((sound) ->
-		{
-			onSuccess.dispatch([soundURL, sound]);
-			soundFuture = null;
-		});
-		soundFuture.onProgress((i1, i2) ->
-		{
-			trace('$i1/$i2');
-		});
-		#else
-		var sound:Sound = new Sound();
-
-		var http:Http = new Http(soundURL);
-
-		http.onBytes = function(data:Bytes)
-		{
-			trace(data.length);
-			trace(http.responseBytes.length);
-			trace(http.responseData);
-
-			ThreadManager.removeThread('netreq-$soundURL');
-			sound.loadCompressedDataFromByteArray(data, data.length);
-			onSuccess.dispatch([soundURL, sound]);
-		}
-		http.request();
-		#end
-
-		return soundURL;
-	}
-
-	public static function clearSignals()
-	{
-		onSuccess.removeAll();
-		onError.removeAll();
-		onProgress.removeAll();
-	}
+	public static function getFile(collection:String, id:String, file:String, isSound:Bool = false)
+		return new Request(base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file), isSound);
 }

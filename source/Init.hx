@@ -10,7 +10,7 @@ import flixel.text.FlxBitmapText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
-import states.RewriteMenu;
+import states.*;
 
 class Init extends ScriptableState
 {

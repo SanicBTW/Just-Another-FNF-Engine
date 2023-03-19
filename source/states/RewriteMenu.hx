@@ -298,40 +298,30 @@ class RewriteMenu extends MusicBeatState
 								songStore.clear();
 
 								var isOld:Bool = (selectedCollection == "Old");
-								var reqURL:String = Request.getRecords((isOld ? "old_fnf_charts" : "funkin"));
-								Request.onSuccess.addOnce((det:Array<Dynamic>) ->
+								var req:Request = Request.getRecords((isOld ? "old_fnf_charts" : "funkin"));
+								req.onSuccess.add((data:String) ->
 								{
-									if (det[0] != reqURL)
+									var songShit:Array<FunkCollection & Funkin_Old> = cast Json.parse(data).items;
+									for (i in 0...songShit.length)
 									{
-										trace("A request that didn't match the URL was catched");
-										return;
+										var song = songShit[i];
+										var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY,
+											(isOld ? song.song_name : song.song));
+										item.ID = i;
+										item.targetY = i;
+										item.menuItem = true;
+										songStore.set((isOld ? song.song_name : song.song),
+											new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart),
+												song.inst, song.voices));
+										groupItems.add(item);
 									}
 								});
-								/*
-									Request.getRecords((isOld ? "old_fnf_charts" : "funkin"), (data:String) ->
-									{
-										if (data == "Failed to fetch")
-										{
-											var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
-											groupItems.add(item);
-											return;
-										}
-
-										var songShit:Array<FunkCollection & Funkin_Old> = cast Json.parse(data).items;
-										for (i in 0...songShit.length)
-										{
-											var song = songShit[i];
-											var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY,
-												(isOld ? song.song_name : song.song));
-											item.ID = i;
-											item.targetY = i;
-											item.menuItem = true;
-											songStore.set((isOld ? song.song_name : song.song),
-												new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart),
-													song.inst, song.voices));
-											groupItems.add(item);
-										}
-								});*/
+								req.onError.add((_) ->
+								{
+									var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
+									groupItems.add(item);
+									return;
+								});
 							}
 
 						case "Choose collection":
@@ -445,6 +435,7 @@ class RewriteMenu extends MusicBeatState
 		}
 
 		DatabaseManager.set("shader", shader);
+		DatabaseManager.save();
 
 		if (shaderFilter != null)
 			FlxG.camera.setFilters([shaderFilter]);
