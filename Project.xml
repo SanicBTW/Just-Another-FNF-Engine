@@ -47,7 +47,9 @@
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 	<haxedef name="FLX_NO_SOUND_SYSTEM" />
 
-	<haxedef name="HXCPP_GC_BIG_BLOCKS" if="hxcpp"/>
+	<haxedef name="HXCPP_GC_BIG_BLOCKS" if="windows"/>
+	<haxedef name="HXCPP_CHECK_POINTER" if="windows" />
+	<haxedef name="HXCPP_STACK_LINE" if="windows" />
 
 	<!-- _________________________________ Custom _______________________________ -->
 
