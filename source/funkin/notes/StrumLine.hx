@@ -130,7 +130,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				}
 			}
 
-			if (!strumNote.tooLate && strumNote.strumTime < (Conductor.songPosition - Timings.msThreshold) && !strumNote.wasGoodHit)
+			if (!strumNote.tooLate && strumNote.strumTime - Conductor.songPosition < -166 && !strumNote.wasGoodHit)
 			{
 				strumNote.tooLate = true;
 

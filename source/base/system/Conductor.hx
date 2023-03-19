@@ -40,6 +40,11 @@ class Conductor
 	public static var boundVocals:AudioStream;
 	public static var boundState:MusicHandler;
 
+	// note stuff
+	public static var safeFrames:Int = 10;
+	public static var safeZoneOffset:Float = Math.floor((safeFrames / 60) * 1000);
+	public static var timeScale:Float = safeZoneOffset / 166;
+
 	public function new() {}
 
 	public static function bindSong(newState:MusicHandler, newSong:Sound, bpm:Float, ?newVocals:Sound)

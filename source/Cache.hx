@@ -66,7 +66,7 @@ class Cache
 		}
 	}
 
-	public static function getGraphic(file:String, textureCompression:Bool = #if !html5 true #else false #end):Null<FlxGraphic>
+	public static function getGraphic(file:String, textureCompression:Bool = false):Null<FlxGraphic>
 	{
 		if (!Assets.exists(file))
 		{
@@ -185,7 +185,6 @@ class Cache
 			var obj:Null<FlxGraphic> = FlxG.bitmap._cache.get(key);
 			if (obj != null && !trackedGraphics.exists(key))
 			{
-				trace(key);
 				Assets.cache.removeBitmapData(key);
 				FlxG.bitmap._cache.remove(key);
 				obj.dump();

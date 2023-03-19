@@ -272,37 +272,59 @@ class PlayTest extends MusicBeatState
 
 		keys[data] = true;
 
-		var possibleNoteList:Array<Note> = [];
-		var pressedNotes:Array<Note> = [];
+		var lastTime:Float = Conductor.songPosition;
+		Conductor.songPosition = Conductor.boundSong.playbackTime;
 
-		playerStrums.notesGroup.forEachAlive(function(daNote:Note)
-		{
-			if ((daNote.noteData == data) && !daNote.isSustain && daNote.canBeHit && !daNote.tooLate)
-				possibleNoteList.push(daNote);
-		});
-		possibleNoteList.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+		var possibleNotes:Array<Note> = [];
+		var directionList:Array<Int> = [];
+		var dumbNotes:Array<Note> = [];
 
-		if (possibleNoteList.length > 0)
+		playerStrums.allNotes.forEachAlive(function(daNote:Note)
 		{
-			var eligable:Bool = true;
-			var firstNote:Bool = true;
-			for (coolNote in possibleNoteList)
+			if ((daNote.noteData == data) && daNote.canBeHit && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustain)
 			{
-				for (noteDouble in pressedNotes)
+				if (directionList.contains(data))
 				{
-					if (Math.abs(noteDouble.strumTime - coolNote.strumTime) < 10)
-						firstNote = false;
-					else
-						eligable = false;
+					for (coolNote in possibleNotes)
+					{
+						if (coolNote.noteData == daNote.noteData && Math.abs(daNote.strumTime - coolNote.strumTime) < 10)
+						{
+							dumbNotes.push(daNote);
+							break;
+						}
+						else if (coolNote.noteData == daNote.noteData && daNote.strumTime < coolNote.strumTime)
+						{
+							possibleNotes.remove(coolNote);
+							possibleNotes.push(daNote);
+							break;
+						}
+					}
 				}
-
-				if (eligable)
+				else
 				{
-					playerHit(coolNote);
-					pressedNotes.push(coolNote);
+					possibleNotes.push(daNote);
+					directionList.push(data);
 				}
 			}
+		});
+
+		for (note in dumbNotes)
+		{
+			trace("Killing dumb note");
+			playerStrums.destroyNote(note);
 		}
+
+		possibleNotes.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+
+		if (possibleNotes.length > 0)
+		{
+			for (coolNote in possibleNotes)
+			{
+				playerHit(coolNote);
+			}
+		}
+
+		Conductor.songPosition = lastTime;
 
 		if (getReceptor(playerStrums, data).animation.curAnim.name != "confirm")
 			getReceptor(playerStrums, data).playAnim('pressed');
@@ -311,6 +333,9 @@ class PlayTest extends MusicBeatState
 	override public function onActionReleased(action:String)
 	{
 		super.onActionReleased(action);
+
+		if (playerStrums.botPlay)
+			return;
 
 		var data:Int = -1;
 
@@ -411,7 +436,7 @@ class PlayTest extends MusicBeatState
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
 			if (!note.isSustain)
-				Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
+				Timings.judge(-(note.strumTime - Conductor.songPosition));
 
 			if (!note.doubleNote)
 			{

@@ -1,5 +1,6 @@
 package funkin;
 
+import base.system.Conductor;
 import flixel.util.FlxColor;
 
 // File rewritten, ONCE AGAIN
@@ -20,9 +21,6 @@ typedef Judgement =
 
 class Timings
 {
-	// Note time handling
-	public static var msThreshold:Float = 200;
-
 	// Judgements
 	public static var marvs:Int = 0;
 	public static var sicks:Int = 0;
@@ -157,7 +155,7 @@ class Timings
 		for (i in 0...judgements.length)
 		{
 			var judgement:Judgement = judgements[Math.round(Math.min(i, judgements.length - 1))];
-			if (ms <= judgement.timing)
+			if (ms <= judgement.timing * Conductor.timeScale)
 			{
 				// Increase combo
 				Reflect.setField(Timings, judgement.track, Reflect.field(Timings, judgement.track) + 1);
