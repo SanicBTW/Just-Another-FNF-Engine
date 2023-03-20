@@ -23,7 +23,9 @@ import shader.Noise.NoiseShader;
 import shader.PixelEffect;
 import states.config.EarlyConfig;
 import states.config.KeybindsState;
+import states.online.ConnectingState;
 import substates.LoadingState;
+import substates.online.CodeState;
 
 using StringTools;
 
@@ -35,7 +37,7 @@ class RewriteMenu extends MusicBeatState
 	var subOptions:Map<String, Array<Dynamic>> = [
 		// bruh
 		"Assets" => ["Select song"],
-		"Online" => ["Select song", "Choose collection", "Socket test"],
+		"Online" => ["Select song", "Choose collection", "VS"],
 		"Settings" => ["Options", "Keybinds"],
 		"Shaders" => ["Drug", "Pixel", "Noise", "Disable"],
 		"Character selection" => ["soon"]
@@ -61,6 +63,7 @@ class RewriteMenu extends MusicBeatState
 	// Online
 	var collections:Array<String> = ["New", "Old"];
 	var selectedCollection:String = "New";
+	var vsoptions:Array<String> = ["Host", "Join with ID"];
 	var songStore:Map<String, PocketBaseObject> = new Map();
 
 	private function set_curOption(value:Int):Int
@@ -333,6 +336,16 @@ class RewriteMenu extends MusicBeatState
 									groupItems.add(item);
 								}
 							}
+
+						case "VS":
+							{
+								for (i in 0...vsoptions.length)
+								{
+									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, vsoptions[i]);
+									item.ID = i;
+									groupItems.add(item);
+								}
+							}
 					}
 				}
 		}
@@ -374,6 +387,18 @@ class RewriteMenu extends MusicBeatState
 							{
 								selectedCollection = curOptionStr;
 								curState = SUB_SELECTION;
+							}
+
+						case "VS":
+							{
+								if (curOptionStr == "Join with ID")
+								{
+									openSubState(new CodeState());
+								}
+								else
+								{
+									ScriptableState.switchState(new ConnectingState('host'));
+								}
 							}
 					}
 				}

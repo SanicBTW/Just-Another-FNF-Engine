@@ -28,7 +28,7 @@ class Controls
 	// System/Base/Global/Current Actions
 	private static var actions:StringMap<Array<Null<Int>>> = [
 		"confirm" => [Keyboard.ENTER],
-		"back" => [Keyboard.BACKSPACE, Keyboard.ESCAPE],
+		"back" => [Keyboard.ESCAPE], // when on flxinputext, backspace would conflict with this action
 		"reset" => [Keyboard.R],
 		"vol_up" => [187, Keyboard.NUMPAD_ADD],
 		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
