@@ -336,12 +336,23 @@ class RewriteMenu extends MusicBeatState
 
 						case "VS":
 							{
+								#if html5
 								for (i in 0...vsoptions.length)
 								{
 									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, vsoptions[i]);
 									item.ID = i;
 									groupItems.add(item);
 								}
+								#else
+								var item:CircularSpriteText = new CircularSpriteText(30, 30 + (0 * 55), 350, 50, FlxColor.GRAY, "Host");
+								item.ID = 0;
+								groupItems.add(item);
+
+								var item:CircularSpriteText = new CircularSpriteText(30, 30 + (1 * 55), 350, 50, FlxColor.GRAY, "Cannot join");
+								item.circularSprite.color = FlxColor.RED;
+								item.ID = 1;
+								groupItems.add(item);
+								#end
 							}
 					}
 				}
@@ -390,6 +401,9 @@ class RewriteMenu extends MusicBeatState
 
 						case "VS":
 							{
+								if (curOptionStr == "Cannot join")
+									return;
+
 								if (curOptionStr == "Join with ID")
 								{
 									openSubState(new CodeState());

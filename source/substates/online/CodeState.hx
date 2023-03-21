@@ -36,8 +36,6 @@ class CodeState extends ScriptableSubState
 	{
 		super.onActionPressed(action);
 
-		trace(action);
-
 		if (action == "confirm")
 		{
 			if (txtInput.text == "")

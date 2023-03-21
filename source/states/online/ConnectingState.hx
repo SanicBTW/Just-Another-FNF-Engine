@@ -62,6 +62,7 @@ class ConnectingState extends MusicBeatState
 							return;
 						}
 
+						OnlinePlayState.room = room;
 						SongSelection.room = room;
 						LobbyState.room = room;
 						try
@@ -85,8 +86,9 @@ class ConnectingState extends MusicBeatState
 
 							room.onMessage('game_start', (_) ->
 							{
-								// change to another state
 								trace("Game started");
+								OnlinePlayState.startedMatch = true;
+								ScriptableState.switchState(new OnlinePlayState());
 							});
 
 							room.onMessage('join', (name:String) ->
@@ -97,10 +99,13 @@ class ConnectingState extends MusicBeatState
 
 							room.onMessage('left', (_) ->
 							{
-								LobbyState.p2.alpha = 0.4;
-								p2name = '';
-								LobbyState.readyTxt.members[1].color = FlxColor.RED;
-								LobbyState.readyTxt.members[1].text = 'Not ready';
+								if (!OnlinePlayState.startedMatch)
+								{
+									LobbyState.p2.alpha = 0.4;
+									p2name = '';
+									LobbyState.readyTxt.members[1].color = FlxColor.RED;
+									LobbyState.readyTxt.members[1].text = 'Not ready';
+								}
 							});
 
 							room.onMessage('ret_stats', (stats:{accuracy:Float, score:Int, misses:Int}) ->
@@ -139,6 +144,7 @@ class ConnectingState extends MusicBeatState
 							return;
 						}
 
+						OnlinePlayState.room = room;
 						SongSelection.room = room;
 						LobbyState.room = room;
 
@@ -164,8 +170,11 @@ class ConnectingState extends MusicBeatState
 						room.onMessage('game_start', (_) ->
 						{
 							trace("Game started");
+							OnlinePlayState.startedMatch = true;
+							ScriptableState.switchState(new OnlinePlayState());
 						});
 
+						// make it return to the main state
 						room.onMessage('left', (_) ->
 						{
 							LobbyState.p2.alpha = 0.4;
