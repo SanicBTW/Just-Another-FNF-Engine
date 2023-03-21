@@ -37,7 +37,7 @@ class PauseState extends ScriptableSubState
 		bg.scrollFactor.set();
 		add(bg);
 
-		pauseMusic = new FlxSound().loadEmbedded(Paths.music("tea-time"));
+		pauseMusic = new FlxSound().loadEmbedded(Paths.music("tea-time"), true, true);
 		pauseMusic.volume = 0;
 		pauseMusic.play(false, FlxG.random.int(0, Std.int(pauseMusic.length / 2)));
 		FlxG.sound.list.add(pauseMusic);

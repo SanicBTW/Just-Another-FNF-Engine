@@ -15,6 +15,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
 import funkin.Character;
+import funkin.ChartLoader;
 import haxe.Json;
 import openfl.filters.ShaderFilter;
 import openfl.utils.Assets;
@@ -164,8 +165,9 @@ class RewriteMenu extends MusicBeatState
 		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
 
 		Conductor.boundState = this;
-		Conductor.changeBPM(128);
-		FlxG.sound.playMusic(Paths.music("mainRewrite"));
+		Conductor.changeBPM(102);
+		if (!FlxG.sound.music.playing)
+			FlxG.sound.playMusic(Paths.music("freakyMenu"));
 	}
 
 	override public function onActionPressed(action:String)
@@ -358,6 +360,10 @@ class RewriteMenu extends MusicBeatState
 						// Only entry lol
 						case "Select song":
 							{
+								// Clean the chart loader left over vars from online shit
+								ChartLoader.netChart = null;
+								ChartLoader.netInst = null;
+								ChartLoader.netVoices = null;
 								ScriptableState.switchState(new PlayTest(curOptionStr));
 							}
 					}

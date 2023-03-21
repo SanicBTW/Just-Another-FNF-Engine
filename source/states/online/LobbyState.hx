@@ -2,10 +2,12 @@ package states.online;
 
 import base.MusicBeatState;
 import base.ScriptableState;
+import base.system.Conductor;
 import base.ui.Fonts;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxBitmapText;
+import flixel.util.FlxColor;
 import funkin.Character;
 import io.colyseus.Room;
 import states.online.schema.VersusRoom;
@@ -53,12 +55,14 @@ class LobbyState extends MusicBeatState
 		Fonts.setProperties(readyState, false, 0.6);
 		readyState.setPosition(p1.x, p1.y);
 		readyState.text = "Not ready";
+		readyState.color = FlxColor.RED;
 		readyTxt.add(readyState);
 
 		var readyState:FlxBitmapText = new FlxBitmapText(Fonts.VCR());
 		Fonts.setProperties(readyState, false, 0.6);
 		readyState.setPosition(p2.x, p2.y);
 		readyState.text = "Not ready";
+		readyState.color = FlxColor.RED;
 		readyTxt.add(readyState);
 
 		add(p1);
@@ -69,6 +73,8 @@ class LobbyState extends MusicBeatState
 		add(readyTxt);
 
 		super.create();
+
+		Conductor.boundState = this;
 	}
 
 	override public function update(elapsed:Float)
