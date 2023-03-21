@@ -23,7 +23,7 @@ interface PlayerData
 
 class ConnectingState extends MusicBeatState
 {
-	private var client:Client;
+	public static var client:Client;
 
 	public static var mode:String;
 	public static var p1name:String;
@@ -43,16 +43,7 @@ class ConnectingState extends MusicBeatState
 		super();
 
 		p2name = '';
-		try
-		{
-			client = new Client('wss://ws.sancopublic.com');
-		}
-		catch (ex)
-		{
-			trace(ex);
-			ScriptableState.switchState(new RewriteMenu());
-			return;
-		}
+		client = new Client(#if html5 'wss://ws.sancopublic.com' #else 'ws://ws.sancopublic.com' #end);
 
 		switch (type)
 		{
@@ -77,7 +68,6 @@ class ConnectingState extends MusicBeatState
 						{
 							room.send('set_name', {name: p1name});
 
-							// it might be an object ({song, p1name}) but only for the other client
 							room.onMessage('message', (message:{id:String}) ->
 							{
 								// lobby code?
