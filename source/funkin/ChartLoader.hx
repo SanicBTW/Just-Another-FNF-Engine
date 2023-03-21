@@ -69,6 +69,7 @@ class ChartLoader
 		else
 		{
 			swagSong = CoolUtil.loadSong(netChart);
+			swagSong.needsVoices = (netVoices != null);
 			Conductor.bindSong(state, netInst, swagSong.bpm, netVoices);
 		}
 

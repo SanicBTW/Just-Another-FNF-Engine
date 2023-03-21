@@ -47,7 +47,6 @@
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
 	<haxedef name="FLX_NO_DEBUG" unless="debug"/>
 	<haxedef name="FLX_NO_SOUND_TRAY" />
-	<haxedef name="FLX_NO_SOUND_SYSTEM" />
 
 	<haxedef name="HXCPP_GC_BIG_BLOCKS" if="windows"/>
 	<haxedef name="HXCPP_CHECK_POINTER" if="windows" />

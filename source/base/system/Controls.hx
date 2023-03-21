@@ -28,11 +28,8 @@ class Controls
 	// System/Base/Global/Current Actions
 	private static var actions:StringMap<Array<Null<Int>>> = [
 		"confirm" => [Keyboard.ENTER],
-		"back" => [Keyboard.ESCAPE], // when on flxinputext, backspace would conflict with this action
+		"back" => [Keyboard.ESCAPE],
 		"reset" => [Keyboard.R],
-		"vol_up" => [187, Keyboard.NUMPAD_ADD],
-		"vol_down" => [Keyboard.MINUS, Keyboard.NUMPAD_SUBTRACT],
-		"mute" => [Keyboard.NUMBER_0, Keyboard.NUMPAD_0],
 		"fullscreen" => [Keyboard.F11]
 	];
 
@@ -147,16 +144,6 @@ class Controls
 			{
 				switch (pressedAction)
 				{
-					case "vol_up":
-						if (SoundManager.muted)
-							SoundManager.muted = false;
-						SoundManager.globalVolume += 0.1;
-					case "vol_down":
-						if (SoundManager.muted)
-							SoundManager.muted = false;
-						SoundManager.globalVolume -= 0.1;
-					case "mute":
-						SoundManager.muted = !SoundManager.muted;
 					case "fullscreen":
 						FlxG.fullscreen = !FlxG.fullscreen;
 				}

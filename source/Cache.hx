@@ -1,7 +1,6 @@
 package;
 
 import base.pocketbase.Request;
-import base.system.SoundManager;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import openfl.Assets;
@@ -205,7 +204,6 @@ class Cache
 		}
 
 		localTracked = [];
-		SoundManager.clearSoundList();
 	}
 
 	public static inline function runGC()

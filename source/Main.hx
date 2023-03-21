@@ -147,6 +147,12 @@ class Main extends Sprite
 				volumeTray.update();
 		});
 
+		FlxG.sound.volumeHandler = function(_)
+		{
+			if (volumeTray != null)
+				volumeTray.show();
+		}
+
 		#if window
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 		#end

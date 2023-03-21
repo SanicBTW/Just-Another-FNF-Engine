@@ -66,7 +66,7 @@ class UI extends FlxSpriteGroup
 
 	override public function update(elapsed:Float)
 	{
-		timeBar.value = (Conductor.songPosition / Conductor.boundSong.audioLength);
+		timeBar.value = (Conductor.songPosition / Conductor.boundSong.length);
 		super.update(elapsed);
 	}
 

@@ -1,6 +1,5 @@
 package base.system.ui;
 
-import base.system.SoundManager;
 import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
@@ -66,7 +65,7 @@ class VolumeTray extends Sprite
 		// This one gets updated when volume changes
 		_volTracker = new TextField();
 		setTxtFieldProperties(_volTracker);
-		_volTracker.text = '${SoundManager.globalVolume * 100}%';
+		_volTracker.text = '${FlxG.sound.volume * 100}%';
 		_volTracker.defaultTextFormat.align = RIGHT;
 		_volTracker.x = (_width - _volTracker.textWidth) - 10;
 		addChild(_volTracker);
@@ -82,7 +81,8 @@ class VolumeTray extends Sprite
 		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 5.125), 0, 1);
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
-		_volBar.scaleX = FlxMath.lerp(SoundManager.globalVolume, _volBar.scaleX, lerpVal);
+		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : FlxG.sound.volume), _volBar.scaleX, lerpVal);
+		_volTracker.text = '${Math.round(_volBar.scaleX * 100)}%';
 
 		if (_visibleTime > 0)
 			_visibleTime -= elapsed;
@@ -102,7 +102,6 @@ class VolumeTray extends Sprite
 	{
 		_visibleTime = 1.8;
 		targetY = 0;
-		_volTracker.text = '${Math.floor(SoundManager.globalVolume * 100)}%';
 		visible = true;
 		active = true;
 	}

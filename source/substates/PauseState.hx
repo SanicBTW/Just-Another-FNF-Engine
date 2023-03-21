@@ -3,11 +3,11 @@ package substates;
 import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
-import base.system.SoundManager;
 import base.ui.Alphabet;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.system.FlxSound;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
@@ -25,7 +25,7 @@ class PauseState extends ScriptableSubState
 		'Exit'
 	];
 	var curSelected:Int = 0;
-	var bgMusic:AudioStream;
+	var pauseMusic:FlxSound;
 
 	public function new()
 	{
@@ -37,10 +37,10 @@ class PauseState extends ScriptableSubState
 		bg.scrollFactor.set();
 		add(bg);
 
-		bgMusic = SoundManager.setSound("pause");
-		bgMusic.audioSource = Paths.music("tea-time");
-		bgMusic.play(0, FlxG.random.int(0, Std.int(bgMusic.audioLength / 2)));
-		bgMusic.loopAudio = true;
+		pauseMusic = new FlxSound().loadEmbedded(Paths.music("tea-time"));
+		pauseMusic.volume = 0;
+		pauseMusic.play(false, FlxG.random.int(0, Std.int(pauseMusic.length / 2)));
+		FlxG.sound.list.add(pauseMusic);
 
 		FlxTween.tween(bg, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});
 
@@ -63,8 +63,8 @@ class PauseState extends ScriptableSubState
 
 	override public function update(elapsed:Float)
 	{
-		if (bgMusic.audioVolume < 0.5)
-			bgMusic.audioVolume += 0.01 * elapsed;
+		if (pauseMusic.volume < 0.5)
+			pauseMusic.volume += 0.01 * elapsed;
 
 		super.update(elapsed);
 	}
@@ -85,16 +85,13 @@ class PauseState extends ScriptableSubState
 					{
 						case "Resume":
 							Controls.setActions(NOTES);
-							bgMusic.stop();
 							close();
 						case 'Enable botplay' | "Disable botplay":
 							PlayTest.instance.playerStrums.botPlay = !PlayTest.instance.playerStrums.botPlay;
 							grpMenuShit.members[2].changeText(PlayTest.instance.playerStrums.botPlay ? "Disable botplay" : "Enable botplay");
 						case 'Reset song':
-							bgMusic.stop();
 							ScriptableState.switchState(new PlayTest(PlayTest.instance.loadSong));
 						case 'Exit':
-							bgMusic.stop();
 							Conductor.boundSong.stop();
 							Conductor.boundVocals.stop();
 							ChartLoader.netInst = null;
@@ -128,5 +125,12 @@ class PauseState extends ScriptableSubState
 				menuItem.alpha = 1;
 			}
 		});
+	}
+
+	override function destroy()
+	{
+		pauseMusic.destroy();
+
+		super.destroy();
 	}
 }

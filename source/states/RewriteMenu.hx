@@ -163,13 +163,9 @@ class RewriteMenu extends MusicBeatState
 
 		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
 
-		Conductor.boundSong = bgMusic;
 		Conductor.boundState = this;
 		Conductor.changeBPM(128);
-
-		bgMusic.audioSource = Paths.music("mainRewrite");
-		bgMusic.loopAudio = true;
-		bgMusic.play();
+		FlxG.sound.playMusic(Paths.music("mainRewrite"));
 	}
 
 	override public function onActionPressed(action:String)
@@ -362,7 +358,6 @@ class RewriteMenu extends MusicBeatState
 						// Only entry lol
 						case "Select song":
 							{
-								bgMusic.stop();
 								ScriptableState.switchState(new PlayTest(curOptionStr));
 							}
 					}
@@ -379,7 +374,6 @@ class RewriteMenu extends MusicBeatState
 								var pbObject:PocketBaseObject = songStore.get(curOptionStr);
 								persistentUpdate = false;
 								canPress = false;
-								bgMusic.stop();
 								openSubState(new LoadingState(selectedCollection == "Old" ? "old_fnf_charts" : "funkin", pbObject));
 							}
 

@@ -84,6 +84,9 @@ class PlayTest extends MusicBeatState
 
 	override function create()
 	{
+		if (FlxG.sound.music.playing)
+			FlxG.sound.music.stop();
+
 		Controls.setActions(NOTES);
 		Timings.call();
 
@@ -273,7 +276,7 @@ class PlayTest extends MusicBeatState
 		keys[data] = true;
 
 		var lastTime:Float = Conductor.songPosition;
-		Conductor.songPosition = Conductor.boundSong.playbackTime;
+		Conductor.songPosition = Conductor.boundSong.time;
 
 		var possibleNotes:Array<Note> = [];
 		var directionList:Array<Int> = [];
@@ -411,7 +414,7 @@ class PlayTest extends MusicBeatState
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)
-				Conductor.boundVocals.audioVolume = 1;
+				Conductor.boundVocals.volume = 1;
 
 			if (!note.isSustain)
 				destroyNote(opponentStrums, note);
@@ -450,7 +453,7 @@ class PlayTest extends MusicBeatState
 				trail(player, note);
 
 			if (SONG.needsVoices)
-				Conductor.boundVocals.audioVolume = 1;
+				Conductor.boundVocals.volume = 1;
 
 			if (!note.isSustain)
 				destroyNote(playerStrums, note);
@@ -483,7 +486,7 @@ class PlayTest extends MusicBeatState
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)
-				Conductor.boundVocals.audioVolume = 1;
+				Conductor.boundVocals.volume = 1;
 
 			if (!note.isSustain)
 				destroyNote(playerStrums, note);
@@ -505,7 +508,7 @@ class PlayTest extends MusicBeatState
 	{
 		var direction:Int = note.noteData;
 		if (SONG.needsVoices)
-			Conductor.boundVocals.audioVolume = 0;
+			Conductor.boundVocals.volume = 0;
 
 		if (player != null)
 		{
@@ -587,14 +590,14 @@ class PlayTest extends MusicBeatState
 		Conductor.changeBPM(SONG.bpm);
 		generatedMusic = true;
 
-		Conductor.boundSong.onFinish.add(() ->
+		Conductor.boundSong.onComplete = function()
 		{
 			Conductor.boundSong.stop();
 			Conductor.boundVocals.stop();
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
 			ScriptableState.switchState(new RewriteMenu());
-		});
+		};
 		Conductor.boundSong.play();
 		if (SONG.needsVoices)
 			Conductor.boundVocals.play();
@@ -606,9 +609,11 @@ class PlayTest extends MusicBeatState
 		if (!paused)
 		{
 			if (Conductor.boundSong != null)
-				Conductor.boundSong.stop();
-			if (Conductor.boundVocals != null)
-				Conductor.boundVocals.stop();
+			{
+				Conductor.boundSong.pause();
+				if (SONG.needsVoices)
+					Conductor.boundVocals.pause();
+			}
 
 			paused = true;
 			canPause = false;
@@ -621,11 +626,6 @@ class PlayTest extends MusicBeatState
 	{
 		if (paused)
 		{
-			if (Conductor.boundSong != null)
-				Conductor.boundSong.play();
-			if (Conductor.boundVocals != null)
-				Conductor.boundVocals.play();
-
 			Conductor.resyncTime();
 
 			paused = false;

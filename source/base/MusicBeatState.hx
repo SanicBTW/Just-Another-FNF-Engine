@@ -2,13 +2,12 @@ package base;
 
 import base.ScriptableState.ScriptableSubState;
 import base.system.Conductor;
-import base.system.SoundManager;
+import flixel.FlxBasic;
+import flixel.FlxG;
 import funkin.ChartLoader.Song;
 
 class MusicBeatState extends ScriptableState implements MusicHandler
 {
-	private var bgMusic:AudioStream;
-
 	public var SONG:Song;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
@@ -19,16 +18,9 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 	private function get_curBeat():Int
 		return Conductor.beatPosition;
 
-	override public function create()
-	{
-		bgMusic = SoundManager.setSound("musicPERSIST");
-
-		super.create();
-	}
-
 	override public function update(elapsed:Float)
 	{
-		if (Conductor.boundState == this && Conductor.boundSong != null)
+		if (Conductor.boundState == this)
 			Conductor.updateTimePosition(elapsed);
 
 		super.update(elapsed);
@@ -53,7 +45,7 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		if (Conductor.boundState == this && Conductor.boundSong != null)
+		if (Conductor.boundState == this)
 			Conductor.updateTimePosition(elapsed);
 
 		super.update(elapsed);
@@ -75,4 +67,6 @@ interface MusicHandler
 	public var curBeat(get, never):Int;
 	private function get_curBeat():Int;
 	public function beatHit():Void;
+
+	public function add(basic:FlxBasic):FlxBasic;
 }

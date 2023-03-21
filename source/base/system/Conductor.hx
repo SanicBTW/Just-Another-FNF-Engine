@@ -1,7 +1,9 @@
 package base.system;
 
 import base.MusicBeatState.MusicHandler;
-import base.system.SoundManager.AudioStream;
+import flixel.FlxG;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.system.FlxSound;
 import funkin.ChartLoader;
 import openfl.media.Sound;
 
@@ -36,8 +38,8 @@ class Conductor
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
 
 	// the audio shit and the state
-	public static var boundSong:AudioStream;
-	public static var boundVocals:AudioStream;
+	public static var boundSong:FlxSound;
+	public static var boundVocals:FlxSound;
 	public static var boundState:MusicHandler;
 
 	// note stuff
@@ -49,16 +51,14 @@ class Conductor
 
 	public static function bindSong(newState:MusicHandler, newSong:Sound, bpm:Float, ?newVocals:Sound)
 	{
-		boundSong = new AudioStream();
-		boundSong.audioSource = newSong;
-		SoundManager.setSound("inst", boundSong);
-		boundVocals = new AudioStream();
+		boundSong = new FlxSound().loadEmbedded(newSong);
+		boundVocals = new FlxSound();
 		if (newVocals != null)
-		{
-			boundVocals.audioSource = newVocals;
-			SoundManager.setSound("voices", boundVocals);
-		}
+			boundVocals = new FlxSound().loadEmbedded(newVocals);
 		boundState = newState;
+
+		FlxG.sound.list.add(boundSong);
+		FlxG.sound.list.add(boundVocals);
 
 		changeBPM(bpm);
 
@@ -90,7 +90,29 @@ class Conductor
 
 	public static function updateTimePosition(elapsed:Float)
 	{
-		if (boundSong.isPlaying)
+		if (FlxG.sound.music.playing)
+		{
+			stepPosition = Math.floor(songPosition / stepCrochet);
+			sectionPosition = Math.floor(stepPosition / 16);
+			beatPosition = Math.floor(stepPosition / 4);
+
+			if (stepPosition > lastStep)
+			{
+				boundState.stepHit();
+				lastStep = stepPosition;
+			}
+
+			if (beatPosition > lastBeat)
+			{
+				if (stepPosition % 4 == 0)
+					boundState.beatHit();
+				lastBeat = beatPosition;
+			}
+
+			songPosition += elapsed * 1000;
+		}
+
+		if (boundSong != null && boundSong.playing)
 		{
 			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
 
@@ -100,14 +122,9 @@ class Conductor
 
 			if (stepPosition > lastStep)
 			{
-				if (boundSong.tag != "musicPERSIST")
-				{
-					if ((Math.abs(boundSong.playbackTime - songPosition) > comparisonThreshold)
-						|| (boundVocals != null
-							&& boundVocals.audioSource != null
-							&& Math.abs(boundVocals.playbackTime - songPosition) > comparisonThreshold))
-						resyncTime();
-				}
+				if (Math.abs(boundSong.time - songPosition) > comparisonThreshold
+					|| (boundState.SONG.needsVoices && Math.abs(boundVocals.time - songPosition) > comparisonThreshold))
+					resyncTime();
 
 				boundState.stepHit();
 				lastStep = stepPosition;
@@ -126,18 +143,18 @@ class Conductor
 
 	public static function resyncTime()
 	{
-		trace('Resyncing song time ${boundSong.playbackTime}, $songPosition');
-		if (boundVocals != null && boundVocals.audioSource != null)
-			boundVocals.stop();
+		trace('Resyncing song time ${boundSong.time}, $songPosition');
+		if (boundState.SONG.needsVoices)
+			boundVocals.pause();
 
 		boundSong.play();
-		songPosition = boundSong.playbackTime;
-		if (boundVocals != null && boundVocals.audioSource != null)
+		songPosition = boundSong.time;
+		if (boundState.SONG.needsVoices)
 		{
-			boundVocals.playbackTime = songPosition;
+			boundVocals.time = songPosition;
 			boundVocals.play();
 		}
-		trace('New song time ${boundSong.playbackTime}, $songPosition');
+		trace('New song time ${boundSong.time}, $songPosition');
 	}
 
 	public static function getBPMFromSeconds(time:Float)
