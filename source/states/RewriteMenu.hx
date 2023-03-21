@@ -166,8 +166,7 @@ class RewriteMenu extends MusicBeatState
 
 		Conductor.boundState = this;
 		Conductor.changeBPM(102);
-		if (!FlxG.sound.music.playing)
-			FlxG.sound.playMusic(Paths.music("freakyMenu"));
+		FlxG.sound.playMusic(Paths.music("freakyMenu"));
 	}
 
 	override public function onActionPressed(action:String)
