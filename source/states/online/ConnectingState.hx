@@ -2,12 +2,11 @@ package states.online;
 
 import base.MusicBeatState;
 import base.ScriptableState;
-import base.ui.CircularSprite.CircularSpriteText;
+import base.pocketbase.Collections.PocketBaseObject;
 import flixel.FlxG;
-import flixel.addons.ui.FlxInputText;
-import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.util.FlxColor;
+import haxe.Json;
 import io.colyseus.Client;
-import io.colyseus.Room;
 import states.online.schema.VersusRoom;
 
 interface PlayerData
@@ -15,6 +14,7 @@ interface PlayerData
 	var name:String;
 	var ready:Bool;
 	var isOpponent:Bool;
+	var status:String;
 
 	var accuracy:Float;
 	var score:Int;
@@ -25,16 +25,43 @@ class ConnectingState extends MusicBeatState
 {
 	private var client:Client;
 
+	public static var mode:String;
+	public static var p1name:String;
+	public static var p2name:String;
+
+	// The alpha value for the other player status
+	private var statusAlphas:Map<String, Float> = [
+		"Loading chart" => 0.6,
+		"Loading inst" => 0.7,
+		"Checking voices" => 0.8,
+		"Loading voices" => 0.9,
+		"Waiting" => 1
+	];
+
 	public function new(type:String, ?code:String)
 	{
 		super();
 
-		client = new Client('wss://ws.sancopublic.com');
+		p2name = '';
+		try
+		{
+			client = new Client('wss://ws.sancopublic.com');
+		}
+		catch (ex)
+		{
+			trace(ex);
+			ScriptableState.switchState(new RewriteMenu());
+			return;
+		}
+
 		switch (type)
 		{
 			case "host":
 				{
-					var hname:String = 'test${FlxG.random.int(0, 9999)}';
+					mode = 'host';
+					p1name = 'test${FlxG.random.int(0, 9999)}';
+					p2name = '';
+					FlxG.switchState(new SongSelection());
 					client.create('versus_room', [], VersusRoom, (error, room) ->
 					{
 						if (error != null)
@@ -44,30 +71,26 @@ class ConnectingState extends MusicBeatState
 							return;
 						}
 
+						SongSelection.room = room;
+						LobbyState.room = room;
 						try
 						{
-							room.send('set_name', {name: hname});
-
-							room.onMessage('create_match', (song:String) ->
-							{
-								// set the song
-								trace(song);
-							});
+							room.send('set_name', {name: p1name});
 
 							// it might be an object ({song, p1name}) but only for the other client
-							room.onMessage('message', (code:String) ->
+							room.onMessage('message', (message:{id:String}) ->
 							{
 								// lobby code?
-								trace(code);
+								LobbyState.roomCode = message.id;
 							});
 
 							room.onMessage('ready_state', (_:{p1:Bool, p2:Bool}) ->
 							{
 								// change the ready text lol
-								var textIdx:Int = _.p1 ? 0 : 1;
-								trace(_.p1);
-								trace(_.p2);
-								trace(textIdx);
+								LobbyState.readyTxt.members[0].color = (_.p1 ? FlxColor.GREEN : FlxColor.RED);
+								LobbyState.readyTxt.members[0].text = (_.p1 ? "Ready" : "Not ready");
+								LobbyState.readyTxt.members[1].color = (_.p2 ? FlxColor.GREEN : FlxColor.RED);
+								LobbyState.readyTxt.members[1].text = (_.p2 ? "Ready" : "Not ready");
 							});
 
 							room.onMessage('game_start', (_) ->
@@ -78,17 +101,27 @@ class ConnectingState extends MusicBeatState
 
 							room.onMessage('join', (name:String) ->
 							{
-								trace('p2 name $name');
+								LobbyState.p2.alpha = 0.5;
+								p2name = name;
 							});
 
 							room.onMessage('left', (_) ->
 							{
-								trace('p2 left');
+								LobbyState.p2.alpha = 0.4;
+								p2name = '';
+								LobbyState.readyTxt.members[1].color = FlxColor.RED;
+								LobbyState.readyTxt.members[1].text = 'Not ready';
 							});
 
 							room.onMessage('ret_stats', (stats:{accuracy:Float, score:Int, misses:Int}) ->
 							{
 								trace(stats);
+							});
+
+							room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->
+							{
+								if (LobbyState.p2 != null)
+									LobbyState.p2.alpha = statusAlphas[status.p2status];
 							});
 
 							room.onError += (code:Int, message:String) ->
@@ -105,7 +138,8 @@ class ConnectingState extends MusicBeatState
 				}
 			case "join":
 				{
-					var hname:String = 'test${FlxG.random.int(0, 9999)}';
+					mode = "join";
+					p2name = 'test${FlxG.random.int(0, 9999)}';
 					client.joinById(code, [], VersusRoom, (error, room) ->
 					{
 						if (error != null)
@@ -115,21 +149,26 @@ class ConnectingState extends MusicBeatState
 							return;
 						}
 
-						room.send('set_name', {name: hname});
+						SongSelection.room = room;
+						LobbyState.room = room;
 
-						room.onMessage('message', (message:{song:String, p1:PlayerData}) ->
+						room.send('set_name', {name: p2name});
+
+						room.onMessage('message', (message:{song:String, player1:PlayerData}) ->
 						{
-							trace(message.song);
-							trace(message.p1);
+							p1name = message.player1.name;
+							LobbyState.roomCode = room.id;
+							var pbObject:PocketBaseObject = cast Json.parse(message.song);
+							FlxG.switchState(new SongSelection(pbObject));
 						});
 
 						room.onMessage('ready_state', (_:{p1:Bool, p2:Bool}) ->
 						{
 							// change the ready text lol
-							var textIdx:Int = _.p1 ? 0 : 1;
-							trace(_.p1);
-							trace(_.p2);
-							trace(textIdx);
+							LobbyState.readyTxt.members[0].color = (_.p1 ? FlxColor.GREEN : FlxColor.RED);
+							LobbyState.readyTxt.members[0].text = (_.p1 ? "Ready" : "Not ready");
+							LobbyState.readyTxt.members[1].color = (_.p2 ? FlxColor.GREEN : FlxColor.RED);
+							LobbyState.readyTxt.members[1].text = (_.p2 ? "Ready" : "Not ready");
 						});
 
 						room.onMessage('game_start', (_) ->
@@ -139,6 +178,7 @@ class ConnectingState extends MusicBeatState
 
 						room.onMessage('left', (_) ->
 						{
+							LobbyState.p2.alpha = 0.4;
 							trace("left");
 						});
 

@@ -8,20 +8,39 @@ interface PlayerData
     name:string;
     ready:boolean;
     isOpponent:boolean;
+    status:string;
 
     accuracy:number;
     score:number;
     misses:number;
 }
 
+class PocketbaseObject
+{
+    public id:string;
+    public song:string;
+    public chart:string;
+    public inst:string;
+    public voices:string;
+
+    constructor(id:string, song:string, chart:string, inst:string, voices:string)
+    {
+		this.id = id;
+		this.song = song;
+		this.chart = chart;
+		this.inst = inst;
+		this.voices = voices;
+    }
+}
+
 // I'm trying to base off BattleRoom, once I understand I will rewrite the code and shit
 export class VersusRoom extends Room<VersusRoomState>
 {
     started:boolean = false;
-    songName:string = '';
+    songObject:PocketbaseObject;
 
-    player1:PlayerData = { name: 'guest', ready: false, isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
-    player2:PlayerData = { name: 'guest', ready: false, isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
+    player1:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
+    player2:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
 
     maxClients: 2;
 
@@ -52,13 +71,32 @@ export class VersusRoom extends Room<VersusRoomState>
             }
         });
 
-        this.onMessage('set_song', (client:Client, message:{song:string}) =>
+        this.onMessage('set_song', (client:Client, message:{songObj:string}) =>
         {
-            this.songName = message.song;
+            this.songObject = JSON.parse(message.songObj);
 
+            /* this is pretty much retarded i believe
             try
             {
-                client.send("create_match", { song: message.song });
+                client.send("create_match", { song: message.songObj });
+            }
+            catch (er)
+            {
+                console.log(er);
+            }*/
+        });
+
+        this.onMessage('report_status', (client:Client, status:string) =>
+        {
+            if (client.sessionId == this.clients[0].sessionId) this.player1.status = status;
+            else this.player2.status = status;
+
+            var curPlayer:string = `Player ${client.sessionId == this.clients[0].sessionId ? 1 : 2}`;
+            console.log(`${curPlayer} reported a status change to ${status}`);
+            
+            try
+            {
+                this.broadcast('status_report', { p1status: this.player1.status, p2status: this.player2.status });
             }
             catch (er)
             {
@@ -137,7 +175,7 @@ export class VersusRoom extends Room<VersusRoomState>
             {
                 setTimeout(() => 
                 {
-                    this.clients[1].send('message', { song: this.songName, player1: this.player1 });
+                    this.clients[1].send('message', { song: JSON.stringify(this.songObject), player1: this.player1 });
                 }, 2000);
             }
             catch (er)
