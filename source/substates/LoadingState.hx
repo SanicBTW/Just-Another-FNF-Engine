@@ -4,12 +4,10 @@ import base.ScriptableState;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.MultiCallback;
 import base.pocketbase.Request;
-import base.ui.Alphabet;
 import base.ui.Bar;
 import base.ui.Fonts;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxBitmapText;
 import flixel.tweens.FlxEase;
@@ -21,7 +19,6 @@ import states.PlayTest;
 
 using StringTools;
 
-// TODO: improve the usage of tweens and the position
 class LoadingState extends ScriptableSubState
 {
 	private var collection:String;
