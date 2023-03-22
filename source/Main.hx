@@ -11,7 +11,6 @@ import flixel.FlxState;
 import flixel.graphics.FlxGraphic;
 import lime.app.Application;
 import openfl.Lib;
-import openfl.display.Graphics;
 import openfl.display.Sprite;
 import openfl.display.StageScaleMode;
 import openfl.events.Event;
@@ -43,9 +42,6 @@ class Main extends Sprite
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
 	public static var volumeTray:VolumeTray;
-
-	public static var gfxSprite(default, null):Sprite = new Sprite();
-	public static var gfx(default, null):Graphics = gfxSprite.graphics;
 
 	public static function main()
 		Lib.current.addChild(new Main());

@@ -10,11 +10,16 @@ import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil.DrawStyle;
 import flixel.util.FlxSpriteUtil.LineStyle;
 import funkin.CoolUtil;
+import openfl.display.Graphics;
+import openfl.display.Sprite;
 
 using flixel.util.FlxColorTransformUtil;
 
 class CircularSprite extends FlxSprite
 {
+	private static var gfxSprite(default, null):Sprite = new Sprite();
+	private static var gfx(default, null):Graphics = gfxSprite.graphics;
+
 	private var Color:FlxColor;
 
 	override public function new(X:Float, Y:Float, Width:Float, Height:Float, Color:FlxColor)
@@ -46,12 +51,12 @@ class CircularSprite extends FlxSprite
 		var minusVal = Math.min(frameWidth, frameHeight);
 
 		beginDraw(Color, lineStyle);
-		Main.gfx.drawCircle(dX + (minusVal / 2), dY, (minusVal / 2));
-		Main.gfx.drawCircle(d2X - (minusVal / 2), d2Y, (minusVal / 2));
+		gfx.drawCircle(dX + (minusVal / 2), dY, (minusVal / 2));
+		gfx.drawCircle(d2X - (minusVal / 2), d2Y, (minusVal / 2));
 		endDraw(drawStyle);
 
 		beginDraw(Color, lineStyle);
-		Main.gfx.drawRect(dX + (minusVal / 2), 0, frameWidth - (2 * (minusVal / 2)), frameHeight);
+		gfx.drawRect(dX + (minusVal / 2), 0, frameWidth - (2 * (minusVal / 2)), frameHeight);
 		endDraw(drawStyle);
 	}
 
@@ -73,11 +78,11 @@ class CircularSprite extends FlxSprite
 
 	private function beginDraw(FillColor:FlxColor, ?lineStyle:LineStyle)
 	{
-		Main.gfx.clear();
+		gfx.clear();
 		setLineStyle(lineStyle);
 
 		if (FillColor != FlxColor.TRANSPARENT)
-			Main.gfx.beginFill(FillColor.to24Bit(), FillColor.alphaFloat);
+			gfx.beginFill(FillColor.to24Bit(), FillColor.alphaFloat);
 	}
 
 	private function endDraw(?drawStyle:DrawStyle)
@@ -87,7 +92,7 @@ class CircularSprite extends FlxSprite
 		else if (drawStyle.smoothing == null)
 			drawStyle.smoothing = false;
 
-		pixels.draw(Main.gfxSprite, drawStyle.matrix, drawStyle.colorTransform, drawStyle.blendMode, drawStyle.clipRect, drawStyle.smoothing);
+		pixels.draw(gfxSprite, drawStyle.matrix, drawStyle.colorTransform, drawStyle.blendMode, drawStyle.clipRect, drawStyle.smoothing);
 		dirty = true;
 	}
 
@@ -104,7 +109,7 @@ class CircularSprite extends FlxSprite
 			if (lineStyle.miterLimit == null)
 				lineStyle.miterLimit = 3;
 
-			Main.gfx.lineStyle(lineStyle.thickness, color.to24Bit(), color.alphaFloat, lineStyle.pixelHinting, lineStyle.scaleMode, lineStyle.capsStyle,
+			gfx.lineStyle(lineStyle.thickness, color.to24Bit(), color.alphaFloat, lineStyle.pixelHinting, lineStyle.scaleMode, lineStyle.capsStyle,
 				lineStyle.jointStyle, lineStyle.miterLimit);
 		}
 	}
