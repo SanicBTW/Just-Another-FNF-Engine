@@ -13,6 +13,7 @@ import flixel.util.FlxSignal.FlxTypedSignal;
 class StrumLine extends FlxTypedGroup<FlxBasic>
 {
 	public var receptors(default, null):FlxTypedGroup<Receptor>;
+	public var splashNotes(default, null):FlxTypedGroup<NoteSplash>;
 	public var notesGroup(default, null):FlxTypedGroup<Note>;
 	public var holdGroup(default, null):FlxTypedGroup<Note>;
 	public var allNotes(default, null):FlxTypedGroup<Note>;
@@ -27,6 +28,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 		super();
 
 		receptors = new FlxTypedGroup<Receptor>();
+		splashNotes = new FlxTypedGroup<NoteSplash>();
 		notesGroup = new FlxTypedGroup<Note>();
 		holdGroup = new FlxTypedGroup<Note>();
 		allNotes = new FlxTypedGroup<Note>();
@@ -48,11 +50,15 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			receptor.alpha = 0;
 
 			FlxTween.tween(receptor, {y: receptor.initialY, alpha: receptor.setAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * i)});
+
+			var splash:NoteSplash = new NoteSplash(receptor.initialX, receptor.initialY, i);
+			splashNotes.add(splash);
 		}
 
 		add(holdGroup);
 		add(receptors);
 		add(notesGroup);
+		add(splashNotes);
 	}
 
 	public function push(newNote:Note)

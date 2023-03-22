@@ -34,17 +34,20 @@ using StringTools;
 
 class PlayTest extends MusicBeatState
 {
+	public static var instance:PlayTest;
+
 	public static var stage:Stage;
 
 	public var camHUD:FlxCamera;
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 
-	var strumLines:FlxTypedGroup<StrumLine>;
+	private var strumLines:FlxTypedGroup<StrumLine>;
 
-	private var opponentStrums:StrumLine;
+	private var hud:UI;
 
 	public var playerStrums:StrumLine;
+	public var opponentStrums:StrumLine;
 
 	private var generatedMusic:Bool = false;
 
@@ -59,21 +62,14 @@ class PlayTest extends MusicBeatState
 	private var camDisplaceX:Float = 0;
 	private var camDisplaceY:Float = 0;
 
-	private var hud:UI;
-
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
-	public static var instance:PlayTest;
+	private var shaderFilter:ShaderFilter;
+	private var pixelShader:PixelEffect;
+	private var noiseShader:NoiseShader;
 
-	public var spawnTime:Float = 2000;
-
-	// bruh
 	public var loadSong:Null<String> = "";
-
-	var shaderFilter:ShaderFilter;
-	var pixelShader:PixelEffect;
-	var noiseShader:NoiseShader;
 
 	override public function new(?loadSong:String)
 	{
@@ -116,10 +112,11 @@ class PlayTest extends MusicBeatState
 		opponentStrums.onBotHit.add(opponentHit);
 		strumLines.add(opponentStrums);
 
-		playerStrums = new StrumLine((SaveData.middleScroll ? (FlxG.width / 2) : (FlxG.width / 2) + separation), 4);
-		playerStrums.onBotHit.add(playerBotHit);
-		playerStrums.onMiss.add(playerMissPress);
+		playerStrums = new StrumLine(SaveData.middleScroll ? (FlxG.width / 2) : (FlxG.width / 2) + separation, 4);
+		playerStrums.onBotHit.add(botHit);
+		playerStrums.onMiss.add(miss);
 		strumLines.add(playerStrums);
+
 		add(strumLines);
 
 		if (!SaveData.onlyNotes)
@@ -206,7 +203,7 @@ class PlayTest extends MusicBeatState
 			}
 
 			while ((ChartLoader.unspawnedNoteList[0] != null)
-				&& (ChartLoader.unspawnedNoteList[0].strumTime - Conductor.songPosition) < spawnTime)
+				&& (ChartLoader.unspawnedNoteList[0].strumTime - Conductor.songPosition) < 3500)
 			{
 				var unspawnNote:Note = ChartLoader.unspawnedNoteList[0];
 				if (unspawnNote != null)
@@ -226,13 +223,13 @@ class PlayTest extends MusicBeatState
 					&& !coolNote.tooLate
 					&& keys[coolNote.noteData])
 				{
-					playerHit(coolNote);
+					hit(coolNote);
 				}
 			});
 
 			if (player != null
-				&& (player.holdTimer > (Conductor.stepCrochet * player.singDuration) / 1000)
-				&& (!keys.contains(true) || playerStrums.botPlay))
+				&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000)
+					&& (!keys.contains(true) || playerStrums.botPlay)))
 			{
 				if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
 					player.dance();
@@ -323,7 +320,7 @@ class PlayTest extends MusicBeatState
 		{
 			for (coolNote in possibleNotes)
 			{
-				playerHit(coolNote);
+				hit(coolNote);
 			}
 		}
 
@@ -387,13 +384,53 @@ class PlayTest extends MusicBeatState
 		}
 	}
 
+	private function hit(note:Note)
+	{
+		if (!note.wasGoodHit)
+		{
+			note.wasGoodHit = true;
+			getReceptor(playerStrums, note.noteData).playAnim('confirm');
+
+			if (!note.isSustain)
+			{
+				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
+				if (rating == "marvelous" || rating == "sick")
+					playSplash(playerStrums, note.noteData);
+			}
+
+			if (!note.doubleNote)
+			{
+				if (player != null)
+				{
+					player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+					player.holdTimer = 0;
+				}
+			}
+			else
+				trail(player, note);
+
+			if (SONG.needsVoices)
+				Conductor.boundVocals.volume = 1;
+
+			if (!note.isSustain)
+				playerStrums.destroyNote(note);
+
+			hud.updateText();
+		}
+	}
+
 	private function opponentHit(note:Note)
 	{
 		if (!note.wasGoodHit)
 		{
+			note.wasGoodHit = true;
 			getReceptor(opponentStrums, note.noteData).playAnim('confirm');
+
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(opponentStrums, note.noteData).playAnim('static');
+
+			if (!note.isSustain)
+				playSplash(opponentStrums, note.noteData);
 
 			if (!note.doubleNote)
 			{
@@ -412,12 +449,11 @@ class PlayTest extends MusicBeatState
 				opponent.holdTimer = 0;
 			}
 
-			note.wasGoodHit = true;
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
 
 			if (!note.isSustain)
-				destroyNote(opponentStrums, note);
+				opponentStrums.destroyNote(note);
 			else
 			{
 				if (opponent == null)
@@ -430,48 +466,21 @@ class PlayTest extends MusicBeatState
 		}
 	}
 
-	// rewrite this shit function or something please
-	private function playerHit(note:Note)
+	private function botHit(note:Note)
 	{
 		if (!note.wasGoodHit)
 		{
 			note.wasGoodHit = true;
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
-			if (!note.isSustain)
-				Timings.judge(-(note.strumTime - Conductor.songPosition));
-
-			if (!note.doubleNote)
-			{
-				if (player != null)
-				{
-					player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-					player.holdTimer = 0;
-				}
-			}
-			else
-				trail(player, note);
-
-			if (SONG.needsVoices)
-				Conductor.boundVocals.volume = 1;
-
-			if (!note.isSustain)
-				destroyNote(playerStrums, note);
-
-			hud.updateText();
-		}
-	}
-
-	private function playerBotHit(note:Note)
-	{
-		if (!note.wasGoodHit)
-		{
-			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(playerStrums, note.noteData).playAnim('static');
 
 			if (!note.isSustain)
-				Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
+			{
+				Timings.judge(-(note.strumTime - Conductor.songPosition));
+				playSplash(playerStrums, note.noteData);
+			}
 
 			if (!note.doubleNote)
 			{
@@ -484,12 +493,17 @@ class PlayTest extends MusicBeatState
 			else
 				trail(player, note);
 
-			note.wasGoodHit = true;
+			if (note.doubleNote && note.isSustain && player != null && player.animation.curAnim.name == "idle")
+			{
+				player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+				player.holdTimer = 0;
+			}
+
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
 
 			if (!note.isSustain)
-				destroyNote(playerStrums, note);
+				playerStrums.destroyNote(note);
 			else
 			{
 				if (player == null)
@@ -504,15 +518,14 @@ class PlayTest extends MusicBeatState
 		}
 	}
 
-	private function playerMissPress(note:Note)
+	private function miss(note:Note)
 	{
-		var direction:Int = note.noteData;
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 0;
 
 		if (player != null)
 		{
-			player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
+			player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}miss', true);
 			player.holdTimer = 0;
 		}
 
@@ -522,6 +535,9 @@ class PlayTest extends MusicBeatState
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
 		return strumLine.receptors.members[noteData];
+
+	private function playSplash(strumLine:StrumLine, noteData:Int)
+		strumLine.splashNotes.members[noteData].playAnim();
 
 	private function destroyNote(strumLine:StrumLine, note:Note)
 	{
@@ -635,14 +651,10 @@ class PlayTest extends MusicBeatState
 
 	function trail(char:Character, note:Note):Void
 	{
-		if (!SaveData.showTrails)
-			return;
-
-		if (char == null)
+		if (!SaveData.showTrails || char == null || note.isSustain)
 			return;
 
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
-		var delay:Float = 0;
 
 		var daCopy:FlxSprite = char.clone();
 		daCopy.frames = char.frames;
@@ -652,22 +664,15 @@ class PlayTest extends MusicBeatState
 		daCopy.animation.play(anim, true);
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
-		if (note.isSustain)
-			delay += ((Conductor.stepCrochet * char.singDuration) / 1000) + 0.2;
-
-		if (!note.isSustain)
-		{
-			insert(members.indexOf(char) - 1, daCopy);
-			FlxTween.tween(daCopy, {alpha: 0}, ((Conductor.stepCrochet * char.singDuration) / 1000), {
-				startDelay: delay,
-				ease: FlxEase.quadInOut,
-				onComplete: function(_)
-				{
-					daCopy.destroy();
-					daCopy = null;
-				}
-			});
-		}
+		insert(members.indexOf(char) - 1, daCopy);
+		FlxTween.tween(daCopy, {alpha: 0}, ((Conductor.stepCrochet * char.singDuration) / 1000), {
+			ease: FlxEase.quadInOut,
+			onComplete: function(_)
+			{
+				daCopy.destroy();
+				daCopy = null;
+			}
+		});
 	}
 
 	function applyShader(shader:String)
