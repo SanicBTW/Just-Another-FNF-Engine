@@ -3,6 +3,7 @@ package states.online;
 import base.MusicBeatState;
 import base.ScriptableState;
 import base.pocketbase.Collections.PocketBaseObject;
+import base.system.Conductor;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import haxe.Json;
@@ -91,6 +92,12 @@ class ConnectingState extends MusicBeatState
 								ScriptableState.switchState(new OnlinePlayState());
 							});
 
+							room.onMessage('song_start', (_) ->
+							{
+								OnlinePlayState.canStart = true;
+								Conductor.resyncTime();
+							});
+
 							room.onMessage('join', (name:String) ->
 							{
 								LobbyState.p2.alpha = 0.5;
@@ -110,15 +117,18 @@ class ConnectingState extends MusicBeatState
 
 							room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
 							{
-								trace(stats);
 								if (OnlinePlayState.dualHUD != null)
 									OnlinePlayState.dualHUD.updateStats(stats.p1, stats.p2);
 							});
 
 							room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->
 							{
-								if (LobbyState.p2 != null)
-									LobbyState.p2.alpha = statusAlphas[status.p2status];
+								if (!OnlinePlayState.startedMatch)
+								{
+									if (LobbyState.p2 != null)
+										LobbyState.p2.alpha = statusAlphas[status.p2status];
+									return;
+								}
 							});
 
 							room.onError += (code:Int, message:String) ->
@@ -176,6 +186,12 @@ class ConnectingState extends MusicBeatState
 							ScriptableState.switchState(new OnlinePlayState());
 						});
 
+						room.onMessage('song_start', (_) ->
+						{
+							OnlinePlayState.canStart = true;
+							Conductor.resyncTime();
+						});
+
 						// make it return to the main state
 						room.onMessage('left', (_) ->
 						{
@@ -185,9 +201,14 @@ class ConnectingState extends MusicBeatState
 
 						room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
 						{
-							trace(stats);
 							if (OnlinePlayState.dualHUD != null)
 								OnlinePlayState.dualHUD.updateStats(stats.p1, stats.p2);
+						});
+
+						room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->
+						{
+							if (!OnlinePlayState.startedMatch)
+								return;
 						});
 
 						room.onError += (code:Int, message:String) ->

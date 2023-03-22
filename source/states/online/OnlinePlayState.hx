@@ -6,6 +6,7 @@ import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
 import base.system.DatabaseManager;
+import base.system.Timer;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -76,6 +77,8 @@ class OnlinePlayState extends MusicBeatState
 	var shaderFilter:ShaderFilter;
 	var pixelShader:PixelEffect;
 	var noiseShader:NoiseShader;
+
+	public static var canStart:Bool = false;
 
 	override function create()
 	{
@@ -165,11 +168,23 @@ class OnlinePlayState extends MusicBeatState
 		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
 		Paths.music("tea-time"); // precache the sound lol
 		FadeTransition.nextCamera = camOther;
+		room.send('report_status', "Playing");
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		if (canStart == false)
+		{
+			Conductor.songPosition = 0;
+			Conductor.boundSong.stop();
+			if (SONG.needsVoices)
+				Conductor.boundVocals.stop();
+		}
+
+		if (FlxG.keys.justPressed.FIVE)
+			playerStrums.botPlay = !playerStrums.botPlay;
 
 		if (noiseShader != null)
 			noiseShader.elapsed.value = [FlxG.game.ticks / 1000];
@@ -466,6 +481,9 @@ class OnlinePlayState extends MusicBeatState
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(playerStrums, note.noteData).playAnim('static');
 
+			if (!note.isSustain)
+				Timings.judge(-(note.strumTime - Conductor.songPosition));
+
 			if (!note.doubleNote)
 			{
 				if (player != null)
@@ -492,6 +510,8 @@ class OnlinePlayState extends MusicBeatState
 				if (player.holdTimer + 0.2 > targetHold)
 					player.holdTimer = targetHold - 0.2;
 			}
+
+			room.send('set_stats', {accuracy: Math.floor(Timings.accuracy * 100) / 100, score: Timings.score, misses: Timings.misses});
 		}
 	}
 
@@ -583,8 +603,10 @@ class OnlinePlayState extends MusicBeatState
 
 		Conductor.boundSong.onComplete = function()
 		{
+			room.leave();
 			Conductor.boundSong.stop();
 			Conductor.boundVocals.stop();
+			ChartLoader.netChart = null;
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
 			ScriptableState.switchState(new RewriteMenu());
