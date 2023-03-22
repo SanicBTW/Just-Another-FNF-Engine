@@ -94,6 +94,7 @@ class PauseState extends ScriptableSubState
 						case 'Exit':
 							Conductor.boundSong.stop();
 							Conductor.boundVocals.stop();
+							ChartLoader.netChart = null;
 							ChartLoader.netInst = null;
 							ChartLoader.netVoices = null;
 							ScriptableState.switchState(new states.RewriteMenu());

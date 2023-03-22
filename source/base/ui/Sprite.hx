@@ -3,6 +3,7 @@ package base.ui;
 import flixel.FlxSprite;
 
 // https://github.com/SanicBTW/Forever-Engine-Archive/blob/rewrite/source/base/ForeverDependencies.hx
+// Should look into this soon
 
 class DepthSprite extends FlxSprite
 {
@@ -21,7 +22,7 @@ class DepthSprite extends FlxSprite
 	}
 }
 
-class OffsettedSprite extends DepthSprite
+class OffsettedSprite extends FlxSprite
 {
 	public var animOffsets:Map<String, Array<Dynamic>>;
 

@@ -12,9 +12,11 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
 
+	@:noCompletion
 	private function get_curStep():Int
 		return Conductor.stepPosition;
 
+	@:noCompletion
 	private function get_curBeat():Int
 		return Conductor.beatPosition;
 
@@ -37,9 +39,11 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
 
+	@:noCompletion
 	private function get_curStep():Int
 		return Conductor.stepPosition;
 
+	@:noCompletion
 	private function get_curBeat():Int
 		return Conductor.beatPosition;
 
