@@ -62,6 +62,10 @@ export class VersusRoom extends Room<VersusRoomState>
                 {
                     this.started = true;
                     this.broadcast('game_start');
+
+                    this.player1.status = "Transitioning";
+                    this.player2.status = "Transitioning";
+                    this.broadcast('status_report', { p1status: this.player1.status, p2status: this.player2.status });
                 }
                 this.broadcast('ready_state', {p1: this.player1.ready, p2: this.player2.ready});
             }
@@ -97,6 +101,17 @@ export class VersusRoom extends Room<VersusRoomState>
             try
             {
                 this.broadcast('status_report', { p1status: this.player1.status, p2status: this.player2.status });
+
+                // Fix song time on each client
+
+                // Wait 2,5 sec to broadcast the beginning of the song????
+                if (status == "Playing" && this.player1.status == this.player2.status)
+                {
+                    setTimeout(() => 
+                    {
+                        this.broadcast('song_start', "");
+                    }, 2500);
+                }
             }
             catch (er)
             {
@@ -123,10 +138,9 @@ export class VersusRoom extends Room<VersusRoomState>
             {
                 Object.entries(message).forEach(([prop, val]) =>
                 {
-                    console.log(prop);
-                    console.log(val);
+                    if (prop == "accuracy")
+                        val = parseFloat(val.toFixed(2));
                     Reflect.set(this.player1, prop, val);
-                    console.log(this.player1);
                 });
             }
             else
@@ -134,10 +148,9 @@ export class VersusRoom extends Room<VersusRoomState>
 
                 Object.entries(message).forEach(([prop, val]) =>
                 {
-                    console.log(prop);
-                    console.log(val);
+                    if (prop == "accuracy")
+                        val = parseFloat(val.toFixed(2));
                     Reflect.set(this.player2, prop, val);
-                    console.log(this.player2);
                 });
             }
 
