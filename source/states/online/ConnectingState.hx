@@ -108,9 +108,11 @@ class ConnectingState extends MusicBeatState
 								}
 							});
 
-							room.onMessage('ret_stats', (stats:{accuracy:Float, score:Int, misses:Int}) ->
+							room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
 							{
 								trace(stats);
+								if (OnlinePlayState.dualHUD != null)
+									OnlinePlayState.dualHUD.updateStats(stats.p1, stats.p2);
 							});
 
 							room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->
@@ -181,9 +183,11 @@ class ConnectingState extends MusicBeatState
 							trace("left");
 						});
 
-						room.onMessage('ret_stats', (stats:{accuracy:Float, score:Int, misses:Int}) ->
+						room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
 						{
 							trace(stats);
+							if (OnlinePlayState.dualHUD != null)
+								OnlinePlayState.dualHUD.updateStats(stats.p1, stats.p2);
 						});
 
 						room.onError += (code:Int, message:String) ->

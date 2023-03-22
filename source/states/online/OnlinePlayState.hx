@@ -24,12 +24,12 @@ import funkin.Timings;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
-import funkin.ui.UI;
 import io.colyseus.Room;
 import openfl.filters.ShaderFilter;
 import shader.*;
 import shader.Noise.NoiseShader;
 import states.online.schema.VersusRoom;
+import states.online.ui.DualUI;
 import substates.PauseState;
 
 using StringTools;
@@ -64,10 +64,10 @@ class OnlinePlayState extends MusicBeatState
 	private var camDisplaceX:Float = 0;
 	private var camDisplaceY:Float = 0;
 
-	private var hud:UI;
+	public static var dualHUD:DualUI;
 
 	public static var paused:Bool = false;
-	public static var canPause:Bool = true;
+	public static var canPause:Bool = false;
 
 	public static var instance:OnlinePlayState;
 
@@ -135,9 +135,9 @@ class OnlinePlayState extends MusicBeatState
 
 		Conductor.songPosition = -5000;
 
-		hud = new UI();
-		add(hud);
-		hud.cameras = [camHUD];
+		dualHUD = new DualUI();
+		add(dualHUD);
+		dualHUD.cameras = [camHUD];
 
 		generateSong();
 
@@ -244,13 +244,14 @@ class OnlinePlayState extends MusicBeatState
 	{
 		super.onActionPressed(action);
 
-		if (action == "confirm" && canPause)
-		{
-			persistentUpdate = false;
-			persistentDraw = true;
-			openSubState(new PauseState());
-			return;
-		}
+		/*
+			if (action == "confirm" && canPause)
+			{
+				persistentUpdate = false;
+				persistentDraw = true;
+				openSubState(new PauseState());
+				return;
+		}*/
 
 		if (playerStrums.botPlay)
 			return;
@@ -453,7 +454,7 @@ class OnlinePlayState extends MusicBeatState
 			if (!note.isSustain)
 				destroyNote(playerStrums, note);
 
-			hud.updateText();
+			room.send('set_stats', {accuracy: Math.floor(Timings.accuracy * 100) / 100, score: Timings.score, misses: Timings.misses});
 		}
 	}
 
@@ -464,9 +465,6 @@ class OnlinePlayState extends MusicBeatState
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(playerStrums, note.noteData).playAnim('static');
-
-			if (!note.isSustain)
-				Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
 
 			if (!note.doubleNote)
 			{
@@ -494,8 +492,6 @@ class OnlinePlayState extends MusicBeatState
 				if (player.holdTimer + 0.2 > targetHold)
 					player.holdTimer = targetHold - 0.2;
 			}
-
-			hud.updateText();
 		}
 	}
 
@@ -512,7 +508,7 @@ class OnlinePlayState extends MusicBeatState
 		}
 
 		Timings.judge(164);
-		hud.updateText();
+		room.send('set_stats', {accuracy: Math.floor(Timings.accuracy * 100) / 100, score: Timings.score, misses: Timings.misses});
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
