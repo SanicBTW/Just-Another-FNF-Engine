@@ -80,7 +80,7 @@ class EarlyConfig extends ScriptableState
 		{
 			case "back":
 				SaveData.saveSettings();
-				ScriptableState.switchState(new RewriteMenu());
+				ScriptableState.switchState(new AlphabetMenu());
 			case "ui_up":
 				curSelected = -1;
 			case "ui_down":

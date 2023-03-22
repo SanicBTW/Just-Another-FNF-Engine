@@ -406,6 +406,9 @@ class OnlinePlayState extends MusicBeatState
 			if (note.isSustain && note.isSustainEnd)
 				getReceptor(opponentStrums, note.noteData).playAnim('static');
 
+			if (!note.isSustain)
+				playSplash(opponentStrums, note.noteData);
+
 			if (!note.doubleNote)
 			{
 				if (opponent != null)
@@ -450,7 +453,11 @@ class OnlinePlayState extends MusicBeatState
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
 			if (!note.isSustain)
-				Timings.judge(-(note.strumTime - Conductor.songPosition));
+			{
+				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
+				if (rating == "marvelous" || rating == "sick")
+					playSplash(playerStrums, note.noteData);
+			}
 
 			if (!note.doubleNote)
 			{
@@ -482,7 +489,10 @@ class OnlinePlayState extends MusicBeatState
 				getReceptor(playerStrums, note.noteData).playAnim('static');
 
 			if (!note.isSustain)
+			{
 				Timings.judge(-(note.strumTime - Conductor.songPosition));
+				playSplash(playerStrums, note.noteData);
+			}
 
 			if (!note.doubleNote)
 			{
@@ -533,6 +543,9 @@ class OnlinePlayState extends MusicBeatState
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
 		return strumLine.receptors.members[noteData];
+
+	private function playSplash(strumLine:StrumLine, noteData:Int)
+		strumLine.splashNotes.members[noteData].playAnim();
 
 	private function destroyNote(strumLine:StrumLine, note:Note)
 	{
@@ -609,7 +622,7 @@ class OnlinePlayState extends MusicBeatState
 			ChartLoader.netChart = null;
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
-			ScriptableState.switchState(new RewriteMenu());
+			ScriptableState.switchState(new AlphabetMenu());
 		};
 		Conductor.resyncTime();
 	}

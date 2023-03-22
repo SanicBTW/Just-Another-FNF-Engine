@@ -97,15 +97,13 @@ class LoadingState extends ScriptableSubState
 		var instCb:() -> Void = callbacks.add("Inst:" + pbObject.id);
 		var voicesCb:() -> Void = callbacks.add("Voices:" + pbObject.id);
 
-		var creq:Request = Request.getFile(collection, pbObject.id, pbObject.chart);
-		creq.onSuccess.add((chart:String) ->
+		Request.getFile(collection, pbObject.id, pbObject.chart, false, (chart:String) ->
 		{
 			ChartLoader.netChart = chart;
 			chartCb();
 			tracking.text = "Inst";
 
-			var ireq:Request = Request.getFile(collection, pbObject.id, pbObject.inst, true);
-			ireq.onSuccess.add((inst:Sound) ->
+			Request.getFile(collection, pbObject.id, pbObject.inst, true, (inst:Sound) ->
 			{
 				ChartLoader.netInst = inst;
 				instCb();
@@ -114,8 +112,7 @@ class LoadingState extends ScriptableSubState
 				if (pbObject.voices != "")
 				{
 					tracking.text = "Voices";
-					var vreq:Request = Request.getFile(collection, pbObject.id, pbObject.voices, true);
-					vreq.onSuccess.add((voices:Sound) ->
+					Request.getFile(collection, pbObject.id, pbObject.voices, true, (voices:Sound) ->
 					{
 						tracking.text = "Done!";
 						ChartLoader.netVoices = voices;

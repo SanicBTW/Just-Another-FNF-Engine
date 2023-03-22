@@ -9,6 +9,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxBitmapText;
 import flixel.util.FlxColor;
 import funkin.Character;
+import funkin.Stage;
 import io.colyseus.Room;
 import states.online.schema.VersusRoom;
 
@@ -29,8 +30,13 @@ class LobbyState extends MusicBeatState
 
 	private var ready:Bool = false;
 
+	var stage:Stage;
+
 	override function create()
 	{
+		stage = new Stage("stage");
+		add(stage);
+
 		codeText = new FlxBitmapText(Fonts.VCR());
 		Fonts.setProperties(codeText, false, 0.6);
 		codeText.text = 'Room code: ${roomCode}';
@@ -92,7 +98,7 @@ class LobbyState extends MusicBeatState
 		if (action == "back")
 		{
 			room.leave();
-			ScriptableState.switchState(new RewriteMenu());
+			ScriptableState.switchState(new AlphabetMenu());
 		}
 
 		if (action == "confirm")

@@ -77,7 +77,7 @@ class Init extends ScriptableState
 							ease: FlxEase.quartInOut,
 							onComplete: function(_)
 							{
-								ScriptableState.switchState(new RewriteMenu());
+								ScriptableState.switchState(new AlphabetMenu());
 							}
 						});
 					}, function(elapsed:Float)

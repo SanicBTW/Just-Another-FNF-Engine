@@ -5,6 +5,7 @@ import base.ScriptableState;
 import base.pocketbase.Collections.Funkin as FunkCollection;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
+import base.ui.Alphabet;
 import base.ui.CircularSprite.CircularSpriteText;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -22,7 +23,7 @@ class SongSelection extends MusicBeatState
 
 	private var curOption(default, set):Int = 0;
 	private var curOptionStr:String;
-	private var groupItems:FlxTypedGroup<CircularSpriteText>;
+	private var groupItems:FlxTypedGroup<Alphabet>;
 	private var songStore:Map<String, PocketBaseObject> = new Map();
 	private var canPress:Bool = true;
 
@@ -37,21 +38,21 @@ class SongSelection extends MusicBeatState
 		if (curOption >= groupItems.members.length)
 			curOption = 0;
 
-		var the:Int = 0;
+		var tf:Int = 0;
 
-		for (item in groupItems)
+		for (item in groupItems.members)
 		{
-			item.selected = (item.ID == curOption);
+			item.targetY = tf - curOption;
+			tf++;
 
-			if (item.menuItem)
-			{
-				item.targetY = the - curOption;
-				the++;
-			}
+			item.alpha = 0.6;
+
+			if (item.targetY == 0)
+				item.alpha = 1;
 		}
 
 		if (groupItems.members[curOption] != null)
-			curOptionStr = groupItems.members[curOption].bitmapText.text;
+			curOptionStr = groupItems.members[curOption].text;
 
 		return curOption;
 	}
@@ -66,7 +67,7 @@ class SongSelection extends MusicBeatState
 
 	override public function create()
 	{
-		groupItems = new FlxTypedGroup<CircularSpriteText>();
+		groupItems = new FlxTypedGroup<Alphabet>();
 		add(groupItems);
 
 		super.create();
@@ -77,26 +78,23 @@ class SongSelection extends MusicBeatState
 			return;
 		}
 
-		var req:Request = Request.getRecords("funkin");
-		req.onSuccess.add((data:String) ->
+		Request.getRecords("funkin", (data:String) ->
 		{
+			if (data == "Failed to fetch")
+			{
+				regenMenu(["Failed to fetch"]);
+				return;
+			}
+
+			var regenArray:Array<String> = [];
 			var songShit:Array<FunkCollection> = cast Json.parse(data).items;
 			for (i in 0...songShit.length)
 			{
 				var song = songShit[i];
-				var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.BLUE, song.song);
-				item.ID = i;
-				item.targetY = i;
-				item.menuItem = true;
 				songStore.set(song.song, new PocketBaseObject(song.id, song.song, song.chart, song.inst, song.voices));
-				groupItems.add(item);
+				regenArray.push(song.song);
 			}
-		});
-		req.onError.add((_) ->
-		{
-			var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
-			groupItems.add(item);
-			return;
+			regenMenu(regenArray);
 		});
 	}
 
@@ -111,13 +109,16 @@ class SongSelection extends MusicBeatState
 		{
 			case "back":
 				room.leave();
-				ScriptableState.switchState(new RewriteMenu());
+				ScriptableState.switchState(new AlphabetMenu());
 			case "ui_up":
 				curOption = -1;
 			case "ui_down":
 				curOption = 1;
 			case "confirm":
 				{
+					if (curOptionStr == "Failed to fetch")
+						return;
+
 					var pbObject:PocketBaseObject = songStore.get(curOptionStr);
 					room.send('set_song', {songObj: Json.stringify(pbObject)});
 					doRequest(pbObject);
@@ -134,14 +135,12 @@ class SongSelection extends MusicBeatState
 		add(overlay);
 
 		room.send('report_status', 'Loading chart');
-		var chartReq:Request = Request.getFile("funkin", pbObject.id, pbObject.chart, false);
-		chartReq.onSuccess.add((chart:String) ->
+		Request.getFile("funkin", pbObject.id, pbObject.chart, false, (chart:String) ->
 		{
 			ChartLoader.netChart = chart;
 			room.send('report_status', 'Loading inst');
 
-			var instReq:Request = Request.getFile("funkin", pbObject.id, pbObject.inst, true);
-			instReq.onSuccess.add((inst:Sound) ->
+			Request.getFile("funkin", pbObject.id, pbObject.inst, true, (inst:Sound) ->
 			{
 				ChartLoader.netInst = inst;
 				room.send('report_status', 'Checking voices');
@@ -149,8 +148,7 @@ class SongSelection extends MusicBeatState
 				if (pbObject.voices != "")
 				{
 					room.send('report_status', 'Loading voices');
-					var voicReq:Request = Request.getFile("funkin", pbObject.id, pbObject.voices, true);
-					voicReq.onSuccess.add((voices:Sound) ->
+					Request.getFile("funkin", pbObject.id, pbObject.voices, true, (voices:Sound) ->
 					{
 						room.send('report_status', 'Waiting');
 						ChartLoader.netVoices = voices;
@@ -165,5 +163,31 @@ class SongSelection extends MusicBeatState
 				}
 			});
 		});
+	}
+
+	private function regenMenu(array:Array<String>)
+	{
+		for (i in 0...groupItems.members.length)
+		{
+			groupItems.remove(groupItems.members[0], true);
+		}
+		for (i in 0...array.length)
+		{
+			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, array[i], true, false);
+			songText.isMenuItem = true;
+			songText.targetY = i;
+			groupItems.add(songText);
+			if (songText.width > 980)
+			{
+				var textScale:Float = 980 / songText.width;
+				songText.scale.x = textScale;
+				for (letter in songText.lettersArray)
+				{
+					letter.x *= textScale;
+					letter.offset.x *= textScale;
+				}
+			}
+		}
+		curOption = groupItems.length + 1;
 	}
 }

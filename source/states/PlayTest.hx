@@ -613,7 +613,7 @@ class PlayTest extends MusicBeatState
 			ChartLoader.netChart = null;
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
-			ScriptableState.switchState(new RewriteMenu());
+			ScriptableState.switchState(new AlphabetMenu());
 		};
 		Conductor.resyncTime();
 	}

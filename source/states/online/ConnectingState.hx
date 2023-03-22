@@ -59,7 +59,7 @@ class ConnectingState extends MusicBeatState
 						if (error != null)
 						{
 							trace("error creating room " + error);
-							ScriptableState.switchState(new RewriteMenu());
+							ScriptableState.switchState(new AlphabetMenu());
 							return;
 						}
 
@@ -134,7 +134,7 @@ class ConnectingState extends MusicBeatState
 							room.onError += (code:Int, message:String) ->
 							{
 								trace('An error ocurred $code $message');
-								ScriptableState.switchState(new RewriteMenu());
+								ScriptableState.switchState(new AlphabetMenu());
 							};
 						}
 						catch (ex)
@@ -152,7 +152,7 @@ class ConnectingState extends MusicBeatState
 						if (error != null)
 						{
 							trace("error joining room " + error);
-							ScriptableState.switchState(new RewriteMenu());
+							ScriptableState.switchState(new AlphabetMenu());
 							return;
 						}
 
@@ -214,7 +214,7 @@ class ConnectingState extends MusicBeatState
 						room.onError += (code:Int, message:String) ->
 						{
 							trace('An error ocurred $code $message');
-							ScriptableState.switchState(new RewriteMenu());
+							ScriptableState.switchState(new AlphabetMenu());
 						};
 					});
 				}

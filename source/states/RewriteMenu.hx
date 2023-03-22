@@ -298,9 +298,15 @@ class RewriteMenu extends MusicBeatState
 								songStore.clear();
 
 								var isOld:Bool = (selectedCollection == "Old");
-								var req:Request = Request.getRecords((isOld ? "old_fnf_charts" : "funkin"));
-								req.onSuccess.add((data:String) ->
+								Request.getRecords((isOld ? "old_fnf_charts" : "funkin"), (data:String) ->
 								{
+									if (data == "Failed to fetch")
+									{
+										var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
+										groupItems.add(item);
+										return;
+									}
+
 									var songShit:Array<FunkCollection & Funkin_Old> = cast Json.parse(data).items;
 									for (i in 0...songShit.length)
 									{
@@ -315,12 +321,6 @@ class RewriteMenu extends MusicBeatState
 												song.inst, song.voices));
 										groupItems.add(item);
 									}
-								});
-								req.onError.add((_) ->
-								{
-									var item:CircularSpriteText = new CircularSpriteText(30, 30 + 55, 350, 50, FlxColor.RED, "Error fetching");
-									groupItems.add(item);
-									return;
 								});
 							}
 
