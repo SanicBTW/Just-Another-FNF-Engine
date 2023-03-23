@@ -157,9 +157,9 @@ class Timings
 			var judgement:Judgement = judgements[Math.round(Math.min(i, judgements.length - 1))];
 			if (ms <= judgement.timing * Conductor.timeScale)
 			{
+				// If is a sustain we only want to increase the notes accuracy and total hits
 				if (isSustain)
 				{
-					trace("judging sustain ig");
 					notesAccuracy += judgement.weight;
 					totalHits++;
 					return judgement.name;

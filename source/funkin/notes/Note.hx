@@ -13,6 +13,8 @@ class Note extends FlxSprite
 	public var canBeHit:Bool = false;
 	public var wasGoodHit:Bool = false;
 	public var mustPress:Bool = false;
+
+	public var ratingDiff:Float;
 	public var doubleNote:Bool = false;
 	public var strumLine:Int = 0;
 	public var prevNote:Note;
@@ -24,8 +26,6 @@ class Note extends FlxSprite
 
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
-
-	public var ratingMS:Float;
 
 	public function new(strumTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
