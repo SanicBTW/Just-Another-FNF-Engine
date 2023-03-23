@@ -150,13 +150,21 @@ class Timings
 		misses = 0;
 	}
 
-	public static function judge(ms:Float):String
+	public static function judge(ms:Float, isSustain:Bool = false):String
 	{
 		for (i in 0...judgements.length)
 		{
 			var judgement:Judgement = judgements[Math.round(Math.min(i, judgements.length - 1))];
 			if (ms <= judgement.timing * Conductor.timeScale)
 			{
+				if (isSustain)
+				{
+					trace("judging sustain ig");
+					notesAccuracy += judgement.weight;
+					totalHits++;
+					return judgement.name;
+				}
+
 				// Increase combo
 				Reflect.setField(Timings, judgement.track, Reflect.field(Timings, judgement.track) + 1);
 

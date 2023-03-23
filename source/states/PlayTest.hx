@@ -393,10 +393,13 @@ class PlayTest extends MusicBeatState
 
 			if (!note.isSustain)
 			{
-				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
+				note.ratingMS = (-(note.strumTime - Conductor.songPosition));
+				var rating:String = Timings.judge(note.ratingMS);
 				if (rating == "marvelous" || rating == "sick")
 					playSplash(playerStrums, note.noteData);
 			}
+			else
+				Timings.judge(note.parent.ratingMS, true);
 
 			if (!note.doubleNote)
 			{
