@@ -71,6 +71,4 @@ interface MusicHandler
 	public var curBeat(get, never):Int;
 	private function get_curBeat():Int;
 	public function beatHit():Void;
-
-	public function add(basic:FlxBasic):FlxBasic;
 }

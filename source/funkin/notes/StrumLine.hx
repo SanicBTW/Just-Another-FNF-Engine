@@ -110,9 +110,6 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 				if (downscrollMultiplier < 0)
 				{
-					if (strumNote.isSustainEnd)
-						strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 1.5;
-
 					strumNote.flipY = true;
 					if (strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
 						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
