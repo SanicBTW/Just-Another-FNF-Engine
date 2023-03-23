@@ -78,7 +78,7 @@ class VolumeTray extends Sprite
 
 	public function update()
 	{
-		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 5.125), 0, 1);
+		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 8.6), 0, 1);
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
 		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : FlxG.sound.volume), _volBar.scaleX, lerpVal);

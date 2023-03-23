@@ -66,7 +66,7 @@ class Note extends FlxSprite
 				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
 				prevNote.updateHitbox();
 
-				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * (1.05 / 0.7)) * (Conductor.songSpeed / 0.45);
+				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * (1.06 / 0.7)) * (Conductor.songSpeed / 0.45);
 				prevNote.updateHitbox();
 			}
 		}
