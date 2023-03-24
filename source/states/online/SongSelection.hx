@@ -16,6 +16,7 @@ import haxe.Json;
 import io.colyseus.Room;
 import openfl.media.Sound;
 import states.online.schema.VersusRoom;
+import substates.online.OnlineLoadingState;
 
 class SongSelection extends MusicBeatState
 {
@@ -72,9 +73,12 @@ class SongSelection extends MusicBeatState
 
 		super.create();
 
+		trace(receivedPB);
+
 		if (receivedPB != null)
 		{
-			doRequest(receivedPB);
+			canPress = false;
+			openSubState(new OnlineLoadingState("funkin", receivedPB));
 			return;
 		}
 
@@ -120,49 +124,19 @@ class SongSelection extends MusicBeatState
 						return;
 
 					var pbObject:PocketBaseObject = songStore.get(curOptionStr);
-					room.send('set_song', {songObj: Json.stringify(pbObject)});
-					doRequest(pbObject);
+					room.send('set_song', {
+						songObj: {
+							id: pbObject.id,
+							song: pbObject.song,
+							chart: pbObject.chart,
+							inst: pbObject.inst,
+							voices: pbObject.voices
+						}
+					});
+					canPress = false;
+					openSubState(new OnlineLoadingState("funkin", pbObject));
 				}
 		}
-	}
-
-	function doRequest(pbObject:PocketBaseObject)
-	{
-		canPress = false;
-
-		var overlay:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		overlay.alpha = 0.7;
-		add(overlay);
-
-		room.send('report_status', 'Loading chart');
-		Request.getFile("funkin", pbObject.id, pbObject.chart, false, (chart:String) ->
-		{
-			ChartLoader.netChart = chart;
-			room.send('report_status', 'Loading inst');
-
-			Request.getFile("funkin", pbObject.id, pbObject.inst, true, (inst:Sound) ->
-			{
-				ChartLoader.netInst = inst;
-				room.send('report_status', 'Checking voices');
-
-				if (pbObject.voices != "")
-				{
-					room.send('report_status', 'Loading voices');
-					Request.getFile("funkin", pbObject.id, pbObject.voices, true, (voices:Sound) ->
-					{
-						room.send('report_status', 'Waiting');
-						ChartLoader.netVoices = voices;
-						ScriptableState.switchState(new LobbyState());
-					});
-				}
-				else
-				{
-					room.send('report_status', 'Waiting');
-					ChartLoader.netVoices = null;
-					ScriptableState.switchState(new LobbyState());
-				}
-			});
-		});
 	}
 
 	private function regenMenu(array:Array<String>)

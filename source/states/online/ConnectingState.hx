@@ -9,6 +9,7 @@ import flixel.util.FlxColor;
 import haxe.Json;
 import io.colyseus.Client;
 import states.online.schema.VersusRoom;
+import substates.online.OnlineLoadingState;
 
 interface PlayerData
 {
@@ -65,7 +66,9 @@ class ConnectingState extends MusicBeatState
 
 						OnlinePlayState.room = room;
 						SongSelection.room = room;
+						OnlineLoadingState.room = room;
 						LobbyState.room = room;
+
 						try
 						{
 							room.send('set_name', {name: p1name});
@@ -158,15 +161,24 @@ class ConnectingState extends MusicBeatState
 
 						OnlinePlayState.room = room;
 						SongSelection.room = room;
+						OnlineLoadingState.room = room;
 						LobbyState.room = room;
+
+						LobbyState.roomCode = room.id;
 
 						room.send('set_name', {name: p2name});
 
-						room.onMessage('message', (message:{song:String, player1:PlayerData}) ->
+						room.onMessage('message', (message:{song:{
+							id:String,
+							song:String,
+							chart:String,
+							inst:String,
+							voices:String
+						}, player1:PlayerData}) ->
 						{
 							p1name = message.player1.name;
-							LobbyState.roomCode = room.id;
-							var pbObject:PocketBaseObject = cast Json.parse(message.song);
+							var pbObject:PocketBaseObject = new PocketBaseObject(message.song.id, message.song.song, message.song.chart, message.song.inst,
+								message.song.voices);
 							FlxG.switchState(new SongSelection(pbObject));
 						});
 

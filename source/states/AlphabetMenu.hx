@@ -124,7 +124,7 @@ class AlphabetMenu extends MusicBeatState
 
 			case "vs":
 				{
-					regenMenu(["host", #if html5 "join by id" #end]);
+					regenMenu(["host", "join by id"]);
 				}
 
 			case "settings":
