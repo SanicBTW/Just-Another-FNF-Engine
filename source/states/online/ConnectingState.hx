@@ -115,13 +115,17 @@ class ConnectingState extends MusicBeatState
 									p2name = '';
 									LobbyState.readyTxt.members[1].color = FlxColor.RED;
 									LobbyState.readyTxt.members[1].text = 'Not ready';
+									return;
 								}
+
+								if (OnlinePlayState.onlineHUD != null)
+									OnlinePlayState.onlineHUD.player2Info.changeText("Left", "Player left the room");
 							});
 
 							room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
 							{
-								if (OnlinePlayState.dualHUD != null)
-									OnlinePlayState.dualHUD.updateStats(stats.p1, stats.p2);
+								if (OnlinePlayState.onlineHUD != null)
+									OnlinePlayState.onlineHUD.updateStats(stats.p1, stats.p2);
 							});
 
 							room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->
@@ -168,13 +172,18 @@ class ConnectingState extends MusicBeatState
 
 						room.send('set_name', {name: p2name});
 
-						room.onMessage('message', (message:{song:{
-							id:String,
-							song:String,
-							chart:String,
-							inst:String,
-							voices:String
-						}, player1:PlayerData}) ->
+						room.onMessage('message', (message:
+							{
+								song:
+									{
+										id:String,
+										song:String,
+										chart:String,
+										inst:String,
+										voices:String
+									},
+								player1:PlayerData
+							}) ->
 						{
 							p1name = message.player1.name;
 							var pbObject:PocketBaseObject = new PocketBaseObject(message.song.id, message.song.song, message.song.chart, message.song.inst,
@@ -213,8 +222,8 @@ class ConnectingState extends MusicBeatState
 
 						room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
 						{
-							if (OnlinePlayState.dualHUD != null)
-								OnlinePlayState.dualHUD.updateStats(stats.p1, stats.p2);
+							if (OnlinePlayState.onlineHUD != null)
+								OnlinePlayState.onlineHUD.updateStats(stats.p1, stats.p2);
 						});
 
 						room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->

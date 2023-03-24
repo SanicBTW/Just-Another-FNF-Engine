@@ -30,7 +30,7 @@ import openfl.filters.ShaderFilter;
 import shader.*;
 import shader.Noise.NoiseShader;
 import states.online.schema.VersusRoom;
-import states.online.ui.DualUI;
+import states.online.ui.OnlineUI;
 import substates.PauseState;
 
 using StringTools;
@@ -65,7 +65,7 @@ class OnlinePlayState extends MusicBeatState
 	private var camDisplaceX:Float = 0;
 	private var camDisplaceY:Float = 0;
 
-	public static var dualHUD:DualUI;
+	public static var onlineHUD:OnlineUI;
 
 	public static var paused:Bool = false;
 	public static var canPause:Bool = false;
@@ -138,9 +138,9 @@ class OnlinePlayState extends MusicBeatState
 
 		Conductor.songPosition = -5000;
 
-		dualHUD = new DualUI();
-		add(dualHUD);
-		dualHUD.cameras = [camHUD];
+		onlineHUD = new OnlineUI();
+		onlineHUD.cameras = [camHUD];
+		add(onlineHUD);
 
 		generateSong();
 
@@ -454,10 +454,13 @@ class OnlinePlayState extends MusicBeatState
 
 			if (!note.isSustain)
 			{
-				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
+				note.ratingDiff = (-(note.strumTime - Conductor.songPosition));
+				var rating:String = Timings.judge(note.ratingDiff);
 				if (rating == "marvelous" || rating == "sick")
 					playSplash(playerStrums, note.noteData);
 			}
+			else
+				Timings.judge(note.parent.ratingDiff, true);
 
 			if (!note.doubleNote)
 			{

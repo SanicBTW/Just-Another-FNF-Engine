@@ -170,7 +170,7 @@ class CircularSpriteText extends FlxSpriteGroup
 		if (menuItem)
 		{
 			var scaledY:Float = FlxMath.remapToRange(targetY, 0, 1, 0, 1.3);
-			y = FlxMath.lerp(y, (scaledY * yMult) + (FlxG.height * 0.5), slowLerp);
+			y = FlxMath.lerp(y, (scaledY * yMult) + (FlxG.height * 0.5) + yAdd, slowLerp);
 		}
 
 		super.update(elapsed);
