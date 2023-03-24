@@ -15,29 +15,20 @@ interface PlayerData
     misses:number;
 }
 
-class PocketbaseObject
+interface PocketbaseObject
 {
-    public id:string;
-    public song:string;
-    public chart:string;
-    public inst:string;
-    public voices:string;
-
-    constructor(id:string, song:string, chart:string, inst:string, voices:string)
-    {
-		this.id = id;
-		this.song = song;
-		this.chart = chart;
-		this.inst = inst;
-		this.voices = voices;
-    }
+    id:string;
+    song:string;
+    chart:string;
+    inst:string;
+    voices:string;
 }
 
 // I'm trying to base off BattleRoom, once I understand I will rewrite the code and shit
 export class VersusRoom extends Room<VersusRoomState>
 {
     started:boolean = false;
-    songObject:PocketbaseObject;
+    songObject:PocketbaseObject = {id: "", song: "", chart: "", inst: "", voices: ""};
 
     player1:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
     player2:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
@@ -75,19 +66,9 @@ export class VersusRoom extends Room<VersusRoomState>
             }
         });
 
-        this.onMessage('set_song', (client:Client, message:{songObj:string}) =>
+        this.onMessage('set_song', (client:Client, message:{songObj:PocketbaseObject}) =>
         {
-            this.songObject = JSON.parse(message.songObj);
-
-            /* this is pretty much retarded i believe
-            try
-            {
-                client.send("create_match", { song: message.songObj });
-            }
-            catch (er)
-            {
-                console.log(er);
-            }*/
+            this.songObject = message.songObj;
         });
 
         this.onMessage('report_status', (client:Client, status:string) =>
@@ -188,7 +169,7 @@ export class VersusRoom extends Room<VersusRoomState>
             {
                 setTimeout(() => 
                 {
-                    this.clients[1].send('message', { song: JSON.stringify(this.songObject), player1: this.player1 });
+                    this.clients[1].send('message', { song: this.songObject, player1: this.player1 });
                 }, 2000);
             }
             catch (er)
