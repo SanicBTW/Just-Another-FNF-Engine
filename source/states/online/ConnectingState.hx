@@ -4,7 +4,9 @@ import base.MusicBeatState;
 import base.ScriptableState;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.system.Conductor;
+import base.ui.CircularSprite;
 import flixel.FlxG;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxColor;
 import haxe.Json;
 import io.colyseus.Client;
@@ -40,6 +42,42 @@ class ConnectingState extends MusicBeatState
 		"Waiting" => 1
 	];
 
+	/*
+		private var rooms:FlxTypedGroup<CircularSpriteText>;
+		private var roomArray:Array<CircularSpriteText> = [];
+
+		override public function create()
+		{
+			rooms = new FlxTypedGroup<CircularSpriteText>();
+			add(rooms);
+
+			for (room in roomArray)
+			{
+				rooms.add(room);
+				roomArray.remove(room);
+			}
+
+			super.create();
+		}
+
+		override public function update(elapsed:Float)
+		{
+			if (rooms != null)
+			{
+				for (room in rooms)
+				{
+					room.selected = (FlxG.mouse.overlaps(room));
+
+					if (FlxG.mouse.justPressed && room.selected)
+					{
+						trace('Room ${room.bitmapText.text} selected');
+					}
+				}
+			}
+
+			super.update(elapsed);
+		}
+	 */
 	public function new(type:String, ?code:String)
 	{
 		super();
@@ -49,6 +87,42 @@ class ConnectingState extends MusicBeatState
 
 		switch (type)
 		{
+			/*
+				case "room_listing":
+					{
+						client.getAvailableRooms("versus_room", (error, openRooms) ->
+						{
+							if (error != null)
+							{
+								trace('Error getting rooms $error');
+								ScriptableState.switchState(new AlphabetMenu());
+								return;
+							}
+
+							try
+							{
+								if (openRooms.length <= 0)
+								{
+									trace('Not enough rooms to show');
+									FlxG.switchState(new AlphabetMenu());
+									return;
+								}
+
+								for (i in 0...openRooms.length)
+								{
+									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, openRooms[i].roomId);
+									roomArray.push(item);
+								}
+							}
+							catch (ex)
+							{
+								trace('Error listing rooms $ex');
+								FlxG.switchState(new AlphabetMenu());
+								return;
+							}
+						});
+			}*/
+
 			case "host":
 				{
 					mode = 'host';
@@ -59,7 +133,7 @@ class ConnectingState extends MusicBeatState
 					{
 						if (error != null)
 						{
-							trace("error creating room " + error);
+							trace('Error creating room $error');
 							ScriptableState.switchState(new AlphabetMenu());
 							return;
 						}
@@ -86,6 +160,11 @@ class ConnectingState extends MusicBeatState
 								LobbyState.readyTxt.members[0].text = (_.p1 ? "Ready" : "Not ready");
 								LobbyState.readyTxt.members[1].color = (_.p2 ? FlxColor.GREEN : FlxColor.RED);
 								LobbyState.readyTxt.members[1].text = (_.p2 ? "Ready" : "Not ready");
+							});
+
+							room.onMessage('ret_rateMode', (rateMode:String) ->
+							{
+								LobbyState.rateMode = rateMode;
 							});
 
 							room.onMessage('game_start', (_) ->
@@ -140,13 +219,16 @@ class ConnectingState extends MusicBeatState
 
 							room.onError += (code:Int, message:String) ->
 							{
-								trace('An error ocurred $code $message');
+								trace('An error ocurred on room (host) $code $message');
 								ScriptableState.switchState(new AlphabetMenu());
+								return;
 							};
 						}
 						catch (ex)
 						{
-							trace('error connecting to the server $ex');
+							trace('Error connecting to the server $ex');
+							ScriptableState.switchState(new AlphabetMenu());
+							return;
 						}
 					});
 				}
@@ -154,90 +236,113 @@ class ConnectingState extends MusicBeatState
 				{
 					mode = "join";
 					p2name = 'test${FlxG.random.int(0, 9999)}';
-					client.joinById(code, [], VersusRoom, (error, room) ->
+
+					try
 					{
-						if (error != null)
+						client.joinById(code, [], VersusRoom, (error, room) ->
 						{
-							trace("error joining room " + error);
-							ScriptableState.switchState(new AlphabetMenu());
-							return;
-						}
-
-						OnlinePlayState.room = room;
-						SongSelection.room = room;
-						OnlineLoadingState.room = room;
-						LobbyState.room = room;
-
-						LobbyState.roomCode = room.id;
-
-						room.send('set_name', {name: p2name});
-
-						room.onMessage('message', (message:
+							if (error != null)
 							{
-								song:
-									{
-										id:String,
-										song:String,
-										chart:String,
-										inst:String,
-										voices:String
-									},
-								player1:PlayerData
-							}) ->
-						{
-							p1name = message.player1.name;
-							var pbObject:PocketBaseObject = new PocketBaseObject(message.song.id, message.song.song, message.song.chart, message.song.inst,
-								message.song.voices);
-							FlxG.switchState(new SongSelection(pbObject));
-						});
-
-						room.onMessage('ready_state', (_:{p1:Bool, p2:Bool}) ->
-						{
-							// change the ready text lol
-							LobbyState.readyTxt.members[0].color = (_.p1 ? FlxColor.GREEN : FlxColor.RED);
-							LobbyState.readyTxt.members[0].text = (_.p1 ? "Ready" : "Not ready");
-							LobbyState.readyTxt.members[1].color = (_.p2 ? FlxColor.GREEN : FlxColor.RED);
-							LobbyState.readyTxt.members[1].text = (_.p2 ? "Ready" : "Not ready");
-						});
-
-						room.onMessage('game_start', (_) ->
-						{
-							trace("Game started");
-							OnlinePlayState.startedMatch = true;
-							ScriptableState.switchState(new OnlinePlayState());
-						});
-
-						room.onMessage('song_start', (_) ->
-						{
-							OnlinePlayState.canStart = true;
-							Conductor.resyncTime();
-						});
-
-						// make it return to the main state
-						room.onMessage('left', (_) ->
-						{
-							LobbyState.p2.alpha = 0.4;
-							trace("left");
-						});
-
-						room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
-						{
-							if (OnlinePlayState.onlineHUD != null)
-								OnlinePlayState.onlineHUD.updateStats(stats.p1, stats.p2);
-						});
-
-						room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->
-						{
-							if (!OnlinePlayState.startedMatch)
+								trace("Error joining room " + error);
+								ScriptableState.switchState(new AlphabetMenu());
 								return;
-						});
+							}
 
-						room.onError += (code:Int, message:String) ->
-						{
-							trace('An error ocurred $code $message');
-							ScriptableState.switchState(new AlphabetMenu());
-						};
-					});
+							OnlinePlayState.room = room;
+							SongSelection.room = room;
+							OnlineLoadingState.room = room;
+							LobbyState.room = room;
+
+							LobbyState.roomCode = room.id;
+
+							room.send('set_name', {name: p2name});
+
+							room.onMessage('message', (message:
+								{
+									song:
+										{
+											id:String,
+											song:String,
+											chart:String,
+											inst:String,
+											voices:String
+										},
+									p1name:String,
+									mode:String
+								}) ->
+							{
+								p1name = message.p1name;
+								LobbyState.rateMode = mode;
+								var pbObject:PocketBaseObject = new PocketBaseObject(message.song.id, message.song.song, message.song.chart,
+									message.song.inst, message.song.voices);
+								FlxG.switchState(new SongSelection(pbObject));
+							});
+
+							room.onMessage('ready_state', (_:{p1:Bool, p2:Bool}) ->
+							{
+								// change the ready text lol
+								LobbyState.readyTxt.members[0].color = (_.p1 ? FlxColor.GREEN : FlxColor.RED);
+								LobbyState.readyTxt.members[0].text = (_.p1 ? "Ready" : "Not ready");
+								LobbyState.readyTxt.members[1].color = (_.p2 ? FlxColor.GREEN : FlxColor.RED);
+								LobbyState.readyTxt.members[1].text = (_.p2 ? "Ready" : "Not ready");
+							});
+
+							room.onMessage('ret_rateMode', (rateMode:String) ->
+							{
+								LobbyState.rateMode = rateMode;
+							});
+
+							room.onMessage('game_start', (_) ->
+							{
+								trace("Game started");
+								OnlinePlayState.startedMatch = true;
+								ScriptableState.switchState(new OnlinePlayState());
+							});
+
+							room.onMessage('song_start', (_) ->
+							{
+								OnlinePlayState.canStart = true;
+								Conductor.resyncTime();
+							});
+
+							room.onMessage('join', (_) ->
+							{
+								trace("join message");
+							});
+
+							// make it return to the main state
+							room.onMessage('left', (_) ->
+							{
+								LobbyState.p2.alpha = 0.4;
+								trace("left");
+							});
+
+							room.onMessage('ret_stats', (stats:{p1:PlayerData, p2:PlayerData}) ->
+							{
+								if (OnlinePlayState.onlineHUD != null)
+									OnlinePlayState.onlineHUD.updateStats(stats.p1, stats.p2);
+							});
+
+							room.onMessage('status_report', (status:{p1status:String, p2status:String}) ->
+							{
+								if (!OnlinePlayState.startedMatch)
+									return;
+							});
+
+							room.onError += (code:Int, message:String) ->
+							{
+								trace('An error ocurred on room (client) $code $message');
+								ScriptableState.switchState(new AlphabetMenu());
+								return;
+							};
+						});
+					}
+					catch (ex)
+					{
+						trace('Error joining to room ${code}: $ex');
+						FlxG.switchState(new AlphabetMenu());
+						return;
+					}
 				}
 		}
 	}

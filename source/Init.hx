@@ -93,4 +93,15 @@ class Init extends ScriptableState
 
 		ScriptableState.skipTransIn = false;
 	}
+
+	override public function onActionPressed(action:String)
+	{
+		super.onActionPressed(action);
+
+		if (action == "confirm")
+		{
+			shitTimer.destroy();
+			ScriptableState.switchState(new AlphabetMenu());
+		}
+	}
 }

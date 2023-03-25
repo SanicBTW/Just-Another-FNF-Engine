@@ -22,8 +22,8 @@ class OnlineUI extends FlxSpriteGroup
 	{
 		super();
 
-		player1Info = new PlayerInfo(30, ((FlxG.height / 2) + (FlxG.height / 4)), 550, 58, 1);
-		player2Info = new PlayerInfo(30, (FlxG.height / 2) + (FlxG.height / 4), 550, 58, 2);
+		player1Info = new PlayerInfo(30, ((FlxG.height / 2) + (FlxG.height / 4)), 325, 58, 1);
+		player2Info = new PlayerInfo(30, (FlxG.height / 2) + (FlxG.height / 4), 325, 58, 2);
 		player2Info.yAdd = 63;
 
 		add(player1Info);
@@ -32,19 +32,57 @@ class OnlineUI extends FlxSpriteGroup
 
 	public function updateStats(p1:PlayerData, p2:PlayerData)
 	{
-		player1Info.changeText(null, 'Accuracy ${p1.accuracy}% | Score ${p1.score} | Misses ${p1.misses}');
-
-		player2Info.changeText(null, 'Accuracy ${p2.accuracy}% | Score ${p2.score} | Misses ${p2.misses}');
-
-		if (p1.score > p2.score)
+		switch (LobbyState.rateMode)
 		{
-			player1Info.yAdd = 0;
-			player2Info.yAdd = 63;
-		}
-		else
-		{
-			player1Info.yAdd = 63;
-			player2Info.yAdd = 0;
+			case "Score":
+				{
+					player1Info.changeText(null, 'Score ${p1.score}');
+					player2Info.changeText(null, 'Score ${p2.score}');
+
+					if (p1.score > p2.score)
+					{
+						player1Info.yAdd = 0;
+						player2Info.yAdd = 63;
+					}
+					else
+					{
+						player1Info.yAdd = 63;
+						player2Info.yAdd = 0;
+					}
+				}
+			case "Accuracy":
+				{
+					player1Info.changeText(null, 'Accuracy ${p1.accuracy}%');
+					player2Info.changeText(null, 'Accuracy ${p2.accuracy}%');
+
+					if (p1.accuracy > p2.accuracy)
+					{
+						player1Info.yAdd = 0;
+						player2Info.yAdd = 63;
+					}
+					else
+					{
+						player1Info.yAdd = 63;
+						player2Info.yAdd = 0;
+					}
+				}
+
+			case "Misses":
+				{
+					player1Info.changeText(null, 'Misses ${p1.misses}');
+					player2Info.changeText(null, 'Misses ${p2.misses}');
+
+					if (p1.misses > p2.misses)
+					{
+						player1Info.yAdd = 0;
+						player2Info.yAdd = 63;
+					}
+					else
+					{
+						player1Info.yAdd = 63;
+						player2Info.yAdd = 0;
+					}
+				}
 		}
 	}
 }
@@ -74,7 +112,7 @@ class PlayerInfo extends FlxSpriteGroup
 		header = new TextComponent(0, 0, Width, 'Player $player', 20);
 		header.antialiasing = SaveData.antialiasing;
 
-		info = new TextComponent(0, header.height + 5, Width, 'Accuracy ? | Score 0 | Misses 0', 22);
+		info = new TextComponent(0, header.height + 5, Width, '?', 22);
 		info.antialiasing = SaveData.antialiasing;
 
 		bg = new FlxSprite().makeGraphic(Width, Height, FlxColor.BLACK);

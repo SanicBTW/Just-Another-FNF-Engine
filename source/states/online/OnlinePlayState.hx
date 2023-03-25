@@ -163,10 +163,14 @@ class OnlinePlayState extends MusicBeatState
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
+		room.onMessage('miss', (direction:Int) ->
+		{
+			trail(player, direction, true);
+		});
+
 		super.create();
 
 		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
-		Paths.music("tea-time"); // precache the sound lol
 		FadeTransition.nextCamera = camOther;
 		room.send('report_status', "Playing");
 	}
@@ -258,15 +262,6 @@ class OnlinePlayState extends MusicBeatState
 	override public function onActionPressed(action:String)
 	{
 		super.onActionPressed(action);
-
-		/*
-			if (action == "confirm" && canPause)
-			{
-				persistentUpdate = false;
-				persistentDraw = true;
-				openSubState(new PauseState());
-				return;
-		}*/
 
 		if (playerStrums.botPlay)
 			return;
@@ -417,8 +412,8 @@ class OnlinePlayState extends MusicBeatState
 					opponent.holdTimer = 0;
 				}
 			}
-			else
-				trail(opponent, note);
+			else if (!note.isSustain)
+				trail(opponent, note.noteData);
 
 			if (note.doubleNote && note.isSustain && opponent != null && opponent.animation.curAnim.name == "idle")
 			{
@@ -470,8 +465,8 @@ class OnlinePlayState extends MusicBeatState
 					player.holdTimer = 0;
 				}
 			}
-			else
-				trail(player, note);
+			else if (!note.isSustain)
+				trail(player, note.noteData);
 
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
@@ -505,8 +500,8 @@ class OnlinePlayState extends MusicBeatState
 					player.holdTimer = 0;
 				}
 			}
-			else
-				trail(player, note);
+			else if (!note.isSustain)
+				trail(player, note.noteData);
 
 			note.wasGoodHit = true;
 			if (SONG.needsVoices)
@@ -530,18 +525,18 @@ class OnlinePlayState extends MusicBeatState
 
 	private function playerMissPress(note:Note)
 	{
-		var direction:Int = note.noteData;
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 0;
 
 		if (player != null)
 		{
-			player.playAnim('sing${Receptor.getArrowFromNum(direction).toUpperCase()}miss', true);
+			player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}miss', true);
 			player.holdTimer = 0;
 		}
 
 		Timings.judge(164);
 		room.send('set_stats', {accuracy: Math.floor(Timings.accuracy * 100) / 100, score: Timings.score, misses: Timings.misses});
+		room.send('miss', {direction: note.noteData});
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
@@ -620,6 +615,7 @@ class OnlinePlayState extends MusicBeatState
 		Conductor.boundSong.onComplete = function()
 		{
 			room.leave();
+			canStart = false;
 			Conductor.boundSong.stop();
 			Conductor.boundVocals.stop();
 			ChartLoader.netChart = null;
@@ -661,16 +657,12 @@ class OnlinePlayState extends MusicBeatState
 		super.closeSubState();
 	}
 
-	function trail(char:Character, note:Note):Void
+	function trail(char:Character, direction:Int, miss:Bool = false):Void
 	{
-		if (!SaveData.showTrails)
+		if (!SaveData.showTrails || char == null)
 			return;
 
-		if (char == null)
-			return;
-
-		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
-		var delay:Float = 0;
+		var anim:String = 'sing${Receptor.getArrowFromNum(direction).toUpperCase()}${miss ? "miss" : ""}';
 
 		var daCopy:FlxSprite = char.clone();
 		daCopy.frames = char.frames;
@@ -680,22 +672,15 @@ class OnlinePlayState extends MusicBeatState
 		daCopy.animation.play(anim, true);
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
-		if (note.isSustain)
-			delay += ((Conductor.stepCrochet * char.singDuration) / 1000) + 0.2;
-
-		if (!note.isSustain)
-		{
-			insert(members.indexOf(char) - 1, daCopy);
-			FlxTween.tween(daCopy, {alpha: 0}, ((Conductor.stepCrochet * char.singDuration) / 1000), {
-				startDelay: delay,
-				ease: FlxEase.quadInOut,
-				onComplete: function(_)
-				{
-					daCopy.destroy();
-					daCopy = null;
-				}
-			});
-		}
+		insert(members.indexOf(char) - 1, daCopy);
+		FlxTween.tween(daCopy, {alpha: 0}, ((Conductor.stepCrochet * char.singDuration) / 1000), {
+			ease: FlxEase.quadInOut,
+			onComplete: function(_)
+			{
+				daCopy.destroy();
+				daCopy = null;
+			}
+		});
 	}
 
 	function applyShader(shader:String)

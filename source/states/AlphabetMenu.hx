@@ -11,6 +11,7 @@ import base.system.DatabaseManager;
 import base.ui.Alphabet;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.FlxSubState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import funkin.ChartLoader;
 import haxe.Json;
@@ -124,7 +125,7 @@ class AlphabetMenu extends MusicBeatState
 
 			case "vs":
 				{
-					regenMenu(["host", "join by id"]);
+					regenMenu(["host", "join with id" /*"rooms"*/]);
 				}
 
 			case "settings":
@@ -187,7 +188,7 @@ class AlphabetMenu extends MusicBeatState
 				{
 					switch (pages[curPage])
 					{
-						case "internal":
+						case "assets":
 							{
 								ChartLoader.netChart = null;
 								ChartLoader.netInst = null;
@@ -206,13 +207,15 @@ class AlphabetMenu extends MusicBeatState
 							}
 						case "vs":
 							{
-								if (curText == "join by id")
+								switch (curText)
 								{
-									openSubState(new CodeState());
-									return;
+									case "host":
+										ScriptableState.switchState(new ConnectingState('host'));
+									case "join with id":
+										openSubState(new CodeState());
+										/*case "rooms":
+											ScriptableState.switchState(new ConnectingState('room_listing')); */
 								}
-								else
-									ScriptableState.switchState(new ConnectingState('host'));
 							}
 						case "settings":
 							{
@@ -225,6 +228,18 @@ class AlphabetMenu extends MusicBeatState
 					}
 				}
 		}
+	}
+
+	override function openSubState(SubState:FlxSubState)
+	{
+		blockInputs = true;
+		super.openSubState(SubState);
+	}
+
+	override function closeSubState()
+	{
+		blockInputs = false;
+		super.closeSubState();
 	}
 
 	private function regenMenu(array:Array<String>)

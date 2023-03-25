@@ -11,6 +11,7 @@ import flixel.util.FlxColor;
 import funkin.Character;
 import funkin.Stage;
 import io.colyseus.Room;
+import openfl.desktop.Clipboard;
 import states.online.schema.VersusRoom;
 
 class LobbyState extends MusicBeatState
@@ -25,12 +26,33 @@ class LobbyState extends MusicBeatState
 	public static var p2:Character;
 
 	private static var codeText:FlxBitmapText;
+	private static var modeText:FlxBitmapText;
 	private static var p1Name:FlxBitmapText;
 	private static var p2Name:FlxBitmapText;
 
 	private var ready:Bool = false;
 
-	var stage:Stage;
+	private var stage:Stage;
+
+	private var curMode(default, set):Int = 0;
+	private final modes:Array<String> = ["Score", "Accuracy", "Misses"];
+
+	@:noCompletion
+	private function set_curMode(value:Int):Int
+	{
+		curMode += value;
+
+		if (curMode < 0)
+			curMode = modes.length - 1;
+		if (curMode >= modes.length)
+			curMode = 0;
+
+		room.send('set_rateMode', {mode: modes[curMode]});
+
+		return curMode;
+	}
+
+	public static var rateMode:String = "?";
 
 	override function create()
 	{
@@ -41,6 +63,11 @@ class LobbyState extends MusicBeatState
 		Fonts.setProperties(codeText, false, 0.6);
 		codeText.text = 'Room code: ${roomCode}';
 		codeText.setPosition(5, FlxG.height * 0.001);
+
+		modeText = new FlxBitmapText(Fonts.VCR());
+		Fonts.setProperties(modeText, false, 0.6);
+		modeText.text = 'Rate mode: ?';
+		modeText.setPosition(5, (codeText.y + codeText.height) + 5);
 
 		p1 = new Character(180, -100, false, 'bf');
 		p2 = new Character(660, -100, true, 'bf');
@@ -76,17 +103,25 @@ class LobbyState extends MusicBeatState
 		add(p1Name);
 		add(p2Name);
 		add(codeText);
+		add(modeText);
 		add(readyTxt);
 
 		super.create();
 
-		Conductor.boundState = this;
+		curMode = 0;
 	}
 
 	override public function update(elapsed:Float)
 	{
 		p1Name.text = ConnectingState.p1name;
 		p2Name.text = ConnectingState.p2name;
+		modeText.text = 'Rate mode: ${rateMode}';
+
+		if (FlxG.mouse.justPressed && FlxG.mouse.overlaps(codeText))
+			Clipboard.generalClipboard.setData(TEXT_FORMAT, '`${roomCode}`');
+
+		if (FlxG.keys.justPressed.M)
+			curMode += 1;
 
 		super.update(elapsed);
 	}

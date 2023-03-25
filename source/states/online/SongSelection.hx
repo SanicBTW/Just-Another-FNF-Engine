@@ -73,8 +73,6 @@ class SongSelection extends MusicBeatState
 
 		super.create();
 
-		trace(receivedPB);
-
 		if (receivedPB != null)
 		{
 			canPress = false;
