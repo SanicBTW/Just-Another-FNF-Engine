@@ -28,15 +28,15 @@ interface PocketbaseObject
 export class VersusRoom extends Room<VersusRoomState>
 {
     started:boolean = false;
+    rateMode:string = "Score";
     songObject:PocketbaseObject = {id: "", song: "", chart: "", inst: "", voices: ""};
 
     player1:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
     player2:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
 
-    maxClients: 2;
-
     onCreate(options: any): void | Promise<any> 
     {
+        this.maxClients = 2;
         this.setState(new VersusRoomState());
         this.autoDispose = true;
         this.roomId = this.generateID();
@@ -69,6 +69,14 @@ export class VersusRoom extends Room<VersusRoomState>
         this.onMessage('set_song', (client:Client, message:{songObj:PocketbaseObject}) =>
         {
             this.songObject = message.songObj;
+        });
+
+        this.onMessage('set_rateMode', (client:Client, message:{mode:string}) => 
+        {
+            if (client.sessionId == this.clients[0].sessionId) this.rateMode = message.mode;
+            else console.log("Player 2 tried changing the rate mode");
+
+            this.broadcast('ret_rateMode', this.rateMode);
         });
 
         this.onMessage('report_status', (client:Client, status:string) =>
@@ -108,6 +116,11 @@ export class VersusRoom extends Room<VersusRoomState>
                 this.player2.name = message.name;
                 this.broadcast('join', message.name);
             }
+        });
+
+        this.onMessage('miss', (client:Client, message:{direction:number}) =>
+        {
+            this.broadcast('miss', {direction: message.direction});
         });
 
         this.onMessage('set_stats', (client:Client, message:{accuracy:number, score:number, misses:number}) => 
@@ -169,7 +182,7 @@ export class VersusRoom extends Room<VersusRoomState>
             {
                 setTimeout(() => 
                 {
-                    this.clients[1].send('message', { song: this.songObject, player1: this.player1 });
+                    this.clients[1].send('message', { song: this.songObject, p1name: this.player1.name, mode: this.rateMode });
                 }, 2000);
             }
             catch (er)
@@ -192,10 +205,8 @@ export class VersusRoom extends Room<VersusRoomState>
             }
             else
             {
-                this.player2.name = "";
-                this.player2.ready = false;
+                this.player2 = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
                 this.broadcast('left', "player2");
-                this.lock();
             }
         }
     }
