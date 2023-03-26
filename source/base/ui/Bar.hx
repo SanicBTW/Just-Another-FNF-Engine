@@ -3,8 +3,11 @@ package base.ui;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
 import openfl.display.BitmapData;
+import openfl.geom.ColorTransform;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
+
+using flixel.util.FlxColorTransformUtil;
 
 class Bar extends FlxSprite
 {
@@ -21,12 +24,12 @@ class Bar extends FlxSprite
 
 	public var value:Float = 0;
 
-	public function new(x:Float = 0, y:Float = 0, width:Int = 100, height:Int = 10, bgColor:FlxColor, fgColor:FlxColor)
+	public function new(X:Float = 0, Y:Float = 0, Width:Int = 100, Height:Int = 10, bgColor:FlxColor, fgColor:FlxColor)
 	{
 		super(x, y);
 
-		this.barWidth = width;
-		this.barHeight = height;
+		this.barWidth = Width;
+		this.barHeight = Height;
 
 		_bgBarRect = new Rectangle();
 		_zeroOffset = new Point();
@@ -34,41 +37,36 @@ class Bar extends FlxSprite
 		_fgBarRect = new Rectangle();
 		_fgBarPoint = new Point();
 
-		_bgBarBit = Cache.setBitmap("bgBarBitmap", new BitmapData(barWidth, barHeight, true, bgColor));
+		_bgBarBit = new BitmapData(barWidth, barHeight, true, bgColor);
 		_bgBarRect.setTo(0, 0, barWidth, barHeight);
-
-		_fgBarBit = Cache.setBitmap("fgBarBitmap", new BitmapData(barWidth, barHeight, true, fgColor));
+		_fgBarBit = new BitmapData(barWidth, barHeight, true, fgColor);
 		_fgBarRect.setTo(0, 0, barWidth, barHeight);
 
-		makeGraphic(width, height, FlxColor.TRANSPARENT, true);
+		makeGraphic(Width, Height, FlxColor.TRANSPARENT, true);
 	}
 
-	override public function destroy()
+	override function destroy()
 	{
 		_bgBarBit = null;
-		Cache.disposeBitmap("bgBarBitmap");
 		_bgBarRect = null;
 		_zeroOffset = null;
 
 		_fgBarBit = null;
-		Cache.disposeBitmap("fgBarBitmap");
 		_fgBarRect = null;
 		_fgBarRect = null;
 
 		super.destroy();
 	}
 
-	override public function update(elapsed:Float)
+	override function draw()
 	{
-		super.update(elapsed);
-
-		// update bg
 		pixels.copyPixels(_bgBarBit, _bgBarRect, _zeroOffset);
 
-		// update fg
 		_fgBarRect.width = (value * barWidth);
 		_fgBarRect.height = barHeight;
 
 		pixels.copyPixels(_fgBarBit, _fgBarRect, _fgBarPoint, null, null, true);
+
+		super.draw();
 	}
 }

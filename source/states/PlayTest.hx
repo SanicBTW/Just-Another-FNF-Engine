@@ -6,6 +6,7 @@ import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
 import base.system.DatabaseManager;
+import base.system.DiscordPresence;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -167,6 +168,7 @@ class PlayTest extends MusicBeatState
 		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
 		Paths.music("tea-time"); // precache the sound lol
 		FadeTransition.nextCamera = camOther;
+		DiscordPresence.changePresence('Playing ${SONG.song}');
 	}
 
 	override function update(elapsed:Float)
@@ -184,6 +186,9 @@ class PlayTest extends MusicBeatState
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
+			if (!paused)
+				DiscordPresence.changePresence('Playing ${SONG.song}', null, null, true, Conductor.boundSong.length - Conductor.songPosition);
+
 			var curSection = Std.int(curStep / 16);
 			if (curSection != lastSection)
 			{
@@ -632,6 +637,7 @@ class PlayTest extends MusicBeatState
 					Conductor.boundVocals.pause();
 			}
 
+			DiscordPresence.changePresence('Playing ${SONG.song}', "Paused");
 			paused = true;
 			canPause = false;
 		}
@@ -645,6 +651,7 @@ class PlayTest extends MusicBeatState
 		{
 			Conductor.resyncTime();
 
+			DiscordPresence.changePresence('Playing ${SONG.song}');
 			paused = false;
 			canPause = true;
 		}

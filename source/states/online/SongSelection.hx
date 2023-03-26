@@ -5,6 +5,7 @@ import base.ScriptableState;
 import base.pocketbase.Collections.Funkin as FunkCollection;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
+import base.system.DiscordPresence;
 import base.ui.Alphabet;
 import base.ui.CircularSprite.CircularSpriteText;
 import flixel.FlxG;
@@ -72,6 +73,8 @@ class SongSelection extends MusicBeatState
 		add(groupItems);
 
 		super.create();
+
+		DiscordPresence.changePresence("Selecting a song");
 
 		if (receivedPB != null)
 		{

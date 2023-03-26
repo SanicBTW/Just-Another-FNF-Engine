@@ -6,6 +6,7 @@ import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
 import base.system.DatabaseManager;
+import base.system.DiscordPresence;
 import base.system.Timer;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -163,16 +164,12 @@ class OnlinePlayState extends MusicBeatState
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
-		room.onMessage('miss', (direction:Int) ->
-		{
-			trail(player, direction, true);
-		});
-
 		super.create();
 
 		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
 		FadeTransition.nextCamera = camOther;
 		room.send('report_status', "Playing");
+		DiscordPresence.changePresence('Playing ${SONG.song}');
 	}
 
 	override function update(elapsed:Float)
@@ -201,6 +198,11 @@ class OnlinePlayState extends MusicBeatState
 
 		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
 		{
+			if (room != null)
+				room.send('song_progress', {prog: Conductor.songPosition});
+
+			DiscordPresence.changePresence('Playing ${SONG.song}', null, null, true, Conductor.boundSong.length - Conductor.songPosition);
+
 			var curSection = Std.int(curStep / 16);
 			if (curSection != lastSection)
 			{
@@ -536,7 +538,6 @@ class OnlinePlayState extends MusicBeatState
 
 		Timings.judge(164);
 		room.send('set_stats', {accuracy: Math.floor(Timings.accuracy * 100) / 100, score: Timings.score, misses: Timings.misses});
-		room.send('miss', {direction: note.noteData});
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
@@ -657,12 +658,12 @@ class OnlinePlayState extends MusicBeatState
 		super.closeSubState();
 	}
 
-	function trail(char:Character, direction:Int, miss:Bool = false):Void
+	function trail(char:Character, direction:Int):Void
 	{
 		if (!SaveData.showTrails || char == null)
 			return;
 
-		var anim:String = 'sing${Receptor.getArrowFromNum(direction).toUpperCase()}${miss ? "miss" : ""}';
+		var anim:String = 'sing${Receptor.getArrowFromNum(direction).toUpperCase()}';
 
 		var daCopy:FlxSprite = char.clone();
 		daCopy.frames = char.frames;

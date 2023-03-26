@@ -4,6 +4,7 @@ import base.ScriptableState;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.MultiCallback;
 import base.pocketbase.Request;
+import base.system.DiscordPresence;
 import base.ui.Bar;
 import base.ui.Fonts;
 import flixel.FlxG;
@@ -97,32 +98,36 @@ class LoadingState extends ScriptableSubState
 		var instCb:() -> Void = callbacks.add("Inst:" + pbObject.id);
 		var voicesCb:() -> Void = callbacks.add("Voices:" + pbObject.id);
 
+		DiscordPresence.changePresence('Loading ${pbObject.song}', "Chart");
 		Request.getFile(collection, pbObject.id, pbObject.chart, false, (chart:String) ->
 		{
 			ChartLoader.netChart = chart;
 			chartCb();
 			tracking.text = "Inst";
+			DiscordPresence.changePresence('Loading ${pbObject.song}', "Inst");
 
 			Request.getFile(collection, pbObject.id, pbObject.inst, true, (inst:Sound) ->
 			{
 				ChartLoader.netInst = inst;
 				instCb();
 				tracking.text = "Checking";
+				DiscordPresence.changePresence('Loading ${pbObject.song}', "Checking voices");
 
 				if (pbObject.voices != "")
 				{
 					tracking.text = "Voices";
+					DiscordPresence.changePresence('Loading ${pbObject.song}', "Voices");
 					Request.getFile(collection, pbObject.id, pbObject.voices, true, (voices:Sound) ->
 					{
-						tracking.text = "Done!";
 						ChartLoader.netVoices = voices;
+						tracking.text = "Done!";
 						voicesCb();
 					});
 				}
 				else
 				{
-					tracking.text = "Done!";
 					ChartLoader.netVoices = null;
+					tracking.text = "Done!";
 					voicesCb();
 				}
 			});

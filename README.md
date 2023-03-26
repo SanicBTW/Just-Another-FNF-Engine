@@ -10,6 +10,7 @@ A rewrite of Friday Night Funkin' mixing Forever Engine Rewrite, Kade Engine 1.6
 - Galo
 - SlacDev
 - Dulce
+- Andy Davinci
 
 # Alpha Testers
 - ElDulceV

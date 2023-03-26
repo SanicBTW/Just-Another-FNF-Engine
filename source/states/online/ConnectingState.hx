@@ -4,6 +4,7 @@ import base.MusicBeatState;
 import base.ScriptableState;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.system.Conductor;
+import base.system.DiscordPresence;
 import base.ui.CircularSprite;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -42,87 +43,16 @@ class ConnectingState extends MusicBeatState
 		"Waiting" => 1
 	];
 
-	/*
-		private var rooms:FlxTypedGroup<CircularSpriteText>;
-		private var roomArray:Array<CircularSpriteText> = [];
-
-		override public function create()
-		{
-			rooms = new FlxTypedGroup<CircularSpriteText>();
-			add(rooms);
-
-			for (room in roomArray)
-			{
-				rooms.add(room);
-				roomArray.remove(room);
-			}
-
-			super.create();
-		}
-
-		override public function update(elapsed:Float)
-		{
-			if (rooms != null)
-			{
-				for (room in rooms)
-				{
-					room.selected = (FlxG.mouse.overlaps(room));
-
-					if (FlxG.mouse.justPressed && room.selected)
-					{
-						trace('Room ${room.bitmapText.text} selected');
-					}
-				}
-			}
-
-			super.update(elapsed);
-		}
-	 */
 	public function new(type:String, ?code:String)
 	{
 		super();
 
 		p2name = '';
 		client = new Client(#if html5 'wss://ws.sancopublic.com' #else 'ws://ws.sancopublic.com' #end);
+		DiscordPresence.changePresence("Connecting to the servers");
 
 		switch (type)
 		{
-			/*
-				case "room_listing":
-					{
-						client.getAvailableRooms("versus_room", (error, openRooms) ->
-						{
-							if (error != null)
-							{
-								trace('Error getting rooms $error');
-								ScriptableState.switchState(new AlphabetMenu());
-								return;
-							}
-
-							try
-							{
-								if (openRooms.length <= 0)
-								{
-									trace('Not enough rooms to show');
-									FlxG.switchState(new AlphabetMenu());
-									return;
-								}
-
-								for (i in 0...openRooms.length)
-								{
-									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, openRooms[i].roomId);
-									roomArray.push(item);
-								}
-							}
-							catch (ex)
-							{
-								trace('Error listing rooms $ex');
-								FlxG.switchState(new AlphabetMenu());
-								return;
-							}
-						});
-			}*/
-
 			case "host":
 				{
 					mode = 'host';
@@ -133,6 +63,7 @@ class ConnectingState extends MusicBeatState
 					{
 						if (error != null)
 						{
+							Main.notifTray.notify('Error creating room', '$error');
 							trace('Error creating room $error');
 							ScriptableState.switchState(new AlphabetMenu());
 							return;
@@ -165,6 +96,15 @@ class ConnectingState extends MusicBeatState
 							room.onMessage('ret_rateMode', (rateMode:String) ->
 							{
 								LobbyState.rateMode = rateMode;
+							});
+
+							room.onMessage('player_song_progress', (newProgress:{p1prog:Float, p2prog:Float}) ->
+							{
+								if (OnlinePlayState.onlineHUD != null)
+								{
+									OnlinePlayState.onlineHUD.player1Info.playerSongPos = newProgress.p1prog;
+									OnlinePlayState.onlineHUD.player2Info.playerSongPos = newProgress.p2prog;
+								}
 							});
 
 							room.onMessage('game_start', (_) ->
@@ -219,6 +159,7 @@ class ConnectingState extends MusicBeatState
 
 							room.onError += (code:Int, message:String) ->
 							{
+								Main.notifTray.notify('An error ocurred on the room', '$message');
 								trace('An error ocurred on room (host) $code $message');
 								ScriptableState.switchState(new AlphabetMenu());
 								return;
@@ -243,7 +184,8 @@ class ConnectingState extends MusicBeatState
 						{
 							if (error != null)
 							{
-								trace("Error joining room " + error);
+								Main.notifTray.notify('Error joining room', '$error');
+								trace('Error joining room $error');
 								ScriptableState.switchState(new AlphabetMenu());
 								return;
 							}
@@ -272,7 +214,7 @@ class ConnectingState extends MusicBeatState
 								}) ->
 							{
 								p1name = message.p1name;
-								LobbyState.rateMode = mode;
+								LobbyState.rateMode = message.mode;
 								var pbObject:PocketBaseObject = new PocketBaseObject(message.song.id, message.song.song, message.song.chart,
 									message.song.inst, message.song.voices);
 								FlxG.switchState(new SongSelection(pbObject));
@@ -290,6 +232,15 @@ class ConnectingState extends MusicBeatState
 							room.onMessage('ret_rateMode', (rateMode:String) ->
 							{
 								LobbyState.rateMode = rateMode;
+							});
+
+							room.onMessage('player_song_progress', (newProgress:{p1prog:Float, p2prog:Float}) ->
+							{
+								if (OnlinePlayState.onlineHUD != null)
+								{
+									OnlinePlayState.onlineHUD.player1Info.playerSongPos = newProgress.p1prog;
+									OnlinePlayState.onlineHUD.player2Info.playerSongPos = newProgress.p2prog;
+								}
 							});
 
 							room.onMessage('game_start', (_) ->
@@ -331,6 +282,7 @@ class ConnectingState extends MusicBeatState
 
 							room.onError += (code:Int, message:String) ->
 							{
+								Main.notifTray.notify('An error ocurred on the room', '$message');
 								trace('An error ocurred on room (client) $code $message');
 								ScriptableState.switchState(new AlphabetMenu());
 								return;
@@ -339,6 +291,7 @@ class ConnectingState extends MusicBeatState
 					}
 					catch (ex)
 					{
+						Main.notifTray.notify('Error joing room $code', '$ex');
 						trace('Error joining to room ${code}: $ex');
 						FlxG.switchState(new AlphabetMenu());
 						return;

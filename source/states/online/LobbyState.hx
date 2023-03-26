@@ -3,6 +3,7 @@ package states.online;
 import base.MusicBeatState;
 import base.ScriptableState;
 import base.system.Conductor;
+import base.system.DiscordPresence;
 import base.ui.Fonts;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -108,7 +109,10 @@ class LobbyState extends MusicBeatState
 
 		super.create();
 
-		curMode = 0;
+		DiscordPresence.changePresence('In the lobby', roomCode);
+
+		if (ConnectingState.mode == 'host')
+			curMode = 0;
 	}
 
 	override public function update(elapsed:Float)

@@ -115,6 +115,7 @@ class VolumeTray extends Sprite
 
 	private function setTxtFieldProperties(field:TextField)
 	{
+		field.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("funkin.otf")).fontName, 10, 0xFFFFFF);
 		field.width = _width;
 		field.height = _height;
 		field.multiline = true;
@@ -122,6 +123,5 @@ class VolumeTray extends Sprite
 		field.selectable = false;
 		field.embedFonts = true;
 		field.y = 2.5;
-		field.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("funkin.otf")).fontName, 10, 0xFFFFFF);
 	}
 }

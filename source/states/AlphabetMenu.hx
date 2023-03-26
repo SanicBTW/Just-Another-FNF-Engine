@@ -8,6 +8,7 @@ import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
 import base.system.Controls;
 import base.system.DatabaseManager;
+import base.system.DiscordPresence;
 import base.ui.Alphabet;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -125,7 +126,7 @@ class AlphabetMenu extends MusicBeatState
 
 			case "vs":
 				{
-					regenMenu(["host", "join with id" /*"rooms"*/]);
+					regenMenu(["host", "join with id"]);
 				}
 
 			case "settings":
@@ -147,6 +148,8 @@ class AlphabetMenu extends MusicBeatState
 
 	override public function create()
 	{
+		DiscordPresence.changePresence('Scrolling through the menus');
+
 		Controls.setActions(UI);
 
 		var bg:FlxSprite = new FlxSprite(0, 0, Paths.image("menuSDefault2"));
@@ -213,8 +216,6 @@ class AlphabetMenu extends MusicBeatState
 										ScriptableState.switchState(new ConnectingState('host'));
 									case "join with id":
 										openSubState(new CodeState());
-										/*case "rooms":
-											ScriptableState.switchState(new ConnectingState('room_listing')); */
 								}
 							}
 						case "settings":

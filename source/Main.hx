@@ -2,12 +2,9 @@ package;
 
 import base.ScriptableState;
 import base.display.*;
-import base.system.Controls;
-import base.system.DatabaseManager;
-import base.system.ui.VolumeTray;
-import flixel.FlxG;
-import flixel.FlxGame;
-import flixel.FlxState;
+import base.system.*;
+import base.system.ui.*;
+import flixel.*;
 import flixel.graphics.FlxGraphic;
 import lime.app.Application;
 import openfl.Lib;
@@ -31,17 +28,20 @@ using StringTools;
 
 class Main extends Sprite
 {
-	var gameWidth:Int = 1280;
-	var gameHeight:Int = 720;
-	var initialClass:Class<FlxState> = Init;
-	var zoom:Float = -1;
-	var framerate:Int = #if !html5 200 #else 60 #end;
-	var skipSplash:Bool = true;
-	var startFullscreen:Bool = false;
+	private var gameWidth:Int = 1280;
+	private var gameHeight:Int = 720;
+	private var initialClass:Class<FlxState> = Init;
+	private var zoom:Float = -1;
+	private var framerate:Int = #if !html5 200 #else 60 #end;
+	private var skipSplash:Bool = true;
+	private var startFullscreen:Bool = false;
 
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
 	public static var volumeTray:VolumeTray;
+	public static var notifTray:NotificationTray;
+
+	public static var preview:Int = 7;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -86,7 +86,8 @@ class Main extends Sprite
 		DatabaseManager.Initialize();
 		Controls.init();
 
-		Application.current.window.title = 'BETA ${Application.current.meta.get("version")}';
+		Application.current.window.title = 'BETA ${Application.current.meta.get("version")} - PREVIEW ${preview}';
+		DiscordPresence.initPresence();
 		FlxGraphic.defaultPersist = true;
 		ScriptableState.skipTransIn = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
@@ -116,6 +117,9 @@ class Main extends Sprite
 		volumeTray = new VolumeTray();
 		addChild(volumeTray);
 
+		notifTray = new NotificationTray();
+		addChild(notifTray);
+
 		FlxG.signals.preStateCreate.add(function(state:FlxState)
 		{
 			Cache.clearStoredMemory();
@@ -129,11 +133,12 @@ class Main extends Sprite
 			Cache.runGC();
 		});
 
-		// Is this bad?
 		FlxG.signals.gameResized.add((_, _) ->
 		{
 			if (volumeTray != null)
 				volumeTray.screenCenter();
+			if (notifTray != null)
+				notifTray.screenCenter();
 		});
 
 		// Is this worse?
@@ -141,6 +146,8 @@ class Main extends Sprite
 		{
 			if (volumeTray != null && volumeTray.active)
 				volumeTray.update();
+			if (notifTray != null && notifTray.active)
+				notifTray.update();
 		});
 
 		FlxG.sound.volumeHandler = function(_)
@@ -149,7 +156,7 @@ class Main extends Sprite
 				volumeTray.show();
 		}
 
-		#if window
+		#if windows
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 		#end
 	}
@@ -166,7 +173,7 @@ class Main extends Sprite
 		dateNow = dateNow.replace(" ", "_");
 		dateNow = dateNow.replace(":", "'");
 
-		path = "./crash/" + "FRB2_" + dateNow + ".txt";
+		path = "./crash/" + "CrashLog_" + dateNow + ".txt";
 
 		for (stackItem in callStack)
 		{
@@ -179,7 +186,7 @@ class Main extends Sprite
 			}
 		}
 
-		errMsg += "\nUncaught Error: " + e.error + "\nPlease report this error to the sanco#8424\n\n> Crash Handler written by: sqirra-rng";
+		errMsg += "\nUncaught Error: " + e.error + "\nPlease report this error to the sanco#8424";
 
 		if (!FileSystem.exists("./crash/"))
 			FileSystem.createDirectory("./crash/");
@@ -190,7 +197,7 @@ class Main extends Sprite
 		Sys.println("Crash dump saved in " + Path.normalize(path));
 
 		Application.current.window.alert(errMsg, "Error!");
-		Sys.exit(1);
+		Sys.command(Sys.programPath());
 	}
 	#end
 }

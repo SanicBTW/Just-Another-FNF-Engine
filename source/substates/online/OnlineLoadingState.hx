@@ -4,6 +4,7 @@ import base.ScriptableState;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.MultiCallback;
 import base.pocketbase.Request;
+import base.system.DiscordPresence;
 import base.ui.Bar;
 import base.ui.Fonts;
 import flixel.FlxG;
@@ -94,12 +95,14 @@ class OnlineLoadingState extends ScriptableSubState
 		var voicesCb:() -> Void = callbacks.add("Voices:" + pbObject.id);
 
 		room.send('report_status', 'Loading chart');
+		DiscordPresence.changePresence('Loading ${pbObject.song}', "Chart");
 		Request.getFile(collection, pbObject.id, pbObject.chart, false, (chart:String) ->
 		{
 			ChartLoader.netChart = chart;
 			chartCb();
 			tracking.text = "Inst";
 			room.send('report_status', 'Loading inst');
+			DiscordPresence.changePresence('Loading ${pbObject.song}', "Inst");
 
 			Request.getFile(collection, pbObject.id, pbObject.inst, true, (inst:Sound) ->
 			{
@@ -107,11 +110,13 @@ class OnlineLoadingState extends ScriptableSubState
 				instCb();
 				tracking.text = "Checking";
 				room.send('report_status', 'Checking voices');
+				DiscordPresence.changePresence('Loading ${pbObject.song}', "Checking voices");
 
 				if (pbObject.voices != "")
 				{
 					tracking.text = "Voices";
 					room.send('report_status', 'Loading voices');
+					DiscordPresence.changePresence('Loading ${pbObject.song}', "Voices");
 					Request.getFile(collection, pbObject.id, pbObject.voices, true, (voices:Sound) ->
 					{
 						ChartLoader.netVoices = voices;

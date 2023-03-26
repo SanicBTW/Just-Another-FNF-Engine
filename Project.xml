@@ -41,6 +41,8 @@
 	<haxelib name="hscript"	/>
 	<haxelib name="colyseus" />
 
+	<haxelib name="discord_rpc" if="windows" />
+
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
 	<haxedef name="FLX_NO_GAMEPAD" />
@@ -55,6 +57,7 @@
 	<!-- _________________________________ Custom _______________________________ -->
 
 	<define name="FS_ACCESS" if="windows" />
+	<define name="DISCORD_PRESENCE" if="windows" />
 
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>
