@@ -41,7 +41,7 @@ class Main extends Sprite
 	public static var volumeTray:VolumeTray;
 	public static var notifTray:NotificationTray;
 
-	public static var preview:Int = 7;
+	public static var preview:Float = 7.1;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -197,7 +197,8 @@ class Main extends Sprite
 		Sys.println("Crash dump saved in " + Path.normalize(path));
 
 		Application.current.window.alert(errMsg, "Error!");
-		Sys.command(Sys.programPath());
+		DiscordPresence.shutdownPresence();
+		Sys.exit(1);
 	}
 	#end
 }

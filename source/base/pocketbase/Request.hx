@@ -65,7 +65,7 @@ class Request
 	}
 
 	public static function getRecords(collection:String, callback:Dynamic->Void)
-		new Request(base + recordsExt.replace(":col", collection), false, callback);
+		new Request(base + recordsExt.replace(":col", collection) + "?perPage=500", false, callback);
 
 	public static function getFile(collection:String, id:String, file:String, isSound:Bool = false, callback:Dynamic->Void)
 		new Request(base + filesExt.replace(":col", collection).replace(":id", id).replace(":file", file), isSound, callback);
