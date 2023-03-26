@@ -198,7 +198,7 @@ class Main extends Sprite
 
 		Application.current.window.alert(errMsg, "Error!");
 		DiscordPresence.shutdownPresence();
-		Sys.exit(1);
+		Sys.exit(0);
 	}
 	#end
 }
