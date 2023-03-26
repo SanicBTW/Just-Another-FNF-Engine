@@ -13,6 +13,8 @@ interface PlayerData
     accuracy:number;
     score:number;
     misses:number;
+
+    songProgress:number;
 }
 
 interface PocketbaseObject
@@ -31,8 +33,8 @@ export class VersusRoom extends Room<VersusRoomState>
     rateMode:string = "Score";
     songObject:PocketbaseObject = {id: "", song: "", chart: "", inst: "", voices: ""};
 
-    player1:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
-    player2:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
+    player1:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0, songProgress: 0 };
+    player2:PlayerData = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0, songProgress: 0 };
 
     onCreate(options: any): void | Promise<any> 
     {
@@ -74,7 +76,6 @@ export class VersusRoom extends Room<VersusRoomState>
         this.onMessage('set_rateMode', (client:Client, message:{mode:string}) => 
         {
             if (client.sessionId == this.clients[0].sessionId) this.rateMode = message.mode;
-            else console.log("Player 2 tried changing the rate mode");
 
             this.broadcast('ret_rateMode', this.rateMode);
         });
@@ -118,9 +119,12 @@ export class VersusRoom extends Room<VersusRoomState>
             }
         });
 
-        this.onMessage('miss', (client:Client, message:{direction:number}) =>
+        this.onMessage('song_progress', (client:Client, message:{prog:number}) =>
         {
-            this.broadcast('miss', {direction: message.direction});
+            if (client.sessionId == this.clients[0].sessionId) this.player1.songProgress = message.prog;
+            else this.player2.songProgress = message.prog;
+
+            this.broadcast('player_song_progress', {p1prog: this.player1.songProgress, p2prog: this.player2.songProgress});
         });
 
         this.onMessage('set_stats', (client:Client, message:{accuracy:number, score:number, misses:number}) => 
@@ -205,7 +209,7 @@ export class VersusRoom extends Room<VersusRoomState>
             }
             else
             {
-                this.player2 = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0 };
+                this.player2 = { name: 'guest', ready: false, status: '', isOpponent: false, accuracy: 0.0, score: 0, misses: 0, songProgress: 0 };
                 this.broadcast('left', "player2");
             }
         }
