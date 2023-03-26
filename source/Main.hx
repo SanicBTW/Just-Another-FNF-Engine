@@ -41,7 +41,7 @@ class Main extends Sprite
 	public static var volumeTray:VolumeTray;
 	public static var notifTray:NotificationTray;
 
-	public static var preview:Float = 7.1;
+	public static var preview:Float = 8;
 
 	public static function main()
 		Lib.current.addChild(new Main());

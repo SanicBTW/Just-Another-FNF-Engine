@@ -63,6 +63,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 	public function push(newNote:Note)
 	{
+		newNote.spawned = true;
 		(newNote.isSustain ? holdGroup.add(newNote) : notesGroup.add(newNote));
 		allNotes.add(newNote);
 	}
@@ -110,6 +111,10 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 				if (downscrollMultiplier < 0)
 				{
+					// Might be wrong on this type of note: Note - Sustain end, because it cant get the previous note Y pos, if it does then the sustain end will stay visible for some reason
+					if (strumNote.isSustainEnd && strumNote.prevNote.isSustain)
+						strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3;
+
 					strumNote.flipY = true;
 					if (strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
 						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))

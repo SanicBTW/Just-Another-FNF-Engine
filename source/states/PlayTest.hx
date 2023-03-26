@@ -220,12 +220,13 @@ class PlayTest extends MusicBeatState
 				ChartLoader.unspawnedNoteList.splice(ChartLoader.unspawnedNoteList.indexOf(unspawnNote), 1);
 			}
 
-			playerStrums.holdGroup.forEachAlive(function(coolNote:Note)
+			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
 			{
 				if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
 					&& coolNote.canBeHit
-					&& !coolNote.wasGoodHit
 					&& !coolNote.tooLate
+					&& !coolNote.wasGoodHit
+					&& coolNote.isSustain
 					&& keys[coolNote.noteData])
 				{
 					hit(coolNote);
@@ -286,7 +287,7 @@ class PlayTest extends MusicBeatState
 
 		playerStrums.allNotes.forEachAlive(function(daNote:Note)
 		{
-			if ((daNote.noteData == data) && daNote.canBeHit && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustain)
+			if ((daNote.noteData == data) && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustain)
 			{
 				if (directionList.contains(data))
 				{
