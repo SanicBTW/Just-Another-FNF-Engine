@@ -88,18 +88,54 @@ class Controls
 		}
 	}
 
-	public static function reloadActions()
+	private static function checkActions()
 	{
-		var load:StringMap<Array<Null<Int>>> = DatabaseManager.get("ui_actions");
-		for (key => arr in load)
+		for (action => keys in uiActions)
 		{
-			uiActions.set(key, arr);
+			if (DatabaseManager.get('ui_action-$action') == null)
+			{
+				trace('No ${action} action found');
+				DatabaseManager.set('ui_action-$action', keys.toString());
+			}
 		}
 
-		load = DatabaseManager.get("note_actions");
-		for (key => arr in load)
+		for (action => keys in noteActions)
 		{
-			noteActions.set(key, arr);
+			if (DatabaseManager.get('note_action-$action') == null)
+			{
+				trace('No ${action} action found');
+				DatabaseManager.set('note_action-$action', keys.toString());
+			}
+		}
+	}
+
+	public static function saveActions()
+	{
+		for (action => keys in uiActions)
+		{
+			DatabaseManager.set('ui_action-$action', keys.toString());
+		}
+
+		for (action => keys in noteActions)
+		{
+			DatabaseManager.set('note_action-$action', keys.toString());
+		}
+	}
+
+	public static function reloadActions()
+	{
+		checkActions();
+
+		for (action in uiActions.keys())
+		{
+			var load:Dynamic<Array<Null<Int>>> = DatabaseManager.get('ui_action-$action');
+			uiActions.set(action, cast load);
+		}
+
+		for (action in noteActions.keys())
+		{
+			var load:Dynamic<Array<Null<Int>>> = DatabaseManager.get('note_action-$action');
+			noteActions.set(action, cast load);
 		}
 	}
 

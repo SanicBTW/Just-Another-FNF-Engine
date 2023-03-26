@@ -29,8 +29,8 @@ class SaveData
 			DatabaseManager.set(field, Reflect.field(SaveData, field));
 		}
 
-		DatabaseManager.set("ui_actions", Controls.uiActions);
-		DatabaseManager.set("note_actions", Controls.noteActions);
+		Controls.saveActions();
+
 		DatabaseManager.save();
 	}
 
@@ -41,18 +41,6 @@ class SaveData
 			var defaultValue:Dynamic = Reflect.field(SaveData, field);
 			var save:Dynamic = DatabaseManager.get(field);
 			Reflect.setField(SaveData, field, (save == null ? defaultValue : save));
-		}
-
-		if (DatabaseManager.get("ui_actions") == null)
-		{
-			trace("No UI Actions found on the save");
-			DatabaseManager.set("ui_actions", Controls.uiActions);
-		}
-
-		if (DatabaseManager.get("note_actions") == null)
-		{
-			trace("No NOTE Actions found on the save");
-			DatabaseManager.set("note_actions", Controls.noteActions);
 		}
 
 		Controls.reloadActions();
