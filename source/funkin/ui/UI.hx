@@ -15,7 +15,6 @@ class UI extends FlxSpriteGroup
 	private var accuracyText:FlxBitmapText;
 	private var scoreText:FlxBitmapText;
 	private var rankText:FlxBitmapText;
-	private var timeBar:Bar;
 
 	public function new()
 	{
@@ -39,11 +38,9 @@ class UI extends FlxSpriteGroup
 		rankText.text = "Rank N/A";
 		add(rankText);
 
-		timeBar = new Bar(0, 0, FlxG.width - 50, 10, FlxColor.WHITE, FlxColor.GREEN);
-		timeBar.screenCenter();
-		timeBar.y = FlxG.height - 20;
-		timeBar.screenCenter(X);
-		add(timeBar);
+		var timeTracker:TimeTracker = new TimeTracker(0, SaveData.downScroll ? (FlxG.height - 45) : 20);
+		timeTracker.screenCenter(X);
+		add(timeTracker);
 
 		var judgementsArray:Array<String> = [];
 		for (idx => judge in Timings.judgements)
@@ -62,12 +59,6 @@ class UI extends FlxSpriteGroup
 	private function sortJudgements(Obj1:String, Obj2:String)
 	{
 		return FlxSort.byValues(FlxSort.DESCENDING, Timings.getJudgementIndex(Obj1), Timings.getJudgementIndex(Obj2));
-	}
-
-	override public function update(elapsed:Float)
-	{
-		timeBar.value = (Conductor.songPosition / Conductor.boundSong.length);
-		super.update(elapsed);
 	}
 
 	public function updateText()

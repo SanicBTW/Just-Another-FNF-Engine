@@ -63,7 +63,6 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 	public function push(newNote:Note)
 	{
-		newNote.spawned = true;
 		(newNote.isSustain ? holdGroup.add(newNote) : notesGroup.add(newNote));
 		allNotes.add(newNote);
 	}

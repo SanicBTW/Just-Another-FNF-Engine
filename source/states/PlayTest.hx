@@ -326,7 +326,8 @@ class PlayTest extends MusicBeatState
 		{
 			for (coolNote in possibleNotes)
 			{
-				hit(coolNote);
+				if (keys[coolNote.noteData] && coolNote.canBeHit && !coolNote.tooLate)
+					hit(coolNote);
 			}
 		}
 
