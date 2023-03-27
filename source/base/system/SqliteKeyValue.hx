@@ -81,8 +81,12 @@ class SqliteKeyValue implements IFlxDestroyable
 		{
 			var connection:Connection = getConnection();
 			connection.request('BEGIN TRANSACTION');
-			connection.request('DELETE FROM $escapedTable WHERE key = $escapedKey');
-			connection.request('INSERT INTO $escapedTable (key, value) VALUES ($escapedKey, $escapedValue)');
+			var result:ResultSet = connection.request('SELECT value FROM $escapedTable WHERE key = $escapedKey');
+			if (result.results().first() != null)
+				connection.request('UPDATE $escapedTable SET value = $escapedValue WHERE key = $escapedKey');
+			else
+				connection.request('INSERT INTO $escapedTable (key, value) VALUES ($escapedKey, $escapedValue)');
+
 			connection.request('COMMIT');
 		}
 		catch (exc:Dynamic)
@@ -194,6 +198,32 @@ class SqliteKeyValue implements IFlxDestroyable
 		return value != null ? value.toString() : null;
 	}
 
+	// I believe its done everytime there is a transaction, dunno if it actually works lol
+	public function save():Bool
+	{
+		if (!mutexAcquiredInParent)
+			mutex.acquire();
+
+		try
+		{
+			var connection:Connection = getConnection();
+			connection.request('BEGIN TRANSACTION');
+			connection.request('COMMIT');
+		}
+		catch (exc:Dynamic)
+		{
+			trace('Failed saving');
+			if (!mutexAcquiredInParent)
+				mutex.release();
+			return false;
+		}
+
+		if (!mutexAcquiredInParent)
+			mutex.release();
+
+		return true;
+	}
+
 	public function destroy():Void
 	{
 		mutex.acquire();
@@ -218,7 +248,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		connection.request('PRAGMA encoding = "UTF-8"');
 		connection.request('
             CREATE TABLE $escapedTable (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 key TEXT NOT NULL,
                 value TEXT NOT NULL
             )

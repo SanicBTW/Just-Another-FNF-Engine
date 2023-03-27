@@ -36,14 +36,15 @@ class TimeTracker extends FlxSpriteGroup
 		timeText.fieldWidth = 400;
 		timeText.borderSize = 2;
 		timeText.text = "0:00";
-		timeText.setPosition((FlxG.width / 2) - (timeText.width / 2), timeBarBG.getGraphicMidpoint().y - (timeText.height / 2));
+		timeText.setPosition((timeBarBG.width / 2) - (timeText.width / 2), timeBarBG.getMidpoint().y + (timeText.height / 2));
 
-		timeBar = new Bar(4, 4, Std.int(timeBarBG.width - 8), Std.int(timeBarBG.height - 8), 0xFF000000, 0xFFFFFFFF);
+		timeBar = new Bar(timeBarBG.x + 4, timeBarBG.y + 4, Std.int(timeBarBG.width - 8), Std.int(timeBarBG.height - 8), 0xFF000000, 0xFFFFFFFF);
 		timeBarBG.sprTracker = timeBar;
 
 		add(timeBarBG);
 		add(timeBar);
 		add(timeText);
+		screenCenter(flixel.util.FlxAxes.X);
 	}
 
 	override public function update(elapsed:Float)

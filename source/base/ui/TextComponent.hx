@@ -173,10 +173,8 @@ class TextComponent extends FlxSprite
 		text = Text;
 		fieldWidth = FieldWidth;
 
-		_bitmap = Cache.setBitmap("txtBitmap",
-			new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT));
-		_borderBitmap = Cache.setBitmap("txtBBitmap",
-			new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT));
+		_bitmap = new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT);
+		_borderBitmap = new BitmapData(Std.int(fieldWidth * 1.5), Std.int(textField.textHeight) + VERTICAL_GUTTER, true, FlxColor.TRANSPARENT);
 		_drawRect = new Rectangle(0, 0, fieldWidth * 1.5, textField.textHeight + VERTICAL_GUTTER);
 		_zeroOffset = new Point();
 		_swagMatrix = new Matrix();
@@ -187,8 +185,7 @@ class TextComponent extends FlxSprite
 	override public function destroy()
 	{
 		_bitmap = null;
-		Cache.disposeBitmap("txtBitmap");
-		Cache.disposeBitmap("txtBBitmap");
+		_borderBitmap = null;
 		_drawRect = null;
 		_defaultFormat = null;
 		_formatAdjusted = null;

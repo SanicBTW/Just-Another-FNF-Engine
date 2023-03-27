@@ -39,7 +39,6 @@ class UI extends FlxSpriteGroup
 		add(rankText);
 
 		var timeTracker:TimeTracker = new TimeTracker(0, SaveData.downScroll ? (FlxG.height - 45) : 20);
-		timeTracker.screenCenter(X);
 		add(timeTracker);
 
 		var judgementsArray:Array<String> = [];

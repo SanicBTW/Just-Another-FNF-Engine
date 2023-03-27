@@ -58,7 +58,9 @@ class SaveFile
 	// SQLite flushes to disk everytime there's a transaction
 	public static function save()
 	{
-		#if html5
+		#if !html5
+		_db.save();
+		#else
 		_save.flush(0, (_) ->
 		{
 			trace("Saved");
