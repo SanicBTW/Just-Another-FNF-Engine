@@ -1,6 +1,6 @@
 package base.system;
 
-import base.system.DatabaseManager;
+import base.system.SaveFile;
 import flixel.FlxG;
 import haxe.ds.StringMap;
 import lime.app.Event;
@@ -92,19 +92,19 @@ class Controls
 	{
 		for (action => keys in uiActions)
 		{
-			if (DatabaseManager.get('ui_action-$action') == null)
+			if (SaveFile.get('ui_action-$action') == null)
 			{
 				trace('No ${action} action found');
-				DatabaseManager.set('ui_action-$action', keys.toString());
+				SaveFile.set('ui_action-$action', keys.toString());
 			}
 		}
 
 		for (action => keys in noteActions)
 		{
-			if (DatabaseManager.get('note_action-$action') == null)
+			if (SaveFile.get('note_action-$action') == null)
 			{
 				trace('No ${action} action found');
-				DatabaseManager.set('note_action-$action', keys.toString());
+				SaveFile.set('note_action-$action', keys.toString());
 			}
 		}
 	}
@@ -113,12 +113,12 @@ class Controls
 	{
 		for (action => keys in uiActions)
 		{
-			DatabaseManager.set('ui_action-$action', keys.toString());
+			SaveFile.set('ui_action-$action', keys.toString());
 		}
 
 		for (action => keys in noteActions)
 		{
-			DatabaseManager.set('note_action-$action', keys.toString());
+			SaveFile.set('note_action-$action', keys.toString());
 		}
 	}
 
@@ -126,16 +126,27 @@ class Controls
 	{
 		checkActions();
 
+		// Kind of dumb but it works :+1:
 		for (action in uiActions.keys())
 		{
-			var load:Dynamic<Array<Null<Int>>> = DatabaseManager.get('ui_action-$action');
-			uiActions.set(action, cast load);
+			var rawLoad:Array<String> = SaveFile.get('ui_action-$action').split(",");
+			var loadKeys:Array<Null<Int>> = [];
+			for (key in rawLoad)
+			{
+				loadKeys.push(Std.parseInt(key));
+			}
+			uiActions.set(action, loadKeys);
 		}
 
 		for (action in noteActions.keys())
 		{
-			var load:Dynamic<Array<Null<Int>>> = DatabaseManager.get('note_action-$action');
-			noteActions.set(action, cast load);
+			var rawLoad:Array<String> = SaveFile.get('note_action-$action').split(",");
+			var loadKeys:Array<Null<Int>> = [];
+			for (key in rawLoad)
+			{
+				loadKeys.push(Std.parseInt(key));
+			}
+			noteActions.set(action, loadKeys);
 		}
 	}
 

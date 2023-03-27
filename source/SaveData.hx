@@ -1,7 +1,7 @@
 package;
 
 import base.system.Controls;
-import base.system.DatabaseManager;
+import base.system.SaveFile;
 
 class SaveData
 {
@@ -26,12 +26,12 @@ class SaveData
 	{
 		for (field in getSettings())
 		{
-			DatabaseManager.set(field, Reflect.field(SaveData, field));
+			SaveFile.set(field, Reflect.field(SaveData, field));
 		}
 
 		Controls.saveActions();
 
-		DatabaseManager.save();
+		SaveFile.save();
 	}
 
 	public static function loadSettings()
@@ -39,7 +39,7 @@ class SaveData
 		for (field in getSettings())
 		{
 			var defaultValue:Dynamic = Reflect.field(SaveData, field);
-			var save:Dynamic = DatabaseManager.get(field);
+			var save:Dynamic = SaveFile.get(field);
 			Reflect.setField(SaveData, field, (save == null ? defaultValue : save));
 		}
 

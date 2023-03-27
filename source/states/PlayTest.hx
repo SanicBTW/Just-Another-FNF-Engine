@@ -5,8 +5,8 @@ import base.MusicBeatState;
 import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
-import base.system.DatabaseManager;
 import base.system.DiscordPresence;
+import base.system.SaveFile;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -165,7 +165,7 @@ class PlayTest extends MusicBeatState
 
 		super.create();
 
-		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
+		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 		Paths.music("tea-time"); // precache the sound lol
 		FadeTransition.nextCamera = camOther;
 		DiscordPresence.changePresence('Playing ${SONG.song}');

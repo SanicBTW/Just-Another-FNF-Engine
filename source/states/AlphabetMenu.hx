@@ -7,8 +7,8 @@ import base.pocketbase.Collections.Funkin_Old;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
 import base.system.Controls;
-import base.system.DatabaseManager;
 import base.system.DiscordPresence;
+import base.system.SaveFile;
 import base.ui.Alphabet;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -163,7 +163,7 @@ class AlphabetMenu extends MusicBeatState
 
 		curPage = 0;
 
-		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
+		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 
 		FlxG.sound.playMusic(Paths.music("freakyMenu"));
 
@@ -295,8 +295,8 @@ class AlphabetMenu extends MusicBeatState
 				FlxG.camera.setFilters([]);
 		}
 
-		DatabaseManager.set("shader", shader);
-		DatabaseManager.save();
+		SaveFile.set("shader", shader);
+		SaveFile.save();
 
 		if (shaderFilter != null)
 			FlxG.camera.setFilters([shaderFilter]);

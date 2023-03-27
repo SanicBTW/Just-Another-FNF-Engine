@@ -2,13 +2,16 @@ package base.system;
 
 import flixel.FlxG;
 import flixel.util.FlxSave;
+
+using StringTools;
+
+#if !html5
 import haxe.io.Path;
 import lime.app.Application;
 import lime.system.System;
+#end
 
-using StringTools; // just manages save shit lol
-
-class DatabaseManager
+class SaveFile
 {
 	#if !html5
 	private static var _db(default, null):SqliteKeyValue;
@@ -18,10 +21,10 @@ class DatabaseManager
 
 	public static function Initialize()
 	{
-		#if !html5
 		#if !debug
 		FlxG.save.close();
 		#end
+		#if !html5
 		_db = new SqliteKeyValue(Path.join([
 			System.applicationStorageDirectory.replace("MyCompany", Application.current.meta.get("company"))
 				.replace("MyApplication", Application.current.meta.get("file")),
@@ -29,7 +32,7 @@ class DatabaseManager
 		]), "EngineSettings");
 		#else
 		_save = new FlxSave();
-		_save.bind("db", null);
+		_save.bind("engine_settings", null);
 		#end
 		SaveData.loadSettings();
 	}

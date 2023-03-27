@@ -82,8 +82,7 @@ class Main extends Sprite
 		NativeGc.enable(true);
 		#end
 
-		// I Love sucking cocks
-		DatabaseManager.Initialize();
+		SaveFile.Initialize();
 		Controls.init();
 
 		Application.current.window.title = 'BETA ${Application.current.meta.get("version")} - PREVIEW ${preview}';

@@ -95,7 +95,7 @@ class DiscordPresence
 
 	public static function initPresence() {}
 
-	public static function changePresence(details:String = '', ?state:String, ?smallImageKey:String, hasStartTimestamp:Bool = false, endTimeStamp:Float = 0)
+	public static function changePresence(details:String = '', ?state:String, ?smallImageKey:String, hasStartTimestamp:Bool = false, endTimeStamp:Float = 0) {}
 
 	public static function shutdownPresence() {}
 }

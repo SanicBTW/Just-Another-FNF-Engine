@@ -5,8 +5,8 @@ import base.MusicBeatState;
 import base.ScriptableState;
 import base.system.Conductor;
 import base.system.Controls;
-import base.system.DatabaseManager;
 import base.system.DiscordPresence;
+import base.system.SaveFile;
 import base.system.Timer;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -166,7 +166,7 @@ class OnlinePlayState extends MusicBeatState
 
 		super.create();
 
-		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
+		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 		FadeTransition.nextCamera = camOther;
 		room.send('report_status', "Playing");
 		DiscordPresence.changePresence('Playing ${SONG.song}');

@@ -8,7 +8,7 @@ import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
 import base.system.Conductor;
 import base.system.Controls;
-import base.system.DatabaseManager;
+import base.system.SaveFile;
 import base.ui.CircularSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -162,7 +162,7 @@ class RewriteMenu extends MusicBeatState
 
 		super.create();
 
-		applyShader(DatabaseManager.get("shader") != null ? DatabaseManager.get("shader") : "Disable");
+		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 
 		Conductor.boundState = this;
 		Conductor.changeBPM(102);
@@ -472,8 +472,8 @@ class RewriteMenu extends MusicBeatState
 				FlxG.camera.setFilters([]);
 		}
 
-		DatabaseManager.set("shader", shader);
-		DatabaseManager.save();
+		SaveFile.set("shader", shader);
+		SaveFile.save();
 
 		if (shaderFilter != null)
 			FlxG.camera.setFilters([shaderFilter]);
