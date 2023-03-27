@@ -5,6 +5,7 @@ import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import haxe.Exception;
 import haxe.crypto.Base64;
 import haxe.io.Bytes;
+import haxe.io.Path;
 import sys.FileSystem;
 import sys.db.Connection;
 import sys.db.ResultSet;
@@ -55,6 +56,9 @@ class SqliteKeyValue implements IFlxDestroyable
 		this.table = table;
 
 		escapedTable = escape(table);
+
+		if (!FileSystem.exists(Path.directory(path)))
+			FileSystem.createDirectory(Path.directory(path));
 
 		if (!FileSystem.exists(path))
 			createDB();
@@ -209,7 +213,6 @@ class SqliteKeyValue implements IFlxDestroyable
 	{
 		mutex.acquire();
 
-		trace("Creating DB");
 		var connection:Connection = getConnection();
 		connection.request('BEGIN TRANSACTION');
 		connection.request('PRAGMA encoding = "UTF-8"');

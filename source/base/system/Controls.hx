@@ -92,20 +92,20 @@ class Controls
 	{
 		for (action => keys in uiActions)
 		{
-			if (SaveFile.get('ui_action-$action') == null)
-			{
-				trace('No ${action} action found');
-				SaveFile.set('ui_action-$action', keys.toString());
-			}
+			if (SaveFile.get('ui_action-$action') != null)
+				return;
+
+			trace('No ${action} action found');
+			SaveFile.set('ui_action-$action', parseArray(keys));
 		}
 
 		for (action => keys in noteActions)
 		{
-			if (SaveFile.get('note_action-$action') == null)
-			{
-				trace('No ${action} action found');
-				SaveFile.set('note_action-$action', keys.toString());
-			}
+			if (SaveFile.get('note_action-$action') != null)
+				return;
+
+			trace('No ${action} action found');
+			SaveFile.set('note_action-$action', parseArray(keys));
 		}
 	}
 
@@ -113,12 +113,12 @@ class Controls
 	{
 		for (action => keys in uiActions)
 		{
-			SaveFile.set('ui_action-$action', keys.toString());
+			SaveFile.set('ui_action-$action', parseArray(keys));
 		}
 
 		for (action => keys in noteActions)
 		{
-			SaveFile.set('note_action-$action', keys.toString());
+			SaveFile.set('note_action-$action', parseArray(keys));
 		}
 	}
 
@@ -152,19 +152,6 @@ class Controls
 
 	public static function keyCodeToString(keyCode:Null<Int>):String
 		return keyCode != null ? keyCodes.get(keyCode) : "None";
-
-	public static function isActionPressed(action:String):Bool
-	{
-		for (actionKey in actions.get(action))
-		{
-			for (keyP in keyPressed)
-			{
-				if (actionKey == keyP)
-					return true;
-			}
-		}
-		return false;
-	}
 
 	public static function getActionFromKey(key:Int):Null<String>
 	{
@@ -209,6 +196,18 @@ class Controls
 			if (releasedAction != null)
 				onActionReleased.dispatch(releasedAction);
 		}
+	}
+
+	private static function parseArray(array:Array<Dynamic>):String
+	{
+		#if html5
+		// dumb ass JS parses arrays correctly without leaving array brackets
+		return array.toString();
+		#else
+		// native dumb ass platforms turns an array into a string including the brackets
+		// First character is [ and we search the index of the end bracket
+		return array.toString().substring(1, array.toString().indexOf("]"));
+		#end
 	}
 }
 

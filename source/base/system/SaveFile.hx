@@ -2,12 +2,12 @@ package base.system;
 
 import flixel.FlxG;
 import flixel.util.FlxSave;
+import lime.app.Application;
 
 using StringTools;
 
 #if !html5
 import haxe.io.Path;
-import lime.app.Application;
 import lime.system.System;
 #end
 
@@ -26,13 +26,13 @@ class SaveFile
 		#end
 		#if !html5
 		_db = new SqliteKeyValue(Path.join([
-			System.applicationStorageDirectory.replace("MyCompany", Application.current.meta.get("company"))
-				.replace("MyApplication", Application.current.meta.get("file")),
-			"engine_settings.db"
-		]), "EngineSettings");
+			System.userDirectory,
+			'${Application.current.meta.get("file")}_files',
+			"settings.db"
+		]), "Settings");
 		#else
 		_save = new FlxSave();
-		_save.bind("engine_settings", null);
+		_save.bind("settings", #if (flixel < "5.0.0") Application.current.meta.get("company") #end);
 		#end
 		SaveData.loadSettings();
 	}
@@ -46,7 +46,7 @@ class SaveFile
 		#end
 	}
 
-	public static inline function get(key:String):Dynamic
+	public static inline function get(key:String):#if !html5 String #else Dynamic #end
 	{
 		#if !html5
 		return _db.get(key);
