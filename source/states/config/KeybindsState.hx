@@ -52,7 +52,7 @@ class KeybindsState extends MusicBeatState
 		if (newState == LISTING)
 		{
 			currentObject.forceX = 640;
-			currentObject.yAdd = -250;
+			currentObject.yAdd = -225 + (currentObject.height / 2);
 			if (bindedActions.length <= 0)
 				regenBinded(currentObject);
 
@@ -159,7 +159,7 @@ class KeybindsState extends MusicBeatState
 		helpText = new KeybindSelector(0, 0, "Press ESC to cancel", FlxG.width - 40);
 		helpText.forceX = 20;
 		helpText.yMult = 0;
-		helpText.yAdd = -250 - helpText.height;
+		helpText.yAdd = -225 - helpText.height;
 		helpText.alpha = 0;
 		add(helpText);
 
@@ -317,12 +317,6 @@ class KeybindsState extends MusicBeatState
 
 		super.update(elapsed);
 	}
-}
-
-enum abstract ActionType(String) to String
-{
-	var UI = "uiActions";
-	var NOTES = "noteActions";
 }
 
 enum SelectionState

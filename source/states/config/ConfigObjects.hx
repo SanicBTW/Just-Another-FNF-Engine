@@ -55,7 +55,7 @@ class KeybindSelector extends flixel.group.FlxSpriteGroup
 
 		// X and Y Positions
 		var scaledY:Float = flixel.math.FlxMath.remapToRange(targetY, 0, 1, 0, 1.3);
-		y = flixel.math.FlxMath.lerp(y, (scaledY * yMult) + (flixel.FlxG.height * 0.48) + yAdd, slowLerp);
+		y = flixel.math.FlxMath.lerp(y, (scaledY * yMult) + ((flixel.FlxG.height * 0.5) - (height / 2)) + yAdd, slowLerp);
 		if (forceX != Math.NEGATIVE_INFINITY)
 			x = flixel.math.FlxMath.lerp(x, forceX, slowLerp);
 		else

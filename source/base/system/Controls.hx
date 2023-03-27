@@ -212,8 +212,8 @@ class Controls
 	}
 }
 
-enum ActionType
+enum abstract ActionType(String) to String
 {
-	UI;
-	NOTES;
+	var UI = "uiActions";
+	var NOTES = "noteActions";
 }
