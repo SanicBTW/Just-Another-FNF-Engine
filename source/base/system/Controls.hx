@@ -129,7 +129,7 @@ class Controls
 		// Kind of dumb but it works :+1:
 		for (action in uiActions.keys())
 		{
-			var rawLoad:Array<String> = SaveFile.get('ui_action-$action').split(",");
+			var rawLoad:Array<String> = SaveFile.get('ui_action-$action', "").split(",");
 			var loadKeys:Array<Null<Int>> = [];
 			for (key in rawLoad)
 			{
@@ -140,7 +140,7 @@ class Controls
 
 		for (action in noteActions.keys())
 		{
-			var rawLoad:Array<String> = SaveFile.get('note_action-$action').split(",");
+			var rawLoad:Array<String> = SaveFile.get('note_action-$action', "").split(",");
 			var loadKeys:Array<Null<Int>> = [];
 			for (key in rawLoad)
 			{

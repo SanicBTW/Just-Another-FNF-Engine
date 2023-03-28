@@ -2,6 +2,7 @@ package;
 
 import base.system.Controls;
 import base.system.SaveFile;
+import flixel.FlxG;
 
 class SaveData
 {
@@ -42,6 +43,12 @@ class SaveData
 			var save:Dynamic = SaveFile.get(field);
 			Reflect.setField(SaveData, field, (save == null ? defaultValue : save));
 		}
+
+		if (SaveFile.get("volume") != null)
+			FlxG.sound.volume = SaveFile.get("volume");
+
+		if (SaveFile.get("muted") != null)
+			FlxG.sound.muted = SaveFile.get("muted");
 
 		Controls.reloadActions();
 	}

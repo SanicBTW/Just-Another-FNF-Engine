@@ -19,6 +19,8 @@ class SaveFile
 	private static var _save(default, null):FlxSave;
 	#end
 
+	public static var bound:Bool = false;
+
 	public static function Initialize()
 	{
 		#if !debug
@@ -34,6 +36,7 @@ class SaveFile
 		_save = new FlxSave();
 		_save.bind("settings", #if (flixel < "5.0.0") Application.current.meta.get("company") #end);
 		#end
+		bound = true;
 		SaveData.loadSettings();
 	}
 
@@ -46,10 +49,10 @@ class SaveFile
 		#end
 	}
 
-	public static inline function get(key:String):#if !html5 String #else Dynamic #end
+	public static function get<T:Dynamic>(key:String, ?as:T):#if !html5 T #else Dynamic #end
 	{
 		#if !html5
-		return _db.get(key);
+		return cast _db.get(key);
 		#else
 		return Reflect.field(_save.data, key);
 		#end
