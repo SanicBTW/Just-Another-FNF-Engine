@@ -17,6 +17,7 @@ import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxColor;
 import funkin.Character;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
@@ -33,6 +34,7 @@ import substates.PauseState;
 
 using StringTools;
 
+// Rewriting soon
 class PlayTest extends MusicBeatState
 {
 	public static var instance:PlayTest;
@@ -120,27 +122,35 @@ class PlayTest extends MusicBeatState
 
 		add(strumLines);
 
+		// Gotta load them characters but destroy their graphic after doing so if we only want the notes
+		girlfriend = new Character(400, 130, false, "gf");
+		player = new Character(770, 100, true, "bf");
+		opponent = new Character(100, 100, false, "dad");
+
 		if (!SaveData.onlyNotes)
 		{
 			stage = new Stage("stage");
 			add(stage);
 
-			girlfriend = new Character(400, 130, false, "gf");
 			girlfriend.scrollFactor.set(0.95, 0.95);
 			add(girlfriend);
 
-			player = new Character(770, 100, true, "bf");
 			add(player);
 
-			opponent = new Character(100, 100, false, "dad");
 			add(opponent);
+		}
+		else
+		{
+			girlfriend.graphic.destroy();
+			player.graphic.destroy();
+			opponent.graphic.destroy();
 		}
 
 		Conductor.songPosition = -5000;
 
-		hud = new UI();
-		add(hud);
+		hud = new UI(player, opponent);
 		hud.cameras = [camHUD];
+		add(hud);
 
 		generateSong();
 
@@ -239,6 +249,11 @@ class PlayTest extends MusicBeatState
 			{
 				if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
 					player.dance();
+			}
+
+			if (Timings.health <= 0)
+			{
+				ScriptableState.switchState(new PlayTest(loadSong));
 			}
 		}
 	}
@@ -359,6 +374,9 @@ class PlayTest extends MusicBeatState
 	override public function beatHit()
 	{
 		super.beatHit();
+
+		@:privateAccess
+		hud.healthTracker.beatHit();
 
 		if (curBeat % 2 == 0 && !SaveData.onlyNotes)
 		{

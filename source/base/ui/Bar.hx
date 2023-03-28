@@ -22,6 +22,14 @@ class Bar extends FlxSprite
 	private var barWidth(default, null):Int;
 	private var barHeight(default, null):Int;
 
+	public var percent(get, null):Float = 0;
+
+	@:noCompletion
+	// Tested on the time bar, it was songPosition / length so it would give actual percentage
+	// To get a good percentage, the value should be set as targetValue / max so it works
+	private function get_percent():Float
+		return Math.floor(value * 100);
+
 	public var value:Float = 0;
 
 	public function new(X:Float = 0, Y:Float = 0, Width:Int = 100, Height:Int = 10, bgColor:FlxColor, fgColor:FlxColor)

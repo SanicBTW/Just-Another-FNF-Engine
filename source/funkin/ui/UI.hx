@@ -16,13 +16,17 @@ class UI extends FlxSpriteGroup
 	private var scoreText:FlxBitmapText;
 	private var rankText:FlxBitmapText;
 
-	public function new()
+	private var timeTracker:TimeTracker;
+	private var healthTracker:HealthTracker;
+
+	public function new(player:Character, opponent:Character)
 	{
 		super();
 
 		accuracyText = new FlxBitmapText(Fonts.VCR());
 		Fonts.setProperties(accuracyText);
 		accuracyText.setPosition(30, SaveData.downScroll ? (FlxG.height / 2) - (FlxG.height / 4) : (FlxG.height / 2) + (FlxG.height / 4));
+		accuracyText.y -= 50; // Offset to avoid getting overlapped by the health icon
 		accuracyText.text = "Accuracy 0%";
 		add(accuracyText);
 
@@ -38,8 +42,11 @@ class UI extends FlxSpriteGroup
 		rankText.text = "Rank N/A";
 		add(rankText);
 
-		var timeTracker:TimeTracker = new TimeTracker(0, SaveData.downScroll ? (FlxG.height - 45) : 20);
+		timeTracker = new TimeTracker(0, SaveData.downScroll ? (FlxG.height - 45) : 20);
 		add(timeTracker);
+
+		healthTracker = new HealthTracker(0, SaveData.downScroll ? (0.11 * FlxG.height) : (FlxG.height * 0.89), player, opponent);
+		add(healthTracker);
 
 		var judgementsArray:Array<String> = [];
 		for (idx => judge in Timings.judgements)

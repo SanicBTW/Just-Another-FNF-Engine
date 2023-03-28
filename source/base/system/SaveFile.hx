@@ -13,11 +13,7 @@ import lime.system.System;
 
 class SaveFile
 {
-	#if !html5
-	private static var _db(default, null):SqliteKeyValue;
-	#else
 	private static var _save(default, null):FlxSave;
-	#end
 
 	public static var bound:Bool = false;
 
@@ -26,48 +22,27 @@ class SaveFile
 		#if !debug
 		FlxG.save.close();
 		#end
-		#if !html5
-		_db = new SqliteKeyValue(Path.join([
-			System.userDirectory,
-			'${Application.current.meta.get("file")}_files',
-			"settings.db"
-		]), "Settings");
-		#else
 		_save = new FlxSave();
 		_save.bind("settings", #if (flixel < "5.0.0") Application.current.meta.get("company") #end);
-		#end
 		bound = true;
 		SaveData.loadSettings();
 	}
 
-	public static inline function set(key:String, value:String)
+	public static inline function set(key:String, value:Dynamic)
 	{
-		#if !html5
-		_db.set(key, value);
-		#else
 		Reflect.setField(_save.data, key, value);
-		#end
 	}
 
-	public static function get<T:Dynamic>(key:String, ?as:T):#if !html5 T #else Dynamic #end
+	public static inline function get(key:String):Dynamic
 	{
-		#if !html5
-		return cast _db.get(key);
-		#else
 		return Reflect.field(_save.data, key);
-		#end
 	}
 
-	// SQLite flushes to disk everytime there's a transaction
 	public static function save()
 	{
-		#if !html5
-		_db.save();
-		#else
 		_save.flush(0, (_) ->
 		{
 			trace("Saved");
 		});
-		#end
 	}
 }

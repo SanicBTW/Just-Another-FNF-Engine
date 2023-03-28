@@ -43,6 +43,7 @@ class Timings
 	public static var notesAccuracy:Float = 0;
 	public static var accuracy(get, never):Float;
 
+	@:noCompletion
 	private static function get_accuracy():Float
 		return Math.min(100, Math.max(0, notesAccuracy / totalHits));
 
@@ -51,13 +52,14 @@ class Timings
 	public static var ratingFC:Null<String> = null;
 
 	// Judgements metadata
+	// All health values are half the prev (beginning 0.07)
 	public static final judgements:Array<Judgement> = [
 		{
 			name: "marvelous",
 			timing: 18,
 			weight: 100,
 			fcStatus: 'MFC',
-			health: 1,
+			health: 0.07,
 			score: 450,
 			shortName: "MV",
 			color: FlxColor.fromRGB(255, 255, 153),
@@ -68,7 +70,7 @@ class Timings
 			timing: 43,
 			weight: 98.25,
 			fcStatus: 'SFC',
-			health: 0.75,
+			health: 0.035,
 			score: 350,
 			shortName: "SK",
 			color: FlxColor.fromRGB(255, 255, 51),
@@ -79,7 +81,7 @@ class Timings
 			timing: 76,
 			weight: 65,
 			fcStatus: 'GFC',
-			health: 0.5,
+			health: 0.0175,
 			score: 150,
 			shortName: "GD",
 			color: FlxColor.fromRGB(30, 144, 255),
@@ -90,7 +92,7 @@ class Timings
 			timing: 106,
 			weight: 25,
 			fcStatus: 'FC',
-			health: 0.2,
+			health: -0.00875,
 			score: 50,
 			shortName: "BD",
 			color: FlxColor.fromRGB(148, 0, 211),
@@ -101,7 +103,7 @@ class Timings
 			timing: 127,
 			weight: -100,
 			fcStatus: null,
-			health: -0.5,
+			health: -0.2,
 			score: -50,
 			shortName: 'ST',
 			color: FlxColor.fromRGB(178, 34, 34),
@@ -112,7 +114,7 @@ class Timings
 			timing: 164,
 			weight: -100,
 			fcStatus: null,
-			health: -1,
+			health: -0.0475,
 			score: -100,
 			shortName: 'MS',
 			color: FlxColor.fromRGB(204, 66, 66),
@@ -187,6 +189,12 @@ class Timings
 				notesAccuracy += judgement.weight;
 				score += judgement.score;
 				health += judgement.health;
+
+				if (health >= 2)
+					health = 2;
+
+				if (health <= 0)
+					health = 0;
 
 				// Set the max combo
 				if (combo > maxCombo)

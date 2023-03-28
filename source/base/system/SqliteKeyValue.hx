@@ -1,5 +1,6 @@
 package base.system;
 
+// Set not properly working, will rewrite soon maybe
 #if sys
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import haxe.Exception;

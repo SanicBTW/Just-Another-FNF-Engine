@@ -4,6 +4,7 @@ package funkin;
 import base.system.Conductor;
 import base.ui.Sprite;
 import flixel.math.FlxPoint;
+import flixel.util.FlxColor;
 import openfl.Assets;
 
 using StringTools;
@@ -51,16 +52,19 @@ class Character extends OffsettedSprite
 	public var cameraPosition:FlxPoint;
 	public var characterPosition:FlxPoint;
 
-	public function new(x:Float, y:Float, isPlayer:Bool = false, character:String = 'bf')
+	public var healthIcon:String = 'bf';
+	public var healthColor:FlxColor;
+
+	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{
-		super(x, y);
+		super(X, Y);
 		this.isPlayer = isPlayer;
-		setChar(x, y, character);
+		setChar(character);
 		antialiasing = SaveData.antialiasing;
 	}
 
 	// create it on new
-	public function setChar(x:Float, y:Float, character:String = 'bf')
+	public function setChar(character:String = 'bf')
 	{
 		cameraPosition = new FlxPoint(0, 0);
 		characterPosition = new FlxPoint(0, 0);
@@ -76,10 +80,13 @@ class Character extends OffsettedSprite
 			updateHitbox();
 		}
 
+		healthIcon = json.healthicon;
 		characterPosition.set(json.position[0], json.position[1]);
 		cameraPosition = new FlxPoint(json.camera_position[0], json.camera_position[1]);
 		singDuration = json.sing_duration;
 		flipX = json.flip_x;
+		if (json.healthbar_colors != null && json.healthbar_colors.length > 2)
+			healthColor = FlxColor.fromRGB(json.healthbar_colors[0], json.healthbar_colors[1], json.healthbar_colors[2]);
 		if (json.no_antialiasing)
 			antialiasing = false;
 
@@ -108,7 +115,6 @@ class Character extends OffsettedSprite
 		danceIdle = (animation.getByName('danceLeft') != null && animation.getByName('danceRight') != null);
 		dance();
 
-		setPosition(x, y);
 		this.x += characterPosition.x;
 		this.y += characterPosition.y;
 	}
@@ -155,11 +161,12 @@ class Character extends OffsettedSprite
 			playAnim('idle', forced);
 	}
 
+	// getPath does the same as getLibraryPath actually, it just redirects to getLibraryPath if it isn't null lol
 	private function getCharPath():String
 	{
-		var retPath:String = Paths.getLibraryPath('$curCharacter/$curCharacter.json', "characters");
+		var retPath:String = Paths.getPath('$curCharacter/$curCharacter.json', "characters");
 		if (!Assets.exists(retPath))
-			retPath = Paths.getLibraryPath('$DEFAULT/$DEFAULT.json', "characters");
+			retPath = Paths.getPath('$DEFAULT/$DEFAULT.json', "characters");
 
 		return retPath;
 	}

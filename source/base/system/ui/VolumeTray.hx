@@ -94,14 +94,6 @@ class VolumeTray extends Sprite
 			{
 				visible = false;
 				active = false;
-
-				if (SaveFile.bound)
-				{
-					// Set between '' because dumb SQL and compiler wont be able to cast it as a string (also explicitly typed on the set function)
-					SaveFile.set('volume', '${FlxG.sound.volume}');
-					SaveFile.set('mute', '${FlxG.sound.muted}');
-					SaveFile.save();
-				}
 			}
 		}
 	}
