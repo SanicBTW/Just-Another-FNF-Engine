@@ -1,16 +1,29 @@
 package states;
 
 import base.MusicBeatState;
+import funkin.ChartLoader;
 import funkin.notes.StrumLine;
 import states.template.NotePlayfield;
 
 class PlayState extends NotePlayfield<PlayState>
 {
-	override private function get_curStrumLine():StrumLine
-		return strumLines.members[1];
+	public var loadSong:Null<String> = "";
 
-	override private function setupStrums()
+	override public function create()
 	{
-		trace("shouldnt be any strums rn");
+		super.create();
+	}
+
+	override public function new(?loadSong:String)
+	{
+		super();
+		this.loadSong = loadSong;
+	}
+
+	override private function generateSong()
+	{
+		SONG = ChartLoader.loadChart(this, loadSong, 2);
+
+		super.generateSong();
 	}
 }

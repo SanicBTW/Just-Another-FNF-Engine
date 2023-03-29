@@ -53,12 +53,6 @@ class NotePlayfield<T> extends MusicBeatState
 	private function get_opponentStrums():StrumLine
 		return strumLines.members[0];
 
-	/*
-		// Can be overriden to support 2 or more strum lines
-		public var curStrumLine(get, null):StrumLine;
-		@:noCompletion
-		private function get_curStrumLine():StrumLine
-			return strumLines.members[1]; */
 	// Countdown
 	public var startedCountdown:Bool = false;
 	public var startingSong:Bool = false;
@@ -74,6 +68,9 @@ class NotePlayfield<T> extends MusicBeatState
 	// Here is where the magic happens
 	override function create()
 	{
+		if (FlxG.sound.music.playing)
+			FlxG.sound.music.stop();
+
 		Controls.setActions(NOTES);
 		Timings.call();
 
@@ -103,7 +100,7 @@ class NotePlayfield<T> extends MusicBeatState
 		// should handle camera stuff in each playstate
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
-		Paths.music("tea-time");
+		// Paths.music("tea-time");
 		FadeTransition.nextCamera = camOther;
 
 		setupIntro();
@@ -119,12 +116,12 @@ class NotePlayfield<T> extends MusicBeatState
 		// dad strums
 		var strumLine:StrumLine = new StrumLine((FlxG.width / 2) - separation, 4);
 		strumLine.botPlay = true;
-		strumLine.onBotHit.add((_) -> {});
+		strumLine.onBotHit.add(botHit);
 		strumLines.add(strumLine);
 
 		var strumLine:StrumLine = new StrumLine((FlxG.width / 2) + separation, 4);
-		strumLine.onBotHit.add((_) -> {});
-		strumLine.onMiss.add((_) -> {});
+		strumLine.onBotHit.add(botHit);
+		strumLine.onMiss.add(noteMiss);
 		strumLines.add(strumLine);
 	}
 
@@ -164,7 +161,7 @@ class NotePlayfield<T> extends MusicBeatState
 			soundsArray.push(Paths.sound(sound));
 
 		var countdown:Int = -1;
-		// TODO: clean after finishing
+		// TODO: clean after finishing / maybe not, caching exists tho
 		var startTimer:FlxTimer = new FlxTimer().start(Conductor.crochet / 1000, (tmr:FlxTimer) ->
 		{
 			if (countdown >= 0 && countdown < introArray.length)
@@ -190,8 +187,6 @@ class NotePlayfield<T> extends MusicBeatState
 
 	private function generateSong()
 	{
-		SONG = ChartLoader.loadChart(this, "", 2);
-
 		Conductor.boundSong.onComplete = () ->
 		{
 			Conductor.boundSong.stop();
@@ -249,7 +244,10 @@ class NotePlayfield<T> extends MusicBeatState
 				&& !coolNote.tooLate
 				&& !coolNote.wasGoodHit
 				&& coolNote.isSustain
-				&& keys[coolNote.noteData]) {}
+				&& keys[coolNote.noteData])
+			{
+				noteHit(coolNote);
+			}
 		});
 	}
 
@@ -313,7 +311,10 @@ class NotePlayfield<T> extends MusicBeatState
 		{
 			for (coolNote in possibleNotes)
 			{
-				if (keys[coolNote.noteData] && coolNote.canBeHit && !coolNote.tooLate) {}
+				if (keys[coolNote.noteData] && coolNote.canBeHit && !coolNote.tooLate)
+				{
+					noteHit(coolNote);
+				}
 			}
 		}
 
@@ -373,6 +374,33 @@ class NotePlayfield<T> extends MusicBeatState
 			if (!note.isSustain)
 				playerStrums.destroyNote(note);
 		}
+	}
+
+	private function botHit(note:Note)
+	{
+		var curStrums:StrumLine = (note.mustPress ? playerStrums : opponentStrums);
+		if (!note.wasGoodHit)
+		{
+			note.wasGoodHit = true;
+			getReceptor(curStrums, note.noteData).playAnim('confirm');
+
+			if (note.isSustain)
+				getReceptor(curStrums, note.noteData).resetAnim = note.children.length;
+			else
+				playSplash(curStrums, note.noteData);
+
+			if (SONG.needsVoices)
+				Conductor.boundVocals.volume = 1;
+
+			if (!note.isSustain)
+				curStrums.destroyNote(note);
+		}
+	}
+
+	private function noteMiss(note:Note)
+	{
+		if (SONG.needsVoices)
+			Conductor.boundVocals.volume = 0;
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor

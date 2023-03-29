@@ -196,7 +196,7 @@ class AlphabetMenu extends MusicBeatState
 								ChartLoader.netChart = null;
 								ChartLoader.netInst = null;
 								ChartLoader.netVoices = null;
-								ScriptableState.switchState(new PlayTest(curText));
+								ScriptableState.switchState(new PlayState(curText));
 							}
 						case "funkin" | "old_fnf_charts":
 							{

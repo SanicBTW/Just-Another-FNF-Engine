@@ -9,7 +9,9 @@ class Receptor extends FlxSprite
 
 	public var noteData:Int = 0;
 
-	public var setAlpha:Float = 1;
+	public var resetAnim:Float = 0;
+
+	public var setAlpha:Float = 0.9;
 
 	public function new(X:Float, Y:Float, noteData:Int = 0)
 	{
@@ -24,6 +26,16 @@ class Receptor extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
+		if (resetAnim > 0)
+		{
+			resetAnim -= elapsed;
+			if (resetAnim <= 0)
+			{
+				playAnim('static');
+				resetAnim = 0;
+			}
+		}
+
 		if (animation.curAnim.name == "confirm")
 			centerOrigin();
 
