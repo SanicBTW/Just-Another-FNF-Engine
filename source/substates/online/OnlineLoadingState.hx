@@ -17,7 +17,6 @@ import flixel.util.FlxColor;
 import funkin.ChartLoader;
 import io.colyseus.Room;
 import openfl.media.Sound;
-import states.PlayTest;
 import states.online.LobbyState;
 import states.online.schema.VersusRoom;
 

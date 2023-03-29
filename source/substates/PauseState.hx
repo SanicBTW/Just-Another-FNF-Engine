@@ -12,18 +12,13 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import funkin.ChartLoader;
-import states.PlayTest;
+import states.PlayState;
 
 class PauseState extends ScriptableSubState
 {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
-	var menuItems:Array<String> = [
-		'Resume',
-		'Reset song',
-		PlayTest.instance.playerStrums.botPlay ? "Disable botplay" : "Enable botplay",
-		'Exit'
-	];
+	var menuItems:Array<String> = ['Resume', 'Reset song', 'Exit'];
 	var curSelected:Int = 0;
 	var pauseMusic:FlxSound;
 
@@ -86,11 +81,8 @@ class PauseState extends ScriptableSubState
 						case "Resume":
 							Controls.setActions(NOTES);
 							close();
-						case 'Enable botplay' | "Disable botplay":
-							PlayTest.instance.playerStrums.botPlay = !PlayTest.instance.playerStrums.botPlay;
-							grpMenuShit.members[2].changeText(PlayTest.instance.playerStrums.botPlay ? "Disable botplay" : "Enable botplay");
 						case 'Reset song':
-							ScriptableState.switchState(new PlayTest(PlayTest.instance.loadSong));
+							ScriptableState.switchState(new PlayState(PlayState.instance.loadSong));
 						case 'Exit':
 							Conductor.boundSong.stop();
 							Conductor.boundVocals.stop();

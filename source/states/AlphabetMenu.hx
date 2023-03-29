@@ -42,11 +42,6 @@ class AlphabetMenu extends MusicBeatState
 
 	private var curText(get, null):String;
 
-	// Shaders
-	private var shaderFilter:ShaderFilter;
-	private var pixelShader:PixelEffect;
-	private var noiseShader:NoiseShader;
-
 	private var blockInputs = false;
 
 	@:noCompletion
@@ -163,8 +158,6 @@ class AlphabetMenu extends MusicBeatState
 
 		curPage = 0;
 
-		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
-
 		FlxG.sound.playMusic(Paths.music("freakyMenu"));
 
 		super.create();
@@ -222,10 +215,6 @@ class AlphabetMenu extends MusicBeatState
 							{
 								ScriptableState.switchState((curText == "settings") ? new EarlyConfig() : new KeybindsState());
 							}
-						case "shaders":
-							{
-								applyShader(curText);
-							}
 					}
 				}
 		}
@@ -267,38 +256,5 @@ class AlphabetMenu extends MusicBeatState
 			}
 		}
 		curSelected = groupItems.length + 1;
-	}
-
-	private function applyShader(shader:String)
-	{
-		if (shaderFilter != null)
-			shaderFilter = null;
-
-		if (pixelShader != null)
-			pixelShader = null;
-
-		if (noiseShader != null)
-			noiseShader = null;
-
-		switch (shader)
-		{
-			case "Drug":
-				shaderFilter = new ShaderFilter(new CoolShader());
-			case "Pixel":
-				pixelShader = new PixelEffect();
-				pixelShader.PIXEL_FACTOR = 512.;
-				shaderFilter = new ShaderFilter(pixelShader.shader);
-			case "Noise":
-				noiseShader = new NoiseShader();
-				shaderFilter = new ShaderFilter(noiseShader);
-			case "Disable":
-				FlxG.camera.setFilters([]);
-		}
-
-		SaveFile.set("shader", shader);
-		SaveFile.save();
-
-		if (shaderFilter != null)
-			FlxG.camera.setFilters([shaderFilter]);
 	}
 }

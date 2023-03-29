@@ -140,12 +140,6 @@ class PlayTest extends MusicBeatState
 
 			add(opponent);
 		}
-		else
-		{
-			girlfriend.graphic.destroy();
-			player.graphic.destroy();
-			opponent.graphic.destroy();
-		}
 
 		Conductor.songPosition = -5000;
 
