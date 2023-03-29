@@ -54,10 +54,8 @@ class Paths
 	public static inline function file(file:String, ?library:String)
 		return getPath(file, library);
 
-	public static function sound(key:String, ?library:String):Sound
-	{
+	public static inline function sound(key:String, ?library:String):Sound
 		return Cache.getSound(getPath('sounds/$key.ogg', library));
-	}
 
 	public static inline function font(key:String)
 		return 'assets/fonts/$key';

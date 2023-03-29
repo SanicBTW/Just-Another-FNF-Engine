@@ -123,6 +123,7 @@ class PlayTest extends MusicBeatState
 		add(strumLines);
 
 		// Gotta load them characters but destroy their graphic after doing so if we only want the notes
+		// shits crashing lmao
 		girlfriend = new Character(400, 130, false, "gf");
 		player = new Character(770, 100, true, "bf");
 		opponent = new Character(100, 100, false, "dad");

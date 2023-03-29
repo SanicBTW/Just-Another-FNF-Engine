@@ -46,10 +46,8 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			receptor.initialY = Math.floor(receptor.y);
 			receptor.playAnim('static');
 
-			receptor.y -= 20;
+			receptor.y -= 32;
 			receptor.alpha = 0;
-
-			FlxTween.tween(receptor, {y: receptor.initialY, alpha: receptor.setAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * i)});
 
 			var splash:NoteSplash = new NoteSplash(receptor.initialX, receptor.initialY, i);
 			splashNotes.add(splash);

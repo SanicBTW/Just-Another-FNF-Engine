@@ -4,15 +4,16 @@ import flixel.FlxSprite;
 
 class Receptor extends FlxSprite
 {
-	public var arrowType:Int = 0;
 	public var initialX:Int;
 	public var initialY:Int;
 
-	public var setAlpha:Float = 0.8;
+	public var noteData:Int = 0;
 
-	public function new(x:Float, y:Float, arrowType:Int = 0)
+	public var setAlpha:Float = 1;
+
+	public function new(X:Float, Y:Float, noteData:Int = 0)
 	{
-		this.arrowType = arrowType;
+		this.noteData = noteData;
 		super(x, y);
 
 		frames = Paths.getSparrowAtlas('NOTE_assets');
@@ -46,7 +47,7 @@ class Receptor extends FlxSprite
 
 	private function loadAnims()
 	{
-		var stringSect:String = getArrowFromNum(arrowType);
+		var stringSect:String = getArrowFromNum(noteData);
 		animation.addByPrefix('static', 'arrow${stringSect.toUpperCase()}');
 		animation.addByPrefix('pressed', '$stringSect press', 24, false);
 		animation.addByPrefix('confirm', '$stringSect confirm', 24, false);
