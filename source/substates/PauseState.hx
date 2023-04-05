@@ -89,7 +89,7 @@ class PauseState extends ScriptableSubState
 							ChartLoader.netChart = null;
 							ChartLoader.netInst = null;
 							ChartLoader.netVoices = null;
-							ScriptableState.switchState(new states.AlphabetMenu());
+							ScriptableState.switchState(new states.RewriteMenu());
 					}
 				}
 		}

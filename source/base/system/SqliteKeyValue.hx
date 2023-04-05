@@ -82,12 +82,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		{
 			var connection:Connection = getConnection();
 			connection.request('BEGIN TRANSACTION');
-			var result:ResultSet = connection.request('SELECT value FROM $escapedTable WHERE key = $escapedKey');
-			if (result.results().first() != null)
-				connection.request('UPDATE $escapedTable SET value = $escapedValue WHERE key = $escapedKey');
-			else
-				connection.request('INSERT INTO $escapedTable (key, value) VALUES ($escapedKey, $escapedValue)');
-
+			connection.request('INSERT OR REPLACE INTO $escapedTable (key, value) VALUES ($escapedKey, $escapedValue)');
 			connection.request('COMMIT');
 		}
 		catch (exc:Dynamic)

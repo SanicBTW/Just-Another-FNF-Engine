@@ -11,6 +11,7 @@ import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.display.StageScaleMode;
 import openfl.events.Event;
+import states.RewriteMenu;
 #if cpp
 import cpp.NativeGc;
 #end
@@ -30,7 +31,7 @@ class Main extends Sprite
 {
 	private var gameWidth:Int = 1280;
 	private var gameHeight:Int = 720;
-	private var initialClass:Class<FlxState> = Init;
+	private var initialClass:Class<FlxState> = RewriteMenu;
 	private var zoom:Float = -1;
 	private var framerate:Int = #if !html5 250 #else 60 #end;
 	private var skipSplash:Bool = true;

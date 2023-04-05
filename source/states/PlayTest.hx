@@ -42,8 +42,6 @@ class PlayTest extends MusicBeatState
 	// Instance to access non-static variables
 	public static var instance:PlayTest;
 
-	public static var stage:Stage;
-
 	// Cameras
 	public var camHUD:FlxCamera;
 	public var camGame:FlxCamera;
@@ -186,10 +184,11 @@ class PlayTest extends MusicBeatState
 
 		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 		Paths.music("tea-time"); // precache the sound lol
-		FadeTransition.nextCamera = camOther;
 		DiscordPresence.changePresence('Playing ${SONG.song}');
 
 		super.create();
+
+		FadeTransition.nextCamera = camOther;
 
 		setupIntro();
 	}
@@ -202,7 +201,7 @@ class PlayTest extends MusicBeatState
 		var lerpVal:Float = (elapsed * 2.4);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
-		FlxG.camera.zoom = FlxMath.lerp((stage != null) ? stage.cameraZoom : 1, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
+		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.cameraZoom : 1, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
 		updateCamTarget(elapsed);
@@ -499,6 +498,7 @@ class PlayTest extends MusicBeatState
 				introSprite.scrollFactor.set();
 				introSprite.updateHitbox();
 				introSprite.screenCenter();
+				introSprite.antialiasing = SaveData.antialiasing;
 				introSprite.cameras = [camHUD];
 				add(introSprite);
 
@@ -527,7 +527,7 @@ class PlayTest extends MusicBeatState
 			ChartLoader.netChart = null;
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
-			ScriptableState.switchState(new AlphabetMenu());
+			ScriptableState.switchState(new RewriteMenu());
 		};
 		Conductor.boundSong.stop();
 		Conductor.boundVocals.stop();
@@ -750,7 +750,7 @@ class PlayTest extends MusicBeatState
 				shaderFilter = new ShaderFilter(new CoolShader());
 			case "Pixel":
 				pixelShader = new PixelEffect();
-				pixelShader.PIXEL_FACTOR = 512.;
+				pixelShader.PIXEL_FACTOR = 1024.;
 				shaderFilter = new ShaderFilter(pixelShader.shader);
 			case "Noise":
 				noiseShader = new NoiseShader();

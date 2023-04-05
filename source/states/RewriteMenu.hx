@@ -22,50 +22,42 @@ import openfl.utils.Assets;
 import shader.CoolShader;
 import shader.Noise.NoiseShader;
 import shader.PixelEffect;
-import states.config.EarlyConfig;
 import states.config.KeybindsState;
-import states.online.ConnectingState;
 import substates.LoadingState;
-import substates.online.CodeState;
 
 using StringTools;
 
-// I need to rewrite this shit :skull:
 class RewriteMenu extends MusicBeatState
 {
 	// Options available
-	var options:Array<String> = ["Assets", "Online", "Settings", "Shaders"];
-	var subOptions:Map<String, Array<Dynamic>> = [
+	private var options:Array<String> = ["Assets", "Online", "1v1", "Settings", "Shaders"];
+	private var subOptions:Map<String, Array<Dynamic>> = [
 		// bruh
 		"Assets" => ["Select song"],
 		"Online" => ["Select song", "Choose collection", "VS"],
+		"1v1" => ["Host", "Connect"],
 		"Settings" => ["Options", "Keybinds"],
 		"Shaders" => ["Drug", "Pixel", "Noise", "Disable"],
-		"Character selection" => ["soon"]
 	];
-	var groupItems:FlxTypedGroup<CircularSpriteText>;
+	private var groupItems:FlxTypedGroup<CircularSpriteText>;
 
 	// Menu essentials
-	var canPress:Bool = true;
-	var curState(default, set):SelectionState = SELECTING;
-	var curOption(default, set):Int = 0;
-	var curOptionStr:String;
-	var catStr:String;
-	var subStr:String;
-
-	// da bf
-	var boyfriend:Character;
+	private var canPress:Bool = true;
+	private var curState(default, set):SelectionState = SELECTING;
+	private var curOption(default, set):Int = 0;
+	private var curOptionStr:String;
+	private var catStr:String;
+	private var subStr:String;
 
 	// Shaders
-	var shaderFilter:ShaderFilter;
-	var pixelShader:PixelEffect;
-	var noiseShader:NoiseShader;
+	private var shaderFilter:ShaderFilter;
+	private var pixelShader:PixelEffect;
+	private var noiseShader:NoiseShader;
 
-	// Online
-	var collections:Array<String> = ["New", "Old"];
-	var selectedCollection:String = "New";
-	var vsoptions:Array<String> = ["Host", "Join with ID"];
-	var songStore:Map<String, PocketBaseObject> = new Map();
+	// Online songs
+	private var collections:Array<String> = ["New", "Old"];
+	private var selectedCollection:String = "New";
+	private var songStore:Map<String, PocketBaseObject> = new Map();
 
 	private function set_curOption(value:Int):Int
 	{
@@ -155,10 +147,7 @@ class RewriteMenu extends MusicBeatState
 		add(groupItems);
 
 		curState = SELECTING;
-
-		boyfriend = new Character(690, -100, true, 'bf');
-		boyfriend.scale.set(0.9, 0.9);
-		add(boyfriend);
+		canPress = true;
 
 		super.create();
 
@@ -253,16 +242,6 @@ class RewriteMenu extends MusicBeatState
 		super.update(elapsed);
 	}
 
-	override public function beatHit()
-	{
-		super.beatHit();
-
-		if (curBeat % 2 == 0)
-		{
-			boyfriend.dance();
-		}
-	}
-
 	private function regenListing()
 	{
 		switch (catStr)
@@ -333,27 +312,6 @@ class RewriteMenu extends MusicBeatState
 									groupItems.add(item);
 								}
 							}
-
-						case "VS":
-							{
-								#if html5
-								for (i in 0...vsoptions.length)
-								{
-									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, vsoptions[i]);
-									item.ID = i;
-									groupItems.add(item);
-								}
-								#else
-								var item:CircularSpriteText = new CircularSpriteText(30, 30 + (0 * 55), 350, 50, FlxColor.GRAY, "Host");
-								item.ID = 0;
-								groupItems.add(item);
-
-								var item:CircularSpriteText = new CircularSpriteText(30, 30 + (1 * 55), 350, 50, FlxColor.GRAY, "Cannot join");
-								item.circularSprite.color = FlxColor.RED;
-								item.ID = 1;
-								groupItems.add(item);
-								#end
-							}
 					}
 				}
 		}
@@ -398,21 +356,6 @@ class RewriteMenu extends MusicBeatState
 								selectedCollection = curOptionStr;
 								curState = SUB_SELECTION;
 							}
-
-						case "VS":
-							{
-								if (curOptionStr == "Cannot join")
-									return;
-
-								if (curOptionStr == "Join with ID")
-								{
-									openSubState(new CodeState());
-								}
-								else
-								{
-									ScriptableState.switchState(new ConnectingState('host'));
-								}
-							}
 					}
 				}
 		}
@@ -428,12 +371,26 @@ class RewriteMenu extends MusicBeatState
 			default:
 				curState = LISTING;
 
+			case "1v1":
+				{
+					switch (curOptionStr)
+					{
+						case "Host":
+							{
+								base.server.UDPServer.init();
+							}
+
+						case "Connect":
+							{}
+					}
+				}
+
 			case "Settings":
 				{
 					switch (curOptionStr)
 					{
-						case "Options":
-							ScriptableState.switchState(new EarlyConfig());
+						// case "Options":
+						//	ScriptableState.switchState(new EarlyConfig());
 						case "Keybinds":
 							ScriptableState.switchState(new KeybindsState());
 					}
@@ -463,7 +420,7 @@ class RewriteMenu extends MusicBeatState
 				shaderFilter = new ShaderFilter(new CoolShader());
 			case "Pixel":
 				pixelShader = new PixelEffect();
-				pixelShader.PIXEL_FACTOR = 512.;
+				pixelShader.PIXEL_FACTOR = 1024.;
 				shaderFilter = new ShaderFilter(pixelShader.shader);
 			case "Noise":
 				noiseShader = new NoiseShader();

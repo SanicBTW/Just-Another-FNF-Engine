@@ -5,6 +5,7 @@ import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.system.FlxSound;
 import funkin.ChartLoader;
+import funkin.notes.Note;
 import openfl.media.Sound;
 
 typedef BPMChangeEvent =
@@ -85,7 +86,19 @@ class Conductor
 		stepCrochet = (crochet / 4);
 
 		if (boundState.SONG != null)
-			songSpeed = 0.45 * boundState.SONG.speed;
+		{
+			// and xmod basically works by basing the speed on the bpm.
+			// iirc (beatsPerSecond * (conductorToNoteDifference / 1000)) * noteSize (110 or something like that depending on it, prolly just use note.height)
+			// bps is calculated by bpm / 60
+			// oh yeah and you'd have to actually convert the difference to seconds which I already do, because this is based on beats and stuff. but it should work
+			// just fine. but I wont implement it because I don't know how you handle sustains and other stuff like that.
+			// oh yeah when you calculate the bps divide it by the songSpeed or rate because it wont scroll correctly when speeds exist.
+			var baseSpeed:Float = 0.45 * boundState.SONG.speed;
+			var bps:Float = (bpm / 60) / 0.45;
+			var curNote:Note = ChartLoader.unspawnedNoteList[0];
+			var noteDiff:Float = (curNote.strumTime - (stepPosition / stepCrochet)) / 1000;
+			songSpeed = baseSpeed * (bps * noteDiff) / 0.45;
+		}
 	}
 
 	public static function updateTimePosition(elapsed:Float)
