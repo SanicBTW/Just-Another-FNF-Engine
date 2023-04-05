@@ -6,9 +6,11 @@ import flixel.FlxBasic;
 import flixel.FlxG;
 import funkin.ChartLoader.Song;
 
+// I need a better way to avoid updating time
 class MusicBeatState extends ScriptableState implements MusicHandler
 {
 	public var SONG:Song;
+	public var updateTime:Bool = true;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
 
@@ -22,7 +24,7 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		if (Conductor.boundState == this)
+		if (Conductor.boundState == this && updateTime)
 			Conductor.updateTimePosition(elapsed);
 
 		super.update(elapsed);
@@ -36,6 +38,7 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 {
 	public var SONG:Song;
+	public var updateTime:Bool = true;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
 
@@ -49,7 +52,7 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		if (Conductor.boundState == this)
+		if (Conductor.boundState == this && updateTime)
 			Conductor.updateTimePosition(elapsed);
 
 		super.update(elapsed);
@@ -63,6 +66,8 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 interface MusicHandler
 {
 	public var SONG:Song;
+
+	public var updateTime:Bool;
 
 	public var curStep(get, never):Int;
 	private function get_curStep():Int;

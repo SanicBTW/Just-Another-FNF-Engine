@@ -7,15 +7,13 @@ class Receptor extends FlxSprite
 	public var initialX:Int;
 	public var initialY:Int;
 
-	public var noteData:Int = 0;
+	public var arrowType:Int = 0;
 
-	public var resetAnim:Float = 0;
+	public var setAlpha:Float = 0.8;
 
-	public var setAlpha:Float = 0.9;
-
-	public function new(X:Float, Y:Float, noteData:Int = 0)
+	public function new(x:Float, y:Float, arrowType:Int = 0)
 	{
-		this.noteData = noteData;
+		this.arrowType = arrowType;
 		super(x, y);
 
 		frames = Paths.getSparrowAtlas('NOTE_assets');
@@ -26,16 +24,6 @@ class Receptor extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
-		if (resetAnim > 0)
-		{
-			resetAnim -= elapsed;
-			if (resetAnim <= 0)
-			{
-				playAnim('static');
-				resetAnim = 0;
-			}
-		}
-
 		if (animation.curAnim.name == "confirm")
 			centerOrigin();
 
@@ -59,7 +47,7 @@ class Receptor extends FlxSprite
 
 	private function loadAnims()
 	{
-		var stringSect:String = getArrowFromNum(noteData);
+		var stringSect:String = getArrowFromNum(arrowType);
 		animation.addByPrefix('static', 'arrow${stringSect.toUpperCase()}');
 		animation.addByPrefix('pressed', '$stringSect press', 24, false);
 		animation.addByPrefix('confirm', '$stringSect confirm', 24, false);

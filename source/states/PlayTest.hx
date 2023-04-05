@@ -12,12 +12,14 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
+import flixel.graphics.FlxGraphic;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
 import funkin.Character;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
@@ -28,46 +30,67 @@ import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
 import funkin.ui.UI;
 import openfl.filters.ShaderFilter;
+import openfl.media.Sound;
 import shader.*;
 import shader.Noise.NoiseShader;
 import substates.PauseState;
 
 using StringTools;
 
-// Rewriting soon
 class PlayTest extends MusicBeatState
 {
+	// Instance to access non-static variables
 	public static var instance:PlayTest;
 
 	public static var stage:Stage;
 
+	// Cameras
 	public var camHUD:FlxCamera;
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 
-	private var strumLines:FlxTypedGroup<StrumLine>;
+	// Camera target
+	private var camFollow:FlxObject;
+	private var camFollowPos:FlxObject;
 
-	private var hud:UI;
+	// For the dynamic camera movement
+	private var lastSection:Int = 0;
+	private var camDisplaceX:Float = 0;
+	private var camDisplaceY:Float = 0;
+
+	private var camDisp:Float = 18;
+
+	// Strum handling
+	private var strumLines:FlxTypedGroup<StrumLine>;
 
 	public var playerStrums:StrumLine;
 	public var opponentStrums:StrumLine;
 
-	private var generatedMusic:Bool = false;
+	// Countdown
+	public var startedCountdown:Bool = false;
+	public var startingSong:Bool = false;
+
+	private var startTimer:FlxTimer;
+
+	// Stage, UI and characters
+	public static var stageBuild:Stage;
+
+	private var ui:UI;
 
 	private var player:Character;
 	private var opponent:Character;
 	private var girlfriend:Character;
 
-	private var camFollow:FlxObject;
-	private var camFollowPos:FlxObject;
-
-	private var lastSection:Int = 0;
-	private var camDisplaceX:Float = 0;
-	private var camDisplaceY:Float = 0;
-
+	// Pause handling
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
+	// Input
+	private static var receptorActionList:Array<String> = ['note_left', 'note_down', 'note_up', 'note_right'];
+
+	private var keys:Array<Bool> = [false, false, false, false];
+
+	// Shaders / Misc shit
 	private var shaderFilter:ShaderFilter;
 	private var pixelShader:PixelEffect;
 	private var noiseShader:NoiseShader;
@@ -77,8 +100,7 @@ class PlayTest extends MusicBeatState
 	override public function new(?loadSong:String)
 	{
 		super();
-		if (loadSong != null)
-			this.loadSong = loadSong;
+		this.loadSong = loadSong;
 	}
 
 	override function create()
@@ -104,6 +126,8 @@ class PlayTest extends MusicBeatState
 		camOther.bgColor.alpha = 0;
 		FlxG.cameras.add(camOther, false);
 
+		generateSong();
+
 		strumLines = new FlxTypedGroup<StrumLine>();
 		strumLines.cameras = [camHUD];
 
@@ -112,42 +136,34 @@ class PlayTest extends MusicBeatState
 		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
 		opponentStrums.botPlay = true;
 		opponentStrums.visible = !SaveData.middleScroll;
-		opponentStrums.onBotHit.add(opponentHit);
+		opponentStrums.onBotHit.add(botHit);
 		strumLines.add(opponentStrums);
 
 		playerStrums = new StrumLine(SaveData.middleScroll ? (FlxG.width / 2) : (FlxG.width / 2) + separation, 4);
 		playerStrums.onBotHit.add(botHit);
-		playerStrums.onMiss.add(miss);
+		playerStrums.onMiss.add(noteMiss);
 		strumLines.add(playerStrums);
 
 		add(strumLines);
 
-		// Gotta load them characters but destroy their graphic after doing so if we only want the notes
-		// shits crashing lmao
 		girlfriend = new Character(400, 130, false, "gf");
 		player = new Character(770, 100, true, "bf");
 		opponent = new Character(100, 100, false, "dad");
 
 		if (!SaveData.onlyNotes)
 		{
-			stage = new Stage("stage");
-			add(stage);
+			stageBuild = new Stage("stage");
+			add(stageBuild);
 
 			girlfriend.scrollFactor.set(0.95, 0.95);
 			add(girlfriend);
-
 			add(player);
-
 			add(opponent);
 		}
 
-		Conductor.songPosition = -5000;
-
-		hud = new UI(player, opponent);
-		hud.cameras = [camHUD];
-		add(hud);
-
-		generateSong();
+		ui = new UI(player, opponent);
+		ui.cameras = [camHUD];
+		add(ui);
 
 		var camPos:FlxPoint = new FlxPoint(0, 0);
 
@@ -163,23 +179,23 @@ class PlayTest extends MusicBeatState
 		add(camFollowPos);
 
 		FlxG.camera.follow(camFollowPos, LOCKON, 1);
-		FlxG.camera.zoom = (stage != null) ? stage.cameraZoom : 1;
+		FlxG.camera.zoom = (stageBuild != null) ? stageBuild.cameraZoom : 1;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
-
-		super.create();
 
 		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 		Paths.music("tea-time"); // precache the sound lol
 		FadeTransition.nextCamera = camOther;
 		DiscordPresence.changePresence('Playing ${SONG.song}');
+
+		super.create();
+
+		setupIntro();
 	}
 
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
-
 		if (noiseShader != null)
 			noiseShader.elapsed.value = [FlxG.game.ticks / 1000];
 
@@ -189,74 +205,76 @@ class PlayTest extends MusicBeatState
 		FlxG.camera.zoom = FlxMath.lerp((stage != null) ? stage.cameraZoom : 1, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
-		if (generatedMusic && SONG.notes[Std.int(curStep / 16)] != null)
+		updateCamTarget(elapsed);
+
+		while ((ChartLoader.unspawnedNoteList[0] != null) && (ChartLoader.unspawnedNoteList[0].strumTime - Conductor.songPosition) < 3500)
 		{
-			if (!paused)
-				DiscordPresence.changePresence('Playing ${SONG.song}', null, null, true, Conductor.boundSong.length - Conductor.songPosition);
-
-			var curSection = Std.int(curStep / 16);
-			if (curSection != lastSection)
+			var unspawnNote:Note = ChartLoader.unspawnedNoteList[0];
+			if (unspawnNote != null)
 			{
-				if (SONG.notes[lastSection] != null && (SONG.notes[curSection].mustHitSection != SONG.notes[lastSection].mustHitSection))
+				var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
+				if (strumLine != null)
+					strumLine.push(unspawnNote);
+				else
 				{
-					camDisplaceX = 0;
-					camDisplaceY = 0;
-					lastSection = Std.int(curStep / 16);
+					// If we cant push to the targeted strum line, then we push to the current one and mark the note as must press so it  can be pressed lol
+					unspawnNote.mustPress = true;
+					playerStrums.push(unspawnNote);
 				}
 			}
+			ChartLoader.unspawnedNoteList.splice(ChartLoader.unspawnedNoteList.indexOf(unspawnNote), 1);
+		}
 
-			if (!SaveData.onlyNotes)
-			{
-				updateCamFollow(elapsed);
-				cameraDisplacement(player, true);
-				cameraDisplacement(opponent, false);
-			}
+		if (!paused)
+			DiscordPresence.changePresence('Playing ${SONG.song}', null, null, true, Conductor.boundSong.length - Conductor.songPosition);
 
-			while ((ChartLoader.unspawnedNoteList[0] != null)
-				&& (ChartLoader.unspawnedNoteList[0].strumTime - Conductor.songPosition) < 3500)
+		// need a better way :sob:
+		if (!updateTime)
+		{
+			Conductor.boundSong.stop();
+			Conductor.boundVocals.stop();
+		}
+
+		if (startingSong)
+		{
+			if (startedCountdown)
 			{
-				var unspawnNote:Note = ChartLoader.unspawnedNoteList[0];
-				if (unspawnNote != null)
+				if (startTimer.finished)
 				{
-					var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
-					if (strumLine != null)
-						strumLine.push(unspawnNote);
+					startingSong = false;
+					updateTime = true;
+					Conductor.resyncTime();
 				}
-				ChartLoader.unspawnedNoteList.splice(ChartLoader.unspawnedNoteList.indexOf(unspawnNote), 1);
-			}
-
-			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
-			{
-				if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
-					&& coolNote.canBeHit
-					&& !coolNote.tooLate
-					&& !coolNote.wasGoodHit
-					&& coolNote.isSustain
-					&& keys[coolNote.noteData])
-				{
-					hit(coolNote);
-				}
-			});
-
-			if (player != null
-				&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000)
-					&& (!keys.contains(true) || playerStrums.botPlay)))
-			{
-				if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
-					player.dance();
-			}
-
-			if (Timings.health <= 0)
-			{
-				ScriptableState.switchState(new PlayTest(loadSong));
 			}
 		}
+
+		playerStrums.allNotes.forEachAlive(function(coolNote:Note)
+		{
+			if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
+				&& coolNote.canBeHit
+				&& !coolNote.tooLate
+				&& !coolNote.wasGoodHit
+				&& coolNote.isSustain
+				&& keys[coolNote.noteData])
+			{
+				noteHit(coolNote);
+			}
+		});
+
+		super.update(elapsed);
+
+		if (player != null
+			&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000) && (!keys.contains(true) || playerStrums.botPlay)))
+		{
+			if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
+				player.dance();
+		}
+
+		if (Timings.health <= 0)
+		{
+			ScriptableState.switchState(new PlayTest(loadSong));
+		}
 	}
-
-	// kade way
-	private static var receptorActionList:Array<String> = ['note_left', 'note_down', 'note_up', 'note_right'];
-
-	private var keys:Array<Bool> = [false, false, false, false];
 
 	override public function onActionPressed(action:String)
 	{
@@ -270,15 +288,10 @@ class PlayTest extends MusicBeatState
 			return;
 		}
 
-		if (playerStrums.botPlay)
+		if (playerStrums.botPlay || !receptorActionList.contains(action))
 			return;
 
-		var data:Int = -1;
-
-		if (receptorActionList.contains(action))
-			data = receptorActionList.indexOf(action);
-		else
-			return;
+		var data:Int = receptorActionList.indexOf(action);
 
 		if (keys[data])
 		{
@@ -337,7 +350,7 @@ class PlayTest extends MusicBeatState
 			for (coolNote in possibleNotes)
 			{
 				if (keys[coolNote.noteData] && coolNote.canBeHit && !coolNote.tooLate)
-					hit(coolNote);
+					noteHit(coolNote);
 			}
 		}
 
@@ -351,16 +364,10 @@ class PlayTest extends MusicBeatState
 	{
 		super.onActionReleased(action);
 
-		if (playerStrums.botPlay)
+		if (playerStrums.botPlay || !receptorActionList.contains(action))
 			return;
 
-		var data:Int = -1;
-
-		if (receptorActionList.contains(action))
-			data = receptorActionList.indexOf(action);
-		else
-			return;
-
+		var data:Int = receptorActionList.indexOf(action);
 		keys[data] = false;
 
 		getReceptor(playerStrums, data).playAnim('static');
@@ -371,7 +378,7 @@ class PlayTest extends MusicBeatState
 		super.beatHit();
 
 		@:privateAccess
-		hud.healthTracker.beatHit();
+		ui.healthTracker.beatHit();
 
 		if (curBeat % 2 == 0 && !SaveData.onlyNotes)
 		{
@@ -395,16 +402,208 @@ class PlayTest extends MusicBeatState
 			camHUD.zoom += 0.05;
 		}
 
+		if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
+			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+	}
+
+	override function openSubState(SubState:FlxSubState)
+	{
+		if (!paused)
+		{
+			if (Conductor.boundSong != null)
+			{
+				Conductor.boundSong.pause();
+				if (SONG.needsVoices)
+					Conductor.boundVocals.pause();
+			}
+
+			if (startTimer != null && !startTimer.finished)
+				startTimer.active = false;
+
+			DiscordPresence.changePresence('Playing ${SONG.song}', "Paused");
+			paused = true;
+			canPause = false;
+		}
+
+		super.openSubState(SubState);
+	}
+
+	override function closeSubState()
+	{
+		if (paused)
+		{
+			Conductor.resyncTime();
+
+			if (startTimer != null && !startTimer.finished)
+				startTimer.active = true;
+
+			DiscordPresence.changePresence('Playing ${SONG.song}');
+			paused = false;
+			canPause = true;
+		}
+
+		super.closeSubState();
+	}
+
+	private function setupIntro()
+	{
+		Conductor.songPosition = -(Conductor.crochet * 16);
+		ui.alpha = 0;
+		startingSong = true;
+		startCountdown();
+	}
+
+	private function startCountdown()
+	{
+		Conductor.songPosition = -(Conductor.crochet * 5);
+		startedCountdown = true;
+
+		FlxTween.tween(ui, {alpha: 1}, (Conductor.crochet * 2) / 1000, {startDelay: (Conductor.crochet / 1000)});
+
+		var introArray:Array<FlxGraphic> = [];
+		var soundsArray:Array<Sound> = [];
+
+		var introName:Array<String> = ['ready', 'set', 'go'];
+		for (intro in introName)
+			introArray.push(Paths.image('ui/$intro'));
+
+		var soundNames:Array<String> = ['intro3', 'intro2', 'intro1', 'introGo'];
+		for (sound in soundNames)
+			soundsArray.push(Paths.sound(sound));
+
+		var countdown:Int = -1;
+		startTimer = new FlxTimer().start(Conductor.crochet / 1000, (tmr:FlxTimer) ->
+		{
+			if (!SaveData.onlyNotes)
+			{
+				if (girlfriend != null
+					&& tmr.loopsLeft % girlfriend.danceEveryNumBeats == 0
+					&& girlfriend.animation.curAnim.name != null
+					&& girlfriend.animation.curAnim.name.startsWith("sing"))
+					girlfriend.dance();
+
+				if (tmr.loopsLeft % player.danceEveryNumBeats == 0
+					&& player.animation.curAnim.name != null
+					&& player.animation.curAnim.name.startsWith("sing"))
+					player.dance();
+
+				if (tmr.loopsLeft % opponent.danceEveryNumBeats == 0
+					&& opponent.animation.curAnim.name != null
+					&& opponent.animation.curAnim.name.startsWith("sing"))
+					opponent.dance();
+			}
+
+			if (countdown >= 0 && countdown < introArray.length)
+			{
+				var introSprite:FlxSprite = new FlxSprite().loadGraphic(introArray[countdown]);
+				introSprite.scrollFactor.set();
+				introSprite.updateHitbox();
+				introSprite.screenCenter();
+				introSprite.cameras = [camHUD];
+				add(introSprite);
+
+				FlxTween.tween(introSprite, {y: introSprite.y + 100, alpha: 0}, Conductor.crochet / 1000, {
+					ease: FlxEase.cubeInOut,
+					onComplete: (_) ->
+					{
+						introSprite.destroy();
+					}
+				});
+			}
+			countdown++;
+			FlxG.sound.play(soundsArray[countdown], 0.6);
+		}, 5);
+	}
+
+	private function generateSong():Void
+	{
+		SONG = ChartLoader.loadChart(this, (loadSong != null ? loadSong : ""), 2);
+		Conductor.changeBPM(SONG.bpm);
+
+		Conductor.boundSong.onComplete = function()
+		{
+			Conductor.boundSong.stop();
+			Conductor.boundVocals.stop();
+			ChartLoader.netChart = null;
+			ChartLoader.netInst = null;
+			ChartLoader.netVoices = null;
+			ScriptableState.switchState(new AlphabetMenu());
+		};
+		Conductor.boundSong.stop();
+		Conductor.boundVocals.stop();
+		updateTime = false;
+	}
+
+	private function updateCamTarget(elapsed:Float)
+	{
+		var curSection = Std.int(curStep / 16);
+		if (curSection != lastSection)
+		{
+			if (SONG.notes[lastSection] != null && (SONG.notes[curSection].mustHitSection != SONG.notes[lastSection].mustHitSection))
+			{
+				camDisplaceX = 0;
+				camDisplaceY = 0;
+				lastSection = Std.int(curStep / 16);
+			}
+		}
+
+		if (!SaveData.onlyNotes)
+		{
+			updateCamFollow(elapsed);
+			cameraDisplacement(player, true);
+			cameraDisplacement(opponent, false);
+		}
+	}
+
+	private function updateCamFollow(?elapsed:Float)
+	{
+		if (elapsed == null)
+			elapsed = FlxG.elapsed;
+
+		var mustHit:Bool = SONG.notes[Std.int(curStep / 16)].mustHitSection;
+		var char:Character = (mustHit ? player : opponent);
+		var charCenterX:Float = char.getMidpoint().x;
+		var charCenterY:Float = char.getMidpoint().y;
+
+		var centerX = (mustHit ? charCenterX - 100 : charCenterX + 150);
+		var centerY = (mustHit ? charCenterY - 100 : charCenterY - 100);
+		var newX:Float = (mustHit ? (camDisplaceX - char.cameraPosition.x) : (camDisplaceX + char.cameraPosition.x));
+		var newY:Float = camDisplaceY + char.cameraPosition.y;
+
+		camFollow.setPosition(centerX, centerY);
+		camFollow.x += newX;
+		camFollow.y += newY;
+	}
+
+	private function cameraDisplacement(character:Character, mustHit:Bool)
+	{
 		if (SONG.notes[Std.int(curStep / 16)] != null)
 		{
-			if (SONG.notes[Std.int(curStep / 16)].changeBPM)
+			if (SONG.notes[Std.int(curStep / 16)].mustHitSection
+				&& mustHit
+				|| (!SONG.notes[Std.int(curStep / 16)].mustHitSection && !mustHit))
 			{
-				Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+				if (character.animation.curAnim != null)
+				{
+					camDisplaceX = 0;
+					camDisplaceY = 0;
+					switch (character.animation.curAnim.name)
+					{
+						case 'singUP':
+							camDisplaceY -= camDisp;
+						case 'singDOWN':
+							camDisplaceY += camDisp;
+						case 'singLEFT':
+							camDisplaceX -= camDisp;
+						case 'singRIGHT':
+							camDisplaceX += camDisp;
+					}
+				}
 			}
 		}
 	}
 
-	private function hit(note:Note)
+	private function noteHit(note:Note)
 	{
 		if (!note.wasGoodHit)
 		{
@@ -438,110 +637,11 @@ class PlayTest extends MusicBeatState
 			if (!note.isSustain)
 				playerStrums.destroyNote(note);
 
-			hud.updateText();
+			ui.updateText();
 		}
 	}
 
-	private function opponentHit(note:Note)
-	{
-		if (!note.wasGoodHit)
-		{
-			note.wasGoodHit = true;
-			getReceptor(opponentStrums, note.noteData).playAnim('confirm');
-
-			if (note.isSustain && note.isSustainEnd)
-				getReceptor(opponentStrums, note.noteData).playAnim('static');
-
-			if (!note.isSustain)
-				playSplash(opponentStrums, note.noteData);
-
-			if (!note.doubleNote)
-			{
-				if (opponent != null)
-				{
-					opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-					opponent.holdTimer = 0;
-				}
-			}
-			else
-				trail(opponent, note);
-
-			if (note.doubleNote && note.isSustain && opponent != null && opponent.animation.curAnim.name == "idle")
-			{
-				opponent.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-				opponent.holdTimer = 0;
-			}
-
-			if (SONG.needsVoices)
-				Conductor.boundVocals.volume = 1;
-
-			if (!note.isSustain)
-				opponentStrums.destroyNote(note);
-			else
-			{
-				if (opponent == null)
-					return;
-
-				var targetHold:Float = (Conductor.stepCrochet * opponent.singDuration) / 1000;
-				if (opponent.holdTimer + 0.2 > targetHold)
-					opponent.holdTimer = targetHold - 0.2;
-			}
-		}
-	}
-
-	private function botHit(note:Note)
-	{
-		if (!note.wasGoodHit)
-		{
-			note.wasGoodHit = true;
-			getReceptor(playerStrums, note.noteData).playAnim('confirm');
-
-			if (note.isSustain && note.isSustainEnd)
-				getReceptor(playerStrums, note.noteData).playAnim('static');
-
-			if (!note.isSustain)
-			{
-				Timings.judge(-(note.strumTime - Conductor.songPosition));
-				playSplash(playerStrums, note.noteData);
-			}
-
-			if (!note.doubleNote)
-			{
-				if (player != null)
-				{
-					player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-					player.holdTimer = 0;
-				}
-			}
-			else
-				trail(player, note);
-
-			if (note.doubleNote && note.isSustain && player != null && player.animation.curAnim.name == "idle")
-			{
-				player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-				player.holdTimer = 0;
-			}
-
-			if (SONG.needsVoices)
-				Conductor.boundVocals.volume = 1;
-
-			if (!note.isSustain)
-				playerStrums.destroyNote(note);
-			else
-			{
-				if (player == null)
-					return;
-
-				var targetHold:Float = (Conductor.stepCrochet * player.singDuration) / 1000;
-				if (player.holdTimer + 0.2 > targetHold)
-					player.holdTimer = targetHold - 0.2;
-			}
-
-			hud.updateText();
-		}
-	}
-
-	private function miss(note:Note)
+	private function noteMiss(note:Note)
 	{
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 0;
@@ -553,7 +653,52 @@ class PlayTest extends MusicBeatState
 		}
 
 		Timings.judge(164);
-		hud.updateText();
+		ui.updateText();
+	}
+
+	private function botHit(note:Note)
+	{
+		var curStrums:StrumLine = (note.mustPress ? playerStrums : opponentStrums);
+		var curChar:Character = (note.mustPress ? player : opponent);
+		if (!note.wasGoodHit)
+		{
+			note.wasGoodHit = true;
+			getReceptor(curStrums, note.noteData).playAnim('confirm');
+
+			if (!note.isSustain)
+				playSplash(curStrums, note.noteData);
+			/*
+				if (note.isSustain)
+					getReceptor(curStrums, note.noteData).resetAnim = note.children.length;
+				else
+					playSplash(curStrums, note.noteData); */
+
+			if (!note.doubleNote)
+			{
+				if (curChar != null)
+				{
+					curChar.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
+					curChar.holdTimer = 0;
+				}
+			}
+			else
+				trail(curChar, note);
+
+			if (SONG.needsVoices)
+				Conductor.boundVocals.volume = 1;
+
+			if (!note.isSustain)
+				curStrums.destroyNote(note);
+			else
+			{
+				if (curChar == null)
+					return;
+
+				var targetHold:Float = (Conductor.stepCrochet * curChar.singDuration) / 1000;
+				if (curChar.holdTimer + 0.2 > targetHold)
+					curChar.holdTimer = targetHold - 0.2;
+			}
+		}
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
@@ -561,118 +706,6 @@ class PlayTest extends MusicBeatState
 
 	private function playSplash(strumLine:StrumLine, noteData:Int)
 		strumLine.splashNotes.members[noteData].playAnim();
-
-	private function destroyNote(strumLine:StrumLine, note:Note)
-	{
-		note.active = false;
-		note.exists = false;
-
-		note.kill();
-		strumLine.allNotes.remove(note, true);
-		(note.isSustain ? strumLine.holdGroup.remove(note, true) : strumLine.notesGroup.remove(note, true));
-		note.destroy();
-	}
-
-	private function updateCamFollow(?elapsed:Float)
-	{
-		if (elapsed == null)
-			elapsed = FlxG.elapsed;
-
-		var mustHit:Bool = SONG.notes[Std.int(curStep / 16)].mustHitSection;
-		var char:Character = (mustHit ? player : opponent);
-		var charCenterX:Float = char.getMidpoint().x;
-		var charCenterY:Float = char.getMidpoint().y;
-
-		var centerX = (mustHit ? charCenterX - 100 : charCenterX + 150);
-		var centerY = (mustHit ? charCenterY - 100 : charCenterY - 100);
-		var newX:Float = (mustHit ? (camDisplaceX - char.cameraPosition.x) : (camDisplaceX + char.cameraPosition.x));
-		var newY:Float = camDisplaceY + char.cameraPosition.y;
-
-		camFollow.setPosition(centerX, centerY);
-		camFollow.x += newX;
-		camFollow.y += newY;
-	}
-
-	var camDisp:Float = 15;
-
-	private function cameraDisplacement(character:Character, mustHit:Bool)
-	{
-		if (SONG.notes[Std.int(curStep / 16)] != null)
-		{
-			if (SONG.notes[Std.int(curStep / 16)].mustHitSection
-				&& mustHit
-				|| (!SONG.notes[Std.int(curStep / 16)].mustHitSection && !mustHit))
-			{
-				if (character.animation.curAnim != null)
-				{
-					camDisplaceX = 0;
-					camDisplaceY = 0;
-					switch (character.animation.curAnim.name)
-					{
-						case 'singUP':
-							camDisplaceY -= camDisp;
-						case 'singDOWN':
-							camDisplaceY += camDisp;
-						case 'singLEFT':
-							camDisplaceX -= camDisp;
-						case 'singRIGHT':
-							camDisplaceX += camDisp;
-					}
-				}
-			}
-		}
-	}
-
-	private function generateSong():Void
-	{
-		SONG = ChartLoader.loadChart(this, (loadSong != null ? loadSong : ""), 2);
-		Conductor.changeBPM(SONG.bpm);
-		generatedMusic = true;
-
-		Conductor.boundSong.onComplete = function()
-		{
-			Conductor.boundSong.stop();
-			Conductor.boundVocals.stop();
-			ChartLoader.netChart = null;
-			ChartLoader.netInst = null;
-			ChartLoader.netVoices = null;
-			ScriptableState.switchState(new AlphabetMenu());
-		};
-		Conductor.resyncTime();
-	}
-
-	override function openSubState(SubState:FlxSubState)
-	{
-		if (!paused)
-		{
-			if (Conductor.boundSong != null)
-			{
-				Conductor.boundSong.pause();
-				if (SONG.needsVoices)
-					Conductor.boundVocals.pause();
-			}
-
-			DiscordPresence.changePresence('Playing ${SONG.song}', "Paused");
-			paused = true;
-			canPause = false;
-		}
-
-		super.openSubState(SubState);
-	}
-
-	override function closeSubState()
-	{
-		if (paused)
-		{
-			Conductor.resyncTime();
-
-			DiscordPresence.changePresence('Playing ${SONG.song}');
-			paused = false;
-			canPause = true;
-		}
-
-		super.closeSubState();
-	}
 
 	function trail(char:Character, note:Note):Void
 	{

@@ -93,7 +93,6 @@ class Conductor
 		if (FlxG.sound.music.playing)
 		{
 			stepPosition = Math.floor(songPosition / stepCrochet);
-			sectionPosition = Math.floor(stepPosition / 16);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)

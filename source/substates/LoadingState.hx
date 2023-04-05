@@ -16,7 +16,7 @@ import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import funkin.ChartLoader;
 import openfl.media.Sound;
-import states.PlayState;
+import states.PlayTest;
 
 using StringTools;
 
@@ -30,7 +30,7 @@ class LoadingState extends ScriptableSubState
 
 	private var callbacks:MultiCallback = new MultiCallback(() ->
 	{
-		ScriptableState.switchState(new PlayState());
+		ScriptableState.switchState(new PlayTest());
 	});
 
 	override public function new(collection:String, pbObject:PocketBaseObject)

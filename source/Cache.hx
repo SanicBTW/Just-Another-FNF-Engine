@@ -65,7 +65,7 @@ class Cache
 		}
 	}
 
-	public static function getGraphic(file:String, textureCompression:Bool = false):Null<FlxGraphic>
+	public static function getGraphic(file:String, textureCompression:Bool = true):Null<FlxGraphic>
 	{
 		if (!Assets.exists(file))
 		{

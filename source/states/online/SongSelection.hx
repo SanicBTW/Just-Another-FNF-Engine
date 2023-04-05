@@ -113,7 +113,8 @@ class SongSelection extends MusicBeatState
 		switch (action)
 		{
 			case "back":
-				room.leave();
+				if (room != null)
+					room.leave();
 				ScriptableState.switchState(new AlphabetMenu());
 			case "ui_up":
 				curOption = -1;

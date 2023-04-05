@@ -32,7 +32,7 @@ class Main extends Sprite
 	private var gameHeight:Int = 720;
 	private var initialClass:Class<FlxState> = Init;
 	private var zoom:Float = -1;
-	private var framerate:Int = #if !html5 200 #else 60 #end;
+	private var framerate:Int = #if !html5 250 #else 60 #end;
 	private var skipSplash:Bool = true;
 	private var startFullscreen:Bool = false;
 

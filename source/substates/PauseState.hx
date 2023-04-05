@@ -12,7 +12,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import funkin.ChartLoader;
-import states.PlayState;
+import states.PlayTest;
 
 class PauseState extends ScriptableSubState
 {
@@ -82,7 +82,7 @@ class PauseState extends ScriptableSubState
 							Controls.setActions(NOTES);
 							close();
 						case 'Reset song':
-							ScriptableState.switchState(new PlayState(PlayState.instance.loadSong));
+							ScriptableState.switchState(new PlayTest(PlayTest.instance.loadSong));
 						case 'Exit':
 							Conductor.boundSong.stop();
 							Conductor.boundVocals.stop();
