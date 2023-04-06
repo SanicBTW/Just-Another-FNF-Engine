@@ -4,8 +4,8 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Funkin'" file="Funkin" main="Main" version="0.2.0" company="SanicBTW" 
-		packageName="com.sanicbtw.funkin" package="com.sanicbtw.funkin"/>
+	<app title="Just Another FNF Engine" file="JAFE" main="Main" version="0.2.0" company="SanicBTW" 
+		packageName="com.sanicbtw.jafe" package="com.sanicbtw.jafe"/>
 	<app preloader="flixel.system.FlxPreloader" />
 	<set name="SWF_VERSION" value="11.8" />
 
