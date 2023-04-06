@@ -6,6 +6,7 @@ import base.system.*;
 import base.system.ui.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
+import flixel.system.scaleModes.*;
 import lime.app.Application;
 import openfl.Lib;
 import openfl.display.Sprite;
@@ -94,6 +95,8 @@ class Main extends Sprite
 
 		Lib.current.stage.align = TOP_LEFT;
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
+
+		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 
 		FlxG.fixedTimestep = false;
 		#if !android

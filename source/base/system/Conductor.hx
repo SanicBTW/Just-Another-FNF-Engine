@@ -21,6 +21,7 @@ class Conductor
 	// song shit
 	public static var songPosition:Float = 0;
 	public static var songSpeed(default, set):Float = 2;
+	public static var songRate:Float = 0.45;
 
 	// sections, steps and beats
 	public static var sectionPosition:Int = 0;
@@ -68,7 +69,6 @@ class Conductor
 
 	private static function set_songSpeed(value:Float):Float
 	{
-		// IS THERE SOME WAY TO GET RID OF 0.45 *
 		var ratio:Float = value / songSpeed;
 		songSpeed = value;
 		for (note in ChartLoader.unspawnedNoteList)
@@ -87,17 +87,19 @@ class Conductor
 
 		if (boundState.SONG != null)
 		{
-			// and xmod basically works by basing the speed on the bpm.
-			// iirc (beatsPerSecond * (conductorToNoteDifference / 1000)) * noteSize (110 or something like that depending on it, prolly just use note.height)
-			// bps is calculated by bpm / 60
-			// oh yeah and you'd have to actually convert the difference to seconds which I already do, because this is based on beats and stuff. but it should work
-			// just fine. but I wont implement it because I don't know how you handle sustains and other stuff like that.
-			// oh yeah when you calculate the bps divide it by the songSpeed or rate because it wont scroll correctly when speeds exist.
-			var baseSpeed:Float = 0.45 * boundState.SONG.speed;
-			var bps:Float = (bpm / 60) / 0.45;
-			var curNote:Note = ChartLoader.unspawnedNoteList[0];
-			var noteDiff:Float = (curNote.strumTime - (stepPosition / stepCrochet)) / 1000;
-			songSpeed = baseSpeed * (bps * noteDiff) / 0.45;
+			// Thanks Kade for the comment about xmod on Psych Engine, you are the best
+			// this probably is the best way, it keeps the original song speed but when a bpm speed changes it slows down, (135 -> 145) it slows the song a lot
+			var baseSpeed:Float = songRate * boundState.SONG.speed;
+			var bps:Float = (bpm / 60) / songRate;
+
+			var nearestNote:Note = ChartLoader.unspawnedNoteList[0];
+			var noteDiff:Float = (nearestNote.strumTime - songPosition) / 1000;
+
+			songSpeed = baseSpeed / (bps * noteDiff);
+
+			// Use this if you want the song speed increase with bpm changes, it wont bind to the original song speed, will look into it later
+			// var bps:Float = (bpm / 60) / songSpeed;
+			// songSpeed = baseSpeed * (bps * noteDiff);
 		}
 	}
 
