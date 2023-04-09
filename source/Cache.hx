@@ -27,6 +27,8 @@ class Cache
 	// audio shit
 	private static var trackedSounds:Map<String, Sound> = new Map();
 
+	public static var textureCompression:Bool = false;
+
 	// tracking and exclusions
 	private static var localTracked:Array<String> = [];
 	private static var dumpExclusions:Array<String> = [
@@ -66,7 +68,7 @@ class Cache
 		}
 	}
 
-	public static function getGraphic(file:String, textureCompression:Bool = true):Null<FlxGraphic>
+	public static function getGraphic(file:String):Null<FlxGraphic>
 	{
 		if (!Assets.exists(file))
 		{

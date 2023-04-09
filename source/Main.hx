@@ -165,10 +165,33 @@ class Main extends Sprite
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 		#end
 
-		// just listen to the first arg lol
-		if (Sys.args()[0].contains("-crashed"))
+		for (arg in Sys.args())
 		{
-			notifTray.notify("Well, that sucks", 'Looks like the game crashed\n(${Sys.args()[0].split(":")[1]})');
+			if (arg.contains("-crashed"))
+			{
+				notifTray.notify("Well, that sucks", 'Looks like the game crashed\n(${arg.split(":")[1]})');
+			}
+
+			if (arg.contains("-enable_gpu_rendering"))
+				Cache.textureCompression = true;
+
+			if (arg.contains("-fps"))
+				setFPS(Std.parseInt(arg.split(":")[1]));
+		}
+	}
+
+	public static function setFPS(newFPS:Int)
+	{
+		Lib.current.stage.frameRate = newFPS;
+		if (newFPS > FlxG.drawFramerate)
+		{
+			FlxG.updateFramerate = newFPS;
+			FlxG.drawFramerate = newFPS;
+		}
+		else
+		{
+			FlxG.drawFramerate = newFPS;
+			FlxG.updateFramerate = newFPS;
 		}
 	}
 
