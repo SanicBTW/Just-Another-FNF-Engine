@@ -153,7 +153,6 @@ class RewriteMenu extends MusicBeatState
 
 		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 
-		Conductor.boundState = this;
 		Conductor.changeBPM(102);
 		FlxG.sound.playMusic(Paths.music("freakyMenu"));
 	}

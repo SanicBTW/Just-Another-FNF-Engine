@@ -43,7 +43,7 @@ class Main extends Sprite
 	public static var volumeTray:VolumeTray;
 	public static var notifTray:NotificationTray;
 
-	public static var preview:Float = 8;
+	public static var preview:Float = 7.5;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -159,6 +159,8 @@ class Main extends Sprite
 				volumeTray.show();
 		}
 
+		DragDrop.listen();
+
 		#if windows
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 		#end
@@ -166,7 +168,7 @@ class Main extends Sprite
 		// just listen to the first arg lol
 		if (Sys.args()[0].contains("-crashed"))
 		{
-			notifTray.notify("Well, that sucks...", 'Looks like the game crashed\n(${Sys.args()[0].split(":")[1]})');
+			notifTray.notify("Well, that sucks", 'Looks like the game crashed\n(${Sys.args()[0].split(":")[1]})');
 		}
 	}
 

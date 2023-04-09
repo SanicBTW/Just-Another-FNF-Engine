@@ -1,6 +1,7 @@
 package base.system;
 
 import flixel.FlxBasic;
+import flixel.FlxG;
 
 class Timer extends FlxBasic
 {
@@ -19,6 +20,7 @@ class Timer extends FlxBasic
 		this.onFinish = onFinish;
 		if (onUpdate != null)
 			this.onUpdate = onUpdate;
+		FlxG.state.add(this);
 	}
 
 	override public function update(elapsed:Float)

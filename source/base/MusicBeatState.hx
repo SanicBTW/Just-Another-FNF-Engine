@@ -10,7 +10,6 @@ import funkin.ChartLoader.Song;
 // I need a better way to avoid updating time
 class MusicBeatState extends ScriptableState implements MusicHandler
 {
-	public var SONG:Song;
 	public var updateTime:Bool = true;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
@@ -35,15 +34,26 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 		]));
 		FlxG.debugger.track(Conductor);
 
+		Conductor.onStepHit.add(stepHit);
+		Conductor.onBeatHit.add(beatHit);
+
 		super.create();
 	}
 
 	override public function update(elapsed:Float)
 	{
-		if (Conductor.boundState == this && updateTime)
+		if (updateTime)
 			Conductor.updateTimePosition(elapsed);
 
 		super.update(elapsed);
+	}
+
+	override public function destroy()
+	{
+		Conductor.onStepHit.remove(stepHit);
+		Conductor.onBeatHit.remove(beatHit);
+
+		super.destroy();
 	}
 
 	public function stepHit() {}
@@ -53,7 +63,6 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 
 class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 {
-	public var SONG:Song;
 	public var updateTime:Bool = true;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
@@ -66,12 +75,28 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 	private function get_curBeat():Int
 		return Conductor.beatPosition;
 
+	override public function create()
+	{
+		Conductor.onStepHit.add(stepHit);
+		Conductor.onBeatHit.add(beatHit);
+
+		super.create();
+	}
+
 	override public function update(elapsed:Float)
 	{
-		if (Conductor.boundState == this && updateTime)
+		if (updateTime)
 			Conductor.updateTimePosition(elapsed);
 
 		super.update(elapsed);
+	}
+
+	override public function destroy()
+	{
+		Conductor.onStepHit.remove(stepHit);
+		Conductor.onBeatHit.remove(beatHit);
+
+		super.destroy();
 	}
 
 	public function stepHit() {}
@@ -81,8 +106,6 @@ class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 
 interface MusicHandler
 {
-	public var SONG:Song;
-
 	public var updateTime:Bool;
 
 	public var curStep(get, never):Int;

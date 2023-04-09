@@ -46,11 +46,12 @@ class ChartLoader
 	public static var unspawnedNoteList:Array<Note> = [];
 	public static var difficultyMap:Map<Int, Array<String>> = [0 => ['-easy'], 1 => [''], 2 => ['-hard']];
 
+	// should rename these dunno
 	public static var netChart:String = null;
 	public static var netInst:Sound = null;
 	public static var netVoices:Sound = null;
 
-	public static function loadChart(state:MusicHandler, songName:String, difficulty:Int):Song
+	public static function loadChart(songName:String, difficulty:Int):Song
 	{
 		Conductor.bpmChangeMap = [];
 		unspawnedNoteList = [];
@@ -64,13 +65,13 @@ class ChartLoader
 			var rawChart:String = Assets.getText(Paths.getPath('$formattedSongName/$formattedSongName${difficultyMap[difficulty][0]}.json', "songs")).trim();
 			swagSong = CoolUtil.loadSong(rawChart);
 
-			Conductor.bindSong(state, Paths.inst(songName), swagSong.bpm, Paths.voices(songName));
+			Conductor.bindSong(swagSong, Paths.inst(songName), Paths.voices(songName));
 		}
 		else
 		{
 			swagSong = CoolUtil.loadSong(netChart);
 			swagSong.needsVoices = (netVoices != null);
-			Conductor.bindSong(state, netInst, swagSong.bpm, netVoices);
+			Conductor.bindSong(swagSong, netInst, netVoices);
 		}
 
 		parseNotes(swagSong);
@@ -154,7 +155,6 @@ class ChartLoader
 							}
 						}
 					case -1:
-						trace("Found event");
 				}
 			}
 		}

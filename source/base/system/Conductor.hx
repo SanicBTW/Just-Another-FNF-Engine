@@ -6,6 +6,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.system.FlxSound;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxSignal.FlxTypedSignal;
 import funkin.ChartLoader;
 import funkin.notes.Note;
 import openfl.media.Sound;
@@ -20,18 +21,17 @@ typedef BPMChangeEvent =
 
 class Conductor
 {
-	// song shit
+	// Time and speed
 	public static var songPosition:Float = 0;
 	public static var songSpeed(default, set):Float = 2;
 	public static var songRate:Float = 0.45;
 	private static var speedTwn:FlxTween;
 
-	// sections, steps and beats
-	public static var sectionPosition:Int = 0;
+	// Steps and beats
 	public static var stepPosition:Int = 0;
 	public static var beatPosition:Int = 0;
 
-	// for resync??
+	// Resyncing
 	public static final comparisonThreshold:Float = 30;
 	public static var lastStep:Float = -1;
 	public static var lastBeat:Float = -1;
@@ -42,34 +42,40 @@ class Conductor
 	public static var stepCrochet:Float = crochet / 4;
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
 
-	// the audio shit and the state
+	// Audio
 	public static var boundSong:FlxSound;
 	public static var boundVocals:FlxSound;
-	public static var boundState:MusicHandler;
 
-	// note stuff
+	// Event listeners
+	public static var boundData:Song;
+	public static var onStepHit:FlxTypedSignal<Void->Void> = new FlxTypedSignal<Void->Void>();
+	public static var onBeatHit:FlxTypedSignal<Void->Void> = new FlxTypedSignal<Void->Void>();
+
+	// Input/Note timings
 	public static var safeFrames:Int = 10;
 	public static var safeZoneOffset:Float = Math.floor((safeFrames / 60) * 1000);
 	public static var timeScale:Float = safeZoneOffset / 166;
 
 	public function new() {}
 
-	public static function bindSong(newState:MusicHandler, newSong:Sound, bpm:Float, ?newVocals:Sound)
+	public static function bindSong(newData:Song, newSong:Sound, ?newVocals:Sound)
 	{
 		boundSong = new FlxSound().loadEmbedded(newSong);
 		boundVocals = new FlxSound();
 		if (newVocals != null)
 			boundVocals = new FlxSound().loadEmbedded(newVocals);
-		boundState = newState;
+
+		boundData = newData;
 
 		FlxG.sound.list.add(boundSong);
 		FlxG.sound.list.add(boundVocals);
 
-		changeBPM(bpm);
+		changeBPM(boundData.bpm);
 
 		reset();
 	}
 
+	@:noCompletion
 	private static function set_songSpeed(value:Float):Float
 	{
 		if (speedTwn != null)
@@ -102,17 +108,23 @@ class Conductor
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
 
-		if (boundState.SONG != null)
+		if (boundData != null)
 		{
 			// Thanks Kade for the comment about xmod on Psych Engine, you are the best
 			// this probably is the best way, it keeps the original song speed?
-			var baseSpeed:Float = songRate * boundState.SONG.speed;
-			var bps:Float = (bpm / 60) / songRate;
+			/*
+				var baseSpeed:Float = songRate * boundData.speed;
+				var bps:Float = (bpm / 60) / songRate;
 
-			var nearestNote:Note = ChartLoader.unspawnedNoteList[0];
-			var noteDiff:Float = (nearestNote.strumTime - songPosition) / 1000;
+				var nearestNote:Note = ChartLoader.unspawnedNoteList[0];
+				var noteDiff:Float = 0;
+				if (nearestNote != null)
+					noteDiff = (nearestNote.strumTime - songPosition) / 1000;
 
-			songSpeed = baseSpeed * (bps / noteDiff);
+				songSpeed = baseSpeed * (bps / noteDiff); */
+
+			// Gonna disable it for this little build
+			songSpeed = songRate * boundData.speed;
 		}
 	}
 
@@ -125,14 +137,14 @@ class Conductor
 
 			if (stepPosition > lastStep)
 			{
-				boundState.stepHit();
+				onStepHit.dispatch();
 				lastStep = stepPosition;
 			}
 
 			if (beatPosition > lastBeat)
 			{
 				if (stepPosition % 4 == 0)
-					boundState.beatHit();
+					onBeatHit.dispatch();
 				lastBeat = beatPosition;
 			}
 
@@ -144,23 +156,22 @@ class Conductor
 			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
 
 			stepPosition = lastChange.stepTime + Math.floor((songPosition - lastChange.songTime) / stepCrochet);
-			sectionPosition = Math.floor(stepPosition / 16);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)
 			{
 				if (Math.abs(boundSong.time - songPosition) > comparisonThreshold
-					|| (boundState.SONG.needsVoices && Math.abs(boundVocals.time - songPosition) > comparisonThreshold))
+					|| (boundData.needsVoices && Math.abs(boundVocals.time - songPosition) > comparisonThreshold))
 					resyncTime();
 
-				boundState.stepHit();
+				onStepHit.dispatch();
 				lastStep = stepPosition;
 			}
 
 			if (beatPosition > lastBeat)
 			{
 				if (stepPosition % 4 == 0)
-					boundState.beatHit();
+					onBeatHit.dispatch();
 				lastBeat = beatPosition;
 			}
 
@@ -171,12 +182,12 @@ class Conductor
 	public static function resyncTime()
 	{
 		trace('Resyncing song time ${boundSong.time}, $songPosition');
-		if (boundState.SONG.needsVoices)
+		if (boundData.needsVoices)
 			boundVocals.pause();
 
 		boundSong.play();
 		songPosition = boundSong.time;
-		if (boundState.SONG.needsVoices)
+		if (boundData.needsVoices)
 		{
 			boundVocals.time = songPosition;
 			boundVocals.play();

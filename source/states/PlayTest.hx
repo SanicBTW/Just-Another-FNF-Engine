@@ -95,6 +95,12 @@ class PlayTest extends MusicBeatState
 
 	public var loadSong:Null<String> = "";
 
+	private var SONG(get, null):Song;
+
+	@:noCompletion
+	private function get_SONG():Song
+		return Conductor.boundData;
+
 	override public function new(?loadSong:String)
 	{
 		super();
@@ -517,7 +523,7 @@ class PlayTest extends MusicBeatState
 
 	private function generateSong():Void
 	{
-		SONG = ChartLoader.loadChart(this, (loadSong != null ? loadSong : ""), 2);
+		ChartLoader.loadChart((loadSong != null ? loadSong : ""), 2);
 		Conductor.changeBPM(SONG.bpm);
 
 		Conductor.boundSong.onComplete = function()

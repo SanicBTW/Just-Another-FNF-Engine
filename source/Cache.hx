@@ -14,6 +14,7 @@ import cpp.NativeGc;
 import java.vm.Gc;
 #end
 
+// Will rewrite it in the next commit, for external usage like filesystem and much more
 // properly work on name setting and format
 // rewrite soon
 class Cache
@@ -105,16 +106,19 @@ class Cache
 		return trackedTextures.get(file);
 	}
 
-	public static function getSound(file:String):Null<Sound>
+	// Made so the engine can clean the used memory for the file
+	public static function getSound(file:String, useFS:Bool = false):Null<Sound>
 	{
-		if (!Assets.exists(file))
+		if (!Assets.exists(file) && !useFS)
 		{
 			trace('$file not found, returning null');
 			return null;
 		}
 
+		var sound:Sound = if (useFS) Sound.fromFile(file) else Assets.getSound(file);
+
 		if (!trackedSounds.exists(file))
-			trackedSounds.set(file, Assets.getSound(file));
+			trackedSounds.set(file, sound);
 		pushTracked(file);
 		return trackedSounds.get(file);
 	}
