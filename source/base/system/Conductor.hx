@@ -4,6 +4,8 @@ import base.MusicBeatState.MusicHandler;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.system.FlxSound;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import funkin.ChartLoader;
 import funkin.notes.Note;
 import openfl.media.Sound;
@@ -22,6 +24,7 @@ class Conductor
 	public static var songPosition:Float = 0;
 	public static var songSpeed(default, set):Float = 2;
 	public static var songRate:Float = 0.45;
+	private static var speedTwn:FlxTween;
 
 	// sections, steps and beats
 	public static var sectionPosition:Int = 0;
@@ -69,12 +72,26 @@ class Conductor
 
 	private static function set_songSpeed(value:Float):Float
 	{
-		var ratio:Float = value / songSpeed;
-		songSpeed = value;
-		for (note in ChartLoader.unspawnedNoteList)
+		if (speedTwn != null)
+			speedTwn.cancel();
+
+		// 0.2 would fit osu i guess
+		speedTwn = FlxTween.num(songSpeed, value, 0.5, {
+			ease: FlxEase.linear,
+			onComplete: (_) ->
+			{
+				speedTwn = null;
+			}
+		}, function(f:Float)
 		{
-			note.updateSustainScale(ratio);
-		}
+			var ratio:Float = f / songSpeed;
+			songSpeed = f;
+			for (note in ChartLoader.unspawnedNoteList)
+			{
+				note.updateSustainScale(ratio);
+			}
+		});
+
 		return value;
 	}
 
@@ -88,18 +105,14 @@ class Conductor
 		if (boundState.SONG != null)
 		{
 			// Thanks Kade for the comment about xmod on Psych Engine, you are the best
-			// this probably is the best way, it keeps the original song speed but when a bpm speed changes it slows down, (135 -> 145) it slows the song a lot
+			// this probably is the best way, it keeps the original song speed?
 			var baseSpeed:Float = songRate * boundState.SONG.speed;
 			var bps:Float = (bpm / 60) / songRate;
 
 			var nearestNote:Note = ChartLoader.unspawnedNoteList[0];
 			var noteDiff:Float = (nearestNote.strumTime - songPosition) / 1000;
 
-			songSpeed = baseSpeed / (bps * noteDiff);
-
-			// Use this if you want the song speed increase with bpm changes, it wont bind to the original song speed, will look into it later
-			// var bps:Float = (bpm / 60) / songSpeed;
-			// songSpeed = baseSpeed * (bps * noteDiff);
+			songSpeed = baseSpeed * (bps / noteDiff);
 		}
 	}
 

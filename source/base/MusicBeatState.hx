@@ -4,6 +4,7 @@ import base.ScriptableState.ScriptableSubState;
 import base.system.Conductor;
 import flixel.FlxBasic;
 import flixel.FlxG;
+import flixel.system.debug.watch.Tracker.TrackerProfile;
 import funkin.ChartLoader.Song;
 
 // I need a better way to avoid updating time
@@ -21,6 +22,21 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 	@:noCompletion
 	private function get_curBeat():Int
 		return Conductor.beatPosition;
+
+	override public function create()
+	{
+		FlxG.debugger.addTrackerProfile(new TrackerProfile(Conductor, [
+			"songPosition",
+			"sectionPosition",
+			"stepPosition",
+			"beatPosition",
+			"songSpeed",
+			"bpm"
+		]));
+		FlxG.debugger.track(Conductor);
+
+		super.create();
+	}
 
 	override public function update(elapsed:Float)
 	{
