@@ -162,6 +162,12 @@ class Main extends Sprite
 		#if windows
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 		#end
+
+		// just listen to the first arg lol
+		if (Sys.args()[0].contains("-crashed"))
+		{
+			notifTray.notify("Well, that sucks...", 'Looks like the game crashed\n(${Sys.args()[0].split(":")[1]})');
+		}
 	}
 
 	// Code was entirely made by sqirra-rng for their fnf engine named "Izzy Engine", big props to them!!!
@@ -201,7 +207,8 @@ class Main extends Sprite
 
 		Application.current.window.alert(errMsg, "Error!");
 		DiscordPresence.shutdownPresence();
-		Sys.exit(0);
+		new Process(Path.join([Sys.getCwd(), Application.current.meta.get("file") + ".exe"]), ["-crashed:" + e.error]);
+		Sys.exit(1);
 	}
 	#end
 }
