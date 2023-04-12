@@ -78,6 +78,9 @@ class Conductor
 	@:noCompletion
 	private static function set_songSpeed(value:Float):Float
 	{
+		if (ChartLoader.unspawnedNoteList.length < 0)
+			return value;
+
 		if (speedTwn != null)
 			speedTwn.cancel();
 

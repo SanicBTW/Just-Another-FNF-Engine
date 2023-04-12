@@ -14,7 +14,6 @@ class Note extends FlxSprite
 	public var wasGoodHit:Bool = false;
 	public var mustPress:Bool = false;
 
-	public var ratingDiff:Float;
 	public var doubleNote:Bool = false;
 	public var strumLine:Int = 0;
 	public var prevNote:Note;

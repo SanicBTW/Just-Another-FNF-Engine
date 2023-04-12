@@ -45,29 +45,23 @@ class DragDrop
 									{
 										ChartLoader.netInst = Cache.getSound(filePath, true);
 										state = "Waiting voices";
-										Main.notifTray.notify("Waiting for vocals", "You can drop some vocals or wait 5 seconds");
 										waitTimer = new Timer(5, () ->
 										{
 											state = "Listening";
 											ScriptableState.switchState(new PlayTest(null));
 										});
 									}
-									else
-										Main.notifTray.notify("Oopsies", "Can you drop an inst file please");
 								}
 
 							case "Waiting voices":
 								{
 									waitTimer.destroy();
-									Main.notifTray.close(true);
 									if (fileName.toLowerCase().contains("voices"))
 									{
 										ChartLoader.netVoices = Cache.getSound(filePath, true);
 										state = "Listening";
 										ScriptableState.switchState(new PlayTest(null));
 									}
-									else
-										Main.notifTray.notify("Oopsies", "Can you drop some voices please");
 								}
 						}
 					}

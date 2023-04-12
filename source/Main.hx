@@ -1,9 +1,7 @@
 package;
 
 import base.ScriptableState;
-import base.display.*;
 import base.system.*;
-import base.system.ui.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.*;
@@ -13,13 +11,13 @@ import openfl.display.Sprite;
 import openfl.display.StageScaleMode;
 import openfl.events.Event;
 import states.RewriteMenu;
+import window_ui.*;
 #if cpp
-import cpp.NativeGc;
+import cpp.vm.Gc;
 #end
 #if windows
 import haxe.CallStack;
 import haxe.io.Path;
-import lime.app.Application;
 import openfl.events.UncaughtErrorEvent;
 import sys.FileSystem;
 import sys.io.File;
@@ -34,16 +32,18 @@ class Main extends Sprite
 	private var gameHeight:Int = 720;
 	private var initialClass:Class<FlxState> = RewriteMenu;
 	private var zoom:Float = -1;
-	private var framerate:Int = #if !html5 250 #else 60 #end;
+	private var framerate:Int = 60;
 	private var skipSplash:Bool = true;
 	private var startFullscreen:Bool = false;
+
+	public static var game:FlxGame;
+	private static var trays:Array<Tray> = [];
 
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
 	public static var volumeTray:VolumeTray;
-	public static var notifTray:NotificationTray;
 
-	public static var preview:Float = 7.5;
+	public static var preview:Float = 7.6;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -63,7 +63,51 @@ class Main extends Sprite
 		if (hasEventListener(Event.ADDED_TO_STAGE))
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 
+		setup();
 		setupGame();
+	}
+
+	private function setup()
+	{
+		#if cpp
+		Gc.enable(true);
+		#end
+
+		Lib.current.stage.align = TOP_LEFT;
+
+		SaveFile.Initialize();
+		Controls.init();
+
+		DiscordPresence.initPresence();
+		FlxGraphic.defaultPersist = true;
+		ScriptableState.skipTransIn = true;
+
+		fpsCounter = new FramerateCounter(10, 8);
+		fpsCounter.width = gameWidth;
+
+		memoryCounter = new MemoryCounter(10, (fpsCounter.textHeight + fpsCounter.y) - 1);
+		memoryCounter.width = gameWidth;
+
+		volumeTray = new VolumeTray();
+		trays.push(volumeTray);
+
+		DragDrop.listen();
+
+		for (arg in Sys.args())
+		{
+			if (arg.contains("-GPU_RENDERING"))
+				Cache.textureCompression = true;
+
+			if (arg.contains("-FPS"))
+				setFPS(Std.parseInt(arg.split(":")[1]));
+
+			if (arg.contains("-NO_DRPC"))
+				DiscordPresence.shutdownPresence();
+		}
+
+		#if windows
+		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
+		#end
 	}
 
 	private function setupGame()
@@ -80,21 +124,12 @@ class Main extends Sprite
 			gameHeight = Math.ceil(stageHeight / zoom);
 		}
 
-		#if cpp
-		NativeGc.enable(true);
-		#end
-
-		SaveFile.Initialize();
-		Controls.init();
-
-		Application.current.window.title = 'BETA ${Application.current.meta.get("version")} - PREVIEW ${preview}';
-		DiscordPresence.initPresence();
-		FlxGraphic.defaultPersist = true;
-		ScriptableState.skipTransIn = true;
-		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
-
-		Lib.current.stage.align = TOP_LEFT;
-		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
+		game = new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen);
+		addChild(game);
+		addChild(fpsCounter);
+		addChild(memoryCounter);
+		addChild(volumeTray);
+		addChild(new TopMessage("hola", "Warning"));
 
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 
@@ -105,79 +140,35 @@ class Main extends Sprite
 		FlxG.mouse.useSystemCursor = true;
 		#end
 
-		fpsCounter = new FramerateCounter(10, 8);
-		fpsCounter.width = gameWidth;
-		addChild(fpsCounter);
-		if (fpsCounter != null)
-			fpsCounter.visible = true;
-
-		memoryCounter = new MemoryCounter(10, (fpsCounter.textHeight + fpsCounter.y) - 1);
-		memoryCounter.width = gameWidth;
-		addChild(memoryCounter);
-		if (memoryCounter != null)
-			memoryCounter.visible = true;
-
-		volumeTray = new VolumeTray();
-		addChild(volumeTray);
-
-		notifTray = new NotificationTray();
-		addChild(notifTray);
-
-		FlxG.signals.preStateCreate.add(function(state:FlxState)
+		FlxG.signals.preStateCreate.add((_) ->
 		{
 			Cache.clearStoredMemory();
 			FlxG.bitmap.dumpCache();
 			Cache.runGC();
 		});
 
-		FlxG.signals.preStateSwitch.add(function()
+		FlxG.signals.preStateSwitch.add(() ->
 		{
 			Cache.clearUnusedMemory();
 			Cache.runGC();
 		});
 
-		FlxG.signals.gameResized.add((_, _) ->
-		{
-			if (volumeTray != null)
-				volumeTray.screenCenter();
-			if (notifTray != null)
-				notifTray.screenCenter();
-		});
-
-		// Is this worse?
-		Lib.application.onUpdate.add((_) ->
-		{
-			if (volumeTray != null && volumeTray.active)
-				volumeTray.update();
-			if (notifTray != null && notifTray.active)
-				notifTray.update();
-		});
-
-		FlxG.sound.volumeHandler = function(_)
+		FlxG.sound.volumeHandler = (_) ->
 		{
 			if (volumeTray != null)
 				volumeTray.show();
 		}
 
-		DragDrop.listen();
-
-		#if windows
-		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
-		#end
-
-		for (arg in Sys.args())
+		FlxG.signals.gameResized.add((w, h) ->
 		{
-			if (arg.contains("-crashed"))
+			for (tray in trays)
 			{
-				notifTray.notify("Well, that sucks", 'Looks like the game crashed\n(${arg.split(":")[1]})');
+				if (tray != null)
+				{
+					tray.screenCenter();
+				}
 			}
-
-			if (arg.contains("-enable_gpu_rendering"))
-				Cache.textureCompression = true;
-
-			if (arg.contains("-fps"))
-				setFPS(Std.parseInt(arg.split(":")[1]));
-		}
+		});
 	}
 
 	public static function setFPS(newFPS:Int)

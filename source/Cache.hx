@@ -9,7 +9,7 @@ import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
 import openfl.system.System;
 #if cpp
-import cpp.NativeGc;
+import cpp.vm.Gc;
 #elseif android
 import java.vm.Gc;
 #end
@@ -215,8 +215,8 @@ class Cache
 	public static inline function runGC()
 	{
 		#if cpp
-		NativeGc.compact();
-		NativeGc.run(true);
+		Gc.compact();
+		Gc.run(true);
 		#elseif android
 		Gc.run();
 		#else

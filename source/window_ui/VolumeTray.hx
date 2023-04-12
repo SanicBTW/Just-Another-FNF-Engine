@@ -1,53 +1,44 @@
-package base.system.ui;
+package window_ui;
 
 import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import funkin.CoolUtil;
-import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
-import openfl.display.Sprite;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+import openfl.utils.Assets;
 
-// Based off FlxSoundTray
-class VolumeTray extends Sprite
+class VolumeTray extends Tray
 {
-	// If its active then update, apparently its expensive to update?
-	public var active:Bool = false;
-
 	// Time visible
 	private var _visibleTime:Float = 0.0;
 
 	// Sizes
 	private var _width:Int = 120;
 	private var _height:Int = 30;
-	private var _defaultScale:Float = 2.0;
 
 	// For lerp
 	private var targetX:Float = 0.0;
 	private var targetY:Float = 0.0;
 
-	// The volume tray gets updated on the update event of the application, uses FlxG elapsed to get the time since last frame, apparently it does the same on FlxGame but yeah
-	private var elapsed(get, null):Float;
-
-	private function get_elapsed():Float
-		return FlxG.elapsed;
-
 	// Sprites
 	private var _volTracker:TextField; // temp and the vol tracker?
 	private var _volBar:Bitmap;
 
-	@:keep
-	public function new()
-	{
-		super();
+	// Volume
+	private var volume(get, null):Float;
 
-		visible = false;
-		scaleX = _defaultScale;
-		scaleY = _defaultScale;
+	@:noCompletion
+	private function get_volume():Float
+		return FlxG.sound != null ? FlxG.sound.volume : 1;
+
+	override public function create()
+	{
+		super.create();
+
 		y = -Lib.current.stage.stageHeight;
 
 		var bg:Bitmap = new Bitmap(new BitmapData(_width, _height, true, 0x7F000000));
@@ -65,7 +56,7 @@ class VolumeTray extends Sprite
 		// This one gets updated when volume changes
 		_volTracker = new TextField();
 		setTxtFieldProperties(_volTracker);
-		_volTracker.text = '${FlxG.sound.volume * 100}%';
+		_volTracker.text = '${volume * 100}%';
 		_volTracker.defaultTextFormat.align = RIGHT;
 		_volTracker.x = (_width - _volTracker.textWidth) - 10;
 		addChild(_volTracker);
@@ -76,12 +67,12 @@ class VolumeTray extends Sprite
 		addChild(_volBar);
 	}
 
-	public function update()
+	override public function update(elapsed:Float)
 	{
 		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 8.6), 0, 1);
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
-		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : FlxG.sound.volume), _volBar.scaleX, lerpVal);
+		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : volume), _volBar.scaleX, lerpVal);
 		_volTracker.text = '${Math.round(_volBar.scaleX * 100)}%';
 
 		if (_visibleTime > 0)
@@ -96,6 +87,8 @@ class VolumeTray extends Sprite
 				active = false;
 			}
 		}
+
+		super.update(elapsed);
 	}
 
 	public function show()
@@ -104,13 +97,6 @@ class VolumeTray extends Sprite
 		targetY = 0;
 		visible = true;
 		active = true;
-	}
-
-	public function screenCenter()
-	{
-		scaleX = _defaultScale;
-		scaleY = _defaultScale;
-		x = (0.5 * (Lib.current.stage.stageWidth - _width * _defaultScale));
 	}
 
 	private function setTxtFieldProperties(field:TextField)

@@ -81,6 +81,7 @@ class Character extends OffsettedSprite
 		}
 
 		healthIcon = json.healthicon;
+		singDuration = json.sing_duration;
 		characterPosition.set(json.position[0], json.position[1]);
 		cameraPosition = new FlxPoint(json.camera_position[0], json.camera_position[1]);
 		singDuration = json.sing_duration;
@@ -128,7 +129,7 @@ class Character extends OffsettedSprite
 				if (animation.curAnim.name.startsWith("sing"))
 					holdTimer += elapsed;
 
-				if (holdTimer >= Conductor.stepCrochet * (singDuration / 1000))
+				if (holdTimer >= Conductor.stepCrochet * 0.001 * singDuration)
 				{
 					dance();
 					holdTimer = 0;
@@ -149,7 +150,7 @@ class Character extends OffsettedSprite
 		super.update(elapsed);
 	}
 
-	public function dance(forced:Bool = false)
+	public function dance(forced:Bool = true)
 	{
 		if (danceIdle)
 		{

@@ -13,8 +13,6 @@ class DiscordPresence
 {
 	public function new()
 	{
-		trace("Starting Discord Presence");
-
 		DiscordRpc.start({
 			clientID: "1089328716154404885",
 			onReady: onReady,

@@ -269,7 +269,7 @@ class PlayTest extends MusicBeatState
 		super.update(elapsed);
 
 		if (player != null
-			&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000) && (!keys.contains(true) || playerStrums.botPlay)))
+			&& (player.holdTimer > Conductor.stepCrochet * 0.001 * player.singDuration && (!keys.contains(true) || playerStrums.botPlay)))
 		{
 			if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
 				player.dance();
@@ -484,17 +484,17 @@ class PlayTest extends MusicBeatState
 				if (girlfriend != null
 					&& tmr.loopsLeft % girlfriend.danceEveryNumBeats == 0
 					&& girlfriend.animation.curAnim.name != null
-					&& girlfriend.animation.curAnim.name.startsWith("sing"))
+					&& !girlfriend.animation.curAnim.name.startsWith("sing"))
 					girlfriend.dance();
 
 				if (tmr.loopsLeft % player.danceEveryNumBeats == 0
 					&& player.animation.curAnim.name != null
-					&& player.animation.curAnim.name.startsWith("sing"))
+					&& !player.animation.curAnim.name.startsWith("sing"))
 					player.dance();
 
 				if (tmr.loopsLeft % opponent.danceEveryNumBeats == 0
 					&& opponent.animation.curAnim.name != null
-					&& opponent.animation.curAnim.name.startsWith("sing"))
+					&& !opponent.animation.curAnim.name.startsWith("sing"))
 					opponent.dance();
 			}
 
@@ -614,17 +614,16 @@ class PlayTest extends MusicBeatState
 		if (!note.wasGoodHit)
 		{
 			note.wasGoodHit = true;
-			getReceptor(playerStrums, note.noteData).playAnim('confirm');
+			getReceptor(playerStrums, note.noteData).playAnim('confirm', true);
 
 			if (!note.isSustain)
 			{
-				note.ratingDiff = (-(note.strumTime - Conductor.songPosition));
-				var rating:String = Timings.judge(note.ratingDiff);
+				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
 				if (rating == "marvelous" || rating == "sick")
 					playSplash(playerStrums, note.noteData);
 			}
 			else
-				Timings.judge(note.parent.ratingDiff, true);
+				Timings.judge(Timings.judgements[0].timing, true);
 
 			if (!note.doubleNote)
 			{
@@ -669,15 +668,10 @@ class PlayTest extends MusicBeatState
 		if (!note.wasGoodHit)
 		{
 			note.wasGoodHit = true;
-			getReceptor(curStrums, note.noteData).playAnim('confirm');
+			getReceptor(curStrums, note.noteData).playAnim('confirm', true);
 
 			if (!note.isSustain)
 				playSplash(curStrums, note.noteData);
-			/*
-				if (note.isSustain)
-					getReceptor(curStrums, note.noteData).resetAnim = note.children.length;
-				else
-					playSplash(curStrums, note.noteData); */
 
 			if (!note.doubleNote)
 			{
@@ -700,7 +694,7 @@ class PlayTest extends MusicBeatState
 				if (curChar == null)
 					return;
 
-				var targetHold:Float = (Conductor.stepCrochet * curChar.singDuration) / 1000;
+				var targetHold:Float = Conductor.stepCrochet * 0.001 * curChar.singDuration;
 				if (curChar.holdTimer + 0.2 > targetHold)
 					curChar.holdTimer = targetHold - 0.2;
 			}
@@ -729,7 +723,7 @@ class PlayTest extends MusicBeatState
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
 		insert(members.indexOf(char) - 1, daCopy);
-		FlxTween.tween(daCopy, {alpha: 0}, ((Conductor.stepCrochet * char.singDuration) / 1000), {
+		FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * 0.001 * char.singDuration, {
 			ease: FlxEase.quadInOut,
 			onComplete: function(_)
 			{
@@ -766,6 +760,6 @@ class PlayTest extends MusicBeatState
 		}
 
 		if (shaderFilter != null)
-			FlxG.camera.setFilters([shaderFilter]);
+			FlxG.game.setFilters([shaderFilter]);
 	}
 }
