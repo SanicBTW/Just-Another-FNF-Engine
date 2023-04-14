@@ -2,6 +2,7 @@ package;
 
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
+import haxe.io.Path;
 import openfl.Assets;
 import openfl.media.Sound;
 
@@ -72,12 +73,8 @@ class Paths
 	public static inline function voices(song:String):Sound
 		return Cache.getSound(getPath('${formatString(song)}/Voices.ogg', "songs"));
 
-	public static inline function getSparrowAtlas(key:String, ?library:String)
-		return FlxAtlasFrames.fromSparrow(image(key, library), file('images/$key.xml', library));
-
-	// force the path to search for an image without images/
-	public static inline function getForcedSparrowAtlas(key:String, ?library:String)
-		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$key.png', library)), file('$key.xml', library));
+	public static inline function getSparrowAtlas(key:String, folder:String = "images", ?library:String)
+		return Cache.getAtlas(getPath(Path.join([folder, key]), library), Sparrow);
 
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");

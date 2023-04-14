@@ -72,7 +72,7 @@ class Character extends OffsettedSprite
 		curCharacter = character;
 
 		var json:CharacterFile = cast haxe.Json.parse(Assets.getText(getCharPath()));
-		frames = Paths.getForcedSparrowAtlas(curCharacter + "/" + json.image.replace("characters/", ""), "characters");
+		frames = Paths.getSparrowAtlas(json.image.replace("characters/", ""), curCharacter, "characters");
 
 		if (json.scale != 1)
 		{
