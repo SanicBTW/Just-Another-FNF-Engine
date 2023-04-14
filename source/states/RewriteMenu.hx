@@ -376,7 +376,7 @@ class RewriteMenu extends MusicBeatState
 					{
 						case "Host":
 							{
-								base.server.UDPServer.init();
+								// base.server.UDPServer.init();
 							}
 
 						case "Connect":

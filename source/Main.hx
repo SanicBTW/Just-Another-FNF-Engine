@@ -8,7 +8,6 @@ import flixel.system.scaleModes.*;
 import lime.app.Application;
 import openfl.Lib;
 import openfl.display.Sprite;
-import openfl.display.StageScaleMode;
 import openfl.events.Event;
 import states.RewriteMenu;
 import window_ui.*;
@@ -93,6 +92,8 @@ class Main extends Sprite
 
 		DragDrop.listen();
 
+		// will add funny ? on html lol
+		#if sys
 		for (arg in Sys.args())
 		{
 			if (arg.contains("-GPU_RENDERING"))
@@ -104,6 +105,7 @@ class Main extends Sprite
 			if (arg.contains("-NO_DRPC"))
 				DiscordPresence.shutdownPresence();
 		}
+		#end
 
 		#if windows
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
@@ -129,7 +131,6 @@ class Main extends Sprite
 		addChild(fpsCounter);
 		addChild(memoryCounter);
 		addChild(volumeTray);
-		addChild(new TopMessage("hola", "Warning"));
 
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 

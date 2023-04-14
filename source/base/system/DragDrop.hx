@@ -3,12 +3,16 @@ package base.system;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
 import haxe.io.Path;
+import js.html.FileList;
 import lime.app.Application;
 import openfl.media.Sound;
 import states.PlayTest;
-import sys.io.File;
 
 using StringTools;
+
+#if sys
+import sys.io.File;
+#end
 
 class DragDrop
 {
@@ -18,8 +22,8 @@ class DragDrop
 
 	public static function listen()
 	{
-		Application.current.window.onDropFile.add((filePath:String) ->
-		{
+		Application.current.window.onDropFile.add((filePath:String) -> {
+			#if sys
 			var fileExtension:String = Path.extension(filePath);
 			var fileName:String = Path.withoutDirectory(Path.withoutExtension(filePath));
 
@@ -66,6 +70,13 @@ class DragDrop
 						}
 					}
 			}
+			#else
+			var fileList:FileList = cast(filePath, FileList);
+			for (item in fileList)
+			{
+				trace(item);
+			}
+			#end
 		});
 	}
 }
