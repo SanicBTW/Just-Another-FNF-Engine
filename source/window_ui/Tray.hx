@@ -1,5 +1,6 @@
 package window_ui;
 
+import flixel.FlxG;
 import openfl.Lib;
 import openfl.display.Sprite;
 
@@ -11,6 +12,19 @@ class Tray extends Sprite
 
 	// Default scale for the tray, each tray class will have its own width and height
 	private var _defaultScale:Float = 2.0;
+
+	// Game sizes
+	private var gWidth(get, null):Int;
+
+	@:noCompletion
+	private function get_gWidth():Int
+		return FlxG.width;
+
+	private var gHeight(get, null):Int;
+
+	@:noCompletion
+	private function get_gHeight():Int
+		return FlxG.height;
 
 	public function new()
 	{
@@ -43,8 +57,10 @@ class Tray extends Sprite
 
 	public function screenCenter()
 	{
+		// Reflect width
+		var rWidth:Float = Std.parseFloat(Reflect.getProperty(this, "_width"));
 		scaleX = _defaultScale;
 		scaleY = _defaultScale;
-		x = (0.5 * (Lib.current.stage.stageWidth - Std.parseFloat(Reflect.getProperty(this, "_width")) * _defaultScale));
+		x = (0.5 * (Lib.current.stage.stageWidth - (Math.isNaN(rWidth) ? width : rWidth) * _defaultScale));
 	}
 }

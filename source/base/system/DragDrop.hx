@@ -3,7 +3,6 @@ package base.system;
 import funkin.ChartLoader;
 import funkin.CoolUtil;
 import haxe.io.Path;
-import js.html.FileList;
 import lime.app.Application;
 import openfl.media.Sound;
 import states.PlayTest;
@@ -12,6 +11,9 @@ using StringTools;
 
 #if sys
 import sys.io.File;
+#end
+#if js
+import js.html.FileList;
 #end
 
 class DragDrop

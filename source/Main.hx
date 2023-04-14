@@ -131,6 +131,7 @@ class Main extends Sprite
 		addChild(fpsCounter);
 		addChild(memoryCounter);
 		addChild(volumeTray);
+		addChild(new TopMessage("sex", INFO));
 
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 

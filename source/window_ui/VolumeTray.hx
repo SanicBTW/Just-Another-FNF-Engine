@@ -75,13 +75,14 @@ class VolumeTray extends Tray
 		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : volume), _volBar.scaleX, lerpVal);
 		_volTracker.text = '${Math.round(_volBar.scaleX * 100)}%';
 
+		// Properly stop updating after the targetY is below the game height (kind of stupid!!!!! need to get another check!!!)
 		if (_visibleTime > 0)
 			_visibleTime -= elapsed;
-		else if (y > -height)
+		else if (_visibleTime <= 0)
 		{
-			targetY -= elapsed * FlxG.height * _defaultScale;
-
-			if (y <= -height)
+			if (targetY > -gHeight)
+				targetY -= elapsed * gHeight * _defaultScale;
+			else
 			{
 				visible = false;
 				active = false;
