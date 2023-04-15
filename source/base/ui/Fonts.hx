@@ -10,10 +10,22 @@ import openfl.Assets;
 class Fonts
 {
 	public static inline function VCR():FlxBitmapFont
-		return Cache.getAtlas(Paths.getPath('VCR/VCR', "fonts"), BMFont);
+		return FlxBitmapFont.fromAngelCode(getGraphic("VCR"), getCode("VCR"));
 
 	public static inline function Funkin():FlxBitmapFont
-		return Cache.getAtlas(Paths.getPath('Funkin/Funkin', "fonts"), BMFont);
+		return FlxBitmapFont.fromAngelCode(getGraphic("Funkin"), getCode("Funkin"));
+
+	private static function getGraphic(fontName:String):FlxGraphic
+	{
+		var path:String = Paths.getPath('${fontName}/${fontName}.png', "fonts");
+		return Cache.getGraphic(path);
+	}
+
+	private static function getCode(fontName:String):String
+	{
+		var path:String = Paths.getPath('${fontName}/${fontName}.xml', "fonts");
+		return Assets.getText(path);
+	}
 
 	public static function setProperties(text:FlxBitmapText, setBorder:Bool = true, targetSize:Float = 0.35)
 	{

@@ -96,8 +96,8 @@ class Main extends Sprite
 		#if sys
 		for (arg in Sys.args())
 		{
-			// if (arg.contains("-GPU_RENDERING"))
-			//	Cache.textureCompression = true;
+			if (arg.contains("-GPU_RENDERING"))
+				Cache.textureCompression = true;
 
 			if (arg.contains("-FPS"))
 				setFPS(Std.parseInt(arg.split(":")[1]));
