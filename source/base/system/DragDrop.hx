@@ -49,7 +49,7 @@ class DragDrop
 								{
 									if (fileName.toLowerCase().contains("inst"))
 									{
-										ChartLoader.netInst = Cache.getSound(filePath, true);
+										ChartLoader.netInst = Sound.fromFile(filePath);
 										state = "Waiting voices";
 										waitTimer = new Timer(5, () ->
 										{
@@ -64,7 +64,7 @@ class DragDrop
 									waitTimer.destroy();
 									if (fileName.toLowerCase().contains("voices"))
 									{
-										ChartLoader.netVoices = Cache.getSound(filePath, true);
+										ChartLoader.netVoices = Sound.fromFile(filePath);
 										state = "Listening";
 										ScriptableState.switchState(new PlayTest(null));
 									}

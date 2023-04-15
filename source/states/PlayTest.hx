@@ -212,7 +212,8 @@ class PlayTest extends MusicBeatState
 		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.cameraZoom : 1, FlxG.camera.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1));
 
-		updateCamTarget(elapsed);
+		if (SONG != null && SONG.notes[Std.int(curStep / 16)] != null)
+			updateCamTarget(elapsed);
 
 		while ((ChartLoader.unspawnedNoteList[0] != null) && (ChartLoader.unspawnedNoteList[0].strumTime - Conductor.songPosition) < 3500)
 		{
@@ -536,12 +537,13 @@ class PlayTest extends MusicBeatState
 
 		Conductor.boundSong.onComplete = function()
 		{
+			ScriptableState.switchState(new RewriteMenu());
+			Conductor.boundData = null;
 			Conductor.boundSong.stop();
 			Conductor.boundVocals.stop();
 			ChartLoader.netChart = null;
 			ChartLoader.netInst = null;
 			ChartLoader.netVoices = null;
-			ScriptableState.switchState(new RewriteMenu());
 		};
 		Conductor.boundSong.stop();
 		Conductor.boundVocals.stop();

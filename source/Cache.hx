@@ -24,6 +24,7 @@ import java.vm.Gc;
 // Rewritten completely and using some FlatyEngine code
 // This manages local assets (game folder assets) and will only store external assets through another class that will be called in Paths
 // Holy shit it actually improved performance a lot holy shit
+// Gonna move back to the old one for now
 class Cache
 {
 	// Keyed assets / Cache store - joined all of the tracked arrays from before to one to avoid having an array for each one
@@ -34,7 +35,8 @@ class Cache
 		'assets/music/freakyMenu.ogg',
 		'assets/music/tea-time.ogg',
 		'fonts:assets/fonts/VCR/VCR.png',
-		'fonts:assets/fonts/Funkin/Funkin.png'
+		'fonts:assets/fonts/Funkin/Funkin.png',
+		'assets/images/alphabet.png'
 	];
 
 	// Casting is unnecessary as it gets casted to the return type of the function
@@ -98,7 +100,7 @@ class Cache
 	public static function getAtlas(id:String, type:AtlasType):Null<Dynamic>
 	{
 		if (isCached(id))
-			return keyedAssets.get(id).atlas;
+			return keyedAssets.get(id).frames;
 
 		var path:String = id;
 		if (!path.endsWith(".png"))
@@ -112,27 +114,27 @@ class Cache
 		}
 		path = path.substring(0, path.length - 4);
 
-		var newAtlas:Atlas = {atlas: null, type: type};
+		var newAtlas:Atlas = new Atlas(null, type);
 		switch (type)
 		{
 			case Sparrow:
 				{
 					path += ".xml";
-					newAtlas.atlas = FlxAtlasFrames.fromSparrow(graphic, path);
+					newAtlas.frames = FlxAtlasFrames.fromSparrow(graphic, path);
 				}
 			case Packer:
 				{
 					path += ".txt";
-					newAtlas.atlas = FlxAtlasFrames.fromSpriteSheetPacker(graphic, path);
+					newAtlas.frames = FlxAtlasFrames.fromSpriteSheetPacker(graphic, path);
 				}
 			case BMFont:
 				{
 					path += ".xml";
-					newAtlas.atlas = FlxBitmapFont.fromAngelCode(graphic, path);
+					newAtlas.frames = FlxBitmapFont.fromAngelCode(graphic, path);
 				}
 		}
 
-		if (newAtlas.atlas == null)
+		if (newAtlas.frames == null)
 		{
 			log('$id atlas returned null', "atlas getter");
 			return null;
@@ -141,7 +143,7 @@ class Cache
 		keyedAssets.set(id, newAtlas);
 
 		// Return atlas on first call
-		return newAtlas.atlas;
+		return newAtlas.frames;
 	}
 
 	// Cleaning functions - returns a bool indicating that it has been cleaned successfully
@@ -153,7 +155,6 @@ class Cache
 			bitmapD.dispose();
 			bitmapD = null;
 			keyedAssets.remove(id);
-			log('$id got removed', 'bitmap data clean');
 			return true;
 		}
 		return false;
@@ -170,7 +171,6 @@ class Cache
 			FlxG.bitmap._cache.remove(id);
 			graphic.destroy();
 			keyedAssets.remove(id);
-			log('$id got removed', 'graphic clean');
 			return true;
 		}
 		return false;
@@ -181,9 +181,8 @@ class Cache
 		var atlas:Null<Atlas> = keyedAssets.get(id);
 		if (atlas != null)
 		{
-			FlxDestroyUtil.destroy(atlas.atlas);
+			FlxDestroyUtil.destroy(atlas.frames);
 			keyedAssets.remove(id);
-			log('$id got removed', 'atlas clean');
 			return true;
 		}
 		return false;
@@ -200,7 +199,6 @@ class Cache
 			#end
 			Assets.cache.removeSound(id);
 			keyedAssets.remove(id);
-			log('$id got removed', 'sound clean');
 			return true;
 		}
 		return false;
@@ -221,7 +219,6 @@ class Cache
 			}
 			graphic.bitmap.dispose();
 			FlxG.bitmap.remove(graphic);
-			log('${graphic.key} got removed', 'flxg graphic clean');
 		}
 	}
 
@@ -238,6 +235,7 @@ class Cache
 					if (graphic.useCount <= 0)
 						removeGraphic(key);
 				}
+
 				if (obj is BitmapData)
 					removeBitmapData(key);
 			}
@@ -316,10 +314,16 @@ enum AtlasType
 	BMFont;
 }
 
-typedef Atlas =
+class Atlas
 {
-	var atlas:OneOfTwo<FlxAtlasFrames, FlxBitmapFont>;
-	var type:AtlasType;
+	public var frames:OneOfTwo<FlxAtlasFrames, FlxBitmapFont>;
+	public var type:AtlasType;
+
+	public function new(frames:OneOfTwo<FlxAtlasFrames, FlxBitmapFont>, type:AtlasType)
+	{
+		this.frames = frames;
+		this.type = type;
+	}
 }
 /* soon
 	// Class to store the type of the asset for cleaning

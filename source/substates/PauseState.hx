@@ -84,12 +84,13 @@ class PauseState extends ScriptableSubState
 						case 'Reset song':
 							ScriptableState.switchState(new PlayTest(PlayTest.instance.loadSong));
 						case 'Exit':
+							ScriptableState.switchState(new states.RewriteMenu());
+							Conductor.boundData = null;
 							Conductor.boundSong.stop();
 							Conductor.boundVocals.stop();
 							ChartLoader.netChart = null;
 							ChartLoader.netInst = null;
 							ChartLoader.netVoices = null;
-							ScriptableState.switchState(new states.RewriteMenu());
 					}
 				}
 		}
