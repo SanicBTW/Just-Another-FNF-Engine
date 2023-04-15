@@ -256,24 +256,31 @@ class PlayTest extends MusicBeatState
 			}
 		}
 
-		playerStrums.allNotes.forEachAlive(function(coolNote:Note)
+		if (!playerStrums.botPlay)
 		{
-			if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
-				&& coolNote.canBeHit
-				&& !coolNote.tooLate
-				&& !coolNote.wasGoodHit
-				&& coolNote.isSustain
-				&& !coolNote.isSustainEnd
-				&& keys[coolNote.noteData])
+			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
 			{
-				noteHit(coolNote);
-			}
-		});
+				if (keys[coolNote.noteData])
+				{
+					if (player != null)
+						player.holdTimer = 0;
+
+					if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
+						&& coolNote.canBeHit
+						&& !coolNote.tooLate
+						&& !coolNote.wasGoodHit
+						&& coolNote.isSustain)
+					{
+						noteHit(coolNote);
+					}
+				}
+			});
+		}
 
 		super.update(elapsed);
 
 		if (player != null
-			&& (player.holdTimer > Conductor.stepCrochet * 0.001 * player.singDuration && (!keys.contains(true) || playerStrums.botPlay)))
+			&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000) && (!keys.contains(true) || playerStrums.botPlay)))
 		{
 			if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
 				player.dance();
@@ -389,61 +396,6 @@ class PlayTest extends MusicBeatState
 			return;
 
 		var data:Int = receptorActionList.indexOf(action);
-
-		var lastTime:Float = Conductor.songPosition;
-		Conductor.songPosition = Conductor.boundSong.time;
-
-		var possibleNotes:Array<Note> = [];
-		var directionList:Array<Int> = [];
-		var dumbNotes:Array<Note> = [];
-
-		playerStrums.allNotes.forEachAlive(function(daNote:Note)
-		{
-			if ((daNote.noteData == data) && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && daNote.isSustainEnd)
-			{
-				if (directionList.contains(data))
-				{
-					for (coolNote in possibleNotes)
-					{
-						if (coolNote.noteData == daNote.noteData && Math.abs(daNote.strumTime - coolNote.strumTime) < 10)
-						{
-							dumbNotes.push(daNote);
-							break;
-						}
-						else if (coolNote.noteData == daNote.noteData && daNote.strumTime < coolNote.strumTime)
-						{
-							possibleNotes.remove(coolNote);
-							possibleNotes.push(daNote);
-							break;
-						}
-					}
-				}
-				else
-				{
-					possibleNotes.push(daNote);
-					directionList.push(data);
-				}
-			}
-		});
-
-		for (note in dumbNotes)
-		{
-			trace("Killing dumb note");
-			playerStrums.destroyNote(note);
-		}
-
-		possibleNotes.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
-
-		if (possibleNotes.length > 0)
-		{
-			for (coolNote in possibleNotes)
-			{
-				if (keys[coolNote.noteData] && coolNote.canBeHit && !coolNote.tooLate)
-					noteHit(coolNote);
-			}
-		}
-
-		Conductor.songPosition = lastTime;
 		keys[data] = false;
 
 		getReceptor(playerStrums, data).playAnim('static');
@@ -680,9 +632,9 @@ class PlayTest extends MusicBeatState
 		if (!note.wasGoodHit)
 		{
 			note.wasGoodHit = true;
-			getReceptor(playerStrums, note.noteData).playAnim('confirm', true);
+			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
-			if (!note.isSustain || note.isSustainEnd)
+			if (!note.isSustain)
 			{
 				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
 				if (rating == "marvelous" || rating == "sick")
@@ -760,7 +712,7 @@ class PlayTest extends MusicBeatState
 				if (curChar == null)
 					return;
 
-				var targetHold:Float = Conductor.stepCrochet * 0.001 * curChar.singDuration;
+				var targetHold:Float = Conductor.stepCrochet * (curChar.singDuration / 1000);
 				if (curChar.holdTimer + 0.2 > targetHold)
 					curChar.holdTimer = targetHold - 0.2;
 			}
@@ -789,7 +741,7 @@ class PlayTest extends MusicBeatState
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
 		insert(members.indexOf(char) - 1, daCopy);
-		FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * 0.001 * char.singDuration, {
+		FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * (char.singDuration / 1000), {
 			ease: FlxEase.quadInOut,
 			onComplete: function(_)
 			{

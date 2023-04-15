@@ -111,22 +111,11 @@ class Note extends FlxSprite
 	{
 		if (mustPress)
 		{
-			if (isSustain)
-			{
-				if (strumTime - Conductor.songPosition <= ((166 * Conductor.timeScale) * 0.5)
-					&& strumTime - Conductor.songPosition >= (-166 * Conductor.timeScale))
-					canBeHit = true;
-				else
-					canBeHit = false;
-			}
+			if (strumTime - Conductor.songPosition <= (166 * Conductor.timeScale)
+				&& strumTime - Conductor.songPosition >= (-166 * Conductor.timeScale))
+				canBeHit = true;
 			else
-			{
-				if (strumTime - Conductor.songPosition <= (166 * Conductor.timeScale)
-					&& strumTime - Conductor.songPosition >= (-166 * Conductor.timeScale))
-					canBeHit = true;
-				else
-					canBeHit = false;
-			}
+				canBeHit = false;
 		}
 
 		if (tooLate || (parent != null && parent.tooLate))

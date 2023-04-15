@@ -185,20 +185,15 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				}
 				else if (strumNote.isSustain && strumNote.parent != null)
 				{
-					// bro this shit is so fucking strict omg
+					// bro this shit is so fucking strict omg (sustain end)
 					var parent:Note = strumNote.parent;
-					if (!parent.tooLate)
+					parent.tooLate = true;
+					for (child in parent.children)
 					{
-						for (i in 0...parent.children.length)
-						{
-							var child:Note = parent.children[i];
-							if (!child.wasGoodHit && i != parent.children.length)
-							{
-								child.tooLate = true;
-							}
-						}
-						onMiss.dispatch(parent);
+						child.tooLate = true;
 					}
+
+					onMiss.dispatch(parent);
 				}
 			}
 

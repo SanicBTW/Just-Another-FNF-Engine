@@ -129,7 +129,7 @@ class Character extends OffsettedSprite
 				if (animation.curAnim.name.startsWith("sing"))
 					holdTimer += elapsed;
 
-				if (holdTimer >= Conductor.stepCrochet * 0.001 * singDuration)
+				if (holdTimer >= Conductor.stepCrochet * (singDuration / 1000))
 				{
 					dance();
 					holdTimer = 0;

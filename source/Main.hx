@@ -133,7 +133,7 @@ class Main extends Sprite
 		addChild(volumeTray);
 		addChild(new TopMessage("sex", INFO));
 
-		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
+		// FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 
 		FlxG.fixedTimestep = false;
 		#if !android
@@ -172,6 +172,7 @@ class Main extends Sprite
 			}
 		});
 
+		setFPS(200);
 		FlxG.console.registerFunction("changeFPS", setFPS);
 	}
 
