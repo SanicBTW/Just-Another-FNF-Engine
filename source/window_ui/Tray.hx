@@ -18,13 +18,13 @@ class Tray extends Sprite
 
 	@:noCompletion
 	private function get_gWidth():Int
-		return FlxG.width;
+		return Std.int(FlxG.game.width);
 
 	private var gHeight(get, null):Int;
 
 	@:noCompletion
 	private function get_gHeight():Int
-		return FlxG.height;
+		return Std.int(FlxG.game.height);
 
 	public function new()
 	{

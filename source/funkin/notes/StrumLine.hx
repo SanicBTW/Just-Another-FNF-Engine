@@ -4,12 +4,14 @@ import base.system.Conductor;
 import flixel.FlxBasic;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.math.FlxAngle;
 import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxSignal.FlxTypedSignal;
 
+// Moved to Forever Engine Legacy Note Calls
 class StrumLine extends FlxTypedGroup<FlxBasic>
 {
 	public var receptors(default, null):FlxTypedGroup<Receptor>;
@@ -83,7 +85,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	{
 		super.update(elapsed);
 
-		var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1) * FlxMath.signOf(Conductor.songSpeed / Conductor.songRate);
+		var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1);
 
 		for (receptor in receptors)
 		{
@@ -93,31 +95,51 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 		allNotes.forEachAlive(function(strumNote:Note)
 		{
-			if (strumNote.tooLate)
-			{
-				strumNote.active = false;
-				strumNote.visible = false;
-			}
+			var receptorX:Float = receptors.members[Math.floor(strumNote.noteData)].x;
+			var receptorY:Float = receptors.members[Math.floor(strumNote.noteData)].y + (Note.swagWidth / 6);
 
-			var baseX:Float = receptors.members[Math.floor(strumNote.noteData)].x;
-			var baseY:Float = receptors.members[Math.floor(strumNote.noteData)].y;
-			strumNote.x = baseX + strumNote.offsetX;
-			strumNote.y = baseY + strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
+			var pseudoX:Float = strumNote.offsetX;
+			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
 
-			var center:Float = baseY + (Note.swagWidth / 2);
+			strumNote.y = receptorY
+				+ (Math.cos(FlxAngle.asRadians(strumNote.direction)) * pseudoY)
+				+ (Math.sin(FlxAngle.asRadians(strumNote.direction)) * pseudoX);
+
+			strumNote.x = receptorX
+				+ (Math.cos(FlxAngle.asRadians(strumNote.direction)) * pseudoX)
+				+ (Math.sin(FlxAngle.asRadians(strumNote.direction)) * pseudoY);
+
+			strumNote.angle = -strumNote.direction;
+
+			var center:Float = receptorY + Note.swagWidth / 2;
 			if (strumNote.isSustain)
 			{
-				strumNote.y -= ((Note.swagWidth / 2) * downscrollMultiplier);
-
-				if (downscrollMultiplier < 0)
+				strumNote.y -= ((strumNote.height / 2) * downscrollMultiplier);
+				if (strumNote.isSustainEnd && strumNote.prevNote != null)
 				{
-					// Might be wrong on this type of note: Note - Sustain end, because it cant get the previous note Y pos, if it does then the sustain end will stay visible for some reason
-					if (strumNote.isSustainEnd && strumNote.prevNote.isSustain)
-						strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3;
+					strumNote.y -= ((strumNote.prevNote.height / 2) * downscrollMultiplier);
+					if (SaveData.downScroll)
+					{
+						strumNote.y += (strumNote.height * 2);
+						strumNote.y += (strumNote.prevNote.y - (strumNote.y + strumNote.height));
+						/*
+							if (downscrollMultiplier < 0)
+							{
+								// Might be wrong on this type of note: Note - Sustain end, because it cant get the previous note Y pos, if it does then the sustain end will stay visible for some reason
+								if (strumNote.isSustainEnd && strumNote.prevNote.isSustain)
+									strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3;
+						 */
+					}
+					else
+						strumNote.y += ((strumNote.height / 2) * downscrollMultiplier);
+				}
 
+				if (SaveData.downScroll)
+				{
 					strumNote.flipY = true;
-					if (strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
-						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
+					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
+						&& strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
+						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))
 					{
 						var swagRect = new FlxRect(0, 0, strumNote.frameWidth, strumNote.frameHeight);
 						swagRect.height = (center - strumNote.y) / strumNote.scale.y;
@@ -125,10 +147,11 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 						strumNote.clipRect = swagRect;
 					}
 				}
-				else if (downscrollMultiplier > 0)
+				else
 				{
-					if (strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
-						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote != null && strumNote.prevNote.wasGoodHit))))
+					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
+						&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
+						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))
 					{
 						var swagRect = new FlxRect(0, 0, strumNote.width / strumNote.scale.x, strumNote.height / strumNote.scale.y);
 						swagRect.y = (center - strumNote.y) / strumNote.scale.y;
@@ -138,36 +161,43 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 				}
 			}
 
-			if (!strumNote.tooLate && strumNote.strumTime - Conductor.songPosition < -166 && !strumNote.wasGoodHit)
+			if (strumNote.tooLate)
 			{
-				strumNote.tooLate = true;
+				strumNote.active = false;
+				strumNote.visible = false;
+			}
+			else
+			{
+				strumNote.visible = true;
+				strumNote.active = true;
+			}
 
-				if (!strumNote.isSustain)
+			if (!strumNote.tooLate
+				&& strumNote.mustPress
+				&& strumNote.strumTime - Conductor.songPosition < -166
+				&& !strumNote.wasGoodHit)
+			{
+				// If it is a single note or is the head of the sustain
+				if (!strumNote.isSustain || strumNote.parent == null)
 				{
-					for (note in strumNote.children)
-						note.tooLate = true;
+					strumNote.tooLate = true;
 					onMiss.dispatch(strumNote);
 				}
-				else
+				else if (strumNote.isSustain && strumNote.parent != null)
 				{
-					if (strumNote.parent != null)
+					// bro this shit is so fucking strict omg
+					var parent:Note = strumNote.parent;
+					if (!parent.tooLate)
 					{
-						var parent:Note = strumNote.parent;
-						if (!parent.tooLate)
+						for (i in 0...parent.children.length)
 						{
-							var breakLate:Bool = false;
-							for (note in parent.children)
+							var child:Note = parent.children[i];
+							if (!child.wasGoodHit && i != parent.children.length)
 							{
-								if (note.tooLate && !note.wasGoodHit)
-									breakLate = true;
-							}
-							if (!breakLate)
-							{
-								for (note in parent.children)
-									note.tooLate;
-								onMiss.dispatch(strumNote);
+								child.tooLate = true;
 							}
 						}
+						onMiss.dispatch(parent);
 					}
 				}
 			}

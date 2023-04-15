@@ -74,6 +74,8 @@ class GameOverSubstate extends MusicBeatSubState
 
 	override public function update(elapsed:Float)
 	{
+		super.update(elapsed);
+
 		if (updateCamera)
 		{
 			var lerpVal:Float = CoolUtil.boundTo(elapsed * 0.6, 0, 1);
@@ -92,20 +94,28 @@ class GameOverSubstate extends MusicBeatSubState
 			if (playerDead.animation.curAnim.finished)
 			{
 				FlxG.sound.playMusic(Paths.music(loopSoundName), 1);
-				FlxG.sound.music.play(true);
 				bop = true;
 			}
 		}
-
-		super.update(elapsed);
 	}
 
 	override public function onActionPressed(action:String)
 	{
 		super.onActionPressed(action);
 
-		if (action == "confirm")
-			finish();
+		switch (action)
+		{
+			case "confirm":
+				finish(() ->
+				{
+					ScriptableState.switchState(new PlayTest(PlayTest.instance.loadSong));
+				});
+			case "back":
+				finish(() ->
+				{
+					ScriptableState.switchState(new states.RewriteMenu());
+				});
+		}
 	}
 
 	override public function beatHit()
@@ -116,7 +126,7 @@ class GameOverSubstate extends MusicBeatSubState
 			playerDead.playAnim('deathLoop', true);
 	}
 
-	private function finish()
+	private function finish(end:Void->Void)
 	{
 		if (!isEnding)
 		{
@@ -126,10 +136,7 @@ class GameOverSubstate extends MusicBeatSubState
 			FlxG.sound.play(Paths.music(endSoundName));
 			new FlxTimer().start(0.7, function(tmr:FlxTimer)
 			{
-				FlxG.camera.fade(FlxColor.BLACK, 2, false, () ->
-				{
-					ScriptableState.switchState(new PlayTest(PlayTest.instance.loadSong));
-				});
+				FlxG.camera.fade(FlxColor.BLACK, 2, false, end);
 			});
 		}
 	}

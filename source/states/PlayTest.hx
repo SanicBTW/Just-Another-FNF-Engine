@@ -263,6 +263,7 @@ class PlayTest extends MusicBeatState
 				&& !coolNote.tooLate
 				&& !coolNote.wasGoodHit
 				&& coolNote.isSustain
+				&& !coolNote.isSustainEnd
 				&& keys[coolNote.noteData])
 			{
 				noteHit(coolNote);
@@ -388,6 +389,61 @@ class PlayTest extends MusicBeatState
 			return;
 
 		var data:Int = receptorActionList.indexOf(action);
+
+		var lastTime:Float = Conductor.songPosition;
+		Conductor.songPosition = Conductor.boundSong.time;
+
+		var possibleNotes:Array<Note> = [];
+		var directionList:Array<Int> = [];
+		var dumbNotes:Array<Note> = [];
+
+		playerStrums.allNotes.forEachAlive(function(daNote:Note)
+		{
+			if ((daNote.noteData == data) && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && daNote.isSustainEnd)
+			{
+				if (directionList.contains(data))
+				{
+					for (coolNote in possibleNotes)
+					{
+						if (coolNote.noteData == daNote.noteData && Math.abs(daNote.strumTime - coolNote.strumTime) < 10)
+						{
+							dumbNotes.push(daNote);
+							break;
+						}
+						else if (coolNote.noteData == daNote.noteData && daNote.strumTime < coolNote.strumTime)
+						{
+							possibleNotes.remove(coolNote);
+							possibleNotes.push(daNote);
+							break;
+						}
+					}
+				}
+				else
+				{
+					possibleNotes.push(daNote);
+					directionList.push(data);
+				}
+			}
+		});
+
+		for (note in dumbNotes)
+		{
+			trace("Killing dumb note");
+			playerStrums.destroyNote(note);
+		}
+
+		possibleNotes.sort((a, b) -> Std.int(a.strumTime - b.strumTime));
+
+		if (possibleNotes.length > 0)
+		{
+			for (coolNote in possibleNotes)
+			{
+				if (keys[coolNote.noteData] && coolNote.canBeHit && !coolNote.tooLate)
+					noteHit(coolNote);
+			}
+		}
+
+		Conductor.songPosition = lastTime;
 		keys[data] = false;
 
 		getReceptor(playerStrums, data).playAnim('static');
@@ -626,7 +682,7 @@ class PlayTest extends MusicBeatState
 			note.wasGoodHit = true;
 			getReceptor(playerStrums, note.noteData).playAnim('confirm', true);
 
-			if (!note.isSustain)
+			if (!note.isSustain || note.isSustainEnd)
 			{
 				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
 				if (rating == "marvelous" || rating == "sick")

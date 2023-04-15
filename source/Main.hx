@@ -97,7 +97,7 @@ class Main extends Sprite
 		for (arg in Sys.args())
 		{
 			if (arg.contains("-GPU_RENDERING"))
-				Cache.textureCompression = true;
+				Cache.gpuRender = true;
 
 			if (arg.contains("-FPS"))
 				setFPS(Std.parseInt(arg.split(":")[1]));
@@ -177,7 +177,6 @@ class Main extends Sprite
 
 	public static function setFPS(newFPS:Int)
 	{
-		Lib.current.stage.frameRate = newFPS;
 		if (newFPS > FlxG.drawFramerate)
 		{
 			FlxG.updateFramerate = newFPS;

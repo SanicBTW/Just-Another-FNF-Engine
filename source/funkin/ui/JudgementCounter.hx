@@ -1,6 +1,7 @@
 package funkin.ui;
 
 import base.ui.Fonts;
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxBitmapText;
@@ -35,7 +36,7 @@ class JudgementCounter extends FlxSpriteGroup
 		add(counterBG);
 
 		counterText = new FlxBitmapText(Fonts.Funkin());
-		Fonts.setProperties(counterText, false, 0.38);
+		Fonts.setProperties(counterText, false, 0.36);
 		counterText.alignment = CENTER;
 		counterText.fieldWidth = Std.int(counterBG.width);
 		counterText.text = judgement.shortName;
@@ -44,7 +45,8 @@ class JudgementCounter extends FlxSpriteGroup
 		// 372.5, -25 -> 0.45 (Needs to be adjusted)
 		// 385, -15 -> 0.4 (Perfectly centered, over 200 size issue)
 		// 398, -14 -> 0.38 (Perfectly centered, perfect size apparently)
-		counterText.setPosition(398, -14);
+		// 410, -14 -> 0.36 (Perfectly centered, dunno about Y pos)
+		counterText.setPosition(410, -14);
 		add(counterText);
 	}
 

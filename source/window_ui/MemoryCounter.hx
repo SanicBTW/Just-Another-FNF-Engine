@@ -43,12 +43,17 @@ class MemoryCounter extends TextField
 		if (!visible)
 			return;
 
-		var mem:Float = openfl.system.System.totalMemory;
+		var mem:Float = #if cpp cpp.vm.Gc.memInfo64(3) #else openfl.system.System.totalMemory #end;
 
 		if (mem > memoryPeak)
 			memoryPeak = mem;
 
-		text = getInterval(mem) + " / " + getInterval(memoryPeak);
+		text = '${getInterval(mem)} / ${getInterval(memoryPeak)}';
+
+		if (mem / 1000000 > 2000)
+			textColor = 0xFFFF0000;
+		else
+			textColor = 0xFFFFFFFF;
 	}
 
 	private static function getInterval(size:Float)

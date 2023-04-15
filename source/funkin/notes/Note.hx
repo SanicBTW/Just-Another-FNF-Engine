@@ -25,6 +25,7 @@ class Note extends FlxSprite
 
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
+	public var direction:Float = 0;
 
 	public function new(strumTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
@@ -128,7 +129,7 @@ class Note extends FlxSprite
 			}
 		}
 
-		if (tooLate && !wasGoodHit)
+		if (tooLate || (parent != null && parent.tooLate))
 		{
 			if (alpha > 0.3)
 				alpha = 0.3;
