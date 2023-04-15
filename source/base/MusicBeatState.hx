@@ -24,16 +24,6 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 
 	override public function create()
 	{
-		FlxG.debugger.addTrackerProfile(new TrackerProfile(Conductor, [
-			"songPosition",
-			"sectionPosition",
-			"stepPosition",
-			"beatPosition",
-			"songSpeed",
-			"bpm"
-		]));
-		FlxG.debugger.track(Conductor);
-
 		Conductor.onStepHit.add(stepHit);
 		Conductor.onBeatHit.add(beatHit);
 

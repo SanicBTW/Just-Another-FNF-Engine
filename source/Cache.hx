@@ -145,6 +145,19 @@ class Cache
 	}
 
 	// Cleaning functions - returns a bool indicating that it has been cleaned successfully
+	public static function removeBitmapData(id:String):Bool
+	{
+		var bitmapD:Null<BitmapData> = keyedAssets.get(id);
+		if (bitmapD != null)
+		{
+			bitmapD.dispose();
+			bitmapD = null;
+			keyedAssets.remove(id);
+			log('$id got removed', 'bitmap data clean');
+			return true;
+		}
+		return false;
+	}
 
 	public static function removeGraphic(id:String):Bool
 	{
@@ -153,10 +166,11 @@ class Cache
 		if (graphic != null)
 		{
 			removeAtlas(id);
+			Assets.cache.removeBitmapData(id);
 			FlxG.bitmap._cache.remove(id);
 			graphic.destroy();
-			graphic = null;
 			keyedAssets.remove(id);
+			log('$id got removed', 'graphic clean');
 			return true;
 		}
 		return false;
@@ -165,11 +179,11 @@ class Cache
 	public static function removeAtlas(id:String):Bool
 	{
 		var atlas:Null<Atlas> = keyedAssets.get(id);
-		@:privateAccess
 		if (atlas != null)
 		{
 			FlxDestroyUtil.destroy(atlas.atlas);
 			keyedAssets.remove(id);
+			log('$id got removed', 'atlas clean');
 			return true;
 		}
 		return false;
@@ -186,6 +200,7 @@ class Cache
 			#end
 			Assets.cache.removeSound(id);
 			keyedAssets.remove(id);
+			log('$id got removed', 'sound clean');
 			return true;
 		}
 		return false;
@@ -204,8 +219,9 @@ class Cache
 				graphic.bitmap.__texture.dispose();
 				graphic.bitmap.__texture = null;
 			}
-			graphic.bitmap.disposeImage();
+			graphic.bitmap.dispose();
 			FlxG.bitmap.remove(graphic);
+			log('${graphic.key} got removed', 'flxg graphic clean');
 		}
 	}
 
@@ -214,11 +230,16 @@ class Cache
 		for (key in keyedAssets.keys())
 		{
 			var obj:Null<Dynamic> = keyedAssets.get(key);
-			if (obj is FlxGraphic)
+			if (!persistentAssets.contains(key))
 			{
-				var graphic = cast(obj, FlxGraphic);
-				if (graphic.useCount <= 0 && !persistentAssets.contains(key))
-					removeGraphic(key);
+				if (obj is FlxGraphic)
+				{
+					var graphic:FlxGraphic = obj;
+					if (graphic.useCount <= 0)
+						removeGraphic(key);
+				}
+				if (obj is BitmapData)
+					removeBitmapData(key);
 			}
 		}
 
@@ -229,12 +250,6 @@ class Cache
 
 	public static function clearStoredMemory()
 	{
-		for (key in keyedAssets.keys())
-		{
-			if (!persistentAssets.contains(key))
-				removeGraphic(key);
-		}
-
 		@:privateAccess
 		for (graphic in FlxG.bitmap._cache)
 		{

@@ -45,7 +45,8 @@ class OffsettedSprite extends FlxSprite
 
 	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)
 	{
-		animation.play(AnimName, Force, Reversed, Frame);
+		if (animation.getByName(AnimName) != null)
+			animation.play(AnimName, Force, Reversed, Frame);
 
 		if (animOffsets.exists(AnimName))
 			offset.set(animOffsets[AnimName][0], animOffsets[AnimName][1]);

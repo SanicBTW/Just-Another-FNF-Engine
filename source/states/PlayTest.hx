@@ -33,6 +33,7 @@ import openfl.filters.ShaderFilter;
 import openfl.media.Sound;
 import shader.*;
 import shader.Noise.NoiseShader;
+import substates.GameOverSubstate;
 import substates.PauseState;
 
 using StringTools;
@@ -112,6 +113,7 @@ class PlayTest extends MusicBeatState
 		if (FlxG.sound.music.playing)
 			FlxG.sound.music.stop();
 
+		GameOverSubstate.resetVariables();
 		Controls.setActions(NOTES);
 		Timings.call();
 
@@ -277,7 +279,13 @@ class PlayTest extends MusicBeatState
 
 		if (Timings.health <= 0)
 		{
-			ScriptableState.switchState(new PlayTest(loadSong));
+			persistentDraw = persistentUpdate = false;
+			paused = true;
+
+			if (SONG.needsVoices)
+				Conductor.boundVocals.stop();
+			Conductor.boundSong.stop();
+			openSubState(new GameOverSubstate(player.x, player.y));
 		}
 	}
 
@@ -290,6 +298,12 @@ class PlayTest extends MusicBeatState
 			persistentUpdate = false;
 			persistentDraw = true;
 			openSubState(new PauseState());
+			return;
+		}
+
+		if (action == "reset")
+		{
+			Timings.health = 0;
 			return;
 		}
 
@@ -385,19 +399,13 @@ class PlayTest extends MusicBeatState
 		@:privateAccess
 		ui.healthTracker.beatHit();
 
-		if (curBeat % 2 == 0 && !SaveData.onlyNotes)
+		if (!SaveData.onlyNotes)
 		{
-			if (player.animation.curAnim.name.startsWith("idle")
-				|| player.animation.curAnim.name.startsWith("dance")
-				&& !player.animation.curAnim.name.startsWith("sing"))
+			if (curBeat % player.danceEveryNumBeats == 0 && !player.animation.curAnim.name.startsWith("sing"))
 				player.dance();
-			if (opponent.animation.curAnim.name.startsWith("idle")
-				|| opponent.animation.curAnim.name.startsWith("dance")
-				&& !opponent.animation.curAnim.name.startsWith("sing"))
+			if (curBeat % opponent.danceEveryNumBeats == 0 && !opponent.animation.curAnim.name.startsWith("sing"))
 				opponent.dance();
-			if (girlfriend.animation.curAnim.name.startsWith("idle")
-				|| girlfriend.animation.curAnim.name.startsWith("dance")
-				&& !girlfriend.animation.curAnim.name.startsWith("sing"))
+			if (curBeat % girlfriend.danceEveryNumBeats == 0 && !girlfriend.animation.curAnim.name.startsWith("sing"))
 				girlfriend.dance();
 		}
 

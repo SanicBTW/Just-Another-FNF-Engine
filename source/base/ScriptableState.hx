@@ -48,9 +48,9 @@ class ScriptableState extends FlxState
 		FlxG.switchState(nextState);
 	}
 
-	private function onActionPressed(action:String) {}
+	public function onActionPressed(action:String) {}
 
-	private function onActionReleased(action:String) {}
+	public function onActionReleased(action:String) {}
 }
 
 class ScriptableSubState extends FlxSubState
@@ -69,7 +69,7 @@ class ScriptableSubState extends FlxSubState
 		super.destroy();
 	}
 
-	private function onActionPressed(action:String) {}
+	public function onActionPressed(action:String) {}
 
-	private function onActionReleased(action:String) {}
+	public function onActionReleased(action:String) {}
 }
