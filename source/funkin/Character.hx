@@ -59,8 +59,8 @@ class Character extends OffsettedSprite
 	{
 		super(X, Y);
 		this.isPlayer = isPlayer;
-		setChar(character);
 		antialiasing = SaveData.antialiasing;
+		setChar(character);
 	}
 
 	// create it on new
@@ -85,7 +85,8 @@ class Character extends OffsettedSprite
 		characterPosition.set(json.position[0], json.position[1]);
 		cameraPosition = new FlxPoint(json.camera_position[0], json.camera_position[1]);
 		singDuration = json.sing_duration;
-		flipX = json.flip_x;
+		flipX = !!json.flip_x;
+
 		if (json.healthbar_colors != null && json.healthbar_colors.length > 2)
 			healthColor = FlxColor.fromRGB(json.healthbar_colors[0], json.healthbar_colors[1], json.healthbar_colors[2]);
 		if (json.no_antialiasing)
@@ -110,11 +111,18 @@ class Character extends OffsettedSprite
 			}
 		}
 
+		danceIdle = (animation.getByName('danceLeft') != null && animation.getByName('danceRight') != null);
+		dance();
+
 		if (isPlayer)
 			flipX = !flipX;
 
-		danceIdle = (animation.getByName('danceLeft') != null && animation.getByName('danceRight') != null);
-		dance();
+		/*
+			animation.finishCallback = (anim:String) ->
+			{
+				if (anim.startsWith("sing"))
+					playAnim(anim, true, false, animation.getByName(anim).numFrames - Std.int(holdTimer));
+		}*/
 
 		this.x += characterPosition.x;
 		this.y += characterPosition.y;
@@ -163,6 +171,23 @@ class Character extends OffsettedSprite
 		}
 		else
 			playAnim('idle', forced);
+	}
+
+	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)
+	{
+		super.playAnim(AnimName, Force, Reversed, Frame);
+
+		if (curCharacter.startsWith("gf"))
+		{
+			if (AnimName == "singLEFT")
+				danced = true;
+
+			if (AnimName == "singRIGHT")
+				danced = false;
+
+			if (AnimName == "singUP" || AnimName == "singDOWN")
+				danced = !danced;
+		}
 	}
 
 	// getPath does the same as getLibraryPath actually, it just redirects to getLibraryPath if it isn't null lol

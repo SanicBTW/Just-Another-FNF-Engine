@@ -256,35 +256,9 @@ class PlayTest extends MusicBeatState
 			}
 		}
 
-		if (!playerStrums.botPlay)
-		{
-			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
-			{
-				if (keys[coolNote.noteData])
-				{
-					if (player != null)
-						player.holdTimer = 0;
-
-					if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
-						&& coolNote.canBeHit
-						&& !coolNote.tooLate
-						&& !coolNote.wasGoodHit
-						&& coolNote.isSustain)
-					{
-						noteHit(coolNote);
-					}
-				}
-			});
-		}
-
 		super.update(elapsed);
 
-		if (player != null
-			&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000) && (!keys.contains(true) || playerStrums.botPlay)))
-		{
-			if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
-				player.dance();
-		}
+		holdNotes();
 
 		if (Timings.health <= 0)
 		{
@@ -399,6 +373,50 @@ class PlayTest extends MusicBeatState
 		keys[data] = false;
 
 		getReceptor(playerStrums, data).playAnim('static');
+	}
+
+	private function holdNotes()
+	{
+		if (paused)
+			return;
+
+		var holdArray:Array<Bool> = parseKeys();
+
+		if (!playerStrums.botPlay)
+		{
+			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
+			{
+				if (holdArray[coolNote.noteData])
+				{
+					if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
+						&& coolNote.canBeHit
+						&& !coolNote.tooLate
+						&& !coolNote.wasGoodHit
+						&& coolNote.isSustain)
+					{
+						noteHit(coolNote);
+					}
+				}
+			});
+		}
+
+		if (player != null
+			&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000)
+				&& (!holdArray.contains(true) || playerStrums.botPlay)))
+		{
+			if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
+				player.dance();
+		}
+	}
+
+	private function parseKeys():Array<Bool>
+	{
+		var ret:Array<Bool> = [];
+		for (i in 0...receptorActionList.length)
+		{
+			ret[i] = Controls.isActionPressed(receptorActionList[i]);
+		}
+		return ret;
 	}
 
 	override public function beatHit()
@@ -644,13 +662,7 @@ class PlayTest extends MusicBeatState
 				Timings.judge(Timings.judgements[0].timing, true);
 
 			if (!note.doubleNote)
-			{
-				if (player != null)
-				{
-					player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-					player.holdTimer = 0;
-				}
-			}
+				characterSing(player, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
 			else
 				trail(player, note);
 
@@ -669,11 +681,7 @@ class PlayTest extends MusicBeatState
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 0;
 
-		if (player != null)
-		{
-			player.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}miss', true);
-			player.holdTimer = 0;
-		}
+		characterSing(player, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}miss');
 
 		Timings.judge(164);
 		ui.updateText();
@@ -692,13 +700,7 @@ class PlayTest extends MusicBeatState
 				playSplash(curStrums, note.noteData);
 
 			if (!note.doubleNote)
-			{
-				if (curChar != null)
-				{
-					curChar.playAnim('sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}', true);
-					curChar.holdTimer = 0;
-				}
-			}
+				characterSing(curChar, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
 			else
 				trail(curChar, note);
 
@@ -779,5 +781,14 @@ class PlayTest extends MusicBeatState
 
 		if (shaderFilter != null)
 			FlxG.game.setFilters([shaderFilter]);
+	}
+
+	private function characterSing(char:Character, anim:String)
+	{
+		if (char == null)
+			return;
+
+		char.playAnim(anim, true);
+		char.holdTimer = 0;
 	}
 }

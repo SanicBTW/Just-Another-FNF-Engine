@@ -24,7 +24,7 @@ import java.vm.Gc;
 // Rewritten completely and using some FlatyEngine code
 // This manages local assets (game folder assets) and will only store external assets through another class that will be called in Paths
 // Holy shit it actually improved performance a lot holy shit
-// Doesn't save frames, only graphics
+// Doesn't save frames, only graphics, textures aren't working probably because of the shared map lol
 class Cache
 {
 	// Keyed assets / Cache store - joined all of the tracked arrays from before to one to avoid having an array for each one
@@ -74,29 +74,11 @@ class Cache
 		}
 
 		var newBitmap:BitmapData = getBitmapData(id);
-
-		if (gpuRender)
-			newBitmap = BitmapData.fromTexture(getTexture(id, newBitmap));
-
 		var newGraphic:FlxGraphic = FlxGraphic.fromBitmapData(newBitmap, false, id);
 		keyedAssets.set(id, newGraphic);
 
 		// Return graphic on first call
 		return newGraphic;
-	}
-
-	public static function getTexture(id:String, bitmap:BitmapData):Texture
-	{
-		if (isCached(id))
-			return keyedAssets.get(id);
-
-		var texture:Texture = FlxG.stage.context3D.createTexture(bitmap.width, bitmap.height, BGRA, true, 0);
-		texture.uploadFromBitmapData(bitmap);
-		removeBitmapData(id);
-
-		keyedAssets.set(id, texture);
-
-		return texture;
 	}
 
 	public static function getSound(id:String):Null<Sound>

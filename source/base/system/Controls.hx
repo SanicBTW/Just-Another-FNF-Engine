@@ -153,6 +153,20 @@ class Controls
 	public static function keyCodeToString(keyCode:Null<Int>):String
 		return keyCode != null ? keyCodes.get(keyCode) : "None";
 
+	public static function isActionPressed(action:String):Bool
+	{
+		for (actionKey in actions.get(action))
+		{
+			for (keyp in keyPressed)
+			{
+				if (actionKey == keyp)
+					return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static function getActionFromKey(key:Int):Null<String>
 	{
 		for (actionName => actionKeys in actions)
