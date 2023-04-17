@@ -84,7 +84,6 @@ class Character extends OffsettedSprite
 		singDuration = json.sing_duration;
 		characterPosition.set(json.position[0], json.position[1]);
 		cameraPosition = new FlxPoint(json.camera_position[0], json.camera_position[1]);
-		singDuration = json.sing_duration;
 		flipX = !!json.flip_x;
 
 		if (json.healthbar_colors != null && json.healthbar_colors.length > 2)
@@ -117,13 +116,6 @@ class Character extends OffsettedSprite
 		if (isPlayer)
 			flipX = !flipX;
 
-		/*
-			animation.finishCallback = (anim:String) ->
-			{
-				if (anim.startsWith("sing"))
-					playAnim(anim, true, false, animation.getByName(anim).numFrames - Std.int(holdTimer));
-		}*/
-
 		this.x += characterPosition.x;
 		this.y += characterPosition.y;
 	}
@@ -151,7 +143,7 @@ class Character extends OffsettedSprite
 					holdTimer = 0;
 
 				if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished)
-					playAnim('idle', true, false, 10);
+					dance();
 
 				if (animation.curAnim.name == 'firstDeath' && animation.curAnim.finished)
 					playAnim('deathLoop');
