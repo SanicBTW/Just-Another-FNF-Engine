@@ -59,6 +59,7 @@ class RewriteMenu extends MusicBeatState
 	private var selectedCollection:String = "New";
 	private var songStore:Map<String, PocketBaseObject> = new Map();
 
+	@:noCompletion
 	private function set_curOption(value:Int):Int
 	{
 		curOption += value;
@@ -87,6 +88,7 @@ class RewriteMenu extends MusicBeatState
 		return curOption;
 	}
 
+	@:noCompletion
 	private function set_curState(newState:SelectionState):SelectionState
 	{
 		canPress = false;

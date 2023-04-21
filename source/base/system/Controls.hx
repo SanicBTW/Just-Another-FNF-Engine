@@ -92,20 +92,20 @@ class Controls
 	{
 		for (action => keys in uiActions)
 		{
-			if (SaveFile.get('ui_action-$action') != null)
+			if (SaveFile.get('ui_action-$action', KEYBINDS) != null)
 				return;
 
 			trace('No ${action} action found');
-			SaveFile.set('ui_action-$action', parseArray(keys));
+			SaveFile.set('ui_action-$action', parseArray(keys), KEYBINDS);
 		}
 
 		for (action => keys in noteActions)
 		{
-			if (SaveFile.get('note_action-$action') != null)
+			if (SaveFile.get('note_action-$action', KEYBINDS) != null)
 				return;
 
 			trace('No ${action} action found');
-			SaveFile.set('note_action-$action', parseArray(keys));
+			SaveFile.set('note_action-$action', parseArray(keys), KEYBINDS);
 		}
 	}
 
@@ -113,12 +113,12 @@ class Controls
 	{
 		for (action => keys in uiActions)
 		{
-			SaveFile.set('ui_action-$action', parseArray(keys));
+			SaveFile.set('ui_action-$action', parseArray(keys), KEYBINDS);
 		}
 
 		for (action => keys in noteActions)
 		{
-			SaveFile.set('note_action-$action', parseArray(keys));
+			SaveFile.set('note_action-$action', parseArray(keys), KEYBINDS);
 		}
 	}
 
@@ -129,7 +129,7 @@ class Controls
 		// Kind of dumb but it works :+1:
 		for (action in uiActions.keys())
 		{
-			var rawLoad:Array<String> = SaveFile.get('ui_action-$action').split(",");
+			var rawLoad:Array<String> = SaveFile.get('ui_action-$action', KEYBINDS).split(",");
 			var loadKeys:Array<Null<Int>> = [];
 			for (key in rawLoad)
 			{
@@ -140,7 +140,7 @@ class Controls
 
 		for (action in noteActions.keys())
 		{
-			var rawLoad:Array<String> = SaveFile.get('note_action-$action').split(",");
+			var rawLoad:Array<String> = SaveFile.get('note_action-$action', KEYBINDS).split(",");
 			var loadKeys:Array<Null<Int>> = [];
 			for (key in rawLoad)
 			{

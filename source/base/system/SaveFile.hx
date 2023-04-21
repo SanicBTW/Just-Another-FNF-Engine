@@ -13,7 +13,7 @@ import lime.system.System;
 
 class SaveFile
 {
-	private static var _saveMap(default, null):Map<Saves, FlxSave> = [DEFAULT => new FlxSave(), UI_LAYOUT => new FlxSave()];
+	private static var _saveMap(default, null):Map<Save, FlxSave> = [DEFAULT => new FlxSave(), UI_LAYOUT => new FlxSave(), KEYBINDS => new FlxSave()];
 
 	public static var bound:Bool = false;
 
@@ -34,12 +34,12 @@ class SaveFile
 		SaveData.loadSettings();
 	}
 
-	public static function set(key:String, value:Dynamic, save:Saves = DEFAULT)
+	public static function set(key:String, value:Dynamic, save:Save = DEFAULT)
 	{
 		Reflect.setField(_saveMap.get(save).data, key, value);
 	}
 
-	public static function get(key:String, save:Saves = DEFAULT):Dynamic
+	public static function get(key:String, save:Save = DEFAULT):Dynamic
 	{
 		return Reflect.field(_saveMap.get(save).data, key);
 	}
@@ -59,8 +59,9 @@ class SaveFile
 
 // Holds the save name to bind it on FlxSave lol - maybe change the var name it sucks lol
 // Though I would've liked using Reflect :sob:
-enum abstract Saves(String) to String
+enum abstract Save(String) to String
 {
 	var DEFAULT = "settings";
 	var UI_LAYOUT = "ui_layout";
+	var KEYBINDS = "keybinds";
 }

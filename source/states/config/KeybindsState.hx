@@ -33,6 +33,7 @@ class KeybindsState extends MusicBeatState
 	// shit isnt in order m8
 	var actionsOrder:Map<String, Int> = ["left" => 0, "down" => 1, "up" => 2, "right" => 3];
 
+	@:noCompletion
 	private function set_currentState(newState:SelectionState):SelectionState
 	{
 		var currentObject:KeybindSelector = currentActions.members[curSelected];
@@ -73,6 +74,7 @@ class KeybindsState extends MusicBeatState
 		return currentState = newState;
 	}
 
+	@:noCompletion
 	private function set_curSelected(val:Int):Int
 	{
 		curSelected += val;
@@ -101,6 +103,7 @@ class KeybindsState extends MusicBeatState
 		return val;
 	}
 
+	@:noCompletion
 	private function set_curKeySelected(val:Int):Int
 	{
 		curKeySelected += val;
@@ -125,6 +128,7 @@ class KeybindsState extends MusicBeatState
 		return val;
 	}
 
+	@:noCompletion
 	private function set_curActions(val:Int):Int
 	{
 		for (i in 0...currentActions.members.length)
