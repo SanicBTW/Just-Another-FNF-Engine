@@ -58,18 +58,12 @@ class Character extends OffsettedSprite
 	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{
 		super(X, Y);
-		this.isPlayer = isPlayer;
-		antialiasing = SaveData.antialiasing;
-		setChar(character);
-	}
-
-	// create it on new
-	public function setChar(character:String = 'bf')
-	{
 		cameraPosition = new FlxPoint(0, 0);
 		characterPosition = new FlxPoint(0, 0);
 
 		curCharacter = character;
+		this.isPlayer = isPlayer;
+		antialiasing = SaveData.antialiasing;
 
 		var json:CharacterFile = cast haxe.Json.parse(Assets.getText(getCharPath()));
 		frames = Paths.getSparrowAtlas(json.image.replace("characters/", ""), curCharacter, "characters");
@@ -88,6 +82,7 @@ class Character extends OffsettedSprite
 
 		if (json.healthbar_colors != null && json.healthbar_colors.length > 2)
 			healthColor = FlxColor.fromRGB(json.healthbar_colors[0], json.healthbar_colors[1], json.healthbar_colors[2]);
+
 		if (json.no_antialiasing)
 			antialiasing = false;
 
@@ -95,8 +90,8 @@ class Character extends OffsettedSprite
 		{
 			for (anim in json.animations)
 			{
-				var animAnim:String = '${anim.anim}';
-				var animName:String = '${anim.name}';
+				var animAnim:String = anim.anim;
+				var animName:String = anim.name;
 				var animFPS:Int = anim.fps;
 				var animLoop:Bool = !!anim.loop;
 				var animInd:Array<Int> = anim.indices;

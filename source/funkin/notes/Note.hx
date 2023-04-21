@@ -27,6 +27,8 @@ class Note extends FlxSprite
 	public var offsetY:Float = 0;
 	public var direction:Float = 0;
 
+	public var hitMult:Float = 1;
+
 	public function new(strumTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
 		super();
@@ -57,6 +59,7 @@ class Note extends FlxSprite
 		{
 			alpha = 0.6;
 			offsetX += width / 2;
+			hitMult = 0.5;
 
 			animation.play('${Receptor.getColorFromNum(noteData)}holdend');
 			updateHitbox();
@@ -111,7 +114,7 @@ class Note extends FlxSprite
 	{
 		if (mustPress)
 		{
-			if (strumTime - Conductor.songPosition <= (166 * Conductor.timeScale)
+			if (strumTime - Conductor.songPosition <= ((166 * Conductor.timeScale) * hitMult)
 				&& strumTime - Conductor.songPosition >= (-166 * Conductor.timeScale))
 				canBeHit = true;
 			else
