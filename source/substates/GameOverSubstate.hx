@@ -15,7 +15,7 @@ import funkin.Character;
 import funkin.CoolUtil;
 import states.PlayTest;
 
-// PE - Music not working
+// PE
 class GameOverSubstate extends MusicBeatSubState
 {
 	private var playerDead:Character;
@@ -94,6 +94,7 @@ class GameOverSubstate extends MusicBeatSubState
 			if (playerDead.animation.curAnim.finished)
 			{
 				FlxG.sound.playMusic(Paths.music(loopSoundName), 1);
+				playerDead.startedDeath = true;
 				bop = true;
 			}
 		}

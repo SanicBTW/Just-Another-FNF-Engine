@@ -55,6 +55,9 @@ class Character extends OffsettedSprite
 	public var healthIcon:String = 'bf';
 	public var healthColor:FlxColor;
 
+	// the
+	public var startedDeath:Bool = false;
+
 	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{
 		super(X, Y);
@@ -140,7 +143,7 @@ class Character extends OffsettedSprite
 				if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished)
 					dance();
 
-				if (animation.curAnim.name == 'firstDeath' && animation.curAnim.finished)
+				if (animation.curAnim.name == 'firstDeath' && animation.curAnim.finished && startedDeath)
 					playAnim('deathLoop');
 			}
 		}

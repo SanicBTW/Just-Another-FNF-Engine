@@ -661,10 +661,10 @@ class PlayTest extends MusicBeatState
 			else
 				Timings.judge(Timings.judgements[0].timing, true);
 
-			if (!note.doubleNote)
-				characterSing(player, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
-			else
+			if (note.doubleNote && !note.isSustain)
 				trail(player, note);
+
+			characterSing(player, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
 
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
@@ -699,10 +699,10 @@ class PlayTest extends MusicBeatState
 			if (!note.isSustain)
 				playSplash(curStrums, note.noteData);
 
-			if (!note.doubleNote)
-				characterSing(curChar, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
-			else
+			if (note.doubleNote && !note.isSustain)
 				trail(curChar, note);
+
+			characterSing(curChar, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
 
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
@@ -711,7 +711,7 @@ class PlayTest extends MusicBeatState
 				curStrums.destroyNote(note);
 			else
 			{
-				if (curChar == null)
+				if (curChar != player)
 					return;
 
 				var targetHold:Float = Conductor.stepCrochet * (curChar.singDuration / 1000);
@@ -727,9 +727,12 @@ class PlayTest extends MusicBeatState
 	private function playSplash(strumLine:StrumLine, noteData:Int)
 		strumLine.splashNotes.members[noteData].playAnim();
 
+	// gotta fix this lol
 	function trail(char:Character, note:Note):Void
 	{
-		if (!SaveData.showTrails || char == null || note.isSustain)
+		return;
+
+		if (!SaveData.showTrails || char == null)
 			return;
 
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
