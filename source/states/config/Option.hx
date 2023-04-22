@@ -30,7 +30,6 @@ class Option extends flixel.group.FlxSpriteGroup
 
 		_opName = new flixel.text.FlxBitmapText(base.ui.Fonts.VCR());
 		_opName.text = data.name;
-		_opName.alignment = LEFT;
 		_opName.antialiasing = SaveData.antialiasing;
 		base.ui.Fonts.changeFontSize(_opName, 0.6);
 
@@ -41,40 +40,53 @@ class Option extends flixel.group.FlxSpriteGroup
 		_bg.antialiasing = SaveData.antialiasing;
 
 		if (type == UNKNOWN)
-		{
-			_opName.autoSize = false;
-			_opName.alignment = CENTER;
-			_opName.fieldWidth = Std.int(_bg.width);
-		}
-
-		if (type != UNKNOWN || type != BOOL)
-		{
-			// Prepare the text
-			_opState = new flixel.text.FlxBitmapText(base.ui.Fonts.VCR());
-			_opState.text = data.value;
-			base.ui.Fonts.setProperties(_opState, false, 0.6);
-			_opState.alignment = RIGHT;
-			_opState.fieldWidth = Std.int(_bg.width);
-			_opState.x = ((_bg.x + _bg.width) - _opState.width);
-
-			// add(_opState);
-
-			// Set up option inputs
-			_op1 = new OptionInput(type, LEFT);
-			_op1.trackSpr = _opState;
-			_op1.xAdd = (_opState.x + _opState.width);
-			_op2 = new OptionInput(type, RIGHT);
-			_op2.trackSpr = _opState;
-			_op2.xAdd = (_opState.x);
-
-			// Set up the option state text pos
-		}
+			_opName.x = (_bg.width / 2) - (_opName.width / 2);
 
 		add(_bg);
 		add(_opName);
 
-		// add(_op1);
-		// add(_op2);
+		switch (type)
+		{
+			case UNKNOWN:
+				return;
+
+			case BOOL:
+				_op1 = new OptionInput(type, LEFT);
+				_op2 = new OptionInput(type, RIGHT);
+
+				_op1.alpha = (data.value ? 1 : 0.5);
+				_op2.alpha = (!data.value ? 1 : 0.5);
+
+				_op2.x = ((_bg.x + _bg.width) - _op2.width) - 5;
+				_op1.x = _op2.x - _op1.width;
+
+				var posScale:Float = (data.value ? 1 : 0.8);
+				var negScale:Float = (!data.value ? 1 : 0.8);
+				_op1.scale.set(posScale, posScale);
+				_op2.scale.set(negScale, negScale);
+
+				add(_op1);
+				add(_op2);
+
+			default:
+				_opState = new flixel.text.FlxBitmapText(base.ui.Fonts.VCR());
+				_opState.text = data.value;
+				_opState.antialiasing = SaveData.antialiasing;
+				base.ui.Fonts.changeFontSize(_opState, 0.6);
+				_opState.x = ((_bg.x + _bg.width) - _opState.width) - 30;
+
+				add(_opState);
+
+				_op1 = new OptionInput(type, LEFT);
+				_op1.trackSpr = _opState;
+				_op1.xAdd = -30;
+				_op2 = new OptionInput(type, RIGHT);
+				_op2.trackSpr = _opState;
+				_op2.xAdd = (_opState.width - 10);
+
+				add(_op1);
+				add(_op2);
+		}
 	}
 }
 
@@ -167,7 +179,7 @@ class OptionData
 	}
 }
 
-// TODO: Make lil press animation - Could just extend AttachedSprite but nah lol
+// TODO: Make lil press animation - Could just extend AttachedSprite but nah lol - maybe disable lerping?
 class OptionInput extends flixel.FlxSprite
 {
 	public var trackSpr:flixel.FlxSprite;

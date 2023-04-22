@@ -64,6 +64,21 @@ class Main extends Sprite
 
 		setup();
 		setupGame();
+
+		// will add funny ? on html lol
+		#if sys
+		for (arg in Sys.args())
+		{
+			if (arg.contains("-GPU_RENDERING"))
+				Cache.gpuRender = true;
+
+			if (arg.contains("-FPS"))
+				setFPS(Std.parseInt(arg.split(":")[1]));
+
+			if (arg.contains("-NO_DRPC"))
+				DiscordPresence.shutdownPresence();
+		}
+		#end
 	}
 
 	private function setup()
@@ -91,21 +106,6 @@ class Main extends Sprite
 		trays.push(volumeTray);
 
 		DragDrop.listen();
-
-		// will add funny ? on html lol
-		#if sys
-		for (arg in Sys.args())
-		{
-			if (arg.contains("-GPU_RENDERING"))
-				Cache.gpuRender = true;
-
-			if (arg.contains("-FPS"))
-				setFPS(Std.parseInt(arg.split(":")[1]));
-
-			if (arg.contains("-NO_DRPC"))
-				DiscordPresence.shutdownPresence();
-		}
-		#end
 
 		#if windows
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);

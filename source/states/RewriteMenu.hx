@@ -152,8 +152,13 @@ class RewriteMenu extends MusicBeatState
 		curState = SELECTING;
 		canPress = true;
 
-		var opt = new Option(0, 0, "sexo", "negros", "pauseMusic", UNKNOWN, "tea-time", ["tea-time", "breakfast"], FlxG.width - 30);
+		var oopt = new Option(0, 0, "Anti-Aliasing", "negros", "antialiasing", BOOL, true, null, FlxG.width - 30);
+		oopt.screenCenter();
+		add(oopt);
+
+		var opt = new Option(0, 0, "Pause Music", "negros", "pauseMusic", STRING, "tea-time", ["tea-time", "breakfast"], FlxG.width - 30);
 		opt.screenCenter();
+		opt.y += oopt.height + 5;
 		add(opt);
 
 		super.create();
