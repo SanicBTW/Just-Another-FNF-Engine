@@ -16,7 +16,6 @@ import flixel.util.FlxColor;
 @:allow(funkin.ui.UI)
 class TimeTracker extends FlxSpriteGroup
 {
-	private var timeText:TextComponent;
 	private var timeBarBG:AttachedSprite;
 	private var timeBar:Bar;
 
@@ -32,12 +31,6 @@ class TimeTracker extends FlxSpriteGroup
 		timeBarBG.xAdd = -4;
 		timeBarBG.yAdd = -4;
 
-		timeText = new TextComponent(0, 0, 400, "0:00", 32);
-		timeText.alignment = CENTER;
-		timeText.borderSize = 2;
-		timeText.scrollFactor.set();
-		timeText.setPosition(42 + (FlxG.width / 2) - 248, Y - timeText.height);
-
 		timeBar = new Bar(timeBarBG.x + 4, timeBarBG.y + 4, Std.int(timeBarBG.width - 8), Std.int(timeBarBG.height - 8), 0xFF000000, 0xFFFFFFFF);
 		timeBar.screenCenter(flixel.util.FlxAxes.X);
 		timeBar.scrollFactor.set();
@@ -45,7 +38,6 @@ class TimeTracker extends FlxSpriteGroup
 
 		add(timeBarBG);
 		add(timeBar);
-		add(timeText);
 	}
 
 	override public function update(elapsed:Float)
@@ -57,16 +49,5 @@ class TimeTracker extends FlxSpriteGroup
 			curTime = 0;
 
 		timeBar.value = (curTime / Conductor.boundSong.length);
-
-		var secondsTotal:Int = Math.floor((Conductor.boundSong.length - curTime) / 1000);
-		if (secondsTotal < 0)
-			secondsTotal = 0;
-
-		var minutesRemaining:Int = Math.floor(secondsTotal / 60);
-		var secondsRemaining:String = '${secondsTotal % 60}';
-		if (secondsRemaining.length < 2)
-			secondsRemaining = '0$secondsRemaining';
-
-		timeText.text = '${minutesRemaining}:${secondsRemaining}';
 	}
 }

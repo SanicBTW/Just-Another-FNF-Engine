@@ -268,6 +268,7 @@ class PlayTest extends MusicBeatState
 			if (SONG.needsVoices)
 				Conductor.boundVocals.stop();
 			Conductor.boundSong.stop();
+			DiscordPresence.changePresence("Game Over");
 			openSubState(new GameOverSubstate(player.x, player.y));
 		}
 	}

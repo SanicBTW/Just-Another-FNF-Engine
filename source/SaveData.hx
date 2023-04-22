@@ -5,6 +5,7 @@ import base.system.SaveFile;
 
 class SaveData
 {
+	public static var framerate:Int = 60;
 	public static var antialiasing:Bool = true;
 	public static var showTrails:Bool = true;
 	public static var downScroll:Bool = false;
@@ -41,7 +42,13 @@ class SaveData
 		{
 			var defaultValue:Dynamic = Reflect.field(SaveData, field);
 			var save:Dynamic = SaveFile.get(field);
-			Reflect.setField(SaveData, field, (save == null ? defaultValue : save));
+			Reflect.setProperty(SaveData, field, (save == null ? defaultValue : save));
+
+			switch (field)
+			{
+				case "framerate":
+					Main.setFPS(framerate);
+			}
 		}
 
 		Controls.reloadActions();

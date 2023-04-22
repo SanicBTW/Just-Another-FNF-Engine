@@ -28,6 +28,7 @@ class Note extends FlxSprite
 	public var direction:Float = 0;
 
 	public var hitMult:Float = 1;
+	public var endHoldOffset:Float = Math.NEGATIVE_INFINITY;
 
 	public function new(strumTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{

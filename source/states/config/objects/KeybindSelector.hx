@@ -1,4 +1,4 @@
-package states.config;
+package states.config.objects;
 
 class KeybindSelector extends flixel.group.FlxSpriteGroup
 {

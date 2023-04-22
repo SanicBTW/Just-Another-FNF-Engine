@@ -31,7 +31,6 @@ class SaveFile
 		}
 
 		bound = true;
-		SaveData.loadSettings();
 	}
 
 	public static function set(key:String, value:Dynamic, save:Save = DEFAULT)

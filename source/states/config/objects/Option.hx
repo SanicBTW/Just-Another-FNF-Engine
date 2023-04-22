@@ -1,4 +1,4 @@
-package states.config;
+package states.config.objects;
 
 // wacky shit, stole some shit from Psych Option, might need to rewrite it or smth bruh
 class Option extends flixel.group.FlxSpriteGroup
@@ -73,7 +73,7 @@ class Option extends flixel.group.FlxSpriteGroup
 				_opState.text = data.value;
 				_opState.antialiasing = SaveData.antialiasing;
 				base.ui.Fonts.changeFontSize(_opState, 0.6);
-				_opState.x = ((_bg.x + _bg.width) - _opState.width) - 30;
+				_opState.x = ((_bg.x + _bg.width) - _opState.width) - 25;
 
 				add(_opState);
 
@@ -82,11 +82,77 @@ class Option extends flixel.group.FlxSpriteGroup
 				_op1.xAdd = -30;
 				_op2 = new OptionInput(type, RIGHT);
 				_op2.trackSpr = _opState;
-				_op2.xAdd = (_opState.width - 10);
+				_op2.xAdd = (_opState.width - 15);
 
 				add(_op1);
 				add(_op2);
 		}
+	}
+
+	public function refreshState()
+	{
+		switch (data.type)
+		{
+			case UNKNOWN:
+				return;
+
+			case BOOL:
+				_op1.alpha = (data.value ? 1 : 0.5);
+				_op2.alpha = (!data.value ? 1 : 0.5);
+
+				_op2.x = ((_bg.x + _bg.width) - _op2.width) - 5;
+				_op1.x = _op2.x - _op1.width;
+
+				var posScale:Float = (data.value ? 1 : 0.8);
+				var negScale:Float = (!data.value ? 1 : 0.8);
+				_op1.scale.set(posScale, posScale);
+				_op2.scale.set(negScale, negScale);
+
+			default:
+				convertText();
+		}
+	}
+
+	public function convertText()
+	{
+		var text:String = data.displayFormat;
+		var val:Dynamic = data.value;
+		if (data.type == PERCENT)
+			val *= 100;
+		var def:Dynamic = data.defaultVal;
+
+		var stringShit:String = text.split("%")[1];
+		switch (stringShit)
+		{
+			case "v":
+				_opState.text = StringTools.replace(text, '%v', val);
+
+			case "d":
+				_opState.text = StringTools.replace(text, '%d', def);
+		}
+		_opState.x = ((_bg.x + _bg.width) - _opState.width) - 25;
+	}
+
+	// literally copied from keybind selector bruh - gotta fix the inputs they kind of dark
+	override public function update(elapsed:Float)
+	{
+		var fastLerp:Float = funkin.CoolUtil.boundTo(elapsed * 9.6, 0, 1);
+		var lerpVal:Float = funkin.CoolUtil.boundTo(1 - (elapsed * 3.125), 0, 1);
+
+		var scaledY:Float = flixel.math.FlxMath.remapToRange(targetY, 0, 1, 0, 1.3);
+		y = flixel.math.FlxMath.lerp(y, (scaledY * yMult) + ((flixel.FlxG.height * 0.5) - (height / 2)) + yAdd, fastLerp);
+		if (forceX != Math.NEGATIVE_INFINITY)
+			x = flixel.math.FlxMath.lerp(x, forceX, fastLerp);
+		else
+			x = flixel.math.FlxMath.lerp(x, (targetY * 20) + 90, fastLerp);
+
+		_opName.alpha = flixel.math.FlxMath.lerp(alpha, _opName.alpha, lerpVal);
+		if (_opState != null)
+			_opState.alpha = flixel.math.FlxMath.lerp(alpha, _opState.alpha, lerpVal);
+
+		_bg.alpha = flixel.math.FlxMath.lerp(alpha * 0.43, _bg.alpha, lerpVal);
+
+		super.update(elapsed);
 	}
 }
 
@@ -94,6 +160,7 @@ class OptionData
 {
 	// real shit
 	public var value(get, set):Dynamic;
+	public var onChange:Void->Void = null;
 	public var type:OptionType;
 
 	public var defaultVal:Dynamic = null;
@@ -176,6 +243,12 @@ class OptionData
 	{
 		Reflect.setField(SaveData, variable, value);
 		return value;
+	}
+
+	public function change()
+	{
+		if (onChange != null)
+			onChange();
 	}
 }
 

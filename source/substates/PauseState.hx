@@ -119,6 +119,8 @@ class PauseState extends ScriptableSubState
 				menuItem.alpha = 1;
 			}
 		});
+
+		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
 	override function destroy()

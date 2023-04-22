@@ -121,14 +121,11 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 					if (SaveData.downScroll)
 					{
 						strumNote.y += (strumNote.height * 2);
-						strumNote.y += (strumNote.prevNote.y - (strumNote.y + strumNote.height));
-						/*
-							if (downscrollMultiplier < 0)
-							{
-								// Might be wrong on this type of note: Note - Sustain end, because it cant get the previous note Y pos, if it does then the sustain end will stay visible for some reason
-								if (strumNote.isSustainEnd && strumNote.prevNote.isSustain)
-									strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3;
-						 */
+
+						if (strumNote.endHoldOffset == Math.NEGATIVE_INFINITY)
+							strumNote.endHoldOffset = (strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 2;
+						else
+							strumNote.y += strumNote.endHoldOffset;
 					}
 					else
 						strumNote.y += ((strumNote.height / 2) * downscrollMultiplier);

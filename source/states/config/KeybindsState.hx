@@ -1,17 +1,16 @@
 package states.config;
 
-import base.MusicBeatState;
 import base.ScriptableState;
 import base.system.Controls;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import funkin.Stage;
 import haxe.ds.StringMap;
-import states.config.KeybindSelector;
+import states.config.objects.KeybindSelector;
 
 using StringTools;
 
-class KeybindsState extends MusicBeatState
+class KeybindsState extends ScriptableState
 {
 	var helpText:KeybindSelector;
 	var stage:Stage;
@@ -98,6 +97,8 @@ class KeybindsState extends MusicBeatState
 			}
 		}
 
+		FlxG.sound.play(Paths.sound('scrollMenu'));
+
 		return val;
 	}
 
@@ -123,6 +124,8 @@ class KeybindsState extends MusicBeatState
 				item.alpha = 1;
 		}
 
+		FlxG.sound.play(Paths.sound('scrollMenu'));
+
 		return val;
 	}
 
@@ -142,6 +145,7 @@ class KeybindsState extends MusicBeatState
 			curActions = 0;
 
 		regenActions(actions[curActions]);
+		FlxG.sound.play(Paths.sound('scrollMenu'));
 
 		return val;
 	}
@@ -234,6 +238,7 @@ class KeybindsState extends MusicBeatState
 							}
 						case "back":
 							{
+								FlxG.sound.play(Paths.sound('cancelMenu'));
 								SaveData.saveSettings();
 								ScriptableState.switchState(new RewriteMenu());
 							}
@@ -296,7 +301,7 @@ class KeybindsState extends MusicBeatState
 	override public function update(elapsed:Float)
 	{
 		// keyCode 13 seems to be Enter/Return
-		if (currentState == WAITING && listening == true && Controls.keyPressed.length > 0 && Controls.keyPressed[0] != 13)
+		if (currentState == WAITING && listening && Controls.keyPressed.length > 0 && Controls.keyPressed[0] != 13)
 		{
 			var actionObject:KeybindSelector = currentActions.members[curSelected];
 			var keyObject:KeybindSelector = bindedActions.members[curKeySelected];

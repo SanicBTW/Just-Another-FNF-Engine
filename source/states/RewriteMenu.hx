@@ -2,7 +2,7 @@ package states;
 
 import base.MusicBeatState;
 import base.ScriptableState;
-import base.pocketbase.Collections.Funkin as FunkCollection;
+import base.pocketbase.Collections.Funkin;
 import base.pocketbase.Collections.Funkin_Old;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
@@ -22,8 +22,7 @@ import openfl.utils.Assets;
 import shader.CoolShader;
 import shader.Noise.NoiseShader;
 import shader.PixelEffect;
-import states.config.KeybindsState;
-import states.config.Option;
+import states.config.*;
 import substates.LoadingState;
 
 using StringTools;
@@ -85,6 +84,8 @@ class RewriteMenu extends MusicBeatState
 
 		if (groupItems.members[curOption] != null)
 			curOptionStr = groupItems.members[curOption].bitmapText.text;
+
+		FlxG.sound.play(Paths.sound('scrollMenu'));
 
 		return curOption;
 	}
@@ -152,15 +153,6 @@ class RewriteMenu extends MusicBeatState
 		curState = SELECTING;
 		canPress = true;
 
-		var oopt = new Option(0, 0, "Anti-Aliasing", "negros", "antialiasing", BOOL, true, null, FlxG.width - 30);
-		oopt.screenCenter();
-		add(oopt);
-
-		var opt = new Option(0, 0, "Pause Music", "negros", "pauseMusic", STRING, "tea-time", ["tea-time", "breakfast"], FlxG.width - 30);
-		opt.screenCenter();
-		opt.y += oopt.height + 5;
-		add(opt);
-
 		super.create();
 
 		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
@@ -205,6 +197,7 @@ class RewriteMenu extends MusicBeatState
 
 						case "back":
 							{
+								FlxG.sound.play(Paths.sound('cancelMenu'));
 								curState = SELECTING;
 							}
 
@@ -226,6 +219,7 @@ class RewriteMenu extends MusicBeatState
 
 						case "back":
 							{
+								FlxG.sound.play(Paths.sound('cancelMenu'));
 								curState = SUB_SELECTION;
 							}
 
@@ -297,7 +291,7 @@ class RewriteMenu extends MusicBeatState
 										return;
 									}
 
-									var songShit:Array<FunkCollection & Funkin_Old> = cast Json.parse(data).items;
+									var songShit:Array<Funkin & Funkin_Old> = cast Json.parse(data).items;
 									for (i in 0...songShit.length)
 									{
 										var song = songShit[i];
@@ -343,6 +337,7 @@ class RewriteMenu extends MusicBeatState
 								ChartLoader.netChart = null;
 								ChartLoader.netInst = null;
 								ChartLoader.netVoices = null;
+								FlxG.sound.play(Paths.sound('confirmMenu'));
 								ScriptableState.switchState(new PlayTest(curOptionStr));
 							}
 					}
@@ -359,6 +354,7 @@ class RewriteMenu extends MusicBeatState
 								var pbObject:PocketBaseObject = songStore.get(curOptionStr);
 								persistentUpdate = false;
 								canPress = false;
+								FlxG.sound.play(Paths.sound('confirmMenu'));
 								openSubState(new LoadingState(selectedCollection == "Old" ? "old_fnf_charts" : "funkin", pbObject));
 							}
 
@@ -400,8 +396,8 @@ class RewriteMenu extends MusicBeatState
 				{
 					switch (curOptionStr)
 					{
-						// case "Options":
-						//	ScriptableState.switchState(new EarlyConfig());
+						case "Options":
+							ScriptableState.switchState(new ConfigState());
 						case "Keybinds":
 							ScriptableState.switchState(new KeybindsState());
 					}

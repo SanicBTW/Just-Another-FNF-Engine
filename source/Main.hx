@@ -172,7 +172,7 @@ class Main extends Sprite
 			}
 		});
 
-		setFPS(200);
+		SaveData.loadSettings();
 		FlxG.console.registerFunction("changeFPS", setFPS);
 	}
 

@@ -26,7 +26,8 @@ class UI extends FlxSpriteGroup
 		accuracyText = new FlxBitmapText(Fonts.VCR());
 		Fonts.setProperties(accuracyText);
 		accuracyText.setPosition(30, SaveData.downScroll ? (FlxG.height / 2) - (FlxG.height / 4) : (FlxG.height / 2) + (FlxG.height / 4));
-		accuracyText.y -= 50; // Offset to avoid getting overlapped by the health icon
+		if (!SaveData.downScroll)
+			accuracyText.y -= 50; // Offset to avoid getting overlapped by the health icon
 		accuracyText.text = "Accuracy 0%";
 		add(accuracyText);
 
@@ -42,7 +43,7 @@ class UI extends FlxSpriteGroup
 		rankText.text = "Rank N/A";
 		add(rankText);
 
-		timeTracker = new TimeTracker(0, SaveData.downScroll ? (FlxG.height - 45) : 20);
+		timeTracker = new TimeTracker(0, SaveData.downScroll ? (FlxG.height - 30) : 20);
 		add(timeTracker);
 
 		healthTracker = new HealthTracker(0, SaveData.downScroll ? (0.11 * FlxG.height) : (FlxG.height * 0.89), player, opponent);
