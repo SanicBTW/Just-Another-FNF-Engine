@@ -2,7 +2,6 @@ package;
 
 import base.system.Controls;
 import base.system.SaveFile;
-import flixel.FlxG;
 
 class SaveData
 {
@@ -11,6 +10,7 @@ class SaveData
 	public static var downScroll:Bool = false;
 	public static var middleScroll:Bool = false;
 	public static var onlyNotes:Bool = false;
+	public static var pauseMusic:String = "tea-time";
 
 	public static function getSettings():Array<String>
 	{

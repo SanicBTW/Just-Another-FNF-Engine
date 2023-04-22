@@ -23,6 +23,7 @@ import shader.CoolShader;
 import shader.Noise.NoiseShader;
 import shader.PixelEffect;
 import states.config.KeybindsState;
+import states.config.Option;
 import substates.LoadingState;
 
 using StringTools;
@@ -150,6 +151,10 @@ class RewriteMenu extends MusicBeatState
 
 		curState = SELECTING;
 		canPress = true;
+
+		var opt = new Option(0, 0, "sexo", "negros", "pauseMusic", UNKNOWN, "tea-time", ["tea-time", "breakfast"], FlxG.width - 30);
+		opt.screenCenter();
+		add(opt);
 
 		super.create();
 

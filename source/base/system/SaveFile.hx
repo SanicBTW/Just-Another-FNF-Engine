@@ -23,7 +23,7 @@ class SaveFile
 		FlxG.save.close();
 		#end
 
-		// Siguiendo tus pasos Galo (procede a abrir 500 FlxSaves)
+		// Siguiendo tus pasos Galo *procede a abrir 500 FlxSaves*
 		for (key => save in _saveMap)
 		{
 			// Fuck you Flixel
@@ -57,8 +57,8 @@ class SaveFile
 	}
 }
 
-// Holds the save name to bind it on FlxSave lol - maybe change the var name it sucks lol
-// Though I would've liked using Reflect :sob:
+// Holds the save name to bind it on FlxSave lol
+// I would've liked using Reflect :sob:
 enum abstract Save(String) to String
 {
 	var DEFAULT = "settings";

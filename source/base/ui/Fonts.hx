@@ -37,6 +37,11 @@ class Fonts
 		text.alignment = LEFT;
 		text.fieldWidth = FlxG.width;
 		text.antialiasing = SaveData.antialiasing;
+		changeFontSize(text, targetSize);
+	}
+
+	public static function changeFontSize(text:FlxBitmapText, targetSize:Float = 0.35)
+	{
 		text.setGraphicSize(Std.int(text.width * targetSize));
 		text.centerOrigin();
 		text.updateHitbox();

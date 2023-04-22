@@ -7,7 +7,7 @@ import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import funkin.Stage;
 import haxe.ds.StringMap;
-import states.config.ConfigObjects.KeybindSelector;
+import states.config.KeybindSelector;
 
 using StringTools;
 
@@ -23,8 +23,6 @@ class KeybindsState extends MusicBeatState
 	var curActions(default, set):Int = 0;
 	var curSelected(default, set):Int = 0;
 	var curKeySelected(default, set):Int = 0;
-
-	var instance:KeybindsState;
 
 	var canPress:Bool = true;
 	var listening:Bool = false;
@@ -150,8 +148,6 @@ class KeybindsState extends MusicBeatState
 
 	override function create()
 	{
-		instance = this;
-
 		stage = new Stage("stage");
 		add(stage);
 
@@ -179,6 +175,7 @@ class KeybindsState extends MusicBeatState
 		var actionMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, regenGroup);
 		for (action => keyArr in actionMap)
 		{
+			// Apparently [keyArr.length] keeps the consistency of size for each selector??
 			var newSelector:KeybindSelector = new KeybindSelector(0, (70 * i) + 30, '$action\nBinds: [${keyArr.length}]');
 			var pos:Int = actionsOrder.get(action.split("_")[1]);
 			newSelector.forceX = 30;
