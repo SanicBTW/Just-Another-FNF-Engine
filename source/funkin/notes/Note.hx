@@ -116,7 +116,7 @@ class Note extends FlxSprite
 		if (mustPress)
 		{
 			if (strumTime - Conductor.songPosition <= ((166 * Conductor.timeScale) * hitMult)
-				&& strumTime - Conductor.songPosition >= (-166 * Conductor.timeScale))
+				&& strumTime - Conductor.songPosition >= (-166 * Conductor.timeScale) * hitMult)
 				canBeHit = true;
 			else
 				canBeHit = false;

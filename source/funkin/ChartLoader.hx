@@ -124,14 +124,9 @@ class ChartLoader
 
 						var newNote:Note = new Note(strumTime, noteData, strumLine);
 						newNote.mustPress = hitNote;
+						newNote.doubleNote = checkDouble(noteStrumTimes, strumLine, strumTime);
 						unspawnedNoteList.push(newNote);
 
-						if (noteStrumTimes[strumLine].contains(strumTime))
-						{
-							newNote.doubleNote = true;
-							noteStrumTimes[strumLine].push(strumTime);
-						}
-						noteStrumTimes[strumLine].push(strumTime);
 						if (holdStep > 0)
 						{
 							var floorStep:Int = Std.int(holdStep + 1);
@@ -141,17 +136,12 @@ class ChartLoader
 									unspawnedNoteList[Std.int(unspawnedNoteList.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 								sustainNote.parent = newNote;
-								newNote.children.push(sustainNote);
+								sustainNote.doubleNote = sustainNote.parent.doubleNote;
 								if (i == floorStep - 1)
 									sustainNote.isSustainEnd = true;
-								unspawnedNoteList.push(sustainNote);
+								newNote.children.push(sustainNote);
 
-								if (noteStrumTimes[strumLine].contains(strumTime))
-								{
-									sustainNote.doubleNote = true;
-									noteStrumTimes[strumLine].push(strumTime);
-								}
-								noteStrumTimes[strumLine].push(strumTime);
+								unspawnedNoteList.push(sustainNote);
 							}
 						}
 					case -1:
@@ -160,6 +150,18 @@ class ChartLoader
 		}
 
 		unspawnedNoteList.sort(sortByShit);
+	}
+
+	// why not
+	private static function checkDouble(map:Map<Int, Array<Float>>, index:Int, time:Float)
+	{
+		if (map[index].contains(time))
+		{
+			map[index].push(time);
+			return true;
+		}
+		map[index].push(time);
+		return false;
 	}
 
 	private static function sortByShit(Obj1:Note, Obj2:Note):Int

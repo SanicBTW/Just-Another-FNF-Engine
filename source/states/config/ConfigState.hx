@@ -81,6 +81,13 @@ class ConfigState extends ScriptableState
 			type: BOOL,
 			defaultVal: false,
 			variable: 'onlyNotes',
+		},
+		{
+			name: 'No trails',
+			description: 'If disabled, it doesn\'t show the trail on double note press',
+			type: BOOL,
+			defaultVal: false,
+			variable: 'showTrails'
 		}
 	];
 

@@ -4,6 +4,7 @@ package funkin;
 import base.system.Conductor;
 import base.ui.Sprite;
 import flixel.math.FlxPoint;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import openfl.Assets;
 
@@ -49,14 +50,19 @@ class Character extends OffsettedSprite
 	public var danceIdle:Bool = false;
 	public var danced:Bool = false;
 
+	// da pos
 	public var cameraPosition:FlxPoint;
 	public var characterPosition:FlxPoint;
 
+	// da health
 	public var healthIcon:String = 'bf';
 	public var healthColor:FlxColor;
 
 	// the
 	public var startedDeath:Bool = false;
+
+	// trail shit
+	public var trailTwn:FlxTween;
 
 	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{

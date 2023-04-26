@@ -662,7 +662,7 @@ class PlayTest extends MusicBeatState
 			else
 				Timings.judge(Timings.judgements[0].timing, true);
 
-			if (note.doubleNote && !note.isSustain)
+			if (note.doubleNote)
 				trail(player, note);
 
 			characterSing(player, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
@@ -700,7 +700,7 @@ class PlayTest extends MusicBeatState
 			if (!note.isSustain)
 				playSplash(curStrums, note.noteData);
 
-			if (note.doubleNote && !note.isSustain)
+			if (note.doubleNote)
 				trail(curChar, note);
 
 			characterSing(curChar, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}');
@@ -728,11 +728,9 @@ class PlayTest extends MusicBeatState
 	private function playSplash(strumLine:StrumLine, noteData:Int)
 		strumLine.splashNotes.members[noteData].playAnim();
 
-	// gotta fix this lol
+	// gotta fix this lol - still gotta fix it
 	function trail(char:Character, note:Note):Void
 	{
-		return;
-
 		if (!SaveData.showTrails || char == null)
 			return;
 
@@ -746,15 +744,19 @@ class PlayTest extends MusicBeatState
 		daCopy.animation.play(anim, true);
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
-		insert(members.indexOf(char) - 1, daCopy);
-		FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * (char.singDuration / 1000), {
-			ease: FlxEase.quadInOut,
-			onComplete: function(_)
-			{
-				daCopy.destroy();
-				daCopy = null;
-			}
-		});
+		if (char.trailTwn == null)
+		{
+			insert(members.indexOf(char) - 1, daCopy);
+			char.trailTwn = FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * (char.singDuration / 1000), {
+				ease: FlxEase.quadInOut,
+				onComplete: function(_)
+				{
+					daCopy.destroy();
+					daCopy = null;
+					char.trailTwn = null;
+				}
+			});
+		}
 	}
 
 	function applyShader(shader:String)
