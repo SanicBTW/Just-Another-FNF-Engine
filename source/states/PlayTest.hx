@@ -744,16 +744,23 @@ class PlayTest extends MusicBeatState
 		daCopy.animation.play(anim, true);
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
-		if (char.trailTwn == null)
+		function dumpCopy()
+		{
+			daCopy.destroy();
+			daCopy = null;
+			char.trailTwn = null;
+		}
+
+		if (char.trailTwn != null)
+			dumpCopy();
+		else
 		{
 			insert(members.indexOf(char) - 1, daCopy);
 			char.trailTwn = FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * (char.singDuration / 1000), {
 				ease: FlxEase.quadInOut,
 				onComplete: function(_)
 				{
-					daCopy.destroy();
-					daCopy = null;
-					char.trailTwn = null;
+					dumpCopy();
 				}
 			});
 		}
