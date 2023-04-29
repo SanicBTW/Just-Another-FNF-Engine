@@ -50,6 +50,14 @@ class ConfigState extends ScriptableState
 			variable: 'framerate'
 		},
 		#end
+		{
+			name: 'Language',
+			description: 'Why the fuck is this on graphics\nChange the game langauge',
+			type: STRING,
+			defaultVal: 'eng',
+			variable: 'language',
+			options: ['eng', 'esp']
+		},
 		{name: 'GAMEPLAY'},
 		{
 			name: 'Downscroll',

@@ -4,6 +4,7 @@ package base.pocketbase;
 // do a global class to manage collections and stuff not this shit
 // to make collections support each other by using a singleton
 // Never going to do it apparently lol, I guess I'll do it soon or smth
+// soon actually
 class PocketBaseObject
 {
 	public var id:String;
@@ -29,14 +30,4 @@ typedef Funkin =
 	var chart:String;
 	var inst:String;
 	var voices:String;
-}
-
-typedef Funkin_Old =
-{
-	var id:String;
-	var song_name:String;
-	var chart_file:String;
-	var inst:String;
-	var voices:String;
-	var difficulty:String;
 }

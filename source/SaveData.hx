@@ -1,7 +1,6 @@
 package;
 
-import base.system.Controls;
-import base.system.SaveFile;
+import base.system.*;
 
 class SaveData
 {
@@ -12,6 +11,7 @@ class SaveData
 	public static var middleScroll:Bool = false;
 	public static var onlyNotes:Bool = false;
 	public static var pauseMusic:String = "tea-time";
+	public static var language:String = "eng";
 
 	public static function getSettings():Array<String>
 	{
@@ -32,7 +32,7 @@ class SaveData
 		}
 
 		Controls.saveActions();
-
+		Language.refresh();
 		SaveFile.save();
 	}
 

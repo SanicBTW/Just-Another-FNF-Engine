@@ -3,12 +3,9 @@ package states;
 import base.MusicBeatState;
 import base.ScriptableState;
 import base.pocketbase.Collections.Funkin;
-import base.pocketbase.Collections.Funkin_Old;
 import base.pocketbase.Collections.PocketBaseObject;
 import base.pocketbase.Request;
-import base.system.Conductor;
-import base.system.Controls;
-import base.system.SaveFile;
+import base.system.*;
 import base.ui.CircularSprite;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -30,13 +27,13 @@ using StringTools;
 class RewriteMenu extends MusicBeatState
 {
 	// Options available
-	private var options:Array<String> = ["Assets", "Online", "1v1", "Settings", "Shaders"];
+	private var options:Array<String> = ["Assets", "Online", "1v1", Language.get("mset_rmenu"), "Shaders"];
 	private var subOptions:Map<String, Array<Dynamic>> = [
 		// bruh
-		"Assets" => ["Select song"],
-		"Online" => ["Select song", "Choose collection", "VS"],
-		"1v1" => ["Host", "Connect"],
-		"Settings" => ["Options", "Keybinds"],
+		"Assets" => [Language.get("selectsong_rmenu")],
+		"Online" => [Language.get("selectsong_rmenu")],
+		"1v1" => [Language.get("1v1host_rmenu"), Language.get("1v1conn_rmenu")],
+		Language.get("mset_rmenu") => [Language.get("setopt_rmenu"), Language.get("setkeyb_rmenu")],
 		"Shaders" => ["Drug", "Pixel", "Noise", "Disable"],
 	];
 	private var groupItems:FlxTypedGroup<CircularSpriteText>;
@@ -55,8 +52,6 @@ class RewriteMenu extends MusicBeatState
 	private var noiseShader:NoiseShader;
 
 	// Online songs
-	private var collections:Array<String> = ["New", "Old"];
-	private var selectedCollection:String = "New";
 	private var songStore:Map<String, PocketBaseObject> = new Map();
 
 	@:noCompletion
@@ -247,21 +242,22 @@ class RewriteMenu extends MusicBeatState
 		super.update(elapsed);
 	}
 
+	// cannot use Language.get("selectsong_rmenu") as the check
 	private function regenListing()
 	{
 		switch (catStr)
 		{
 			case "Assets":
 				{
-					switch (subStr)
+					switch (curOption)
 					{
-						case "Select song":
+						case 0:
 							{
 								var songAssets:Array<String> = Assets.getLibrary("songs").list("TEXT");
 								for (i in 0...songAssets.length)
 								{
 									songAssets[i] = songAssets[i].replace("assets/songs/", "");
-									songAssets[i] = songAssets[i].substring(songAssets[i].lastIndexOf("/") + 1, songAssets[i].indexOf("-hard"));
+									songAssets[i] = songAssets[i].substring(songAssets[i].lastIndexOf("/") + 1, songAssets[i].lastIndexOf("-"));
 
 									var song:String = songAssets[i];
 									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY, song);
@@ -275,14 +271,13 @@ class RewriteMenu extends MusicBeatState
 				}
 			case "Online":
 				{
-					switch (subStr)
+					switch (curOption)
 					{
-						case "Select song":
+						case 0:
 							{
 								songStore.clear();
 
-								var isOld:Bool = (selectedCollection == "Old");
-								Request.getRecords((isOld ? "old_fnf_charts" : "funkin"), (data:String) ->
+								Request.getRecords("funkin", (data:String) ->
 								{
 									if (data == "Failed to fetch")
 									{
@@ -291,31 +286,18 @@ class RewriteMenu extends MusicBeatState
 										return;
 									}
 
-									var songShit:Array<Funkin & Funkin_Old> = cast Json.parse(data).items;
+									var songShit:Array<Funkin> = cast Json.parse(data).items;
 									for (i in 0...songShit.length)
 									{
 										var song = songShit[i];
-										var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY,
-											(isOld ? song.song_name : song.song));
+										var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 450, 50, FlxColor.GRAY, song.song);
 										item.ID = i;
 										item.targetY = i;
 										item.menuItem = true;
-										songStore.set((isOld ? song.song_name : song.song),
-											new PocketBaseObject(song.id, (isOld ? song.song_name : song.song), (isOld ? song.chart_file : song.chart),
-												song.inst, song.voices));
+										songStore.set(song.song, new PocketBaseObject(song.id, song.song, song.chart, song.inst, song.voices));
 										groupItems.add(item);
 									}
 								});
-							}
-
-						case "Choose collection":
-							{
-								for (i in 0...collections.length)
-								{
-									var item:CircularSpriteText = new CircularSpriteText(30, 30 + (i * 55), 350, 50, FlxColor.GRAY, collections[i]);
-									item.ID = i;
-									groupItems.add(item);
-								}
 							}
 					}
 				}
@@ -328,41 +310,28 @@ class RewriteMenu extends MusicBeatState
 		{
 			case "Assets":
 				{
-					switch (subStr)
+					if (subStr == Language.get("selectsong_rmenu"))
 					{
-						// Only entry lol
-						case "Select song":
-							{
-								// Clean the chart loader left over vars from online shit
-								ChartLoader.netChart = null;
-								ChartLoader.netInst = null;
-								ChartLoader.netVoices = null;
-								FlxG.sound.play(Paths.sound('confirmMenu'));
-								ScriptableState.switchState(new PlayTest(curOptionStr));
-							}
+						// Clean the chart loader left over vars from online shit
+						ChartLoader.netChart = null;
+						ChartLoader.netInst = null;
+						ChartLoader.netVoices = null;
+						FlxG.sound.play(Paths.sound('confirmMenu'));
+						ScriptableState.switchState(new PlayTest(curOptionStr));
 					}
 				}
 			case "Online":
 				{
-					switch (subStr)
+					if (subStr == Language.get("selectsong_rmenu"))
 					{
-						case "Select song":
-							{
-								if (curOptionStr == "Error fetching")
-									return;
+						if (curOptionStr == "Error fetching")
+							return;
 
-								var pbObject:PocketBaseObject = songStore.get(curOptionStr);
-								persistentUpdate = false;
-								canPress = false;
-								FlxG.sound.play(Paths.sound('confirmMenu'));
-								openSubState(new LoadingState(selectedCollection == "Old" ? "old_fnf_charts" : "funkin", pbObject));
-							}
-
-						case "Choose collection":
-							{
-								selectedCollection = curOptionStr;
-								curState = SUB_SELECTION;
-							}
+						var pbObject:PocketBaseObject = songStore.get(curOptionStr);
+						persistentUpdate = false;
+						canPress = false;
+						FlxG.sound.play(Paths.sound('confirmMenu'));
+						openSubState(new LoadingState("funkin", pbObject));
 					}
 				}
 		}
@@ -373,6 +342,18 @@ class RewriteMenu extends MusicBeatState
 		if (catStr == null)
 			return;
 
+		if (catStr == Language.get("mset_rmenu"))
+		{
+			switch (curOption)
+			{
+				case 0:
+					ScriptableState.switchState(new ConfigState());
+				case 1:
+					ScriptableState.switchState(new KeybindsState());
+			}
+			return;
+		}
+
 		switch (catStr)
 		{
 			default:
@@ -380,26 +361,13 @@ class RewriteMenu extends MusicBeatState
 
 			case "1v1":
 				{
-					switch (curOptionStr)
+					switch (curOption)
 					{
-						case "Host":
-							{
-								// base.server.UDPServer.init();
-							}
-
-						case "Connect":
+						case 0:
 							{}
-					}
-				}
 
-			case "Settings":
-				{
-					switch (curOptionStr)
-					{
-						case "Options":
-							ScriptableState.switchState(new ConfigState());
-						case "Keybinds":
-							ScriptableState.switchState(new KeybindsState());
+						case 1:
+							{}
 					}
 				}
 

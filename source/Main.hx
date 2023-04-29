@@ -91,6 +91,7 @@ class Main extends Sprite
 
 		SaveFile.Initialize();
 		Controls.init();
+		Language.refresh();
 
 		DiscordPresence.initPresence();
 		FlxGraphic.defaultPersist = true;
