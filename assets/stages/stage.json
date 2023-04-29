@@ -1,5 +1,6 @@
 {
     "defaultZoom": 0.9,
+    "antialiasing": true,
     "objects":
     [
         {

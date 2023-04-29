@@ -1,4 +1,4 @@
-package funkin.ui;
+package funkin.components;
 
 import base.ui.Fonts;
 import flixel.FlxG;

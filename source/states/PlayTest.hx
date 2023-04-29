@@ -25,10 +25,10 @@ import funkin.ChartLoader;
 import funkin.CoolUtil;
 import funkin.Stage;
 import funkin.Timings;
+import funkin.UI;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
-import funkin.ui.UI;
 import openfl.filters.ShaderFilter;
 import openfl.media.Sound;
 import shader.*;
@@ -424,9 +424,6 @@ class PlayTest extends MusicBeatState
 	{
 		super.beatHit();
 
-		@:privateAccess
-		ui.healthTracker.beatHit();
-
 		if (!SaveData.onlyNotes)
 		{
 			if (curBeat % player.danceEveryNumBeats == 0 && !player.animation.curAnim.name.startsWith("sing"))
@@ -731,7 +728,7 @@ class PlayTest extends MusicBeatState
 	// gotta fix this lol - still gotta fix it
 	function trail(char:Character, note:Note):Void
 	{
-		if (!SaveData.showTrails || char == null)
+		if (!SaveData.showTrails || !SaveData.onlyNotes || note.isSustain || char == null)
 			return;
 
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
@@ -744,26 +741,15 @@ class PlayTest extends MusicBeatState
 		daCopy.animation.play(anim, true);
 		daCopy.offset.set(char.animOffsets[anim][0], char.animOffsets[anim][1]);
 
-		function dumpCopy()
-		{
-			daCopy.destroy();
-			daCopy = null;
-			char.trailTwn = null;
-		}
-
-		if (char.trailTwn != null)
-			dumpCopy();
-		else
-		{
-			insert(members.indexOf(char) - 1, daCopy);
-			char.trailTwn = FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * (char.singDuration / 1000), {
-				ease: FlxEase.quadInOut,
-				onComplete: function(_)
-				{
-					dumpCopy();
-				}
-			});
-		}
+		insert(members.indexOf(char) - 1, daCopy);
+		FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * (char.singDuration / 1000), {
+			ease: FlxEase.quadInOut,
+			onComplete: function(_)
+			{
+				daCopy.destroy();
+				daCopy = null;
+			}
+		});
 	}
 
 	function applyShader(shader:String)

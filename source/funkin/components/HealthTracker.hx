@@ -1,4 +1,4 @@
-package funkin.ui;
+package funkin.components;
 
 import base.ui.Bar;
 import base.ui.Sprite.AttachedSprite;
@@ -34,10 +34,10 @@ class HealthTracker extends FlxSpriteGroup
 		healthBar.scrollFactor.set();
 		healthBarBG.sprTracker = healthBar;
 
-		iconP1 = new HealthIcon(player.healthIcon, true);
+		iconP1 = new HealthIcon(player.healthIcon, player.isPlayer);
 		iconP1.y = healthBar.y - (iconP1.height / 2);
 
-		iconP2 = new HealthIcon(opponent.healthIcon, false);
+		iconP2 = new HealthIcon(opponent.healthIcon, opponent.isPlayer);
 		iconP2.y = healthBar.y - (iconP2.height / 2);
 
 		add(healthBarBG);
@@ -75,6 +75,8 @@ class HealthTracker extends FlxSpriteGroup
 			iconP2.animation.curAnim.curFrame = 1;
 		else
 			iconP2.animation.curAnim.curFrame = 0;
+
+		flixel.FlxG.watch.addQuick('health perc', healthBar.percent);
 	}
 
 	public function beatHit()

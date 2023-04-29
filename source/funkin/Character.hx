@@ -61,9 +61,6 @@ class Character extends OffsettedSprite
 	// the
 	public var startedDeath:Bool = false;
 
-	// trail shit
-	public var trailTwn:FlxTween;
-
 	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{
 		super(X, Y);

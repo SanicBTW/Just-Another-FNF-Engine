@@ -1,0 +1,37 @@
+{
+    // Some components will come bundled with other components
+    // to avoid having extra fields that can be handled by the component itself
+    // Only fields that have . and accesses some package will be analyzed and parsed
+    // Some components will have special setters and all of them will be able to access default flixel variables
+    "components":
+    [
+        {
+            // La dirección completa al paquete para poder crearlo
+            "classPath": "flixel.text.FlxBitmapText",
+            // Pass in the font
+            "classArgs": "Fonts.VCR",
+            // Use the default properties and scaling
+            "use_defaults": true,
+            // El identificador para acceder al objeto
+            "name": "accuracy",
+            // El formato del texto, para seguir una variable se tiene
+            // que poner % seguido de una variable trackeable
+            // las variables trackeables serian
+            // acc - Timings.getAccuracy()
+            // score - Timings.score
+            // rating - Timings.ratingName
+            // fc - Timings.ratingFC
+            // time - (Conductor.songPosition / Conductor.boundSong.length) - no maths will be involved in here
+            // to avoid more type and reflect calls
+            // timeStr - the time left, will follow the type of tracking
+            // (time left, time elapsed, song name)
+            // health - will return a string if not called from its own component (health bar) 
+            // judgement_(track/shortName/name) - will return the judgements after _ (see Timings.Judgement)
+            // (judgement_marvs) will return Timings.marvs (cuz short name and name doesnt exist in the class but will be converted)
+            // combo - Timings.combo
+            // maxcombo - Timings.maxCombo
+            "text": "Accuracy %acc",
+            "position": [30, "SaveData.downScroll ? (FlxG.height / 2) - (FlxG.height / 4) : ((FlxG.height / 2) + (FlxG.height / 4)) - 50"]
+        }
+    ]
+}

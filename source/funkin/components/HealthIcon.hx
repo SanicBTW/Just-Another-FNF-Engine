@@ -1,4 +1,4 @@
-package funkin.ui;
+package funkin.components;
 
 import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;

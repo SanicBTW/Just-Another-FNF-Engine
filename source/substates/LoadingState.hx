@@ -45,11 +45,13 @@ class LoadingState extends ScriptableSubState
 		bg.scrollFactor.set();
 		add(bg);
 
-		loadingBar = new Bar(0, 0, FlxG.width - 50, 10, FlxColor.WHITE, FlxColor.fromRGB(30, 144, 255));
+		loadingBar = new Bar(0, 0, FlxG.width - 50, 10, FlxColor.fromRGB(30, 144, 255), FlxColor.WHITE);
 		loadingBar.screenCenter();
 		loadingBar.y = FlxG.height - 20;
 		loadingBar.screenCenter(X);
 		loadingBar.alpha = 0;
+		// stupid ass fix
+		loadingBar.flipX = true;
 		add(loadingBar);
 
 		var loadingHeader:FlxBitmapText = new FlxBitmapText(Fonts.VCR());

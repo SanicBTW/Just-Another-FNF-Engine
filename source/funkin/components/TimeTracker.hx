@@ -1,4 +1,4 @@
-package funkin.ui;
+package funkin.components;
 
 import base.system.Conductor;
 import base.ui.Bar;

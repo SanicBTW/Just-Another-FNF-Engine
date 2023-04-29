@@ -12,6 +12,7 @@ using StringTools;
 typedef StageFile =
 {
 	var defaultZoom:Float;
+	var antialiasing:Bool;
 	var objects:Array<Dynamic>;
 }
 
@@ -36,6 +37,8 @@ class Stage extends FlxTypedGroup<FlxBasic>
 			var newSprite:FlxSprite = Type.createInstance(FlxSprite, [0, 0]);
 			var stageObject = new StageObject(object, newSprite, objectMap);
 			newSprite.updateHitbox();
+			// some of them doesnt have the field so uh yeah
+			newSprite.antialiasing = stageJSON.antialiasing;
 			add(newSprite);
 		}
 	}
