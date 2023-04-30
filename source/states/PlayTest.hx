@@ -7,6 +7,7 @@ import base.system.Conductor;
 import base.system.Controls;
 import base.system.DiscordPresence;
 import base.system.SaveFile;
+import base.ui.Sprite.DepthSprite;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -19,6 +20,7 @@ import flixel.math.FlxPoint;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import flixel.util.FlxSort;
 import flixel.util.FlxTimer;
 import funkin.Character;
 import funkin.ChartLoader;
@@ -79,6 +81,9 @@ class PlayTest extends MusicBeatState
 	private var player:Character;
 	private var opponent:Character;
 	private var girlfriend:Character;
+
+	private var judgementGroup:FlxTypedGroup<DepthSprite>;
+	private var comboGroup:FlxTypedGroup<DepthSprite>;
 
 	// Pause handling
 	public static var paused:Bool = false;
@@ -171,6 +176,11 @@ class PlayTest extends MusicBeatState
 		ui.cameras = [camHUD];
 		add(ui);
 
+		judgementGroup = comboGroup = new FlxTypedGroup<DepthSprite>();
+		// judgementGroup.cameras = comboGroup.cameras = [camHUD];
+		add(judgementGroup);
+		add(comboGroup);
+
 		var camPos:FlxPoint = new FlxPoint(0, 0);
 
 		if (!SaveData.onlyNotes)
@@ -193,6 +203,7 @@ class PlayTest extends MusicBeatState
 		applyShader(SaveFile.get("shader") != null ? SaveFile.get("shader") : "Disable");
 		Paths.music("tea-time"); // precache the sound lol
 		DiscordPresence.changePresence('Playing ${SONG.song}');
+		popUpScore("sick", true);
 
 		super.create();
 
@@ -655,6 +666,7 @@ class PlayTest extends MusicBeatState
 				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
 				if (rating == "marvelous" || rating == "sick")
 					playSplash(playerStrums, note.noteData);
+				popUpScore(rating);
 			}
 			else
 				Timings.judge(Timings.judgements[0].timing, true);
@@ -682,6 +694,7 @@ class PlayTest extends MusicBeatState
 		characterSing(player, 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}miss');
 
 		Timings.judge(164);
+		popUpScore("miss");
 		ui.updateText();
 	}
 
@@ -728,7 +741,7 @@ class PlayTest extends MusicBeatState
 	// gotta fix this lol - still gotta fix it
 	function trail(char:Character, note:Note):Void
 	{
-		if (!SaveData.showTrails || !SaveData.onlyNotes || note.isSustain || char == null)
+		if (!SaveData.showTrails || SaveData.onlyNotes || note.isSustain || char == null)
 			return;
 
 		var anim:String = 'sing${Receptor.getArrowFromNum(note.noteData).toUpperCase()}';
@@ -750,6 +763,119 @@ class PlayTest extends MusicBeatState
 				daCopy = null;
 			}
 		});
+	}
+
+	private function characterSing(char:Character, anim:String)
+	{
+		if (char == null)
+			return;
+
+		char.playAnim(anim, true);
+		char.holdTimer = 0;
+	}
+
+	function popUpScore(daRating:String, preload:Bool = false)
+	{
+		// da judgements
+		var judgeSpr:DepthSprite = new DepthSprite();
+		judgeSpr.loadGraphic(Paths.image('ui/ratings/$daRating'));
+
+		judgeSpr.alpha = (preload) ? 0 : 1;
+		judgeSpr.zDepth = -Conductor.songPosition;
+		judgeSpr.antialiasing = SaveData.antialiasing;
+		judgeSpr.setGraphicSize(Std.int(judgeSpr.width * 0.7));
+		judgeSpr.updateHitbox();
+
+		judgeSpr.acceleration.y = 550;
+		judgeSpr.velocity.x -= FlxG.random.int(0, 10);
+		judgeSpr.velocity.y -= FlxG.random.int(140, 175);
+
+		judgeSpr.screenCenter();
+		judgeSpr.x = (FlxG.width * 0.35) - 40;
+		judgeSpr.y -= 60;
+
+		judgementGroup.add(judgeSpr);
+
+		FlxTween.tween(judgeSpr, {alpha: 0}, 0.2, {
+			onComplete: function(tween:FlxTween)
+			{
+				judgeSpr.destroy();
+			},
+			startDelay: Conductor.crochet / 1000
+		});
+
+		// da combos
+		var funny:Int = 0;
+		var separatedScore:Array<Int> = [];
+
+		if (Timings.combo >= 1000)
+			separatedScore.push(Math.floor(Timings.combo / 1000) % 10);
+
+		separatedScore.push(Math.floor(Timings.combo / 100) % 10);
+		separatedScore.push(Math.floor(Timings.combo / 10) % 10);
+		separatedScore.push(Timings.combo % 10);
+
+		var idx = (Timings.combo >= 1000) ? 1 : 0;
+		if (separatedScore[idx] > 0 && separatedScore[idx] % 1 == 0 && separatedScore[idx + 1] == 0 && separatedScore[idx + 2] == 0)
+		{
+			var funkySprite:DepthSprite = new DepthSprite();
+			funkySprite.loadGraphic(Paths.image('ui/combo'));
+			funkySprite.antialiasing = SaveData.antialiasing;
+			funkySprite.screenCenter();
+			funkySprite.x = FlxG.width + funkySprite.width;
+			funkySprite.cameras = [camHUD];
+			add(funkySprite);
+
+			// chaining be like
+			FlxTween.tween(funkySprite, {x: FlxG.width - funkySprite.width}, 1, {
+				ease: FlxEase.quadInOut,
+				onComplete: (_) ->
+				{
+					FlxTween.tween(funkySprite, {alpha: 0}, 0.5, {
+						ease: FlxEase.quadInOut,
+						onComplete: (_) ->
+						{
+							funkySprite.destroy();
+						},
+					});
+				}
+			});
+		}
+
+		for (i in separatedScore)
+		{
+			var combo:DepthSprite = new DepthSprite();
+			combo.loadGraphic(Paths.image('ui/combo/num$i'));
+
+			combo.alpha = (preload) ? 0 : 1;
+			combo.zDepth = -Conductor.songPosition;
+			combo.antialiasing = SaveData.antialiasing;
+			combo.setGraphicSize(Std.int(combo.width * 0.5));
+			combo.updateHitbox();
+
+			combo.acceleration.y = FlxG.random.int(200, 300);
+			combo.velocity.x = FlxG.random.float(-5, 5);
+			combo.velocity.y -= FlxG.random.int(140, 160);
+
+			combo.screenCenter();
+			combo.x = (FlxG.width * 0.35) + (43 * funny) - 90;
+			combo.y += 80;
+
+			comboGroup.add(combo);
+
+			FlxTween.tween(combo, {alpha: 0}, 0.2, {
+				onComplete: function(tween:FlxTween)
+				{
+					combo.destroy();
+				},
+				startDelay: Conductor.crochet / 1000
+			});
+
+			funny++;
+		}
+
+		judgementGroup.sort(DepthSprite.depthSorting, FlxSort.DESCENDING);
+		comboGroup.sort(DepthSprite.depthSorting, FlxSort.DESCENDING);
 	}
 
 	function applyShader(shader:String)
@@ -780,14 +906,5 @@ class PlayTest extends MusicBeatState
 
 		if (shaderFilter != null)
 			FlxG.game.setFilters([shaderFilter]);
-	}
-
-	private function characterSing(char:Character, anim:String)
-	{
-		if (char == null)
-			return;
-
-		char.playAnim(anim, true);
-		char.holdTimer = 0;
 	}
 }

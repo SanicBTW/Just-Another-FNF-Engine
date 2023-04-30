@@ -42,7 +42,7 @@ class Main extends Sprite
 	public static var memoryCounter:MemoryCounter;
 	public static var volumeTray:VolumeTray;
 
-	public static var preview:Float = 7.7;
+	public static var preview:Float = 8;
 
 	public static function main()
 		Lib.current.addChild(new Main());

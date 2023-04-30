@@ -109,6 +109,8 @@ class VolumeTray extends Tray
 		field.wordWrap = true;
 		field.selectable = false;
 		field.embedFonts = true;
+		#if !html5
 		field.y = 2.5;
+		#end
 	}
 }
