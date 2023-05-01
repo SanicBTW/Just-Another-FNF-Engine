@@ -51,7 +51,7 @@ class DragDrop
 									{
 										ChartLoader.netInst = Sound.fromFile(filePath);
 										state = "Waiting voices";
-										waitTimer = new Timer(5, () ->
+										waitTimer = new Timer(3, () ->
 										{
 											state = "Listening";
 											ScriptableState.switchState(new PlayTest(null));

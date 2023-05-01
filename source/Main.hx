@@ -35,14 +35,11 @@ class Main extends Sprite
 	private var skipSplash:Bool = true;
 	private var startFullscreen:Bool = false;
 
-	public static var game:FlxGame;
-	private static var trays:Array<Tray> = [];
-
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
 	public static var volumeTray:VolumeTray;
 
-	public static var preview:Float = 8;
+	public static var preview:Float = 10;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -127,14 +124,12 @@ class Main extends Sprite
 			gameHeight = Math.ceil(stageHeight / zoom);
 		}
 
-		game = new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen);
-		addChild(game);
+		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, skipSplash, startFullscreen));
 		addChild(fpsCounter);
 		addChild(memoryCounter);
 		addChild(volumeTray);
-		addChild(new TopMessage("sex", INFO));
 
-		// FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
+		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 
 		FlxG.fixedTimestep = false;
 		#if !android
@@ -155,12 +150,6 @@ class Main extends Sprite
 			Cache.clearUnusedMemory();
 			Cache.runGC();
 		});
-
-		FlxG.sound.volumeHandler = (_) ->
-		{
-			if (volumeTray != null)
-				volumeTray.show();
-		}
 
 		FlxG.signals.gameResized.add((w, h) ->
 		{

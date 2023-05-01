@@ -4,14 +4,14 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Just Another FNF Engine" file="JAFE" main="Main" version="0.2.0" company="SanicBTW" 
+	<app title="Just Another FNF Engine" file="JAFE" main="Main" version="0.2.10" company="SanicBTW" 
 		packageName="com.sanicbtw.jafe" package="com.sanicbtw.jafe"/>
 	<app preloader="flixel.system.FlxPreloader" />
 	<set name="SWF_VERSION" value="11.8" />
 
 	<!-- ____________________________ Window Settings ___________________________ -->
 
-	<window width="1280" height="720" fps="" background="#000000" hardware="true" vsync="false" allow-shaders="true" require-shaders="true" antialiasing="4"/>
+	<window width="1280" height="720" fps="" background="#000000" hardware="true" vsync="false" allow-shaders="true" allow-high-dpi="true" require-shaders="true" antialiasing="4"/>
 	<window if="html5" resizable="true" />
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" />
 	<window if="mobile" orientation="landscape" fullscreen="true" width="1280" height="720" resizable="false" />
@@ -24,31 +24,35 @@
 	<source path="source" />
 	<assets path="assets" />
 
-	<library name="songs" preload="true"/>
-	<assets path="assets/songs" library="songs" exclude="*.mp3"/>
+	<library name="songs" preload="true" />
+	<assets path="assets/songs" library="songs" exclude="*.mp3" />
 
-	<library name="characters" preload="true"/>
-	<assets path="assets/characters" library="characters"/>
+	<library name="characters" preload="true" />
+	<assets path="assets/characters" library="characters" />
 
-	<library name="fonts" preload="true"/>
-	<assets path="assets/fonts" embed='true' library="fonts"/>
+	<library name="fonts" preload="true" />
+	<assets path="assets/fonts" embed='true' library="fonts" />
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
-	<haxelib name="hscript"	/>
-	<haxelib name="udprotean" />
+	<haxelib name="hscript" />
+
+	<undefine name="lime-openal" />
+	<haxelib name="linc_soloud" />
 
 	<haxelib name="discord_rpc" if="windows" />
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
-	<haxedef name="FLX_NO_GAMEPAD" />
+	<haxedef name="FLX_NO_DEBUG" unless="debug" />
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
-	<haxedef name="FLX_NO_DEBUG" unless="debug"/>
+	<haxedef name="FLX_NO_GAMEPAD" />
+	
+	<haxedef name="FLX_NO_SOUND_SYSTEM" />
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 
-	<haxedef name="HXCPP_GC_BIG_BLOCKS" if="windows"/>
+	<haxedef name="HXCPP_GC_BIG_BLOCKS" if="windows" />
 	<haxedef name="HXCPP_CHECK_POINTER" if="windows" />
 	<haxedef name="HXCPP_STACK_LINE" if="windows" />
 

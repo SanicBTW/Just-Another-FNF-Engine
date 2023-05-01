@@ -1,4 +1,4 @@
-package window_ui;
+package window.ui;
 
 import flixel.FlxG;
 import openfl.Lib;
@@ -54,6 +54,8 @@ class Tray extends Sprite
 	}
 
 	public function update(elapsed:Float) {}
+
+	public function destroy() {}
 
 	public function screenCenter()
 	{

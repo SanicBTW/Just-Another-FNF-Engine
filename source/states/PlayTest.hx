@@ -827,7 +827,7 @@ class PlayTest extends MusicBeatState
 			add(funkySprite);
 
 			// chaining be like
-			FlxTween.tween(funkySprite, {x: FlxG.width - funkySprite.width}, 1, {
+			FlxTween.tween(funkySprite, {x: FlxG.width - funkySprite.width}, 0.7, {
 				ease: FlxEase.quadInOut,
 				onComplete: (_) ->
 				{

@@ -1,24 +1,17 @@
-package window_ui;
+package window.debug;
 
 import flixel.FlxG;
 import flixel.math.FlxMath;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
-#if flash
-import openfl.Lib;
-import openfl.events.Event;
-#end
 
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
 class FramerateCounter extends TextField
 {
 	public var currentFPS(default, null):Float;
 
-	@:noCompletion private var frames:Int = 0;
-	@:noCompletion private var prevTime:Float = Date.now().getTime();
+	@:noCompletion private var cacheCount:Int;
+	@:noCompletion private var currentTime:Float;
+	@:noCompletion private var times:Array<Float>;
 
 	public function new(x:Float = 10, y:Float = 10)
 	{
@@ -32,6 +25,10 @@ class FramerateCounter extends TextField
 		mouseEnabled = false;
 		defaultTextFormat = new TextFormat("_sans", 12, 0xFFFFFF);
 		text = "FPS: ";
+
+		cacheCount = 0;
+		currentTime = 0;
+		times = [];
 	}
 
 	@:noCompletion
@@ -40,22 +37,24 @@ class FramerateCounter extends TextField
 		if (!visible)
 			return;
 
-		frames++;
+		currentTime += deltaTime;
+		times.push(currentTime);
 
-		var prevTime:Float = this.prevTime;
-		var time:Float = Date.now().getTime();
-
-		if (time > prevTime + 1000)
+		while (times[0] < currentTime - 1000)
 		{
-			currentFPS = FlxMath.roundDecimal((frames * 1000) / (time - prevTime), 2);
-			text = 'FPS: $currentFPS';
-			this.prevTime = time;
-			frames = 0;
+			times.shift();
 		}
+
+		currentFPS = FlxMath.roundDecimal((times.length + cacheCount) / 2, 2);
+
+		if (times.length != cacheCount)
+			text = 'FPS: $currentFPS';
 
 		if (currentFPS < FlxG.updateFramerate / 2)
 			textColor = 0xFFFF0000;
 		else
 			textColor = 0xFFFFFFFF;
+
+		cacheCount = times.length;
 	}
 }

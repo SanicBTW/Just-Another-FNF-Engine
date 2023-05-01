@@ -1,4 +1,4 @@
-package window_ui;
+package window.ui;
 
 import flixel.FlxG;
 import flixel.math.FlxMath;

@@ -1,4 +1,4 @@
-package base.pocketbase;
+package network;
 
 class MultiCallback
 {
