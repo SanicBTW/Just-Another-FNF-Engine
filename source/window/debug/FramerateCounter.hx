@@ -32,7 +32,7 @@ class FramerateCounter extends TextField
 	}
 
 	@:noCompletion
-	private override function __enterFrame(_):Void
+	private override function __enterFrame(deltaTime:Float):Void
 	{
 		if (!visible)
 			return;

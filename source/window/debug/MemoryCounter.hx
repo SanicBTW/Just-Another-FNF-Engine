@@ -1,15 +1,8 @@
-package window_ui;
+package window.debug;
 
 import openfl.text.TextField;
 import openfl.text.TextFormat;
-#if flash
-import openfl.Lib;
-#end
 
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
 class MemoryCounter extends TextField
 {
 	private static final intervalArray:Array<String> = ['B', 'KB', 'MB', 'GB'];
@@ -28,17 +21,10 @@ class MemoryCounter extends TextField
 		mouseEnabled = false;
 		defaultTextFormat = new TextFormat("_sans", 12, 0xFFFFFF);
 		text = "";
-
-		#if flash
-		addEventListener(Event.ENTER_FRAME, function(e)
-		{
-			__enterFrame(Lib.getTimer() - currentTime);
-		});
-		#end
 	}
 
 	@:noCompletion
-	private #if !flash override #end function __enterFrame(_):Void
+	private override function __enterFrame(_):Void
 	{
 		if (!visible)
 			return;

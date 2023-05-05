@@ -24,12 +24,6 @@
 	<source path="source" />
 	<assets path="assets" />
 
-	<library name="songs" preload="true" />
-	<assets path="assets/songs" library="songs" exclude="*.mp3" />
-
-	<library name="characters" preload="true" />
-	<assets path="assets/characters" library="characters" />
-
 	<library name="fonts" preload="true" />
 	<assets path="assets/fonts" embed='true' library="fonts" />
 
@@ -38,8 +32,8 @@
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
 
-	<undefine name="lime-openal" />
-	<haxelib name="linc_soloud" />
+	<undefine name="lime-openal" unless="html5" />
+	<haxelib name="linc_soloud" unless="html5" />
 
 	<haxelib name="discord_rpc" if="windows" />
 
