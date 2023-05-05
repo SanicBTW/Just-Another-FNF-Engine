@@ -5,6 +5,7 @@ import network.Request;
 import network.pocketbase.Collection;
 import network.pocketbase.Record;
 import openfl.media.Sound;
+import soloud.WavStream;
 
 class State extends FlxState
 {
@@ -12,12 +13,16 @@ class State extends FlxState
 	{
 		new Request<Collection<FunkinRecord>>("https://pb.sancopublic.com/api/collections/funkin/records/", (shit) ->
 		{
-			trace(shit.items[0]);
+			trace(shit);
 		});
-		new Request<Sound>("https://pb.sancopublic.com/api/files/9id75c79c70m6yq/g68gjclnsjb60ev/inst_l65pmWJN9z.ogg", (sound) ->
+		#if lime_openal
+		new Request<Sound>("https://pb.sancopublic.com/api/files/9id75c79c70m6yq/g68gjclnsjb60ev/inst_l65pmWJN9z.ogg", (shitsound) ->
 		{
-			sound.play();
+			shitsound.play(0, 50);
 		}, true);
+		#else
+		new Request<WavStream>("https://pb.sancopublic.com/api/files/9id75c79c70m6yq/g68gjclnsjb60ev/inst_l65pmWJN9z.ogg", null, true);
+		#end
 		super.create();
 	}
 }

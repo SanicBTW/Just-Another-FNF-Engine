@@ -6,6 +6,7 @@ import flixel.system.scaleModes.*;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
+import soloud.Soloud;
 import window.debug.*;
 
 class Main extends Sprite
@@ -19,12 +20,16 @@ class Main extends Sprite
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
 
+	@:unreflective public static var soloud:Soloud;
+
 	public static function main()
 		Lib.current.addChild(new Main());
 
 	public function new()
 	{
 		super();
+
+		soloud = Soloud.create();
 
 		if (stage != null)
 			init();
@@ -37,6 +42,7 @@ class Main extends Sprite
 		if (hasEventListener(Event.ADDED_TO_STAGE))
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 
+		soloud.init();
 		setupGame();
 	}
 
@@ -59,6 +65,7 @@ class Main extends Sprite
 		Lib.current.stage.align = TOP_LEFT;
 		Lib.current.stage.scaleMode = openfl.display.StageScaleMode.NO_SCALE;
 
+		FlxG.save.close();
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
