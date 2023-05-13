@@ -1,25 +1,9 @@
 package network;
 
-import backend.Random;
 import haxe.Exception;
-#if (!lime_openal || sys)
-import haxe.io.Bytes;
-import haxe.io.Path;
-import lime.system.System;
-import soloud.WavStream;
-import sys.FileSystem;
-import sys.io.File;
-#end
-#if (lime_openal || js)
-import openfl.events.Event;
-import openfl.media.Sound;
-import openfl.net.URLRequest;
-#end
-#if js
-import js.html.XMLHttpRequest;
-#else
 import haxe.Http;
-#end
+import haxe.io.Bytes;
+import openfl.media.Sound;
 
 class Request<T>
 {
@@ -34,17 +18,7 @@ class Request<T>
 				callback(cast sound);
 			});
 			#else
-			// OpenAL support
-			#if lime_openal
 			// Look for another way of loading sounds on native
-			var sound:Sound = new Sound(new URLRequest(url));
-			sound.addEventListener(Event.COMPLETE, (_) ->
-			{
-				callback(cast sound);
-			});
-			#else
-			// Soloud support
-			var sound:WavStream = WavStream.create();
 			var req:Http = new Http(url);
 			req.onError = (error:String) ->
 			{
@@ -52,28 +26,15 @@ class Request<T>
 			}
 			req.onBytes = (bytes:Bytes) ->
 			{
-				var path:String = Path.join([
-					System.applicationStorageDirectory,
-					"temp",
-					Random.uniqueId() + '.${Path.extension(url)}'
-				]);
-				if (!FileSystem.exists(Path.directory(path)))
-					FileSystem.createDirectory(Path.directory(path));
-
-				File.saveBytes(path, bytes);
-				sound.load(path);
-				sound.setLooping(true);
-				Main.soloud.play(sound);
+				var sound:Sound = new Sound();
+				sound.loadCompressedDataFromByteArray(bytes, bytes.length);
+				callback(cast sound);
 			}
 			req.request();
-			#end
 			#end
 		}
 		else
 		{
-			#if js
-			var shit:XMLHttpRequest;
-			#else
 			var req:Http = new Http(url);
 			req.onError = (error:String) ->
 			{
@@ -85,7 +46,6 @@ class Request<T>
 				callback(haxe.Json.parse(data));
 			}
 			req.request();
-			#end
 		}
 	}
 }

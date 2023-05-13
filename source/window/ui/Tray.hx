@@ -65,4 +65,7 @@ class Tray extends Sprite
 		scaleY = _defaultScale;
 		x = (0.5 * (Lib.current.stage.stageWidth - (Math.isNaN(rWidth) ? width : rWidth) * _defaultScale));
 	}
+
+	public inline function boundTo(value:Float, min:Float, max:Float):Float
+		return Math.max(min, Math.min(max, value));
 }

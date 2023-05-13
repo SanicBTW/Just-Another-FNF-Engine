@@ -3,7 +3,6 @@ package window.ui;
 import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
-import funkin.CoolUtil;
 import openfl.Lib;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
@@ -69,7 +68,7 @@ class VolumeTray extends Tray
 
 	override public function update(elapsed:Float)
 	{
-		var lerpVal:Float = CoolUtil.boundTo(1 - (elapsed * 8.6), 0, 1);
+		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
 		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : volume), _volBar.scaleX, lerpVal);
