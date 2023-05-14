@@ -57,9 +57,6 @@ using flixel.util.FlxArrayUtil;
 #if html5
 import flixel.system.frontEnds.HTML5FrontEnd;
 #end
-#if (FLX_SOUND_SYSTEM && !lime_openal)
-import soloud.Soloud;
-#end
 
 /**
  * Global helper class for audio, input, the camera system, the debugger and other global properties.

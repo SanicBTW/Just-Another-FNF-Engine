@@ -22,10 +22,7 @@ class State extends FlxState
 		{
 			trace(shit);
 		});
-		new Request<Sound>("https://pb.sancopublic.com/api/files/9id75c79c70m6yq/g68gjclnsjb60ev/inst_l65pmWJN9z.ogg", (shitsound) ->
-		{
-			FlxG.sound.list.add(new FlxSound().loadEmbedded(shitsound, true).play());
-		}, true);
+
 		super.create();
 	}
 }

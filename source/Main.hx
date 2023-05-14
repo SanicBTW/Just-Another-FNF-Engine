@@ -1,10 +1,10 @@
 package;
 
-import backend.Random;
+import backend.Controls;
+import backend.Save;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.*;
-import lime.app.Application;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
@@ -39,6 +39,8 @@ class Main extends Sprite
 		if (hasEventListener(Event.ADDED_TO_STAGE))
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 
+		Save.Initialize();
+		Controls.Initialize();
 		setupGame();
 	}
 

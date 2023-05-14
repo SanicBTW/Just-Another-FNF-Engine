@@ -17,3 +17,14 @@ class FunkinRecord extends Record
 	var inst:String;
 	var voices:Null<String>;
 }
+
+// Soon...
+class JVersionRecord extends Record
+{
+	var version:String;
+	var features:String;
+	var payload:String;
+	var mode:String;
+	var isLatest:Bool;
+	var isHotfix:Bool;
+}

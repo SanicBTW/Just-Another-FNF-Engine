@@ -23,6 +23,7 @@ Controls
      * and shit like that should be pretty easy
     */
 ```
+- make it use a custom variable to listen keypress through Reflect or casting state as the state type controls
 
 Paths
 - new library system (instead of having one single preloaded, separate the files between libraries and follow a file tree schema)
