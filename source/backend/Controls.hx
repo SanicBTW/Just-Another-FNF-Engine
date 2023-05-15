@@ -8,8 +8,7 @@ import openfl.ui.Keyboard;
 
 // Originally from FNF-Forever-Engine (My fork)
 // Slightly modified
-// Maps are hidden because most of the time I will access it will be through Reflect
-// Then why don't you set it as private, because I don't know if I will be able to access it through Reflect
+// Saving is gonna be hell, also somehow made the code look way worse bruh
 class Controls
 {
 	// Events
@@ -35,9 +34,11 @@ class Controls
 	// Which actions we are tracking
 	public static var targetActions:ActionType = UI;
 
+	// Which note actions we are tracking (amount of keys that will be listened on note actions)
+	public static var maniaTarget:ManiaSchema = K_4;
+
 	// System Actions
-	@:noCompletion
-	public static var systemActions:StringMap<Array<Null<Int>>> = [
+	private static var systemActions:StringMap<Array<Null<Int>>> = [
 		"confirm" => [Keyboard.ENTER],
 		"back" => [Keyboard.ESCAPE],
 		"reset" => [Keyboard.R],
@@ -45,31 +46,86 @@ class Controls
 
 	// Default System Actions
 	@:noCompletion
-	public static var default_systemActions:StringMap<Array<Null<Int>>> = systemActions.copy();
+	private static var default_systemActions:StringMap<Array<Null<Int>>> = systemActions.copy();
 
 	// UI Actions
-	@:noCompletion
-	public static var uiActions:StringMap<Array<Null<Int>>> = [
+	private static var uiActions:StringMap<Array<Null<Int>>> = [
 		"ui_left" => [Keyboard.LEFT, Keyboard.A],
 		"ui_down" => [Keyboard.DOWN, Keyboard.S],
 		"ui_up" => [Keyboard.UP, Keyboard.W],
 		"ui_right" => [Keyboard.RIGHT, Keyboard.D],
 	];
 
+	// Default UI Actions
 	@:noCompletion
-	public static var default_uiActions:StringMap<Array<Null<Int>>> = uiActions.copy();
+	private static var default_uiActions:StringMap<Array<Null<Int>>> = uiActions.copy();
 
 	// Note Actions
-	@:noCompletion
-	public static var noteActions:StringMap<Array<Null<Int>>> = [
-		"note_left" => [Keyboard.LEFT, Keyboard.A],
-		"note_down" => [Keyboard.DOWN, Keyboard.S],
-		"note_up" => [Keyboard.UP, Keyboard.W],
-		"note_right" => [Keyboard.RIGHT, Keyboard.D],
+	private static var noteActions:Map<ManiaSchema, StringMap<Array<Null<Int>>>> = [
+		K_1 => ["special" => [Keyboard.SPACE]],
+		K_2 => ["left" => [Keyboard.LEFT, Keyboard.A], "right" => [Keyboard.RIGHT, Keyboard.D]],
+		K_3 => [
+			"left" => [Keyboard.LEFT, Keyboard.A],
+			"special" => [Keyboard.SPACE],
+			"right" => [Keyboard.RIGHT, Keyboard.D]
+		],
+		K_4 => [
+			"left" => [Keyboard.LEFT, Keyboard.A],
+			"down" => [Keyboard.DOWN, Keyboard.S],
+			"up" => [Keyboard.UP, Keyboard.W],
+			"right" => [Keyboard.RIGHT, Keyboard.D],
+		],
+		K_5 => [
+			"left" => [Keyboard.LEFT, Keyboard.A],
+			"down" => [Keyboard.DOWN, Keyboard.S],
+			"special" => [Keyboard.SPACE],
+			"up" => [Keyboard.UP, Keyboard.W],
+			"right" => [Keyboard.RIGHT, Keyboard.D],
+		],
+		// because forced alts might be weird ngl (dont know what to set lol)
+		K_6 => [
+			"left1" => [Keyboard.S],
+			"down" => [Keyboard.D],
+			"right1" => [Keyboard.F],
+			"left2" => [Keyboard.J],
+			"up" => [Keyboard.K],
+			"right2" => [Keyboard.L],
+		],
+		K_7 => [
+			"left1" => [Keyboard.S],
+			"down" => [Keyboard.D],
+			"right1" => [Keyboard.F],
+			"special" => [Keyboard.SPACE],
+			"left2" => [Keyboard.J],
+			"up" => [Keyboard.K],
+			"right2" => [Keyboard.L],
+		],
+		K_8 => [
+			"left1" => [Keyboard.A],
+			"down1" => [Keyboard.S],
+			"up1" => [Keyboard.D],
+			"right1" => [Keyboard.F],
+			"left2" => [Keyboard.H],
+			"down2" => [Keyboard.J],
+			"up2" => [Keyboard.K],
+			"right2" => [Keyboard.L],
+		],
+		K_9 => [
+			"left1" => [Keyboard.A],
+			"down1" => [Keyboard.S],
+			"up1" => [Keyboard.D],
+			"right1" => [Keyboard.F],
+			"special" => [Keyboard.SPACE],
+			"left2" => [Keyboard.H],
+			"down2" => [Keyboard.J],
+			"up2" => [Keyboard.K],
+			"right2" => [Keyboard.L],
+		],
 	];
 
+	// Default Note Actions
 	@:noCompletion
-	public static var default_noteActions:StringMap<Array<Null<Int>>> = noteActions.copy();
+	private static var default_noteActions:Map<ManiaSchema, StringMap<Array<Null<Int>>>> = noteActions.copy();
 
 	// Add the key listeners
 	public static function Initialize()
@@ -84,7 +140,11 @@ class Controls
 		if (!FlxG.keys.enabled && !(FlxG.state.active || FlxG.state.persistentUpdate))
 			return false;
 
-		var targetMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, targetActions);
+		var targetMap:StringMap<Array<Null<Int>>> = (targetActions == NOTES) ? noteActions.get(maniaTarget) : uiActions;
+
+		if (!targetMap.exists(action))
+			return false;
+
 		for (key in targetMap.get(action))
 		{
 			for (pKey in keysPressed)
@@ -93,14 +153,13 @@ class Controls
 					return true;
 			}
 		}
-
 		return false;
 	}
 
 	// TODO: See another way to get this done
 	public static function getActionFromKey(key:Int):Null<String>
 	{
-		var targetMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, targetActions);
+		var targetMap:StringMap<Array<Null<Int>>> = (targetActions == NOTES) ? noteActions.get(maniaTarget) : uiActions;
 
 		// Check the system actions
 		for (actionName => actionKeys in systemActions)
@@ -121,7 +180,6 @@ class Controls
 					return actionName;
 			}
 		}
-
 		return null;
 	}
 
@@ -132,7 +190,6 @@ class Controls
 			if (!keysPressed.contains(evt.keyCode))
 			{
 				keysPressed.push(evt.keyCode);
-
 				var pressedAction:Null<String> = getActionFromKey(evt.keyCode);
 				if (pressedAction != null)
 					onActionPressed.dispatch(pressedAction);
@@ -147,7 +204,6 @@ class Controls
 			if (keysPressed.contains(evt.keyCode))
 			{
 				keysPressed.remove(evt.keyCode);
-
 				var releasedAction:Null<String> = getActionFromKey(evt.keyCode);
 				if (releasedAction != null)
 					onActionReleased.dispatch(releasedAction);
@@ -161,4 +217,18 @@ enum abstract ActionType(String) to String
 {
 	var UI = "uiActions";
 	var NOTES = "noteActions";
+}
+
+// Kind of dumb actually but kinda useful
+enum abstract ManiaSchema(String) to String
+{
+	var K_1 = "K_1";
+	var K_2 = "K_2";
+	var K_3 = "K_3";
+	var K_4 = "K_4";
+	var K_5 = "K_5";
+	var K_6 = "K_6";
+	var K_7 = "K_7";
+	var K_8 = "K_8";
+	var K_9 = "K_9";
 }

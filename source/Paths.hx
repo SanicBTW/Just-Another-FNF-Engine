@@ -1,81 +1,108 @@
 package;
 
+import backend.Cache;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
+import haxe.Exception;
 import haxe.io.Path;
+import lime.app.Future;
 import openfl.Assets;
 import openfl.media.Sound;
+import openfl.utils.AssetLibrary;
+import openfl.utils.AssetType;
 
 using StringTools;
 
-// Make compatbile with StorageAccess
 class Paths
 {
-	private static var currentLevel:String;
+	private static var _library:Libraries = DEFAULT;
+	private static var _oldLibrary:Libraries = _library;
 
-	public static function setCurrentLevel(name:String)
-		currentLevel = name.toLowerCase();
-
-	public static function getPath(file:String, ?library:Null<String> = null)
+	// Open a substate that indicates the loading state?
+	// If the new library is the default one, it will unload the previous one
+	public static function changeLibrary(newLibrary:Libraries)
 	{
-		if (library != null)
-			return getLibraryPath(file, library);
+		trace('Target library $newLibrary \nCurrent library $_library \nOld library $_oldLibrary');
+		if (_library == newLibrary)
+			return;
 
-		if (currentLevel != null)
+		if (Assets.hasLibrary(_oldLibrary) && _oldLibrary != DEFAULT)
 		{
-			var levelPath:String = "";
-			if (currentLevel != "shared")
-			{
-				levelPath = getLibraryPathForce(file, currentLevel);
-				if (Assets.exists(levelPath))
-					return levelPath;
-				else
-					trace('Asset at path $levelPath doesn\'t exist (PATHS - CURRENT LEVEL)');
-			}
-
-			levelPath = getLibraryPathForce(file, "");
-			if (Assets.exists(levelPath))
-				return levelPath;
-			else
-				trace('Asset at path $levelPath doesn\'t exist (PATHS - CURRENT LEVEL SHARED)');
+			trace('unloading $_oldLibrary');
+			Assets.unloadLibrary(_oldLibrary);
+			// Execute the same function again as it doesn't have the library loaded
+			changeLibrary(newLibrary);
 		}
 
-		return getPreloadPath(file);
+		if (!Assets.hasLibrary(newLibrary))
+		{
+			var loadLib:Future<AssetLibrary> = Assets.loadLibrary(newLibrary);
+			loadLib.onComplete((lib:AssetLibrary) ->
+			{
+				trace('Finished loading ${newLibrary}');
+				_oldLibrary = _library;
+				_library = newLibrary;
+			});
+			loadLib.onProgress((loaded:Int, total:Int) ->
+			{
+				trace('$loaded / $total');
+			});
+			loadLib.onError((err) ->
+			{
+				throw new Exception('Error while loading $newLibrary: $err');
+			});
+		}
 	}
 
-	public static inline function getLibraryPath(file:String, library:String = "default")
-		return (library == "default" ? getPreloadPath(file) : getLibraryPathForce(file, library));
+	public static function getPath(file:String, type:AssetType):String
+	{
+		var path:String = '$_library:assets/$_library/$file';
+		if (Assets.exists(path, type))
+			return path;
 
-	private static inline function getLibraryPathForce(file:String, library:String)
-		return '$library:assets/$library/$file';
+		// Returns the preload path
+		return '${Libraries.DEFAULT}:assets/funkin/$file';
+	}
 
-	public static inline function getPreloadPath(file:String)
-		return 'assets/$file';
+	public static function getLibraryFiles(?filter:String):Array<String>
+	{
+		if (!Assets.hasLibrary(_library))
+			changeLibrary(_library);
 
-	public static inline function file(file:String, ?library:String)
-		return getPath(file, library);
+		return Assets.getLibrary(_library).list(filter);
+	}
 
-	public static inline function sound(key:String, ?library:String):Sound
-		return Cache.getSound(getPath('sounds/$key.ogg', library));
+	public static inline function file(file:String, type:AssetType = TEXT)
+		return getPath(file, type);
+
+	public static inline function sound(key:String):Sound
+		return Cache.getSound(getPath('sounds/$key.ogg', SOUND));
 
 	public static inline function font(key:String)
 		return 'assets/fonts/$key';
 
-	public static inline function music(key:String, ?library:String):Sound
-		return Cache.getSound(getPath('music/$key.ogg', library));
+	public static inline function music(key:String):Sound
+		return Cache.getSound(getPath('music/$key.ogg', MUSIC));
 
-	public static inline function image(key:String, ?library:String):FlxGraphic
-		return Cache.getGraphic(getPath('images/$key.png', library));
+	public static inline function image(key:String):FlxGraphic
+		return Cache.getGraphic(getPath('images/$key.png', IMAGE));
 
 	public static inline function inst(song:String):Sound
-		return Cache.getSound(getPath('${formatString(song)}/Inst.ogg', "songs"));
+		return Cache.getSound(getPath('songs/${formatString(song)}/Inst.ogg', MUSIC));
 
 	public static inline function voices(song:String):Sound
-		return Cache.getSound(getPath('${formatString(song)}/Voices.ogg', "songs"));
+		return Cache.getSound(getPath('songs/${formatString(song)}/Voices.ogg', MUSIC));
 
-	public static inline function getSparrowAtlas(key:String, folder:String = "images", ?library:String)
-		return FlxAtlasFrames.fromSparrow(getPath(Path.join([folder, '$key.png']), library), getPath(Path.join([folder, '$key.xml']), library));
+	public static inline function getSparrowAtlas(key:String)
+		return FlxAtlasFrames.fromSparrow(image(key), file('images/$key.xml', TEXT));
 
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");
+}
+
+enum abstract Libraries(String) to String
+{
+	var DEFAULT = "funkin";
+	var FOF = "fof";
+	var SIXH = "6h";
 }

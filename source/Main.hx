@@ -1,5 +1,6 @@
 package;
 
+import backend.Cache;
 import backend.Controls;
 import backend.Save;
 import flixel.*;
@@ -16,7 +17,7 @@ class Main extends Sprite
 	private var gameHeight:Int = 720;
 	private var initialClass:Class<FlxState> = testing.State;
 	private var zoom:Float = -1;
-	private var framerate:Int = 60;
+	private var framerate:Int = 120;
 
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
@@ -42,6 +43,19 @@ class Main extends Sprite
 		Save.Initialize();
 		Controls.Initialize();
 		setupGame();
+
+		FlxG.signals.preStateCreate.add((state:FlxState) ->
+		{
+			Cache.clearStoredMemory();
+			FlxG.bitmap.dumpCache();
+			Cache.collect();
+		});
+
+		FlxG.signals.preStateSwitch.add(() ->
+		{
+			Cache.clearUnusedMemory();
+			Cache.collect();
+		});
 	}
 
 	private function setupGame()

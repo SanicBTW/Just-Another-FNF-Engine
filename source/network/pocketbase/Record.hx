@@ -1,7 +1,8 @@
 package network.pocketbase;
 
-// should get extended as this is the base record
-class Record
+// Had to transform everything into a typedef so it doesn't crash when I try to use it
+// Duplicate code now :pensive:
+typedef Record =
 {
 	var id:String;
 	var collectionId:String;
@@ -10,8 +11,14 @@ class Record
 	var updated:Null<String>;
 }
 
-class FunkinRecord extends Record
+typedef FunkinRecord =
 {
+	var id:String;
+	var collectionId:String;
+	var collectionName:String;
+	var created:String;
+	var updated:Null<String>;
+
 	var song:String;
 	var chart:String;
 	var inst:String;
@@ -19,8 +26,14 @@ class FunkinRecord extends Record
 }
 
 // Soon...
-class JVersionRecord extends Record
+typedef JVersionRecord =
 {
+	var id:String;
+	var collectionId:String;
+	var collectionName:String;
+	var created:String;
+	var updated:Null<String>;
+
 	var version:String;
 	var features:String;
 	var payload:String;

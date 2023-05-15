@@ -24,8 +24,8 @@
 	<source path="source" />
 	<assets path="assets" />
 
-	<library name="default" />
-	<assets path="assets/default" library="default" />
+	<library name="funkin" preload="true" />
+	<assets path="assets/funkin" library="funkin" />
 
 	<library name="6h" preload="false" />
 	<assets path="assets/6h" library="6h" />

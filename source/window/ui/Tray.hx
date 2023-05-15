@@ -60,7 +60,7 @@ class Tray extends Sprite
 	public function screenCenter()
 	{
 		// Reflect width
-		var rWidth:Float = Std.parseFloat(Reflect.getProperty(this, "_width"));
+		var rWidth:Float = Reflect.getProperty(this, "_width");
 		scaleX = _defaultScale;
 		scaleY = _defaultScale;
 		x = (0.5 * (Lib.current.stage.stageWidth - (Math.isNaN(rWidth) ? width : rWidth) * _defaultScale));
