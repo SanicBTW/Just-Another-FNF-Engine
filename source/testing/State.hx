@@ -37,36 +37,37 @@ class State extends MusicBeatState
 
 	override public function create()
 	{
-		ChartLoader.loadChart("triple-trouble", 2);
-		Conductor.SONG.mania = 5;
-		Controls.targetActions = NOTES;
-		Controls.maniaTarget = cast 'K_${Conductor.SONG.mania}';
-
-		@:privateAccess
-		for (action in Controls.noteActions.get(Controls.maniaTarget).keys())
+		Paths.changeLibrary(FOF, () ->
 		{
-			actionList.push(action);
-		}
+			ChartLoader.loadChart("fight-or-flight", 2);
+			Controls.targetActions = NOTES;
 
-		strumLines = new FlxTypedGroup<StrumLine>();
+			@:privateAccess
+			for (action in Controls.noteActions.keys())
+			{
+				actionList.push(action);
+			}
 
-		var separation:Float = FlxG.width / 4;
+			strumLines = new FlxTypedGroup<StrumLine>();
 
-		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 5);
-		opponentStrums.botPlay = true;
-		opponentStrums.visible = false;
-		opponentStrums.onBotHit.add(botHit);
-		strumLines.add(opponentStrums);
+			var separation:Float = FlxG.width / 4;
 
-		playerStrums = new StrumLine((FlxG.width / 2), 5);
-		playerStrums.onMiss.add(noteMiss);
-		strumLines.add(playerStrums);
+			opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
+			opponentStrums.botPlay = true;
+			opponentStrums.visible = false;
+			opponentStrums.onBotHit.add(botHit);
+			strumLines.add(opponentStrums);
 
-		add(strumLines);
+			playerStrums = new StrumLine((FlxG.width / 2), 4);
+			playerStrums.onMiss.add(noteMiss);
+			strumLines.add(playerStrums);
+
+			add(strumLines);
+
+			Conductor.boundInst.play();
+		});
 
 		super.create();
-
-		Conductor.boundInst.play();
 	}
 
 	override function update(elapsed:Float)
@@ -90,6 +91,8 @@ class State extends MusicBeatState
 		}
 
 		super.update(elapsed);
+
+		holdNotes();
 	}
 
 	override private function onActionPressed(action:String)
@@ -178,6 +181,9 @@ class State extends MusicBeatState
 
 	private function holdNotes()
 	{
+		if (playerStrums == null)
+			return;
+
 		var holdArray:Array<Bool> = parseKeys();
 
 		if (!playerStrums.botPlay)

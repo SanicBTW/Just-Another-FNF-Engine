@@ -8,7 +8,6 @@ import openfl.ui.Keyboard;
 
 // Originally from FNF-Forever-Engine (My fork)
 // Slightly modified
-// Saving is gonna be hell, also somehow made the code look way worse bruh
 class Controls
 {
 	// Events
@@ -34,9 +33,6 @@ class Controls
 	// Which actions we are tracking
 	public static var targetActions:ActionType = UI;
 
-	// Which note actions we are tracking (amount of keys that will be listened on note actions)
-	public static var maniaTarget:ManiaSchema = K_4;
-
 	// System Actions
 	private static var systemActions:StringMap<Array<Null<Int>>> = [
 		"confirm" => [Keyboard.ENTER],
@@ -61,71 +57,16 @@ class Controls
 	private static var default_uiActions:StringMap<Array<Null<Int>>> = uiActions.copy();
 
 	// Note Actions
-	private static var noteActions:Map<ManiaSchema, StringMap<Array<Null<Int>>>> = [
-		K_1 => ["special" => [Keyboard.SPACE]],
-		K_2 => ["left" => [Keyboard.LEFT, Keyboard.A], "right" => [Keyboard.RIGHT, Keyboard.D]],
-		K_3 => [
-			"left" => [Keyboard.LEFT, Keyboard.A],
-			"special" => [Keyboard.SPACE],
-			"right" => [Keyboard.RIGHT, Keyboard.D]
-		],
-		K_4 => [
-			"left" => [Keyboard.LEFT, Keyboard.A],
-			"down" => [Keyboard.DOWN, Keyboard.S],
-			"up" => [Keyboard.UP, Keyboard.W],
-			"right" => [Keyboard.RIGHT, Keyboard.D],
-		],
-		K_5 => [
-			"left" => [Keyboard.LEFT, Keyboard.A],
-			"down" => [Keyboard.DOWN, Keyboard.S],
-			"special" => [Keyboard.SPACE],
-			"up" => [Keyboard.UP, Keyboard.W],
-			"right" => [Keyboard.RIGHT, Keyboard.D],
-		],
-		// because forced alts might be weird ngl (dont know what to set lol)
-		K_6 => [
-			"left1" => [Keyboard.S],
-			"down" => [Keyboard.D],
-			"right1" => [Keyboard.F],
-			"left2" => [Keyboard.J],
-			"up" => [Keyboard.K],
-			"right2" => [Keyboard.L],
-		],
-		K_7 => [
-			"left1" => [Keyboard.S],
-			"down" => [Keyboard.D],
-			"right1" => [Keyboard.F],
-			"special" => [Keyboard.SPACE],
-			"left2" => [Keyboard.J],
-			"up" => [Keyboard.K],
-			"right2" => [Keyboard.L],
-		],
-		K_8 => [
-			"left1" => [Keyboard.A],
-			"down1" => [Keyboard.S],
-			"up1" => [Keyboard.D],
-			"right1" => [Keyboard.F],
-			"left2" => [Keyboard.H],
-			"down2" => [Keyboard.J],
-			"up2" => [Keyboard.K],
-			"right2" => [Keyboard.L],
-		],
-		K_9 => [
-			"left1" => [Keyboard.A],
-			"down1" => [Keyboard.S],
-			"up1" => [Keyboard.D],
-			"right1" => [Keyboard.F],
-			"special" => [Keyboard.SPACE],
-			"left2" => [Keyboard.H],
-			"down2" => [Keyboard.J],
-			"up2" => [Keyboard.K],
-			"right2" => [Keyboard.L],
-		],
+	private static var noteActions:StringMap<Array<Null<Int>>> = [
+		"note_left" => [Keyboard.LEFT, Keyboard.A],
+		"note_down" => [Keyboard.DOWN, Keyboard.S],
+		"note_up" => [Keyboard.UP, Keyboard.W],
+		"note_right" => [Keyboard.RIGHT, Keyboard.D],
 	];
 
 	// Default Note Actions
 	@:noCompletion
-	private static var default_noteActions:Map<ManiaSchema, StringMap<Array<Null<Int>>>> = noteActions.copy();
+	private static var default_noteActions:StringMap<Array<Null<Int>>> = noteActions.copy();
 
 	// Add the key listeners
 	public static function Initialize()
@@ -140,7 +81,7 @@ class Controls
 		if (!FlxG.keys.enabled && !(FlxG.state.active || FlxG.state.persistentUpdate))
 			return false;
 
-		var targetMap:StringMap<Array<Null<Int>>> = (targetActions == NOTES) ? noteActions.get(maniaTarget) : uiActions;
+		var targetMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, targetActions);
 
 		if (!targetMap.exists(action))
 			return false;
@@ -159,7 +100,7 @@ class Controls
 	// TODO: See another way to get this done
 	public static function getActionFromKey(key:Int):Null<String>
 	{
-		var targetMap:StringMap<Array<Null<Int>>> = (targetActions == NOTES) ? noteActions.get(maniaTarget) : uiActions;
+		var targetMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, targetActions);
 
 		// Check the system actions
 		for (actionName => actionKeys in systemActions)
@@ -217,18 +158,4 @@ enum abstract ActionType(String) to String
 {
 	var UI = "uiActions";
 	var NOTES = "noteActions";
-}
-
-// Kind of dumb actually but kinda useful
-enum abstract ManiaSchema(String) to String
-{
-	var K_1 = "K_1";
-	var K_2 = "K_2";
-	var K_3 = "K_3";
-	var K_4 = "K_4";
-	var K_5 = "K_5";
-	var K_6 = "K_6";
-	var K_7 = "K_7";
-	var K_8 = "K_8";
-	var K_9 = "K_9";
 }

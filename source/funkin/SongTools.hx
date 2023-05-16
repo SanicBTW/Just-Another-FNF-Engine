@@ -24,7 +24,6 @@ typedef SongData =
 	var bpm:Float;
 	var needsVoices:Bool;
 	var speed:Float;
-	var mania:Null<Int>;
 	var player1:String;
 	var player2:String;
 	var player3:String;
@@ -38,9 +37,6 @@ class SongTools
 {
 	public static function onLoadJson(songJson:SongData)
 	{
-		if (songJson.mania == null)
-			songJson.mania = 4;
-
 		if (songJson.gfVersion == null)
 		{
 			songJson.gfVersion = songJson.player3;

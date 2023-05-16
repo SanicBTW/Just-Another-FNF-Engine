@@ -10,8 +10,10 @@ import openfl.media.Sound;
 // The same old conductor lol
 class Conductor
 {
-	// Time
+	// Time and speed
 	public static var songPosition:Float = 0;
+	public static var songSpeed:Float = 2;
+	public static var songRate:Float = 0.45;
 
 	// Steps and beats
 	public static var stepPosition:Int = 0;
@@ -116,6 +118,9 @@ class Conductor
 
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
+
+		if (SONG != null)
+			songSpeed = songRate * SONG.speed;
 	}
 
 	public static function resyncTime()

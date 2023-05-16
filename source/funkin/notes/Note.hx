@@ -6,7 +6,6 @@ import flixel.FlxSprite;
 class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;
-	public static var noteScale:Float = 0.7;
 
 	public var strumTime:Float;
 	public var noteData:Int = 0;
@@ -62,21 +61,22 @@ class Note extends FlxSprite
 		if (prevNote == null)
 			prevNote = this;
 
+		this.strumTime = strumTime;
+		this.noteData = noteData;
+		this.strumLine = strumLine;
+
 		this.prevNote = prevNote;
 		this.isSustain = isSustain;
-		this.noteData = noteData;
-		this.strumTime = strumTime;
-		this.strumLine = strumLine;
 
 		y -= 2000;
 
 		if (noteData > -1)
 		{
 			texture = '';
-			x += swagWidth * (noteData % Conductor.SONG.mania);
+			x += swagWidth * noteData;
 
 			if (!isSustain)
-				animation.play('${Receptor.getNoteColorFromNum(noteData % Conductor.SONG.mania)}Scroll');
+				animation.play('${Receptor.getColorFromNum(noteData)}Scroll');
 		}
 
 		if (isSustain && prevNote != null)
@@ -84,17 +84,17 @@ class Note extends FlxSprite
 			alpha = 0.6;
 			offsetX += width / 2;
 
-			animation.play('${Receptor.getNoteColorFromNum(noteData % Conductor.SONG.mania)}holdend');
+			animation.play('${Receptor.getColorFromNum(noteData)}holdend');
 			updateHitbox();
 
 			offsetX -= width / 2;
 
 			if (prevNote.isSustain)
 			{
-				prevNote.animation.play('${Receptor.getNoteColorFromNum(noteData % Conductor.SONG.mania)}hold');
+				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
 				prevNote.updateHitbox();
 
-				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * (1.055 / noteScale)) * Conductor.SONG.speed;
+				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * (1.055 / 0.7)) * (Conductor.songSpeed / Conductor.songRate);
 				prevNote.updateHitbox();
 			}
 		}
@@ -144,7 +144,7 @@ class Note extends FlxSprite
 
 	private function loadNoteAnims()
 	{
-		var color:String = Receptor.getNoteColorFromNum(noteData);
+		var color:String = Receptor.getColorFromNum(noteData);
 		animation.addByPrefix('${color}Scroll', '${color}0');
 
 		if (isSustain)
@@ -153,7 +153,7 @@ class Note extends FlxSprite
 			animation.addByPrefix('${color}holdend', '$color hold end');
 		}
 
-		setGraphicSize(Std.int(width * noteScale));
+		setGraphicSize(Std.int(width * 0.7));
 		updateHitbox();
 	}
 

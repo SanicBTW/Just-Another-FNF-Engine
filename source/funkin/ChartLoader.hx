@@ -44,10 +44,10 @@ class ChartLoader
 				{
 					default:
 						var strumTime:Float = songNotes[0];
-						var noteData:Int = Std.int(songNotes[1] % swagSong.mania);
+						var noteData:Int = Std.int(songNotes[1] % 4);
 						var hitNote:Bool = section.mustHitSection;
 
-						if (songNotes[1] > swagSong.mania - 1)
+						if (songNotes[1] > 3)
 							hitNote = !section.mustHitSection;
 
 						var strumLine:Int = (hitNote ? 1 : 0);
@@ -67,13 +67,11 @@ class ChartLoader
 
 						if (holdLength > 0)
 						{
-							oldNote = unspawnedNotes[Std.int(unspawnedNotes.length - 1)];
-
 							var holdFloor:Int = Std.int(holdLength + 1);
 							for (i in 0...holdFloor)
 							{
-								var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * i) + (Conductor.stepCrochet / swagSong.speed), noteData,
-									strumLine, oldNote, true);
+								var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * (i + 1)), noteData, strumLine,
+									unspawnedNotes[Std.int(unspawnedNotes.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 								sustainNote.noteType = newNote.noteType;
 

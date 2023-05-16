@@ -4,7 +4,6 @@ import backend.Cache;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import haxe.Exception;
-import haxe.io.Path;
 import lime.app.Future;
 import openfl.Assets;
 import openfl.media.Sound;
@@ -20,7 +19,7 @@ class Paths
 
 	// Open a substate that indicates the loading state?
 	// If the new library is the default one, it will unload the previous one
-	public static function changeLibrary(newLibrary:Libraries)
+	public static function changeLibrary(newLibrary:Libraries, onFinish:Void->Void)
 	{
 		trace('Target library $newLibrary \nCurrent library $_library \nOld library $_oldLibrary');
 		if (_library == newLibrary)
@@ -31,7 +30,7 @@ class Paths
 			trace('unloading $_oldLibrary');
 			Assets.unloadLibrary(_oldLibrary);
 			// Execute the same function again as it doesn't have the library loaded
-			changeLibrary(newLibrary);
+			changeLibrary(newLibrary, onFinish);
 		}
 
 		if (!Assets.hasLibrary(newLibrary))
@@ -42,6 +41,7 @@ class Paths
 				trace('Finished loading ${newLibrary}');
 				_oldLibrary = _library;
 				_library = newLibrary;
+				onFinish();
 			});
 			loadLib.onProgress((loaded:Int, total:Int) ->
 			{
@@ -67,7 +67,7 @@ class Paths
 	public static function getLibraryFiles(?filter:String):Array<String>
 	{
 		if (!Assets.hasLibrary(_library))
-			changeLibrary(_library);
+			changeLibrary(_library, () -> {});
 
 		return Assets.getLibrary(_library).list(filter);
 	}

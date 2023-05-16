@@ -74,8 +74,6 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 	override public function update(elapsed:Float)
 	{
-		/*
-			var downscrollMultiplier:Int = (!SaveData.downScroll ? 1 : -1); */
 		var downscrollMultiplier:Int = 1;
 
 		allNotes.forEachAlive(function(strumNote:Note)
@@ -94,7 +92,7 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			var receptor:Receptor = receptors.members[Math.floor(strumNote.noteData)];
 			var receptorY:Float = receptor.y + (Note.swagWidth / 6);
 
-			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.SONG.speed));
+			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
 
 			strumNote.x = receptor.x
 				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * strumNote.offsetX)
