@@ -3,5 +3,6 @@
 - Removed default FlxSave
 - ~~Added soloud~~
 - FlxText actually reusing graphics
+- Automatically set scroll factor Y to 0 (for the Scale Mode) (Pending fix)
 
 # Flixel 4.11.0

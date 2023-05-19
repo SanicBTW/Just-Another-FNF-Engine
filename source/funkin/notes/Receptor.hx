@@ -29,8 +29,6 @@ class Receptor extends FlxSprite
 		loadAnimations();
 		updateHitbox();
 		antialiasing = true;
-
-		scrollFactor.y = 0;
 	}
 
 	override function update(elapsed:Float)

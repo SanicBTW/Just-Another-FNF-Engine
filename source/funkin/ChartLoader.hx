@@ -10,13 +10,13 @@ using StringTools;
 
 class ChartLoader
 {
-	public static var unspawnedNotes:Array<Note> = [];
+	public static var noteQueue:Array<Note> = [];
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
 
 	public static function loadChart(songName:String, difficulty:Int):SongData
 	{
-		unspawnedNotes = [];
+		noteQueue = [];
 		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
 
 		var swagSong:SongData = null;
@@ -55,33 +55,35 @@ class ChartLoader
 						var strumLine:Int = (hitNote ? 1 : 0);
 
 						var oldNote:Note = null;
-						if (unspawnedNotes.length > 0)
-							oldNote = unspawnedNotes[Std.int(unspawnedNotes.length - 1)];
+						if (noteQueue.length > 0)
+							oldNote = noteQueue[Std.int(noteQueue.length - 1)];
 
 						var newNote:Note = new Note(strumTime, noteData, strumLine, oldNote);
 						newNote.mustPress = hitNote;
-						newNote.sustainLength = songNotes[2];
+						newNote.sustainLength = Math.round(songNotes[2] / Conductor.stepCrochet) * Conductor.stepCrochet;
 						newNote.noteType = songNotes[3];
-						unspawnedNotes.push(newNote);
+						noteQueue.push(newNote);
 
 						var holdLength:Float = newNote.sustainLength;
 						holdLength = holdLength / Conductor.stepCrochet;
 
-						if (holdLength > 0)
+						if (Math.round(holdLength) > 0)
 						{
-							var holdFloor:Int = Std.int(holdLength + 1);
-							for (i in 0...holdFloor)
+							for (note in 0...Math.round(holdLength))
 							{
-								var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * (i + 1)), noteData, strumLine,
-									unspawnedNotes[Std.int(unspawnedNotes.length - 1)], true);
+								var time:Float = strumTime + (Conductor.stepCrochet * note) + Conductor.stepCrochet;
+
+								var sustainNote:Note = new Note(time, noteData, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 								sustainNote.noteType = newNote.noteType;
 
 								sustainNote.parent = newNote;
-								sustainNote.isSustainEnd = (i == holdFloor - 1);
-								newNote.children.push(sustainNote);
+								sustainNote.isSustainEnd = (note == Math.round(holdLength) - 1);
 
-								unspawnedNotes.push(sustainNote);
+								newNote.tail.push(sustainNote);
+								newNote.unhitTail.push(sustainNote);
+
+								noteQueue.push(sustainNote);
 							}
 						}
 
@@ -91,7 +93,7 @@ class ChartLoader
 			}
 		}
 
-		unspawnedNotes.sort(sortByShit);
+		noteQueue.sort(sortByShit);
 	}
 
 	private static function sortByShit(Obj1:Note, Obj2:Note):Int

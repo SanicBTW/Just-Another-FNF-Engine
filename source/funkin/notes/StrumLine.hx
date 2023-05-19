@@ -67,8 +67,19 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 		note.exists = false;
 
 		note.kill();
+
 		allNotes.remove(note, true);
 		(note.isSustain ? holdGroup.remove(note, true) : notesGroup.remove(note, true));
+
+		if (note.parent != null)
+		{
+			if (note.parent.tail.contains(note))
+				note.parent.tail.remove(note);
+
+			if (note.parent.unhitTail.contains(note))
+				note.parent.unhitTail.remove(note);
+		}
+
 		note.destroy();
 	}
 

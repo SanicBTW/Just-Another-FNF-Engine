@@ -7,30 +7,48 @@ class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;
 
+	// Vanilla
 	public var strumTime:Float;
 	public var noteData:Int = 0;
 	public var tooLate:Bool = false;
 	public var canBeHit:Bool = false;
 	public var wasGoodHit:Bool = false;
-	public var ignoreNote:Bool = false;
 	public var mustPress:Bool = false;
-
-	public var doubleNote:Bool = false;
-	public var strumLine:Int = 0;
-	public var prevNote:Note;
-
-	public var parent:Note = null;
-	public var children:Array<Note> = [];
 	public var isSustain:Bool = false;
 	public var isSustainEnd:Bool = false;
 	public var sustainLength:Float = 0;
+	public var prevNote:Note;
 
+	// Psych
+	public var ignoreNote:Bool = false;
+
+	// FE:R
+	public var strumLine:Int = 0;
+
+	// JAFE
+	public var doubleNote:Bool = false;
+
+	// Sustains (Andromeda:L - HOLDS V2)
+	public var parent:Note;
+	public var tail:Array<Note> = [];
+	public var unhitTail:Array<Note> = [];
+	public var tripTimer:Float = 1;
+	public var holdingTime:Float = 0;
+
+	// Andromeda:L
+	public var gcTime:Float = 200;
+	public var garbage:Bool = false;
+	public var hitbox:Float = 166;
+
+	// Psych
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
+	// Psych
 	public var noteType(default, set):String = null;
 	public var texture(default, set):String = null;
 
+	// FE:L
 	public var endHoldOffset:Float = Math.NEGATIVE_INFINITY;
 
 	@:noCompletion
@@ -49,6 +67,7 @@ class Note extends FlxSprite
 		if (noteData > -1 && noteType != value)
 		{
 			switch (value) {}
+			noteType = value;
 		}
 
 		return value;
@@ -94,7 +113,7 @@ class Note extends FlxSprite
 				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
 				prevNote.updateHitbox();
 
-				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * (1.055 / 0.7)) * (Conductor.songSpeed / Conductor.songRate);
+				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * 1.5) * (Conductor.songSpeed / Conductor.songRate);
 				prevNote.updateHitbox();
 			}
 		}
@@ -161,14 +180,24 @@ class Note extends FlxSprite
 	{
 		if (mustPress)
 		{
-			if (strumTime > Conductor.songPosition - Conductor.safeZoneOffset
-				&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * 0.5))
-				canBeHit = true;
-			else
-				canBeHit = false;
+			var diff:Float = Math.abs(strumTime - Conductor.songPosition);
 
-			if (strumTime < Conductor.songPosition - Conductor.safeZoneOffset && !wasGoodHit)
-				tooLate = true;
+			if (isSustain)
+			{
+				if (diff <= hitbox * .5)
+					canBeHit = true;
+				else
+					canBeHit = false;
+			}
+			else
+			{
+				if (diff <= hitbox)
+					canBeHit = true;
+				else
+					canBeHit = false;
+			}
+
+			tooLate = (diff < -Conductor.safeZoneOffset && !wasGoodHit);
 		}
 
 		if (tooLate || (parent != null && parent.tooLate))

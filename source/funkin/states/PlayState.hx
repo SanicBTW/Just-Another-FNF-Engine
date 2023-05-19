@@ -49,11 +49,10 @@ class PlayState extends MusicBeatState
 
 		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
 		opponentStrums.botPlay = true;
-		opponentStrums.visible = false;
 		opponentStrums.onBotHit.add(botHit);
 		strumLines.add(opponentStrums);
 
-		playerStrums = new StrumLine((FlxG.width / 2), 4);
+		playerStrums = new StrumLine((FlxG.width / 2) + separation, 4);
 		playerStrums.onMiss.add(noteMiss);
 		strumLines.add(playerStrums);
 
@@ -73,28 +72,28 @@ class PlayState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
-		while ((ChartLoader.unspawnedNotes[0] != null) && (ChartLoader.unspawnedNotes[0].strumTime - Conductor.songPosition) < 3500)
+		while ((ChartLoader.noteQueue[0] != null) && (ChartLoader.noteQueue[0].strumTime - Conductor.songPosition) < 3500)
 		{
-			var unspawnNote:Note = ChartLoader.unspawnedNotes[0];
-			if (unspawnNote != null)
+			var nextNote:Note = ChartLoader.noteQueue[0];
+			if (nextNote != null)
 			{
-				var strumLine:StrumLine = strumLines.members[unspawnNote.strumLine];
+				var strumLine:StrumLine = strumLines.members[nextNote.strumLine];
 				if (strumLine != null)
-					strumLine.push(unspawnNote);
+					strumLine.push(nextNote);
 				else
 				{
 					// If we cant push to the targeted strum line, then we push to the current one and mark the note as must press so it  can be pressed lol
-					unspawnNote.mustPress = true;
-					playerStrums.push(unspawnNote);
+					nextNote.mustPress = true;
+					playerStrums.push(nextNote);
 				}
 			}
-			ChartLoader.unspawnedNotes.splice(ChartLoader.unspawnedNotes.indexOf(unspawnNote), 1);
+			ChartLoader.noteQueue.splice(ChartLoader.noteQueue.indexOf(nextNote), 1);
 		}
 
 		conductorTracking.text = 'Steps: ${curStep}\nBeats: ${curBeat}\nBPM: ${Conductor.bpm}';
 		super.update(elapsed);
 
-		holdNotes();
+		holdNotes(elapsed);
 	}
 
 	override private function onActionPressed(action:String)
@@ -184,7 +183,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	private function holdNotes()
+	private function holdNotes(elapsed:Float)
 	{
 		if (playerStrums == null)
 			return;
@@ -195,6 +194,53 @@ class PlayState extends MusicBeatState
 		{
 			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
 			{
+				if (coolNote.holdingTime < coolNote.sustainLength)
+				{
+					if (!coolNote.tooLate && coolNote.wasGoodHit)
+					{
+						var isHeld:Bool = holdArray[coolNote.noteData];
+						var receptor:Receptor = playerStrums.receptors.members[coolNote.noteData];
+						if (isHeld && receptor.animation.curAnim.name != "confirm")
+							receptor.playAnim('confirm');
+
+						coolNote.holdingTime = Conductor.songPosition - coolNote.strumTime;
+
+						var regrabTime:Float = 0.2;
+
+						if (isHeld)
+							coolNote.tripTimer = 1;
+						else
+							coolNote.tripTimer -= elapsed / regrabTime;
+
+						if (coolNote.tripTimer <= 0)
+						{
+							coolNote.tripTimer = 0;
+							trace('Tripped on hold');
+							coolNote.tooLate = true;
+							coolNote.wasGoodHit = false;
+							for (tail in coolNote.tail)
+								if (!tail.wasGoodHit)
+									tail.tooLate = true;
+						}
+						else
+						{
+							for (tail in coolNote.unhitTail)
+							{
+								if (tail.strumTime <= Conductor.songPosition && !tail.wasGoodHit && !tail.tooLate)
+									noteHit(tail);
+							}
+
+							if (coolNote.holdingTime >= coolNote.sustainLength)
+							{
+								trace("finished sustain");
+								coolNote.holdingTime = coolNote.sustainLength;
+							}
+						}
+					}
+				}
+			});
+
+			/*
 				if (holdArray[coolNote.noteData])
 				{
 					if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
@@ -205,8 +251,7 @@ class PlayState extends MusicBeatState
 					{
 						noteHit(coolNote);
 					}
-				}
-			});
+			}*/
 		}
 	}
 
@@ -224,14 +269,16 @@ class PlayState extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
+			var diff = note.strumTime - Conductor.songPosition;
+			trace(diff);
+
 			note.wasGoodHit = true;
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
 
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
 
-			if (!note.isSustain)
-				playerStrums.destroyNote(note);
+			playerStrums.destroyNote(note);
 		}
 	}
 
