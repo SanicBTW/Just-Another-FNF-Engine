@@ -38,7 +38,7 @@ import openfl.utils.AssetType;
  * Extends FlxSprite to support rendering text. Can tint, fade, rotate and scale just like a sprite. Doesn't really animate
  * though. Also does nice pixel-perfect centering on pixel fonts as long as they are only one-liners.
  */
-class FlxTextB extends FlxSprite
+class FlxText extends FlxSprite
 {
 	/**
 	 * 2px gutter on both top and bottom
@@ -165,7 +165,7 @@ class FlxTextB extends FlxSprite
 	#end
 
 	// sanco custom drawing
-	var _drawBitmap:BitmapData;
+	var _bitmap:BitmapData;
 	var _zeroOffset:Point;
 
 	/**
@@ -252,7 +252,7 @@ class FlxTextB extends FlxSprite
 	{
 		regenGraphic();
 
-		var node:FlxNode = atlas.addNode(graphic.bitmap, graphic.key);
+		var node:FlxNode = atlas.addNode(_bitmap, graphic.key);
 		var result:Bool = (node != null);
 
 		if (node != null)
@@ -831,20 +831,21 @@ class FlxTextB extends FlxSprite
 		if (textField.textHeight == 0)
 			newHeight = oldHeight;
 
+		// Modified with custom drawing to reuse bitmaps and shit (better memory management)
 		if (oldWidth != newWidth || oldHeight != newHeight)
 		{
-			// Need to generate a new buffer to store the text graphic
+			height = newHeight;
 			var intWidth:Int = Std.int(newWidth);
 			var intHeight:Int = Std.int(newHeight);
 
-			// textb (text bitmap) | textg (text graphic)
-
-			_drawBitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, 'textb:${intWidth}x${intHeight}');
+			// Need to generate a new buffer to store the text graphic
+			// textb (text bitmap) | textg (text graphic) | textbp (text bitmap pixels)
+			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, 'textb:${intWidth}x${intHeight}');
 			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT, false), GRAPHIC, 'textg:${intWidth}x${intHeight}'));
 
-			_drawBitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
+			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			if (_hasBorderAlpha)
-				_borderPixels.fillRect(_flashRect, FlxColor.TRANSPARENT);
+				_borderPixels = _bitmap.clone();
 			frameHeight = Std.int(height);
 			textField.height = height * 1.2;
 			_flashRect.x = 0;
@@ -854,11 +855,12 @@ class FlxTextB extends FlxSprite
 		}
 		else // Else just clear the old buffer before redrawing the text
 		{
-			_drawBitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
+			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			if (_hasBorderAlpha)
 			{
 				if (_borderPixels == null)
-					_borderPixels = new BitmapData(frameWidth, frameHeight, true);
+					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP,
+						'textbp:${frameWidth}x${frameHeight}');
 				else
 					_borderPixels.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			}
@@ -875,8 +877,8 @@ class FlxTextB extends FlxSprite
 			applyBorderTransparency();
 			applyFormats(_formatAdjusted, false);
 
-			_drawBitmap.draw(textField, _matrix);
-			pixels.copyPixels(_drawBitmap, _flashRect, _zeroOffset);
+			drawTextFieldTo(_bitmap);
+			pixels.copyPixels(_bitmap, _flashRect, _zeroOffset);
 		}
 
 		_regen = false;
@@ -1035,7 +1037,7 @@ class FlxTextB extends FlxSprite
 
 		_borderColorTransform.alphaMultiplier = borderColor.alphaFloat;
 		_borderPixels.colorTransform(_borderPixels.rect, _borderColorTransform);
-		graphic.bitmap.draw(_borderPixels);
+		_bitmap.draw(_borderPixels);
 	}
 
 	/**
@@ -1043,7 +1045,7 @@ class FlxTextB extends FlxSprite
 	 */
 	inline function copyTextWithOffset(x:Float, y:Float)
 	{
-		var graphic:BitmapData = _hasBorderAlpha ? _borderPixels : graphic.bitmap;
+		var graphic:BitmapData = _hasBorderAlpha ? _borderPixels : _bitmap;
 		_matrix.translate(x, y);
 		drawTextFieldTo(graphic);
 	}
@@ -1104,6 +1106,7 @@ class FlxTextB extends FlxSprite
 		_regen = true;
 	}
 
+	@:noCompletion
 	override function set_frames(Frames:FlxFramesCollection):FlxFramesCollection
 	{
 		super.set_frames(Frames);
@@ -1140,6 +1143,7 @@ class FlxTextFormat
 		borderColor = BorderColor == null ? FlxColor.TRANSPARENT : BorderColor;
 	}
 
+	@:noCompletion
 	function set_leading(value:Int):Int
 	{
 		format.leading = value;

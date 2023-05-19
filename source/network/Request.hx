@@ -8,6 +8,9 @@ import haxe.io.Bytes;
 import lime.graphics.Image;
 import openfl.display.BitmapData;
 import openfl.media.Sound;
+#if native
+import openfl.display3D.textures.Texture;
+#end
 
 class Request<T>
 {

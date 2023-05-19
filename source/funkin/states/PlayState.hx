@@ -34,7 +34,7 @@ class PlayState extends MusicBeatState
 	public var playerStrums:StrumLine;
 	public var opponentStrums:StrumLine;
 
-	var actionList:Array<Action> = [];
+	var actionList:Array<Action> = [Action.NOTE_LEFT, Action.NOTE_DOWN, Action.NOTE_UP, Action.NOTE_RIGHT];
 
 	private var conductorTracking:FlxText;
 
@@ -42,12 +42,6 @@ class PlayState extends MusicBeatState
 	{
 		ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
 		Controls.targetActions = NOTES;
-
-		@:privateAccess
-		for (action in Controls.noteActions.keys())
-		{
-			actionList.push(action);
-		}
 
 		strumLines = new FlxTypedGroup<StrumLine>();
 
@@ -97,7 +91,7 @@ class PlayState extends MusicBeatState
 			ChartLoader.unspawnedNotes.splice(ChartLoader.unspawnedNotes.indexOf(unspawnNote), 1);
 		}
 
-		conductorTracking.text = 'Steps: ${curStep}\n Beats: ${curBeat}\nBPM: ${Conductor.bpm}';
+		conductorTracking.text = 'Steps: ${curStep}\nBeats: ${curBeat}\nBPM: ${Conductor.bpm}';
 		super.update(elapsed);
 
 		holdNotes();
