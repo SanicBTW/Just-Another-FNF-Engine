@@ -11,7 +11,8 @@ using StringTools;
 class ChartLoader
 {
 	public static var unspawnedNotes:Array<Note> = [];
-	public static var difficultyMap:Map<Int, Array<String>> = [0 => ['-easy'], 1 => [''], 2 => ['-hard']];
+	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
+	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
 
 	public static function loadChart(songName:String, difficulty:Int):SongData
 	{
@@ -21,7 +22,8 @@ class ChartLoader
 		var swagSong:SongData = null;
 
 		var formattedSongName:String = Paths.formatString(songName);
-		var rawChart:String = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${difficultyMap[difficulty][0]}.json', TEXT)).trim();
+
+		var rawChart:String = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
 		swagSong = SongTools.loadSong(rawChart);
 
 		Conductor.bindSong(swagSong, Paths.inst(songName), Paths.voices(songName));
@@ -34,7 +36,7 @@ class ChartLoader
 		return swagSong;
 	}
 
-	public static function parseNotes(swagSong:SongData)
+	private static function parseNotes(swagSong:SongData)
 	{
 		for (section in swagSong.notes)
 		{

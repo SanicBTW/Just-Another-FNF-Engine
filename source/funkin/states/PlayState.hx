@@ -1,4 +1,4 @@
-package testing;
+package funkin.states;
 
 import Paths.Libraries;
 import backend.Cache;
@@ -13,6 +13,7 @@ import flixel.graphics.FlxGraphic;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.system.FlxSound;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import funkin.ChartLoader;
 import funkin.notes.Note;
@@ -26,48 +27,54 @@ import network.pocketbase.Record;
 import openfl.display.BitmapData;
 import openfl.media.Sound;
 
-class State extends MusicBeatState
+class PlayState extends MusicBeatState
 {
 	private var strumLines:FlxTypedGroup<StrumLine>;
 
 	public var playerStrums:StrumLine;
 	public var opponentStrums:StrumLine;
 
-	var actionList:Array<String> = [];
+	var actionList:Array<Action> = [];
+
+	private var conductorTracking:FlxText;
 
 	override public function create()
 	{
-		Paths.changeLibrary(FOF, () ->
+		ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
+		Controls.targetActions = NOTES;
+
+		@:privateAccess
+		for (action in Controls.noteActions.keys())
 		{
-			ChartLoader.loadChart("fight-or-flight", 2);
-			Controls.targetActions = NOTES;
+			actionList.push(action);
+		}
 
-			@:privateAccess
-			for (action in Controls.noteActions.keys())
-			{
-				actionList.push(action);
-			}
+		strumLines = new FlxTypedGroup<StrumLine>();
 
-			strumLines = new FlxTypedGroup<StrumLine>();
+		var separation:Float = FlxG.width / 4;
 
-			var separation:Float = FlxG.width / 4;
+		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
+		opponentStrums.botPlay = true;
+		opponentStrums.visible = false;
+		opponentStrums.onBotHit.add(botHit);
+		strumLines.add(opponentStrums);
 
-			opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
-			opponentStrums.botPlay = true;
-			opponentStrums.visible = false;
-			opponentStrums.onBotHit.add(botHit);
-			strumLines.add(opponentStrums);
+		playerStrums = new StrumLine((FlxG.width / 2), 4);
+		playerStrums.onMiss.add(noteMiss);
+		strumLines.add(playerStrums);
 
-			playerStrums = new StrumLine((FlxG.width / 2), 4);
-			playerStrums.onMiss.add(noteMiss);
-			strumLines.add(playerStrums);
+		add(strumLines);
 
-			add(strumLines);
-
-			Conductor.boundInst.play();
-		});
+		conductorTracking = new FlxText(15, 15, 0, 'Steps: ?\n Beats: ?\nBPM: ${Conductor.bpm}', 24);
+		conductorTracking.setFormat(Paths.font('vcr.ttf'), 24);
+		add(conductorTracking);
 
 		super.create();
+
+		Conductor.boundInst.onComplete = () ->
+		{
+			InteractionState.switchState(new SongSelection());
+		}
 	}
 
 	override function update(elapsed:Float)
@@ -90,6 +97,7 @@ class State extends MusicBeatState
 			ChartLoader.unspawnedNotes.splice(ChartLoader.unspawnedNotes.indexOf(unspawnNote), 1);
 		}
 
+		conductorTracking.text = 'Steps: ${curStep}\n Beats: ${curBeat}\nBPM: ${Conductor.bpm}';
 		super.update(elapsed);
 
 		holdNotes();
@@ -100,8 +108,11 @@ class State extends MusicBeatState
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
 		{
-			case "confirm" | "back" | "reset":
+			case "back" | "reset":
 				return;
+
+			case "confirm":
+				Conductor.boundInst.play();
 
 			default:
 				for (receptor in playerStrums.receptors)

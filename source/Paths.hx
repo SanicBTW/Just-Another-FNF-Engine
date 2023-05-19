@@ -19,18 +19,17 @@ class Paths
 
 	// Open a substate that indicates the loading state?
 	// If the new library is the default one, it will unload the previous one
+	// Search for a better way to change library (crashes after a couple of changes)
 	public static function changeLibrary(newLibrary:Libraries, onFinish:Void->Void)
 	{
-		trace('Target library $newLibrary \nCurrent library $_library \nOld library $_oldLibrary');
+		trace('\nTarget library $newLibrary \nCurrent library $_library \nOld library $_oldLibrary');
 		if (_library == newLibrary)
-			return;
+			onFinish();
 
 		if (Assets.hasLibrary(_oldLibrary) && _oldLibrary != DEFAULT)
 		{
-			trace('unloading $_oldLibrary');
+			trace('Unloading $_oldLibrary');
 			Assets.unloadLibrary(_oldLibrary);
-			// Execute the same function again as it doesn't have the library loaded
-			changeLibrary(newLibrary, onFinish);
 		}
 
 		if (!Assets.hasLibrary(newLibrary))
@@ -45,7 +44,7 @@ class Paths
 			});
 			loadLib.onProgress((loaded:Int, total:Int) ->
 			{
-				trace('$loaded / $total');
+				trace('$loaded / $total (${loaded / total})');
 			});
 			loadLib.onError((err) ->
 			{

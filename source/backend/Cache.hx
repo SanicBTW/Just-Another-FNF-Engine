@@ -23,6 +23,7 @@ import java.vm.Gc;
 class Cache
 {
 	// Cached assets
+	private static var keyedBitmaps:Map<String, BitmapData> = [];
 	private static var keyedGraphics:Map<String, FlxGraphic> = [];
 	private static var keyedTextures:Map<String, Texture> = [];
 	private static var keyedSounds:Map<String, Sound> = [];
@@ -61,6 +62,24 @@ class Cache
 	}
 
 	// Them getters
+	public static function getBitmap(id:String):Null<BitmapData>
+	{
+		if (isCached(id, BITMAP))
+			return keyedBitmaps.get(id);
+
+		if (!exists(id))
+		{
+			trace('$id not found, returning null');
+			return null;
+		}
+
+		var bitmap:BitmapData = Assets.getBitmapData(id);
+		keyedBitmaps.set(id, bitmap);
+
+		// Return bitmap on first call
+		return bitmap;
+	}
+
 	public static function getGraphic(id:String):Null<FlxGraphic>
 	{
 		if (isCached(id, GRAPHIC))
@@ -72,15 +91,16 @@ class Cache
 			return null;
 		}
 
+		var bitmap:BitmapData = getBitmap(id);
 		var newGraphic:FlxGraphic;
 
 		if (gpuRender)
 		{
-			var texture:Texture = getTexture(id, Assets.getBitmapData(id));
+			var texture:Texture = getTexture(id, bitmap);
 			newGraphic = FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture), false, id);
 		}
 		else
-			newGraphic = FlxG.bitmap.add(id, false, id);
+			newGraphic = FlxGraphic.fromBitmapData(bitmap, false, id);
 
 		keyedGraphics.set(id, newGraphic);
 
@@ -96,6 +116,7 @@ class Cache
 		var texture:Texture = FlxG.stage.context3D.createTexture(bitmap.width, bitmap.height, BGRA, true, 0);
 		texture.uploadFromBitmapData(bitmap);
 		keyedTextures.set(id, texture);
+
 		bitmap.dispose();
 		bitmap.disposeImage();
 		bitmap = null;
@@ -123,13 +144,26 @@ class Cache
 	}
 
 	// Cleaning functions - Returns a bool indicating that it has been cleaned successfully
+	public static function removeBitmapData(id:String):Bool
+	{
+		var bitmap:Null<BitmapData> = keyedBitmaps.get(id);
+		if (bitmap != null)
+		{
+			Assets.cache.removeBitmapData(id);
+			bitmap.dispose();
+			bitmap = null;
+			keyedBitmaps.remove(id);
+			return true;
+		}
+		return false;
+	}
+
 	public static function removeGraphic(id:String):Bool
 	{
 		var graphic:Null<FlxGraphic> = keyedGraphics.get(id);
 		@:privateAccess
 		if (graphic != null)
 		{
-			Assets.cache.removeBitmapData(id);
 			FlxG.bitmap._cache.remove(id);
 			graphic.destroy();
 			keyedGraphics.remove(id);
@@ -200,6 +234,12 @@ class Cache
 			}
 		}
 
+		for (key in keyedBitmaps.keys())
+		{
+			if (!persistentAssets.contains(key))
+				removeBitmapData(key);
+		}
+
 		clearUnusedSounds();
 
 		collect();
@@ -266,6 +306,7 @@ class Cache
 
 enum abstract CacheMap(String) to String
 {
+	var BITMAP = "Bitmaps";
 	var GRAPHIC = "Graphics";
 	var TEXTURE = "Textures";
 	var SOUND = "Sounds";

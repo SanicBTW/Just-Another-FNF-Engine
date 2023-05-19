@@ -7,7 +7,6 @@ import haxe.Http;
 import haxe.io.Bytes;
 import lime.graphics.Image;
 import openfl.display.BitmapData;
-import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
 
 class Request<T>

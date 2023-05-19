@@ -2,7 +2,6 @@ package backend;
 
 import flixel.FlxG;
 import flixel.util.FlxSignal;
-import haxe.ds.StringMap;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
 
@@ -11,8 +10,8 @@ import openfl.ui.Keyboard;
 class Controls
 {
 	// Events
-	public static var onActionPressed:FlxTypedSignal<String->Void> = new FlxTypedSignal<String->Void>();
-	public static var onActionReleased:FlxTypedSignal<String->Void> = new FlxTypedSignal<String->Void>();
+	public static var onActionPressed:FlxTypedSignal<Action->Void> = new FlxTypedSignal<Action->Void>();
+	public static var onActionReleased:FlxTypedSignal<Action->Void> = new FlxTypedSignal<Action->Void>();
 
 	// Key codes obviously lol
 	private static final keyCodes:Map<Int, String> = [
@@ -31,42 +30,38 @@ class Controls
 	public static var keysPressed:Array<Int> = [];
 
 	// Which actions we are tracking
-	public static var targetActions:ActionType = UI;
+	public static var targetActions:ActionMap = UI;
 
 	// System Actions
-	private static var systemActions:StringMap<Array<Null<Int>>> = [
-		"confirm" => [Keyboard.ENTER],
-		"back" => [Keyboard.ESCAPE],
-		"reset" => [Keyboard.R],
-	];
+	private static var systemActions:Map<Action, Array<Null<Int>>> = [CONFIRM => [Keyboard.ENTER], BACK => [Keyboard.ESCAPE], RESET => [Keyboard.R],];
 
 	// Default System Actions
 	@:noCompletion
-	private static var default_systemActions:StringMap<Array<Null<Int>>> = systemActions.copy();
+	private static var default_systemActions:Map<Action, Array<Null<Int>>> = systemActions.copy();
 
 	// UI Actions
-	private static var uiActions:StringMap<Array<Null<Int>>> = [
-		"ui_left" => [Keyboard.LEFT, Keyboard.A],
-		"ui_down" => [Keyboard.DOWN, Keyboard.S],
-		"ui_up" => [Keyboard.UP, Keyboard.W],
-		"ui_right" => [Keyboard.RIGHT, Keyboard.D],
+	private static var uiActions:Map<Action, Array<Null<Int>>> = [
+		UI_LEFT => [Keyboard.LEFT, Keyboard.A],
+		UI_DOWN => [Keyboard.DOWN, Keyboard.S],
+		UI_UP => [Keyboard.UP, Keyboard.W],
+		UI_RIGHT => [Keyboard.RIGHT, Keyboard.D],
 	];
 
 	// Default UI Actions
 	@:noCompletion
-	private static var default_uiActions:StringMap<Array<Null<Int>>> = uiActions.copy();
+	private static var default_uiActions:Map<Action, Array<Null<Int>>> = uiActions.copy();
 
 	// Note Actions
-	private static var noteActions:StringMap<Array<Null<Int>>> = [
-		"note_left" => [Keyboard.LEFT, Keyboard.A],
-		"note_down" => [Keyboard.DOWN, Keyboard.S],
-		"note_up" => [Keyboard.UP, Keyboard.W],
-		"note_right" => [Keyboard.RIGHT, Keyboard.D],
+	private static var noteActions:Map<Action, Array<Null<Int>>> = [
+		NOTE_LEFT => [Keyboard.LEFT, Keyboard.A],
+		NOTE_DOWN => [Keyboard.DOWN, Keyboard.S],
+		NOTE_UP => [Keyboard.UP, Keyboard.W],
+		NOTE_RIGHT => [Keyboard.RIGHT, Keyboard.D],
 	];
 
 	// Default Note Actions
 	@:noCompletion
-	private static var default_noteActions:StringMap<Array<Null<Int>>> = noteActions.copy();
+	private static var default_noteActions:Map<Action, Array<Null<Int>>> = noteActions.copy();
 
 	// Add the key listeners
 	public static function Initialize()
@@ -76,12 +71,12 @@ class Controls
 	}
 
 	// Why would someone want to get if a system action is being pressed
-	public static function isActionPressed(action:String):Bool
+	public static function isActionPressed(action:Action):Bool
 	{
 		if (!FlxG.keys.enabled && !(FlxG.state.active || FlxG.state.persistentUpdate))
 			return false;
 
-		var targetMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, targetActions);
+		var targetMap:Map<Action, Array<Null<Int>>> = Reflect.field(Controls, targetActions);
 
 		if (!targetMap.exists(action))
 			return false;
@@ -98,9 +93,9 @@ class Controls
 	}
 
 	// TODO: See another way to get this done
-	public static function getActionFromKey(key:Int):Null<String>
+	public static function getActionFromKey(key:Int):Null<Action>
 	{
-		var targetMap:StringMap<Array<Null<Int>>> = Reflect.field(Controls, targetActions);
+		var targetMap:Map<Action, Array<Null<Int>>> = Reflect.field(Controls, targetActions);
 
 		// Check the system actions
 		for (actionName => actionKeys in systemActions)
@@ -131,7 +126,7 @@ class Controls
 			if (!keysPressed.contains(evt.keyCode))
 			{
 				keysPressed.push(evt.keyCode);
-				var pressedAction:Null<String> = getActionFromKey(evt.keyCode);
+				var pressedAction:Null<Action> = getActionFromKey(evt.keyCode);
 				if (pressedAction != null)
 					onActionPressed.dispatch(pressedAction);
 			}
@@ -145,7 +140,7 @@ class Controls
 			if (keysPressed.contains(evt.keyCode))
 			{
 				keysPressed.remove(evt.keyCode);
-				var releasedAction:Null<String> = getActionFromKey(evt.keyCode);
+				var releasedAction:Null<Action> = getActionFromKey(evt.keyCode);
 				if (releasedAction != null)
 					onActionReleased.dispatch(releasedAction);
 			}
@@ -154,8 +149,26 @@ class Controls
 }
 
 // I just couldn't find any other way sorry :pray:
-enum abstract ActionType(String) to String
+enum abstract ActionMap(String) to String
 {
 	var UI = "uiActions";
 	var NOTES = "noteActions";
+}
+
+enum abstract Action(String) to String
+{
+	// System
+	var CONFIRM = "confirm";
+	var BACK = "back";
+	var RESET = "reset";
+	// UI
+	var UI_LEFT = "ui_left";
+	var UI_DOWN = "ui_down";
+	var UI_UP = "ui_up";
+	var UI_RIGHT = "ui_right";
+	// Notes
+	var NOTE_LEFT = "note_left";
+	var NOTE_DOWN = "note_down";
+	var NOTE_UP = "note_up";
+	var NOTE_RIGHT = "note_right";
 }
