@@ -16,6 +16,7 @@ class ChartLoader
 
 	public static function loadChart(songName:String, difficulty:Int):SongData
 	{
+		Conductor.bpmChanges = [];
 		noteQueue = [];
 		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
 
@@ -38,8 +39,34 @@ class ChartLoader
 
 	private static function parseNotes(swagSong:SongData)
 	{
+		var curChange:BPMChangeEvent = {
+			stepTime: 0,
+			songTime: 0,
+			bpm: swagSong.bpm,
+			stepCrochet: Conductor.stepCrochet
+		};
+		var curBPM:Float = swagSong.bpm;
+		var totalSteps:Int = 0;
+		var totalPos:Float = 0;
 		for (section in swagSong.notes)
 		{
+			if (section.changeBPM && section.bpm != curBPM)
+			{
+				curBPM = section.bpm;
+				var bpmChange:BPMChangeEvent = {
+					stepTime: totalSteps,
+					songTime: totalPos,
+					bpm: curBPM,
+					stepCrochet: (Conductor.calculateCrochet(curBPM) / 4)
+				};
+				Conductor.bpmChanges.push(bpmChange);
+				curChange = bpmChange;
+			}
+
+			var deltaSteps:Int = (section.sectionBeats != null ? Math.round(section.sectionBeats) * 4 : section.lengthInSteps);
+			totalSteps += deltaSteps;
+			totalPos += (Conductor.calculateCrochet(curBPM) / 4) * deltaSteps;
+
 			for (songNotes in section.sectionNotes)
 			{
 				switch (songNotes[1])
@@ -60,18 +87,18 @@ class ChartLoader
 
 						var newNote:Note = new Note(strumTime, noteData, strumLine, oldNote);
 						newNote.mustPress = hitNote;
-						newNote.sustainLength = Math.round(songNotes[2] / Conductor.stepCrochet) * Conductor.stepCrochet;
+						newNote.sustainLength = Math.round(songNotes[2] / curChange.stepCrochet) * curChange.stepCrochet;
 						newNote.noteType = songNotes[3];
 						noteQueue.push(newNote);
 
 						var holdLength:Float = newNote.sustainLength;
-						holdLength = holdLength / Conductor.stepCrochet;
+						holdLength = holdLength / curChange.stepCrochet;
 
 						if (Math.round(holdLength) > 0)
 						{
 							for (note in 0...Math.round(holdLength))
 							{
-								var time:Float = strumTime + (Conductor.stepCrochet * note) + Conductor.stepCrochet;
+								var time:Float = strumTime + (curChange.stepCrochet * note) + curChange.stepCrochet;
 
 								var sustainNote:Note = new Note(time, noteData, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
 								sustainNote.mustPress = hitNote;

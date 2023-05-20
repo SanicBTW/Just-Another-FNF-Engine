@@ -45,7 +45,11 @@ class MusicBeatState extends InteractionState implements MusicHandler
 		super.destroy();
 	}
 
-	public function stepHit() {}
+	public function stepHit()
+	{
+		if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
+			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+	}
 
 	public function beatHit() {}
 }

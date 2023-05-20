@@ -194,53 +194,52 @@ class PlayState extends MusicBeatState
 		{
 			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
 			{
-				if (coolNote.holdingTime < coolNote.sustainLength)
-				{
-					if (!coolNote.tooLate && coolNote.wasGoodHit)
+				/*
+					var isHeld:Bool = holdArray[coolNote.noteData];
+					if (coolNote.canBeHit && coolNote.parent != null && coolNote.holdingTime < coolNote.parent.sustainLength)
 					{
-						var isHeld:Bool = holdArray[coolNote.noteData];
-						var receptor:Receptor = playerStrums.receptors.members[coolNote.noteData];
-						if (isHeld && receptor.animation.curAnim.name != "confirm")
-							receptor.playAnim('confirm');
-
-						coolNote.holdingTime = Conductor.songPosition - coolNote.strumTime;
-
-						var regrabTime:Float = 0.2;
-
-						if (isHeld)
-							coolNote.tripTimer = 1;
-						else
-							coolNote.tripTimer -= elapsed / regrabTime;
-
-						if (coolNote.tripTimer <= 0)
+						if (!coolNote.tooLate && coolNote.parent.wasGoodHit)
 						{
-							coolNote.tripTimer = 0;
-							trace('Tripped on hold');
-							coolNote.tooLate = true;
-							coolNote.wasGoodHit = false;
-							for (tail in coolNote.tail)
-								if (!tail.wasGoodHit)
-									tail.tooLate = true;
-						}
-						else
-						{
-							for (tail in coolNote.unhitTail)
-							{
-								if (tail.strumTime <= Conductor.songPosition && !tail.wasGoodHit && !tail.tooLate)
-									noteHit(tail);
-							}
+							var receptor:Receptor = playerStrums.receptors.members[coolNote.noteData];
+							if (isHeld && receptor.animation.curAnim.name != "confirm")
+								receptor.playAnim('confirm');
 
-							if (coolNote.holdingTime >= coolNote.sustainLength)
+							coolNote.holdingTime = Conductor.songPosition - coolNote.strumTime;
+
+							var regrabTime:Float = 0.2;
+
+							if (isHeld)
+								coolNote.tripTimer = 1;
+							else
+								coolNote.tripTimer -= elapsed / regrabTime;
+
+							if (coolNote.tripTimer <= 0)
 							{
-								trace("finished sustain");
-								coolNote.holdingTime = coolNote.sustainLength;
+								coolNote.tripTimer = 0;
+								trace('Tripped on hold');
+								coolNote.tooLate = true;
+								coolNote.wasGoodHit = false;
+								for (tail in coolNote.tail)
+									if (!tail.wasGoodHit)
+										tail.tooLate = true;
+							}
+							else
+							{
+								for (tail in coolNote.unhitTail)
+								{
+									if ((tail.strumTime - 25) <= Conductor.songPosition && !tail.wasGoodHit && !tail.tooLate)
+										noteHit(tail);
+								}
+
+								if (coolNote.holdingTime >= coolNote.sustainLength)
+								{
+									trace("finished sustain");
+									coolNote.holdingTime = coolNote.sustainLength;
+								}
 							}
 						}
-					}
-				}
-			});
+				}*/
 
-			/*
 				if (holdArray[coolNote.noteData])
 				{
 					if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
@@ -251,7 +250,8 @@ class PlayState extends MusicBeatState
 					{
 						noteHit(coolNote);
 					}
-			}*/
+				}
+			});
 		}
 	}
 
@@ -270,7 +270,7 @@ class PlayState extends MusicBeatState
 		if (!note.wasGoodHit)
 		{
 			var diff = note.strumTime - Conductor.songPosition;
-			trace(diff);
+			// trace(diff);
 
 			note.wasGoodHit = true;
 			getReceptor(playerStrums, note.noteData).playAnim('confirm');
@@ -278,7 +278,8 @@ class PlayState extends MusicBeatState
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
 
-			playerStrums.destroyNote(note);
+			if (!note.isSustain)
+				playerStrums.destroyNote(note);
 		}
 	}
 

@@ -6,6 +6,14 @@ import flixel.util.FlxSignal.FlxTypedSignal;
 import funkin.SongTools.SongData;
 import openfl.media.Sound;
 
+typedef BPMChangeEvent =
+{
+	var stepTime:Int;
+	var songTime:Float;
+	var bpm:Float;
+	@:optional var stepCrochet:Float;
+}
+
 // TODO: Separate vocals?
 // The same old conductor lol
 class Conductor
@@ -28,6 +36,7 @@ class Conductor
 	public static var bpm:Float = 0;
 	public static var crochet:Float = ((60 / bpm) * 1000);
 	public static var stepCrochet:Float = crochet / 4;
+	public static var bpmChanges:Array<BPMChangeEvent> = [];
 
 	// Audio
 	public static var boundInst:FlxSound;
@@ -71,7 +80,9 @@ class Conductor
 
 		if (boundInst != null && boundInst.playing)
 		{
-			stepPosition = Math.floor(songPosition / stepCrochet);
+			var lastChange:BPMChangeEvent = getBPMFromSeconds(songPosition);
+
+			stepPosition = lastChange.stepTime + Math.floor((songPosition - lastChange.songTime) / stepCrochet);
 			beatPosition = Math.floor(stepPosition / 4);
 
 			if (stepPosition > lastStep)
@@ -137,6 +148,24 @@ class Conductor
 			boundVocals.play();
 		}
 		trace('New song time ${boundInst.time}, $songPosition');
+	}
+
+	public static function getBPMFromSeconds(time:Float):BPMChangeEvent
+	{
+		var lastChange:BPMChangeEvent = {
+			stepTime: 0,
+			songTime: 0,
+			bpm: bpm,
+			stepCrochet: stepCrochet
+		};
+
+		for (i in 0...bpmChanges.length)
+		{
+			if (time >= bpmChanges[i].songTime)
+				lastChange = bpmChanges[i];
+		}
+
+		return lastChange;
 	}
 
 	public static inline function calculateCrochet(bpm:Float)
