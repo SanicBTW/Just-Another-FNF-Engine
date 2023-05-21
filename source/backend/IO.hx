@@ -15,12 +15,17 @@ class IO
 	/**
 	 * If true, temporary files won't be deleted upon closing the engine
 	 */
-	public static var persistentTemp:Bool = false;
+	public static var persistentTemp:Bool = true;
 
 	/**
 	 * The path where all the temporary files will be stored
 	 */
-	private static var tempPath:String = Path.join([System.userDirectory, 'jafe_files', 'temp', Random.uniqueId()]);
+	private static var appPath:String = Path.join([
+		System.userDirectory,
+		'jafe_files',
+		(persistentTemp)
+		? 'persistent' : 'temp_${Random.uniqueId()}'
+	]);
 
 	/**
 	 * Sets variables and creates the temporary folder
@@ -28,8 +33,9 @@ class IO
 	public static function Initialize()
 	{
 		// Read from save
-		trace('IO - Making path at $tempPath');
-		FileSystem.createDirectory(tempPath);
+		trace('IO - Making path at $appPath');
+		if (persistentTemp && !FileSystem.exists(appPath) || !FileSystem.exists(appPath))
+			FileSystem.createDirectory(appPath);
 	}
 
 	/**
@@ -45,19 +51,12 @@ class IO
 
 		try
 		{
-			var files:Array<String> = FileSystem.readDirectory(tempPath);
-			var i:Int = 0;
-			while (files.length > 0)
+			for (file in FileSystem.readDirectory(appPath))
 			{
-				var file:String = files[i];
-
 				trace('Deleting $file from temp path');
 				FileSystem.deleteFile(file);
-				files.remove(file);
-
-				i++;
 			}
-			FileSystem.deleteDirectory(tempPath);
+			FileSystem.deleteDirectory(appPath);
 		}
 		catch (ex)
 		{
@@ -67,7 +66,7 @@ class IO
 
 	public static function saveFile<T>(name:String, content:T):String
 	{
-		var outPath:String = Path.join([tempPath, name]);
+		var outPath:String = Path.join([appPath, name]);
 		trace('Saving to $outPath');
 
 		if (content is String)

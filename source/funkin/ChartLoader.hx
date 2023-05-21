@@ -25,7 +25,7 @@ class ChartLoader
 		var rawChart:String = "";
 		var swagSong:SongData = null;
 
-		if (songName.contains("temp"))
+		if (songName.contains("temp") || songName.contains("persistent"))
 		{
 			songName = Path.withoutExtension(songName);
 

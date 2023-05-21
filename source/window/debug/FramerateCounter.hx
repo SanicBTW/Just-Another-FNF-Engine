@@ -12,13 +12,18 @@ class FramerateCounter extends OFLSprite
 {
 	public var currentFPS(default, null):Float;
 
-	@:noCompletion private var frames:Int = 0;
+	// time since last check shit something dunno
+	public var timeLast(default, null):Float;
+
 	@:noCompletion private var prevTime:Float = Date.now().getTime();
+
+	@:noCompletion private var cacheCount:Int;
+	@:noCompletion private var currentTime:Float;
+	@:noCompletion private var times:Array<Float>;
 
 	private var bg:Shape;
 	private var fpsText:TextField;
-	private var offsetWidth:Float = 8;
-	private var fpsCalcDelay:Float = 500;
+	private var offsetWidth:Float = 7;
 
 	// lerping haha
 	public var targetX:Float = 0;
@@ -32,6 +37,9 @@ class FramerateCounter extends OFLSprite
 		targetY = Y;
 
 		currentFPS = 0;
+		cacheCount = 0;
+		currentTime = 0;
+		times = [];
 		mouseEnabled = false;
 	}
 
@@ -42,8 +50,6 @@ class FramerateCounter extends OFLSprite
 		fpsText.embedFonts = true;
 		fpsText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, 12, 0xFFFFFF);
 		fpsText.selectable = false;
-		fpsText.multiline = true;
-		fpsText.wordWrap = true;
 		fpsText.autoSize = LEFT;
 
 		bg = drawRound(x, y, fpsText.textWidth + offsetWidth, fpsText.textHeight + 5, [5], FlxColor.BLACK, 0.5);
@@ -69,22 +75,35 @@ class FramerateCounter extends OFLSprite
 
 	private function updateFPSText(lerpVal:Float)
 	{
-		frames++;
-
 		var prevTime:Float = this.prevTime;
 		var time:Float = Date.now().getTime();
 
-		if (time > prevTime + fpsCalcDelay)
+		currentTime += rawElapsed;
+		times.push(currentTime);
+
+		while (times[0] < currentTime - 1000)
 		{
-			currentFPS = Math.round((frames * 1000) / (time - prevTime));
-			fpsText.text = 'FPS: $currentFPS';
-			this.prevTime = time;
-			frames = 0;
+			times.shift();
+		}
+
+		currentFPS = Math.round((times.length + cacheCount) / 2);
+
+		if (times.length != cacheCount)
+		{
+			if (time > prevTime + 1000)
+			{
+				timeLast = FlxMath.roundDecimal(((time - prevTime) / 10000), 2);
+				this.prevTime = time;
+			}
+
+			fpsText.text = 'FPS: $currentFPS (${timeLast}ms)';
 		}
 
 		if (currentFPS < FlxG.updateFramerate / 2)
 			fpsText.textColor = FlxColor.interpolate(0xFFFFFFFF, 0xFFFF0000, lerpVal);
 		else
 			fpsText.textColor = FlxColor.interpolate(0xFFFF0000, 0xFFFFFFFF, lerpVal);
+
+		cacheCount = times.length;
 	}
 }

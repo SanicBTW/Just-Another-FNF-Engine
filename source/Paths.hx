@@ -91,13 +91,18 @@ class Paths
 	public static function inst(song:String):Sound
 	{
 		#if (native || FS_ACCESS)
-		song = '${song}_inst.ogg';
+		if (song.contains("temp") || song.contains("persistent"))
+		{
+			song = '${song}_inst.ogg';
 
-		var shitBytes:Bytes = IO.getFile(song, BYTES);
+			var shitBytes:Bytes = IO.getFile(song, BYTES);
 
-		var sound:Sound = new Sound();
-		sound.loadCompressedDataFromByteArray(shitBytes, shitBytes.length);
-		return Cache.set(sound, SOUND, song);
+			var sound:Sound = new Sound();
+			sound.loadCompressedDataFromByteArray(shitBytes, shitBytes.length);
+			return Cache.set(sound, SOUND, song);
+		}
+		else
+			return Cache.getSound(getPath('songs/${formatString(song)}/Inst.ogg', MUSIC));
 		#else
 		return Cache.getSound(getPath('songs/${formatString(song)}/Inst.ogg', MUSIC));
 		#end
@@ -106,13 +111,18 @@ class Paths
 	public static function voices(song:String):Sound
 	{
 		#if (native || FS_ACCESS)
-		song = '${song}_voices.ogg';
+		if (song.contains("temp") || song.contains("persistent"))
+		{
+			song = '${song}_voices.ogg';
 
-		var shitBytes:Bytes = IO.getFile(song, BYTES);
+			var shitBytes:Bytes = IO.getFile(song, BYTES);
 
-		var sound:Sound = new Sound();
-		sound.loadCompressedDataFromByteArray(shitBytes, shitBytes.length);
-		return Cache.set(sound, SOUND, song);
+			var sound:Sound = new Sound();
+			sound.loadCompressedDataFromByteArray(shitBytes, shitBytes.length);
+			return Cache.set(sound, SOUND, song);
+		}
+		else
+			return Cache.getSound(getPath('songs/${formatString(song)}/Voices.ogg', MUSIC));
 		#else
 		return Cache.getSound(getPath('songs/${formatString(song)}/Voices.ogg', MUSIC));
 		#end
