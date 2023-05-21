@@ -834,14 +834,15 @@ class FlxText extends FlxSprite
 		// Modified with custom drawing to reuse bitmaps and shit (better memory management)
 		if (oldWidth != newWidth || oldHeight != newHeight)
 		{
+			// Need to generate a new buffer to store the text graphic
 			height = newHeight;
 			var intWidth:Int = Std.int(newWidth);
 			var intHeight:Int = Std.int(newHeight);
 
-			// Need to generate a new buffer to store the text graphic
-			// textb (text bitmap) | textg (text graphic) | textbp (text bitmap pixels)
-			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, 'textb:${intWidth}x${intHeight}');
-			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT, false), GRAPHIC, 'textg:${intWidth}x${intHeight}'));
+			var newName:String = 'text:${intWidth}x${intHeight}';
+
+			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT, false), GRAPHIC, newName));
 
 			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			if (_hasBorderAlpha)
@@ -859,8 +860,10 @@ class FlxText extends FlxSprite
 			if (_hasBorderAlpha)
 			{
 				if (_borderPixels == null)
-					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP,
-						'textbp:${frameWidth}x${frameHeight}');
+				{
+					var newName:String = 'textbp:${frameWidth}x${frameHeight}';
+					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+				}
 				else
 					_borderPixels.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			}

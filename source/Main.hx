@@ -1,8 +1,6 @@
 package;
 
-import backend.Cache;
-import backend.Controls;
-import backend.Save;
+import backend.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.*;
@@ -17,7 +15,7 @@ class Main extends Sprite
 	private var gameHeight:Int = 720;
 	private var initialClass:Class<FlxState> = funkin.states.SongSelection;
 	private var zoom:Float = -1;
-	private var framerate:Int = 120;
+	private var framerate:Int = #if native 250 #else 60 #end;
 
 	public static var fpsCounter:FramerateCounter;
 	public static var memoryCounter:MemoryCounter;
@@ -40,8 +38,16 @@ class Main extends Sprite
 		if (hasEventListener(Event.ADDED_TO_STAGE))
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 
+		// Enable GCs
+		#if cpp
+		cpp.vm.Gc.enable(true);
+		#elseif hl
+		hl.Gc.enable(true);
+		#end
+
 		Save.Initialize();
 		Controls.Initialize();
+		IO.Initialize();
 		setupGame();
 
 		FlxG.signals.preStateCreate.add((state:FlxState) ->
@@ -55,6 +61,22 @@ class Main extends Sprite
 		{
 			Cache.clearUnusedMemory();
 			Cache.collect();
+		});
+
+		// I'm so fucking smart holy shit omg
+		FlxG.signals.gameResized.add((_, _) ->
+		{
+			trace('Repositioning counters');
+			@:privateAccess
+			fpsCounter.targetY = FlxG.height - (fpsCounter.bg.height + memoryCounter.bg.height) - 9;
+
+			@:privateAccess
+			memoryCounter.targetY = (fpsCounter.bg.height + fpsCounter.targetY) - 1;
+		});
+
+		Lib.application.onExit.add((_) ->
+		{
+			IO.cleanTemp();
 		});
 	}
 
@@ -72,7 +94,9 @@ class Main extends Sprite
 			gameHeight = Math.ceil(stageHeight / zoom);
 		}
 
-		FlxGraphic.defaultPersist = true;
+		// vsync shit right here bois framerate = lime.system.System.getDisplay(0).currentMode.refreshRate;
+
+		// FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
@@ -83,12 +107,10 @@ class Main extends Sprite
 		FlxG.mouse.useSystemCursor = true;
 		#end
 
-		fpsCounter = new FramerateCounter(10, 8);
-		fpsCounter.width = gameWidth;
+		fpsCounter = new FramerateCounter(10, 0);
 		addChild(fpsCounter);
 
-		memoryCounter = new MemoryCounter(10, (fpsCounter.textHeight + fpsCounter.y) - 1);
-		memoryCounter.width = gameWidth;
+		memoryCounter = new MemoryCounter(10, 0);
 		addChild(memoryCounter);
 	}
 }

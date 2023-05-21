@@ -29,7 +29,10 @@ class Cache
 	private static var keyedSounds:Map<String, Sound> = [];
 
 	// Non-cleanable assets
-	private static var persistentAssets:Array<String> = [];
+	private static var persistentAssets:Array<String> = [
+		"funkin:assets/funkin/images/NOTE_assets.png",
+		"funkin:assets/funkin/images/alphabet.png"
+	];
 
 	// Use GPU to render textures
 	public static var gpuRender:Bool = false;
@@ -164,6 +167,7 @@ class Cache
 		@:privateAccess
 		if (graphic != null)
 		{
+			removeBitmapData(id);
 			FlxG.bitmap._cache.remove(id);
 			graphic.destroy();
 			keyedGraphics.remove(id);

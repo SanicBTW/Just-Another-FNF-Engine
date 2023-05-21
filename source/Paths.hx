@@ -1,9 +1,11 @@
 package;
 
 import backend.Cache;
+import backend.IO;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import haxe.Exception;
+import haxe.io.Bytes;
 import lime.app.Future;
 import openfl.Assets;
 import openfl.media.Sound;
@@ -86,11 +88,35 @@ class Paths
 	public static inline function image(key:String):FlxGraphic
 		return Cache.getGraphic(getPath('images/$key.png', IMAGE));
 
-	public static inline function inst(song:String):Sound
-		return Cache.getSound(getPath('songs/${formatString(song)}/Inst.ogg', MUSIC));
+	public static function inst(song:String):Sound
+	{
+		#if (native || FS_ACCESS)
+		song = '${song}_inst.ogg';
 
-	public static inline function voices(song:String):Sound
+		var shitBytes:Bytes = IO.getFile(song, BYTES);
+
+		var sound:Sound = new Sound();
+		sound.loadCompressedDataFromByteArray(shitBytes, shitBytes.length);
+		return Cache.set(sound, SOUND, song);
+		#else
+		return Cache.getSound(getPath('songs/${formatString(song)}/Inst.ogg', MUSIC));
+		#end
+	}
+
+	public static function voices(song:String):Sound
+	{
+		#if (native || FS_ACCESS)
+		song = '${song}_voices.ogg';
+
+		var shitBytes:Bytes = IO.getFile(song, BYTES);
+
+		var sound:Sound = new Sound();
+		sound.loadCompressedDataFromByteArray(shitBytes, shitBytes.length);
+		return Cache.set(sound, SOUND, song);
+		#else
 		return Cache.getSound(getPath('songs/${formatString(song)}/Voices.ogg', MUSIC));
+		#end
+	}
 
 	public static inline function getSparrowAtlas(key:String)
 		return FlxAtlasFrames.fromSparrow(image(key), file('images/$key.xml', TEXT));

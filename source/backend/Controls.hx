@@ -53,10 +53,10 @@ class Controls
 
 	// Note Actions
 	private static var noteActions:Map<Action, Array<Null<Int>>> = [
-		NOTE_LEFT => [Keyboard.LEFT, Keyboard.A],
-		NOTE_DOWN => [Keyboard.DOWN, Keyboard.S],
-		NOTE_UP => [Keyboard.UP, Keyboard.W],
-		NOTE_RIGHT => [Keyboard.RIGHT, Keyboard.D],
+		NOTE_LEFT => [Keyboard.LEFT, Keyboard.A, Keyboard.Z],
+		NOTE_DOWN => [Keyboard.DOWN, Keyboard.S, Keyboard.X],
+		NOTE_UP => [Keyboard.UP, Keyboard.W, Keyboard.COMMA],
+		NOTE_RIGHT => [Keyboard.RIGHT, Keyboard.D, Keyboard.PERIOD],
 	];
 
 	// Default Note Actions

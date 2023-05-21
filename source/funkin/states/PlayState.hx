@@ -101,8 +101,13 @@ class PlayState extends MusicBeatState
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
 		{
-			case "back" | "reset":
+			case "reset":
 				return;
+
+			case "back":
+				Conductor.boundInst.stop();
+				Conductor.boundVocals.stop();
+				InteractionState.switchState(new SongSelection());
 
 			case "confirm":
 				Conductor.boundInst.play();

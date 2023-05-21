@@ -183,19 +183,9 @@ class Note extends FlxSprite
 			var diff:Float = Math.abs(strumTime - Conductor.songPosition);
 
 			if (isSustain)
-			{
-				if (diff <= hitbox * .5)
-					canBeHit = true;
-				else
-					canBeHit = false;
-			}
+				canBeHit = (diff <= hitbox * .5);
 			else
-			{
-				if (diff <= hitbox)
-					canBeHit = true;
-				else
-					canBeHit = false;
-			}
+				canBeHit = (diff <= hitbox);
 
 			tooLate = (diff < -Conductor.safeZoneOffset && !wasGoodHit);
 		}

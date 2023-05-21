@@ -1,45 +1,73 @@
 package window.debug;
 
+import flixel.math.FlxMath;
+import flixel.util.FlxColor;
+import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 
-class MemoryCounter extends TextField
+class MemoryCounter extends OFLSprite
 {
 	private static final intervalArray:Array<String> = ['B', 'KB', 'MB', 'GB'];
 
+	private var currentMem(get, null):Float;
 	private var memoryPeak(default, null):Float;
 
-	public function new(x:Float = 10, y:Float = 10)
+	private var bg:Shape;
+	private var memText:TextField;
+	private var offsetWidth:Float = 6;
+
+	// lerping haha
+	public var targetX:Float = 0;
+	public var targetY:Float = 0;
+
+	public function new(X:Float = 10, Y:Float = 10)
 	{
 		super();
 
-		this.x = x;
-		this.y = y;
+		targetX = X;
+		targetY = Y;
 
 		memoryPeak = 0;
-		selectable = false;
 		mouseEnabled = false;
-		defaultTextFormat = new TextFormat("_sans", 12, 0xFFFFFF);
-		text = "";
 	}
 
-	@:noCompletion
-	private override function __enterFrame(_):Void
+	override public function create()
 	{
-		if (!visible)
-			return;
+		memText = new TextField();
+		memText.text = '0 MB / 0 MB';
+		memText.embedFonts = true;
+		memText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, 12, 0xFFFFFF);
+		memText.selectable = false;
+		memText.autoSize = LEFT;
 
-		var mem:Float = #if cpp cpp.vm.Gc.memInfo64(3) #else openfl.system.System.totalMemory #end;
+		bg = drawRound(x, y, memText.textWidth + offsetWidth, memText.textHeight + 5, [5], FlxColor.BLACK, 0.5);
 
-		if (mem > memoryPeak)
-			memoryPeak = mem;
+		addChild(bg);
+		addChild(memText);
+	}
 
-		text = '${getInterval(mem)} / ${getInterval(memoryPeak)}';
+	override public function update(elapsed:Float)
+	{
+		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 
-		if (mem / 1000000 > 2000)
-			textColor = 0xFFFF0000;
-		else
-			textColor = 0xFFFFFFFF;
+		// da bg
+		lerpTrack(bg, "width", memText.textWidth + offsetWidth, lerpVal);
+		lerpTrack(bg, "x", targetX, lerpVal);
+		lerpTrack(bg, "y", targetY, lerpVal);
+
+		// funky text
+		lerpTrack(memText, "x", bg.x, lerpVal);
+		lerpTrack(memText, "y", bg.y, lerpVal);
+		updateMemText();
+	}
+
+	private function updateMemText()
+	{
+		if (currentMem > memoryPeak)
+			memoryPeak = currentMem;
+
+		memText.text = '${getInterval(currentMem)} / ${getInterval(memoryPeak)}';
 	}
 
 	private static function getInterval(size:Float)
@@ -52,5 +80,34 @@ class MemoryCounter extends TextField
 		}
 		size = Math.round(size * 100) / 100;
 		return '$size ${intervalArray[data]}';
+	}
+
+	// From OpenFL System, added HL and Android memory getters )?
+	// Tested one by one in order to get proper accuracy when getting
+
+	@:noCompletion
+	private function get_currentMem()
+	{
+		#if neko
+		// cannot really test this one
+		return neko.vm.Gc.stats().heap;
+		#elseif hl
+		// gets the hl vm gc ig
+		// current memory* -> offset -90mb (best option)
+		// total allocated -> keeps increasing overtime
+		// allocation count -> seems like its the times it has allocated memory)?, increases overtime
+		return hl.Gc.stats().currentMemory;
+		#elseif cpp
+		return untyped __global__.__hxcpp_gc_used_bytes();
+		#elseif java
+		// not tested
+		return java.vm.Gc.stats().heap;
+		#elseif (js && html5)
+		// no other way on getting this one
+		return
+			untyped #if haxe4 js.Syntax.code #else __js__ #end ("(window.performance && window.performance.memory) ? window.performance.memory.usedJSHeapSize : 0");
+		#else
+		return 0;
+		#end
 	}
 }

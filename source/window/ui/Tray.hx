@@ -5,11 +5,8 @@ import openfl.Lib;
 import openfl.display.Sprite;
 
 // Made so I can update code automatically across files that extend this class
-class Tray extends Sprite
+class Tray extends OFLSprite
 {
-	// Update only when its active
-	public var active:Bool = false;
-
 	// Default scale for the tray, each tray class will have its own width and height
 	private var _defaultScale:Float = 2.0;
 
@@ -26,38 +23,17 @@ class Tray extends Sprite
 	private function get_gHeight():Int
 		return Std.int(FlxG.game.height);
 
-	public function new()
+	override public function new()
 	{
-		super();
-
+		active = false;
 		visible = false;
 
+		super();
+
 		screenCenter();
-
-		create();
 	}
 
-	// Fired after setting up some essentials on constructor
-
-	private function create() {}
-
-	// Triggers the update function passing elapsed-a-like from FlxG
-	// Instead of getting it from a getter and improving update calls)?
-
-	@:noCompletion
-	private override function __enterFrame(deltaTime:Float):Void
-	{
-		if (!active || !visible)
-			return;
-
-		update(deltaTime / 1000);
-	}
-
-	public function update(elapsed:Float) {}
-
-	public function destroy() {}
-
-	public function screenCenter()
+	override public function screenCenter()
 	{
 		// Reflect width
 		var rWidth:Float = Reflect.getProperty(this, "_width");
@@ -65,7 +41,4 @@ class Tray extends Sprite
 		scaleY = _defaultScale;
 		x = (0.5 * (Lib.current.stage.stageWidth - (Math.isNaN(rWidth) ? width : rWidth) * _defaultScale));
 	}
-
-	public inline function boundTo(value:Float, min:Float, max:Float):Float
-		return Math.max(min, Math.min(max, value));
 }

@@ -14,7 +14,7 @@ class InteractionState extends FlxState
 		if (!FadeTransition.skipTransOut)
 			openSubState(new FadeTransition(0.7, true));
 
-		FadeTransition.skipTransOut = true;
+		FadeTransition.skipTransOut = false;
 
 		Controls.onActionPressed.add(onActionPressed);
 		Controls.onActionReleased.add(onActionReleased);

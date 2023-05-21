@@ -4,11 +4,12 @@ import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import openfl.Lib;
-import openfl.display.Bitmap;
-import openfl.display.BitmapData;
+import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.utils.Assets;
+
+using StringTools;
 
 class VolumeTray extends Tray
 {
@@ -25,7 +26,7 @@ class VolumeTray extends Tray
 
 	// Sprites
 	private var _volTracker:TextField; // temp and the vol tracker?
-	private var _volBar:Bitmap;
+	private var _volBar:Shape;
 
 	// Volume
 	private var volume(get, null):Float;
@@ -36,11 +37,9 @@ class VolumeTray extends Tray
 
 	override public function create()
 	{
-		super.create();
-
 		y = -Lib.current.stage.stageHeight;
 
-		var bg:Bitmap = new Bitmap(new BitmapData(_width, _height, true, 0x7F000000));
+		var bg:Shape = drawRound(0, 0, _width, _height, [0, 0, 5, 5], FlxColor.BLACK, 0.6);
 		screenCenter();
 		addChild(bg);
 
@@ -60,7 +59,7 @@ class VolumeTray extends Tray
 		_volTracker.x = (_width - _volTracker.textWidth) - 10;
 		addChild(_volTracker);
 
-		_volBar = new Bitmap(new BitmapData(_width - 10, 5, false, FlxColor.WHITE));
+		_volBar = drawRound(0, 0, _width - 10, 5, [5]);
 		_volBar.x = 5;
 		_volBar.y = (_height - _volBar.height) - 5;
 		addChild(_volBar);
@@ -71,8 +70,16 @@ class VolumeTray extends Tray
 		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
+
+		// Add an option to change between width or scaling (too lazy to actually uhhh move to width lol, funky maths shit)
+		// _volBar.width = FlxMath.lerp((FlxG.sound.muted ? ))
 		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : volume), _volBar.scaleX, lerpVal);
+
 		_volTracker.text = '${Math.round(_volBar.scaleX * 100)}%';
+
+		// Only update it when it contains a 0 (lerp ended), make it an option or something lol
+		// if (_volTracker.text.contains("0"))
+		_volTracker.x = FlxMath.lerp((_width - _volTracker.textWidth) - 10, _volTracker.x, lerpVal);
 
 		// Properly stop updating after the targetY is below the game height (kind of stupid!!!!! need to get another check!!!)
 		if (_visibleTime > 0)
@@ -87,21 +94,18 @@ class VolumeTray extends Tray
 				active = false;
 			}
 		}
-
-		super.update(elapsed);
 	}
 
 	public function show()
 	{
 		_visibleTime = 1.8;
 		targetY = 0;
-		visible = true;
-		active = true;
+		visible = active = true;
 	}
 
 	private function setTxtFieldProperties(field:TextField)
 	{
-		field.defaultTextFormat = new TextFormat(Assets.getFont(Paths.font("funkin.otf")).fontName, 10, 0xFFFFFF);
+		field.defaultTextFormat = new TextFormat(getFont('funkin.otf').fontName, 10, 0xFFFFFF);
 		field.width = _width;
 		field.height = _height;
 		field.multiline = true;

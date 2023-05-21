@@ -2,11 +2,17 @@ package funkin.states;
 
 import Paths.Libraries;
 import backend.Controls;
+import backend.IO;
 import base.InteractionState;
 import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
+import funkin.SongTools.SongData;
 import funkin.text.Alphabet;
+import haxe.io.Bytes;
+import haxe.io.Path;
+import network.MultiCallback;
 import network.pocketbase.Collection;
 import network.pocketbase.PBRequest;
 import network.pocketbase.Record.FunkinRecord;
@@ -31,6 +37,11 @@ class SongSelection extends InteractionState
 	public static var songSelected:SongAsset = {songName: '', songDiff: 1};
 
 	private var libIndicator:FlxText;
+
+	private var networkCb:MultiCallback = new MultiCallback(() ->
+	{
+		InteractionState.switchState(new PlayState());
+	});
 
 	@:noCompletion
 	private function set_curSelected(value:Int):Int
@@ -144,6 +155,12 @@ class SongSelection extends InteractionState
 	{
 		Controls.targetActions = UI;
 
+		var bg:FlxSprite = new FlxSprite();
+		bg.loadGraphic(Paths.image('menuBG'));
+		bg.screenCenter();
+		bg.setGraphicSize(FlxG.width, FlxG.height);
+		add(bg);
+
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
 
@@ -181,6 +198,43 @@ class SongSelection extends InteractionState
 						{
 							songSelected = {songName: curText, songDiff: diffStore.get(curText)};
 							InteractionState.switchState(new PlayState());
+						}
+					case "funkin":
+						{
+							var curRec:FunkinRecord = songStore.get(curText);
+
+							var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
+							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
+							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
+
+							PBRequest.getFile(curRec, "chart", (chart:Bytes) ->
+							{
+								var extension:String = Path.extension(curRec.chart);
+								var endPath:String = IO.saveFile('${curRec.song}_chart.$extension', chart);
+								songSelected.songName = endPath.replace("_chart", "");
+								chartCb();
+
+								PBRequest.getFile(curRec, "inst", (inst:Bytes) ->
+								{
+									extension = Path.extension(curRec.inst);
+									IO.saveFile('${curRec.song}_inst.$extension', inst);
+									instCb();
+
+									if (curRec.voices != null)
+									{
+										PBRequest.getFile(curRec, "voices", (voices:Bytes) ->
+										{
+											extension = Path.extension(curRec.voices);
+											IO.saveFile('${curRec.song}_voices.$extension', voices);
+											voicesCb();
+										}, BYTES);
+									}
+									else
+									{
+										voicesCb();
+									}
+								}, BYTES);
+							}, BYTES);
 						}
 				}
 		}

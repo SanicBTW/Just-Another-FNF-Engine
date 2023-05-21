@@ -12,3 +12,9 @@ Paths
 
 Add proper network cache
 - its hard wtf
+
+Improve Filesystem operations (IO) and the temp shit lol (it keeps throwing null on closing and cleanin files bru)
+
+Fix the fucking cache
+
+FlxText keeps crashing the game when FlxGraphic.defaultPersist = true

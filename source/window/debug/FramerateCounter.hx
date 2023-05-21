@@ -2,59 +2,88 @@ package window.debug;
 
 import flixel.FlxG;
 import flixel.math.FlxMath;
+import flixel.util.FlxColor;
+import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 
-class FramerateCounter extends TextField
+class FramerateCounter extends OFLSprite
 {
 	public var currentFPS(default, null):Float;
 
-	@:noCompletion private var cacheCount:Int;
-	@:noCompletion private var currentTime:Float;
-	@:noCompletion private var times:Array<Float>;
+	@:noCompletion private var frames:Int = 0;
+	@:noCompletion private var prevTime:Float = Date.now().getTime();
 
-	public function new(x:Float = 10, y:Float = 10)
+	private var bg:Shape;
+	private var fpsText:TextField;
+	private var offsetWidth:Float = 8;
+	private var fpsCalcDelay:Float = 500;
+
+	// lerping haha
+	public var targetX:Float = 0;
+	public var targetY:Float = 0;
+
+	override public function new(X:Float = 10, Y:Float = 10)
 	{
 		super();
 
-		this.x = x;
-		this.y = y;
+		targetX = X;
+		targetY = Y;
 
 		currentFPS = 0;
-		selectable = false;
 		mouseEnabled = false;
-		defaultTextFormat = new TextFormat("_sans", 12, 0xFFFFFF);
-		text = "FPS: ";
-
-		cacheCount = 0;
-		currentTime = 0;
-		times = [];
 	}
 
-	@:noCompletion
-	private override function __enterFrame(deltaTime:Float):Void
+	override public function create()
 	{
-		if (!visible)
-			return;
+		fpsText = new TextField();
+		fpsText.text = 'FPS: 0';
+		fpsText.embedFonts = true;
+		fpsText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, 12, 0xFFFFFF);
+		fpsText.selectable = false;
+		fpsText.multiline = true;
+		fpsText.wordWrap = true;
+		fpsText.autoSize = LEFT;
 
-		currentTime += deltaTime;
-		times.push(currentTime);
+		bg = drawRound(x, y, fpsText.textWidth + offsetWidth, fpsText.textHeight + 5, [5], FlxColor.BLACK, 0.5);
 
-		while (times[0] < currentTime - 1000)
+		addChild(bg);
+		addChild(fpsText);
+	}
+
+	override public function update(elapsed:Float)
+	{
+		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
+
+		// bg shit
+		lerpTrack(bg, "width", fpsText.textWidth + offsetWidth, lerpVal);
+		lerpTrack(bg, "x", targetX, lerpVal);
+		lerpTrack(bg, "y", targetY, lerpVal);
+
+		// text shit
+		lerpTrack(fpsText, "x", bg.x, lerpVal);
+		lerpTrack(fpsText, "y", bg.y, lerpVal);
+		updateFPSText(lerpVal);
+	}
+
+	private function updateFPSText(lerpVal:Float)
+	{
+		frames++;
+
+		var prevTime:Float = this.prevTime;
+		var time:Float = Date.now().getTime();
+
+		if (time > prevTime + fpsCalcDelay)
 		{
-			times.shift();
+			currentFPS = Math.round((frames * 1000) / (time - prevTime));
+			fpsText.text = 'FPS: $currentFPS';
+			this.prevTime = time;
+			frames = 0;
 		}
 
-		currentFPS = FlxMath.roundDecimal((times.length + cacheCount) / 2, 2);
-
-		if (times.length != cacheCount)
-			text = 'FPS: $currentFPS';
-
 		if (currentFPS < FlxG.updateFramerate / 2)
-			textColor = 0xFFFF0000;
+			fpsText.textColor = FlxColor.interpolate(0xFFFFFFFF, 0xFFFF0000, lerpVal);
 		else
-			textColor = 0xFFFFFFFF;
-
-		cacheCount = times.length;
+			fpsText.textColor = FlxColor.interpolate(0xFFFF0000, 0xFFFFFFFF, lerpVal);
 	}
 }

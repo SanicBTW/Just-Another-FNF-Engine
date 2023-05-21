@@ -1,9 +1,11 @@
 package funkin;
 
+import backend.IO;
 import base.Conductor;
 import flixel.util.FlxSort;
 import funkin.SongTools;
 import funkin.notes.Note;
+import haxe.io.Path;
 import openfl.utils.Assets;
 
 using StringTools;
@@ -20,11 +22,21 @@ class ChartLoader
 		noteQueue = [];
 		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
 
+		var rawChart:String = "";
 		var swagSong:SongData = null;
 
-		var formattedSongName:String = Paths.formatString(songName);
+		if (songName.contains("temp"))
+		{
+			songName = Path.withoutExtension(songName);
 
-		var rawChart:String = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
+			rawChart = cast IO.getFile('${songName}_chart.json', CONTENT);
+		}
+		else
+		{
+			var formattedSongName:String = Paths.formatString(songName);
+			rawChart = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
+		}
+
 		swagSong = SongTools.loadSong(rawChart);
 
 		Conductor.bindSong(swagSong, Paths.inst(songName), Paths.voices(songName));
