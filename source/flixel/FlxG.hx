@@ -313,11 +313,6 @@ class FlxG
 	 * Contains a list of all sounds and other things to manage or `play()` sounds.
 	 */
 	public static var sound(default, null):SoundFrontEnd;
-
-	/*
-		/**
-		*	The Soloud Audio Engine
-		@:unreflective public static var soloud(default, null):Soloud; */
 	#end
 
 	/**
@@ -613,13 +608,6 @@ class FlxG
 
 		#if FLX_SOUND_SYSTEM
 		sound = new SoundFrontEnd();
-
-		/*
-			#if !lime_openal
-			soloud = Soloud.create();
-			soloud.init();
-			soloud.setVisualizationEnable(true);
-			#end */
 		#end
 	}
 
@@ -689,6 +677,7 @@ class FlxG
 		worldDivisions = 6;
 	}
 
+	@:noCompletion
 	static function set_scaleMode(ScaleMode:BaseScaleMode):BaseScaleMode
 	{
 		scaleMode = ScaleMode;
@@ -697,6 +686,7 @@ class FlxG
 	}
 
 	#if FLX_MOUSE
+	@:noCompletion
 	static function set_mouse(NewMouse:FlxMouse):FlxMouse
 	{
 		if (mouse == null) // if no mouse, just add it
@@ -716,6 +706,7 @@ class FlxG
 	}
 	#end
 
+	@:noCompletion
 	static function set_updateFramerate(Framerate:Int):Int
 	{
 		if (Framerate < drawFramerate)
@@ -732,6 +723,7 @@ class FlxG
 		return Framerate;
 	}
 
+	@:noCompletion
 	static function set_drawFramerate(Framerate:Int):Int
 	{
 		if (Framerate > updateFramerate)
@@ -750,27 +742,32 @@ class FlxG
 		return Framerate;
 	}
 
+	@:noCompletion
 	static function get_fullscreen():Bool
 	{
 		return stage.displayState == StageDisplayState.FULL_SCREEN || stage.displayState == StageDisplayState.FULL_SCREEN_INTERACTIVE;
 	}
 
+	@:noCompletion
 	static function set_fullscreen(Value:Bool):Bool
 	{
 		stage.displayState = Value ? StageDisplayState.FULL_SCREEN : StageDisplayState.NORMAL;
 		return Value;
 	}
 
+	@:noCompletion
 	static inline function get_stage():Stage
 	{
 		return Lib.current.stage;
 	}
 
+	@:noCompletion
 	static inline function get_state():FlxState
 	{
 		return game._state;
 	}
 
+	@:noCompletion
 	static inline function get_onMobile():Bool
 	{
 		return #if js

@@ -10,6 +10,7 @@ import flixel.system.FlxSplash;
 import flixel.util.FlxArrayUtil;
 import openfl.Assets;
 import openfl.filters.BitmapFilter;
+import window.debug.*;
 #if desktop
 import flash.events.FocusEvent;
 #end
@@ -228,6 +229,16 @@ class FlxGame extends Sprite
 	#end
 
 	/**
+	 * The FPS Counter display container.
+	 */
+	var fpsCounter:FramerateCounter;
+
+	/**
+	 * The Memory Counter display container.
+	 */
+	var memoryCounter:MemoryCounter;
+
+	/**
 	 * Instantiate a new game object.
 	 *
 	 * @param GameWidth       The width of your game in game pixels, not necessarily final display pixels (see `Zoom`).
@@ -330,6 +341,12 @@ class FlxGame extends Sprite
 		addChild(_focusLostScreen);
 		#end
 		#end
+
+		fpsCounter = new FramerateCounter(10, 0);
+		addChild(fpsCounter);
+
+		memoryCounter = new MemoryCounter(10, 0);
+		addChild(memoryCounter);
 
 		// Focus gained/lost monitoring
 		#if (desktop && openfl <= "4.0.0")
@@ -478,6 +495,12 @@ class FlxGame extends Sprite
 		for (postProcess in postProcesses)
 			postProcess.rebuild();
 		#end
+
+		if (fpsCounter != null)
+			fpsCounter.targetY = height - (fpsCounter.bg.height + memoryCounter.bg.height) - 9;
+
+		if (memoryCounter != null)
+			memoryCounter.targetY = (fpsCounter.bg.height + fpsCounter.targetY) - 1;
 	}
 
 	/**

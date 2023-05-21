@@ -45,7 +45,7 @@
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
-	<haxedef name="FLX_NO_DEBUG" />
+	<haxedef name="FLX_NO_DEBUG" unless="debug"/>
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
 	<haxedef name="FLX_NO_GAMEPAD" />
 	

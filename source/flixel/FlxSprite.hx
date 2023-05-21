@@ -293,7 +293,7 @@ class FlxSprite extends FlxObject
 		colorTransform = new ColorTransform();
 
 		// TODO: sometimes scrollFactor.x is also needed to be set to 0 soooooooooooo uhhhhhhhh
-		scrollFactor.y = 0;
+		// scrollFactor.y = 0;
 		// get from save
 		antialiasing = true;
 	}

@@ -17,9 +17,6 @@ class Main extends Sprite
 	private var zoom:Float = -1;
 	private var framerate:Int = #if native 250 #else 60 #end;
 
-	public static var fpsCounter:FramerateCounter;
-	public static var memoryCounter:MemoryCounter;
-
 	public static function main()
 		Lib.current.addChild(new Main());
 
@@ -63,17 +60,6 @@ class Main extends Sprite
 			Cache.collect();
 		});
 
-		// I'm so fucking smart holy shit omg
-		FlxG.signals.gameResized.add((_, _) ->
-		{
-			trace('Repositioning counters');
-			@:privateAccess
-			fpsCounter.targetY = FlxG.height - (fpsCounter.bg.height + memoryCounter.bg.height) - 9;
-
-			@:privateAccess
-			memoryCounter.targetY = (fpsCounter.bg.height + fpsCounter.targetY) - 1;
-		});
-
 		Lib.application.onExit.add((_) ->
 		{
 			IO.cleanTemp();
@@ -106,11 +92,5 @@ class Main extends Sprite
 		FlxG.mouse.visible = false;
 		FlxG.mouse.useSystemCursor = true;
 		#end
-
-		fpsCounter = new FramerateCounter(10, 0);
-		addChild(fpsCounter);
-
-		memoryCounter = new MemoryCounter(10, 0);
-		addChild(memoryCounter);
 	}
 }

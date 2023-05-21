@@ -6,6 +6,7 @@ import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 
+@:allow(flixel.FlxGame)
 class MemoryCounter extends OFLSprite
 {
 	private static final intervalArray:Array<String> = ['B', 'KB', 'MB', 'GB'];

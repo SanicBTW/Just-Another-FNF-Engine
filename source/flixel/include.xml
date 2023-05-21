@@ -9,7 +9,7 @@
 
 	<icon path="assets/images/logo/HaxeFlixel.svg" />
 	
-	<section unless="unit-test" if="FLX_DEFAULT_ASSETS">
+	<section if="FLX_DEFAULT_ASSETS">
 		<assets path="assets/sounds" rename="flixel/sounds" include="*.mp3" if="web || air" embed="true" />
 		<assets path="assets/sounds" rename="flixel/sounds" include="*.ogg" unless="flash || air" embed="true" />
 	</section>
@@ -19,7 +19,7 @@
 		<assets path="assets/fonts/monsterrat.ttf" rename="flixel/fonts/monsterrat.ttf" embed="true" />
 	</section>
 	
-	<section unless="unit-test html5" if="FLX_DEFAULT_ASSETS">
+	<section if="FLX_DEFAULT_ASSETS">
 		<assets path="assets/images/ui/button.png" rename="flixel/images/ui/button.png" embed="true" />
 		<assets path="assets/images/logo/default.png" rename="flixel/images/logo/default.png" embed="true" />
 	</section>

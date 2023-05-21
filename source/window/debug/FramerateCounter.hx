@@ -7,6 +7,7 @@ import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 
+@:allow(flixel.FlxGame)
 class FramerateCounter extends OFLSprite
 {
 	public var currentFPS(default, null):Float;
