@@ -8,6 +8,7 @@ import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxSignal.FlxTypedSignal;
+import funkin.notes.Receptor.ReceptorData;
 
 class StrumLine extends FlxTypedGroup<FlxBasic>
 {
@@ -21,7 +22,10 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 	public var botPlay:Bool = false;
 
-	public function new(X:Float = 0, keyAmount:Int = 4)
+	public var keyAmount:Int = 4;
+	public var receptorData:ReceptorData;
+
+	public function new(X:Float = 0, Y:Float = 0, ?strumLineType:String = 'default')
 	{
 		super();
 
@@ -30,13 +34,23 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 		holdGroup = new FlxTypedGroup<Note>();
 		allNotes = new FlxTypedGroup<Note>();
 
+		receptorData = Note.returnNoteData(strumLineType);
+		keyAmount = receptorData.keyAmount;
+
 		for (i in 0...keyAmount)
 		{
-			var receptor:Receptor = new Receptor(X, 40, i);
+			var receptor:Receptor = new Receptor(receptorData, i);
 			receptor.ID = i;
 
-			receptor.x -= ((keyAmount / 2) * Note.swagWidth);
-			receptor.x += (Note.swagWidth * i);
+			receptor.setGraphicSize(Std.int(receptor.width * receptorData.size));
+			receptor.updateHitbox();
+			receptor.swagWidth = receptorData.separation * receptorData.size;
+
+			receptor.setPosition(X - receptor.swagWidth / 2, Y - receptor.swagWidth / 2);
+			receptor.noteData = i;
+			receptor.antialiasing = receptorData.antialiasing;
+
+			receptor.x += (i - ((keyAmount - 1) / 2)) * receptor.swagWidth;
 			receptors.add(receptor);
 
 			receptor.initialX = Math.floor(receptor.x);

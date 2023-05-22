@@ -1,13 +1,30 @@
 package funkin.notes;
 
+import backend.ScriptHandler;
 import base.Conductor;
 import flixel.FlxSprite;
 import haxe.ds.IntMap;
 
-// Add note scale
+typedef ReceptorData =
+{
+	var keyAmount:Int;
+	var actions:Array<String>;
+	var colors:Array<String>;
+	var separation:Float;
+	var size:Float;
+	var antialiasing:Bool;
+}
+
 class Receptor extends FlxSprite
 {
-	public var noteData:Int = 0;
+	public var swagWidth:Float;
+
+	public var noteData:Int;
+	public var noteType:String;
+	public var action:String;
+
+	public var receptorData:ReceptorData;
+	public var noteModule:ForeverModule;
 
 	public var initialX:Int;
 	public var initialY:Int;
@@ -17,18 +34,19 @@ class Receptor extends FlxSprite
 	public var holdTimer:Float = 0;
 	public var direction:Float = 0;
 
-	public var action:String = "";
-
-	public function new(X:Float, Y:Float, noteData:Int)
+	public function new(receptorData:ReceptorData, ?noteData:Int = 0, ?noteType:String = 'default')
 	{
-		this.noteData = noteData;
-		super(X, Y);
+		super();
 
-		this.action = 'note_${getArrowFromNum(noteData)}';
-		frames = Paths.getSparrowAtlas('NOTE_assets');
-		loadAnimations();
-		updateHitbox();
-		antialiasing = true;
+		this.receptorData = receptorData;
+		this.noteData = noteData;
+		this.noteType = noteType;
+
+		noteModule = Note.returnNoteScript(noteType);
+		noteModule.interp.variables.set('receptor', this);
+		noteModule.interp.variables.set('getNoteDirection', getNoteDirection);
+		noteModule.interp.variables.set('getNoteColor', getNoteColor);
+		noteModule.get('generateReceptor')();
 	}
 
 	override function update(elapsed:Float)
@@ -64,47 +82,9 @@ class Receptor extends FlxSprite
 		centerOrigin();
 	}
 
-	private function loadAnimations()
-	{
-		var direction:String = getArrowFromNum(noteData);
+	public function getNoteDirection()
+		return receptorData.actions[noteData];
 
-		animation.addByPrefix('static', 'arrow${direction.toUpperCase()}');
-		animation.addByPrefix('pressed', '$direction press', 30, false);
-		animation.addByPrefix('confirm', '$direction confirm', 30, false);
-		setGraphicSize(Std.int(width * 0.7));
-	}
-
-	public static function getArrowFromNum(num:Int)
-	{
-		var stringSex:String = "";
-		switch (num)
-		{
-			case 0:
-				stringSex = "left";
-			case 1:
-				stringSex = "down";
-			case 2:
-				stringSex = "up";
-			case 3:
-				stringSex = "right";
-		}
-		return stringSex;
-	}
-
-	public static function getColorFromNum(num:Int)
-	{
-		var stringSex:String = "";
-		switch (num)
-		{
-			case 0:
-				stringSex = "purple";
-			case 1:
-				stringSex = "blue";
-			case 2:
-				stringSex = "green";
-			case 3:
-				stringSex = "red";
-		}
-		return stringSex;
-	}
+	public function getNoteColor()
+		return receptorData.colors[noteData];
 }

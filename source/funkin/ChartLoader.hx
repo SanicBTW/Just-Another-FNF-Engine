@@ -102,7 +102,7 @@ class ChartLoader
 						if (noteQueue.length > 0)
 							oldNote = noteQueue[Std.int(noteQueue.length - 1)];
 
-						var newNote:Note = new Note(strumTime, noteData, strumLine, oldNote);
+						var newNote:Note = new Note(strumTime, noteData, 'default', strumLine, oldNote);
 						newNote.mustPress = hitNote;
 						newNote.sustainLength = Math.round(songNotes[2] / curChange.stepCrochet) * curChange.stepCrochet;
 						newNote.noteType = songNotes[3];
@@ -117,7 +117,7 @@ class ChartLoader
 							{
 								var time:Float = strumTime + (curChange.stepCrochet * note) + curChange.stepCrochet;
 
-								var sustainNote:Note = new Note(time, noteData, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
+								var sustainNote:Note = new Note(time, noteData, 'default', strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 								sustainNote.noteType = newNote.noteType;
 

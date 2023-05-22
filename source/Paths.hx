@@ -76,6 +76,13 @@ class Paths
 	public static inline function file(file:String, type:AssetType = TEXT)
 		return getPath(file, type);
 
+	public static inline function text(key:String):String
+		return Assets.getText(key);
+
+	// better parsing soon ig
+	public static inline function module(key:String):String
+		return file(key.endsWith(".hxs") ? key : '$key.hxs');
+
 	public static inline function sound(key:String):Sound
 		return Cache.getSound(getPath('sounds/$key.ogg', SOUND));
 
@@ -128,8 +135,8 @@ class Paths
 		#end
 	}
 
-	public static inline function getSparrowAtlas(key:String)
-		return FlxAtlasFrames.fromSparrow(image(key), file('images/$key.xml', TEXT));
+	public static inline function getSparrowAtlas(key:String, ?folder:String = 'images'):FlxAtlasFrames
+		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png', IMAGE)), getPath('$folder/$key.xml', IMAGE));
 
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");

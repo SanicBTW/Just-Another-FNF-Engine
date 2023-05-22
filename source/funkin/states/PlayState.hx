@@ -47,12 +47,12 @@ class PlayState extends MusicBeatState
 
 		var separation:Float = FlxG.width / 4;
 
-		opponentStrums = new StrumLine((FlxG.width / 2) - separation, 4);
+		opponentStrums = new StrumLine((FlxG.width / 2) - separation, FlxG.height / 6);
 		opponentStrums.botPlay = true;
 		opponentStrums.onBotHit.add(botHit);
 		strumLines.add(opponentStrums);
 
-		playerStrums = new StrumLine((FlxG.width / 2) + separation, 4);
+		playerStrums = new StrumLine((FlxG.width / 2) + separation, FlxG.height / 6);
 		playerStrums.onMiss.add(noteMiss);
 		strumLines.add(playerStrums);
 

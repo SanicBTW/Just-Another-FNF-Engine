@@ -29,10 +29,7 @@ class Cache
 	private static var keyedSounds:Map<String, Sound> = [];
 
 	// Non-cleanable assets
-	private static var persistentAssets:Array<String> = [
-		"funkin:assets/funkin/images/NOTE_assets.png",
-		"funkin:assets/funkin/images/alphabet.png"
-	];
+	private static var persistentAssets:Array<String> = ["funkin:assets/funkin/images/alphabet.png"];
 
 	// Use GPU to render textures
 	public static var gpuRender:Bool = false;
@@ -306,6 +303,13 @@ class Cache
 
 	public static inline function exists(id:String):Bool
 		return Assets.exists(id);
+
+	// For the note modules
+	public static function makePersistent(id:String)
+	{
+		if (!persistentAssets.contains(id))
+			persistentAssets.push(id);
+	}
 }
 
 enum abstract CacheMap(String) to String

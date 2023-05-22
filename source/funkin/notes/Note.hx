@@ -1,7 +1,10 @@
 package funkin.notes;
 
+import backend.ScriptHandler;
 import base.Conductor;
 import flixel.FlxSprite;
+import funkin.notes.Receptor.ReceptorData;
+import haxe.Json;
 
 class Note extends FlxSprite
 {
@@ -46,21 +49,28 @@ class Note extends FlxSprite
 
 	// Psych
 	public var noteType(default, set):String = null;
-	public var texture(default, set):String = null;
 
+	// public var texture(default, set):String = null;
 	// FE:L
 	public var endHoldOffset:Float = Math.NEGATIVE_INFINITY;
 
-	@:noCompletion
-	private function set_texture(value:String):String
-	{
-		if (texture != value)
-			reloadNote('', value);
+	// FE:R
+	public static var scriptCache:Map<String, ForeverModule> = [];
+	public static var dataCache:Map<String, ReceptorData> = [];
 
-		texture = value;
-		return value;
-	}
+	public var noteModule:ForeverModule;
+	public var receptorData:ReceptorData;
 
+	/*
+		@:noCompletion
+		private function set_texture(value:String):String
+		{
+			if (texture != value)
+				reloadNote('', value);
+
+			texture = value;
+			return value;
+	}*/
 	@:noCompletion
 	private function set_noteType(value:String):String
 	{
@@ -73,7 +83,7 @@ class Note extends FlxSprite
 		return value;
 	}
 
-	public function new(strumTime:Float, noteData:Int, strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
+	public function new(strumTime:Float, noteData:Int, noteType:String = 'default', strumLine:Int, ?prevNote:Note, ?isSustain:Bool = false)
 	{
 		super();
 
@@ -91,90 +101,76 @@ class Note extends FlxSprite
 
 		if (noteData > -1)
 		{
-			texture = '';
+			loadNote(noteType);
 			x += swagWidth * noteData;
-
-			if (!isSustain)
-				animation.play('${Receptor.getColorFromNum(noteData)}Scroll');
 		}
+	}
 
-		if (isSustain && prevNote != null)
+	public function loadNote(noteType:String)
+	{
+		receptorData = returnNoteData(noteType);
+		noteModule = returnNoteScript(noteType);
+
+		noteModule.interp.variables.set('note', this);
+		noteModule.interp.variables.set('getNoteDirection', getNoteDirection);
+		noteModule.interp.variables.set('getNoteColor', getNoteColor);
+
+		var generationScript:String = isSustain ? 'generateSustain' : 'generateNote';
+		if (noteModule.exists(generationScript))
+			noteModule.get(generationScript)();
+
+		antialiasing = receptorData.antialiasing;
+		setGraphicSize(Std.int(frameWidth * receptorData.size));
+		updateHitbox();
+
+		updateSustainScale();
+	}
+
+	public function updateSustainScale()
+	{
+		if (isSustain)
 		{
 			alpha = 0.6;
-			offsetX += width / 2;
-
-			animation.play('${Receptor.getColorFromNum(noteData)}holdend');
-			updateHitbox();
-
-			offsetX -= width / 2;
-
-			if (prevNote.isSustain)
+			if (prevNote != null && prevNote.exists)
 			{
-				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
-				prevNote.updateHitbox();
-
-				prevNote.scale.y *= ((Conductor.stepCrochet / 100) * 1.5) * (Conductor.songSpeed / Conductor.songRate);
-				prevNote.updateHitbox();
+				if (prevNote.isSustain)
+				{
+					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((135 / 100) * (1.7 / prevNote.receptorData.size)) * Conductor.songSpeed;
+					prevNote.updateHitbox();
+					offsetX = prevNote.offsetX;
+				}
+				else
+					offsetX = ((prevNote.width / 2) - (width / 2));
 			}
 		}
-
-		x += offsetX;
 	}
 
-	private function reloadNote(prefix:String = '', texture:String = '', suffix:String = '')
+	public static function returnNoteData(noteType:String):ReceptorData
 	{
-		if (prefix == null)
-			prefix = '';
-		if (texture == null)
-			texture = '';
-		if (suffix == null)
-			suffix = '';
-
-		var skin:String = texture;
-		if (texture.length < 1)
+		if (!dataCache.exists(noteType))
 		{
-			skin = Conductor.SONG.arrowSkin;
-			if (skin == null || skin.length < 1)
-				skin = 'NOTE_assets';
+			trace('Setting note data $noteType');
+			dataCache.set(noteType, cast Json.parse(Paths.text(Paths.file('notetypes/$noteType/$noteType.json'))));
 		}
-
-		var animName:String = null;
-		if (animation.curAnim != null)
-			animName = animation.curAnim.name;
-
-		var arraySkin:Array<String> = skin.split('/');
-		arraySkin[arraySkin.length - 1] = prefix + arraySkin[arraySkin.length - 1] + suffix;
-
-		var lastScaleY:Float = scale.y;
-		var blahblah:String = arraySkin.join('/');
-
-		frames = Paths.getSparrowAtlas(blahblah);
-		loadNoteAnims();
-		antialiasing = true;
-
-		if (isSustain)
-			scale.y = lastScaleY;
-
-		updateHitbox();
-
-		if (animName != null)
-			animation.play(animName, true);
+		return dataCache.get(noteType);
 	}
 
-	private function loadNoteAnims()
+	public static function returnNoteScript(noteType:String):ForeverModule
 	{
-		var color:String = Receptor.getColorFromNum(noteData);
-		animation.addByPrefix('${color}Scroll', '${color}0');
-
-		if (isSustain)
+		// load up the note script
+		if (!scriptCache.exists(noteType))
 		{
-			animation.addByPrefix('${color}hold', '$color hold piece');
-			animation.addByPrefix('${color}holdend', '$color hold end');
+			trace('Setting note script $noteType');
+			scriptCache.set(noteType, ScriptHandler.loadModule('notetypes/$noteType/$noteType'));
 		}
-
-		setGraphicSize(Std.int(width * 0.7));
-		updateHitbox();
+		return scriptCache.get(noteType);
 	}
+
+	function getNoteDirection()
+		return receptorData.actions[noteData];
+
+	function getNoteColor()
+		return receptorData.colors[noteData];
 
 	override function update(elapsed:Float)
 	{

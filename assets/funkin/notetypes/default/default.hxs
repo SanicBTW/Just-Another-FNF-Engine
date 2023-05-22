@@ -1,0 +1,43 @@
+var folder:String = 'notetypes/default';
+var graphicPath:String = 'funkin:assets/funkin/notetypes/default/NOTE_assets.png';
+
+function generateReceptor()
+{
+    receptor.frames = Paths.getSparrowAtlas('NOTE_assets', folder);
+    Cache.makePersistent(graphicPath);
+
+    var direction:String = getNoteDirection();
+    receptor.action = 'note_' + direction;
+
+	receptor.animation.addByPrefix('static', 'arrow' + direction.toUpperCase());
+	receptor.animation.addByPrefix('pressed', direction + ' press', 24, false);
+	receptor.animation.addByPrefix('confirm', direction + ' confirm', 24, false);
+    receptor.updateHitbox();
+    receptor.playAnim('static');
+}
+
+function generateNote()
+{
+    note.frames = Paths.getSparrowAtlas('NOTE_assets', folder);
+    Cache.makePersistent(graphicPath);
+
+    var color:String = getNoteColor();
+    note.animation.addByPrefix(color + 'Scroll', color + '0');
+
+    note.animation.play(color+ 'Scroll');
+}
+
+// Maybe if the sustain isnt an end piece just add that animation?
+function generateSustain()
+{
+    note.frames = Paths.getSparrowAtlas('NOTE_assets', folder);
+    Cache.makePersistent(graphicPath);
+
+    var color:String = getNoteColor();
+    note.animation.addByPrefix(color + 'hold', color + ' hold piece');
+    note.animation.addByPrefix(color + 'holdend', color + ' hold end');
+
+    note.animation.play(color + 'holdend');
+    if (note.prevNote != null && note.prevNote.isSustain)
+        note.prevNote.animation.play(color + 'hold');
+}
