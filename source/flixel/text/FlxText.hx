@@ -839,20 +839,23 @@ class FlxText extends FlxSprite
 			var intWidth:Int = Std.int(newWidth);
 			var intHeight:Int = Std.int(newHeight);
 
+			#if !html5
 			var newName:String = 'text:${intWidth}x${intHeight}';
 
 			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
 			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT, false), GRAPHIC, newName));
+			#else
+			var key:String = FlxG.bitmap.getUniqueKey("text");
+			_bitmap = new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT);
+			makeGraphic(intWidth, intHeight, FlxColor.TRANSPARENT, false, key);
+			#end
 
 			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			if (_hasBorderAlpha)
 				_borderPixels = _bitmap.clone();
 			frameHeight = Std.int(height);
 			textField.height = height * 1.2;
-			_flashRect.x = 0;
-			_flashRect.y = 0;
-			_flashRect.width = newWidth;
-			_flashRect.height = newHeight;
+			_flashRect.setTo(0, 0, newWidth, newHeight);
 		}
 		else // Else just clear the old buffer before redrawing the text
 		{
@@ -861,8 +864,12 @@ class FlxText extends FlxSprite
 			{
 				if (_borderPixels == null)
 				{
+					#if !html5
 					var newName:String = 'textbp:${frameWidth}x${frameHeight}';
 					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+					#else
+					_borderPixels = new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT);
+					#end
 				}
 				else
 					_borderPixels.fillRect(_flashRect, FlxColor.TRANSPARENT);

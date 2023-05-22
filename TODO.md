@@ -20,3 +20,5 @@ Fix the fucking cache
 FlxText keeps crashing the game when FlxGraphic.defaultPersist = true
 
 Add a compilation flag to disable counters completely
+
+Real support for online charts bruh

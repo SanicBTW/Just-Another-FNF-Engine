@@ -3,6 +3,7 @@ package backend;
 import haxe.ds.Either;
 import haxe.io.Bytes;
 import haxe.io.Path;
+#if sys
 import lime.app.Application;
 import lime.system.System;
 import sys.FileSystem;
@@ -93,6 +94,23 @@ class IO
 		return null;
 	}
 }
+#else
+// Only copy fields to avoid a bunch of compilation shits
+class IO
+{
+	public static var persistentTemp:Bool = false;
+
+	private static var appPath:String = "";
+
+	public static function Initialize() {}
+
+	public static function cleanTemp() {}
+
+	public static function saveFile<T>(name:String, content:T) {}
+
+	public static function getFile(file:String, method:FileGetType) {}
+}
+#end
 
 enum abstract FileGetType(String) to String
 {

@@ -2,7 +2,7 @@
 - Default Sound Tray for mine
 - Removed default FlxSave
 - ~~Added soloud~~
-- FlxText actually reusing graphics
+- FlxText actually reusing graphics (not on html5)
 - ~~Automatically set scroll factor Y to 0 (for the Scale Mode)~~ (Pending fix)
 - Default antialiasing to true
 - Added counter variables

@@ -25,6 +25,7 @@ class ChartLoader
 		var rawChart:String = "";
 		var swagSong:SongData = null;
 
+		#if sys
 		if (songName.contains("temp") || songName.contains("persistent"))
 		{
 			songName = Path.withoutExtension(songName);
@@ -36,6 +37,10 @@ class ChartLoader
 			var formattedSongName:String = Paths.formatString(songName);
 			rawChart = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
 		}
+		#else
+		var formattedSongName:String = Paths.formatString(songName);
+		rawChart = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
+		#end
 
 		swagSong = SongTools.loadSong(rawChart);
 

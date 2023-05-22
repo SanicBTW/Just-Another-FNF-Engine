@@ -82,7 +82,10 @@ class Main extends Sprite
 
 		// vsync shit right here bois framerate = lime.system.System.getDisplay(0).currentMode.refreshRate;
 
-		// FlxGraphic.defaultPersist = true;
+		#if html5
+		// because dumbass cant actually keep shit cached, thanks js gc
+		FlxGraphic.defaultPersist = true;
+		#end
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();

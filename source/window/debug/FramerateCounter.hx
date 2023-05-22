@@ -12,11 +12,6 @@ class FramerateCounter extends OFLSprite
 {
 	public var currentFPS(default, null):Float;
 
-	// time since last check shit something dunno
-	public var timeLast(default, null):Float;
-
-	@:noCompletion private var prevTime:Float = Date.now().getTime();
-
 	@:noCompletion private var cacheCount:Int;
 	@:noCompletion private var currentTime:Float;
 	@:noCompletion private var times:Array<Float>;
@@ -70,14 +65,11 @@ class FramerateCounter extends OFLSprite
 		// text shit
 		lerpTrack(fpsText, "x", bg.x, lerpVal);
 		lerpTrack(fpsText, "y", bg.y, lerpVal);
-		updateFPSText(lerpVal);
+		updateFPSText();
 	}
 
-	private function updateFPSText(lerpVal:Float)
+	private function updateFPSText()
 	{
-		var prevTime:Float = this.prevTime;
-		var time:Float = Date.now().getTime();
-
 		currentTime += rawElapsed;
 		times.push(currentTime);
 
@@ -89,20 +81,12 @@ class FramerateCounter extends OFLSprite
 		currentFPS = Math.round((times.length + cacheCount) / 2);
 
 		if (times.length != cacheCount)
-		{
-			if (time > prevTime + 1000)
-			{
-				timeLast = FlxMath.roundDecimal(((time - prevTime) / 10000), 2);
-				this.prevTime = time;
-			}
-
-			fpsText.text = 'FPS: $currentFPS (${timeLast}ms)';
-		}
+			fpsText.text = 'FPS: $currentFPS';
 
 		if (currentFPS < FlxG.updateFramerate / 2)
-			fpsText.textColor = FlxColor.interpolate(0xFFFFFFFF, 0xFFFF0000, lerpVal);
+			fpsText.textColor = 0xFFFF0000;
 		else
-			fpsText.textColor = FlxColor.interpolate(0xFFFF0000, 0xFFFFFFFF, lerpVal);
+			fpsText.textColor = 0xFFFFFFFF;
 
 		cacheCount = times.length;
 	}

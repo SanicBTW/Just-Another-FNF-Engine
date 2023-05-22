@@ -201,6 +201,7 @@ class SongSelection extends InteractionState
 						}
 					case "funkin":
 						{
+							#if sys
 							var curRec:FunkinRecord = songStore.get(curText);
 
 							var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
@@ -235,6 +236,7 @@ class SongSelection extends InteractionState
 									}
 								}, BYTES);
 							}, BYTES);
+							#end
 						}
 				}
 		}
