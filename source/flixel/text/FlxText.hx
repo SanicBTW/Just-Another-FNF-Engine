@@ -839,7 +839,7 @@ class FlxText extends FlxSprite
 			var intWidth:Int = Std.int(newWidth);
 			var intHeight:Int = Std.int(newHeight);
 
-			#if !html5
+			#if CACHE_FLX_TEXT
 			var newName:String = 'text:${intWidth}x${intHeight}';
 
 			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
@@ -864,7 +864,7 @@ class FlxText extends FlxSprite
 			{
 				if (_borderPixels == null)
 				{
-					#if !html5
+					#if CACHE_FLX_TEXT
 					var newName:String = 'textbp:${frameWidth}x${frameHeight}';
 					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
 					#else

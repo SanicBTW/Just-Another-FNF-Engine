@@ -83,8 +83,8 @@ class Main extends Sprite
 
 		// vsync shit right here bois framerate = lime.system.System.getDisplay(0).currentMode.refreshRate;
 
-		#if html5
-		// because dumbass cant actually keep shit cached, thanks js gc
+		// make it persistent for html5 cuz its gc sucks ass
+		#if (!CACHE_FLX_TEXT || html5)
 		FlxGraphic.defaultPersist = true;
 		#end
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));

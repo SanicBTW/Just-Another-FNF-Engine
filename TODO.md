@@ -15,10 +15,6 @@ Add proper network cache
 
 Improve Filesystem operations (IO) and the temp shit lol (it keeps throwing null on closing and cleanin files bru)
 
-Fix the fucking cache
-
-FlxText keeps crashing the game when FlxGraphic.defaultPersist = true
-
 Add a compilation flag to disable counters completely
 
 Real support for online charts bruh

@@ -51,14 +51,22 @@
 	
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 
-	<haxedef name="HXCPP_GC_BIG_BLOCKS" if="windows" />
-	<haxedef name="HXCPP_CHECK_POINTER" if="windows" />
-	<haxedef name="HXCPP_STACK_LINE" if="windows" />
+	<haxedef name="HXCPP_GC_BIG_BLOCKS" />
+	<haxedef name="HXCPP_CHECK_POINTER" />
+	<haxedef name="HXCPP_STACK_LINE" />
+
+	<haxedef name="hscriptPos" />
 
 	<!-- _________________________________ Custom _______________________________ -->
 
+	<!-- Allow the engine to access the FileSystem -->
 	<define name="FS_ACCESS" if="windows" />
+
+	<!-- Enable Discord Rich Presence -->
 	<define name="DISCORD_PRESENCE" if="windows" />
+
+	<!-- Cache FlxText's graphics, crashes less without it actually -->
+	<!-- <define name="CACHE_FLX_TEXT" unless="html5"/> -->
 
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>
