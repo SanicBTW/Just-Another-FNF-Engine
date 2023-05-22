@@ -1,8 +1,9 @@
 package base;
 
+import base.ScriptableState.ScriptableSubState;
 import funkin.SongTools.SongData;
 
-class MusicBeatState extends InteractionState implements MusicHandler
+class MusicBeatState extends ScriptableState implements MusicHandler
 {
 	public var updateTime:Bool = true;
 	@:isVar public var SONG(get, never):SongData;
@@ -54,7 +55,7 @@ class MusicBeatState extends InteractionState implements MusicHandler
 	public function beatHit() {}
 }
 
-class MusicBeatSubState extends InteractionState implements MusicHandler
+class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 {
 	public var updateTime:Bool = true;
 	@:isVar public var SONG(get, never):SongData;

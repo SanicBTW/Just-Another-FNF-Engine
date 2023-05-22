@@ -4,8 +4,9 @@ import Paths.Libraries;
 import backend.Cache;
 import backend.Controls;
 import base.Conductor;
-import base.InteractionState;
 import base.MusicBeatState;
+import base.ScriptableState;
+import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -26,13 +27,23 @@ import network.pocketbase.Collection;
 import network.pocketbase.Record;
 import openfl.display.BitmapData;
 import openfl.media.Sound;
+import transitions.FadeTransition;
 
 class PlayState extends MusicBeatState
 {
+	// Cameras
+	public var camHUD:FlxCamera;
+	public var camGame:FlxCamera;
+	public var camOther:FlxCamera;
+
+	// Strum handling
 	private var strumLines:FlxTypedGroup<StrumLine>;
 
 	public var playerStrums:StrumLine;
 	public var opponentStrums:StrumLine;
+
+	// Stage, UI and characters
+	public static var stageBuild:Stage;
 
 	var actionList:Array<Action> = [Action.NOTE_LEFT, Action.NOTE_DOWN, Action.NOTE_UP, Action.NOTE_RIGHT];
 
@@ -43,7 +54,21 @@ class PlayState extends MusicBeatState
 		ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
 		Controls.targetActions = NOTES;
 
+		camGame = new FlxCamera();
+		FlxG.cameras.reset(camGame);
+		camGame.bgColor.alpha = 0;
+		FlxG.cameras.setDefaultDrawTarget(camGame, true);
+
+		camHUD = new FlxCamera();
+		camHUD.bgColor.alpha = 0;
+		FlxG.cameras.add(camHUD, false);
+
+		camOther = new FlxCamera();
+		camOther.bgColor.alpha = 0;
+		FlxG.cameras.add(camOther, false);
+
 		strumLines = new FlxTypedGroup<StrumLine>();
+		strumLines.cameras = [camHUD];
 
 		var separation:Float = FlxG.width / 4;
 
@@ -58,15 +83,24 @@ class PlayState extends MusicBeatState
 
 		add(strumLines);
 
+		stageBuild = new Stage("stage");
+		add(stageBuild);
+
 		conductorTracking = new FlxText(15, 15, 0, 'Steps: ?\n Beats: ?\nBPM: ${Conductor.bpm}', 24);
 		conductorTracking.setFormat(Paths.font('vcr.ttf'), 24);
 		add(conductorTracking);
 
+		FlxG.camera.zoom = (stageBuild != null) ? stageBuild.defaultCamZoom : 1;
+
+		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
+
 		super.create();
+
+		FadeTransition.nextCamera = camOther;
 
 		Conductor.boundInst.onComplete = () ->
 		{
-			InteractionState.switchState(new SongSelection());
+			ScriptableState.switchState(new SongSelection());
 		}
 	}
 
@@ -107,7 +141,7 @@ class PlayState extends MusicBeatState
 			case "back":
 				Conductor.boundInst.stop();
 				Conductor.boundVocals.stop();
-				InteractionState.switchState(new SongSelection());
+				ScriptableState.switchState(new SongSelection());
 
 			case "confirm":
 				Conductor.boundInst.play();

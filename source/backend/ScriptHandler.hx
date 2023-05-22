@@ -1,20 +1,27 @@
 package backend;
 
-import base.Conductor;
-import flixel.*;
-import flixel.math.*;
-import flixel.tweens.*;
-import flixel.util.*;
-import haxe.ds.StringMap;
-import hscript.Expr;
-import hscript.Interp;
-import hscript.Parser;
-
-/***
+/**
  *  Mix between my [FE:R HTML5 Port](https://github.com/SanicBTW/FNF-Forever-Engine/blob/master/source/base/ScriptHandler.hx),
  *  [HXS Branch on my PE 0.3.2h repo](https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/tree/hxs-forever/source) and
  *  some cancelled Lullaby code
  */
+import Paths.Libraries;
+import base.Conductor;
+import flixel.*;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.math.*;
+import flixel.tweens.*;
+import flixel.util.*;
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
+import haxe.ds.StringMap;
+import haxe.io.Path;
+import hscript.Expr;
+import hscript.Interp;
+import hscript.Parser;
+import openfl.media.Sound;
+import openfl.utils.Assets;
+
 class Colors
 {
 	public static function fromRGB(Red:Int, Green:Int, Blue:Int, Alpha:Int = 255):FlxColor
@@ -33,7 +40,7 @@ class ScriptHandler
 	 */
 	public static var exp:StringMap<Dynamic>;
 
-	public static var parser:Parser = new Parser();
+	private static var parser:Parser = new Parser();
 
 	/**
 	 * [Initializes the basis of the Scripting system]
@@ -60,7 +67,7 @@ class ScriptHandler
 		exp.set("FlxColor", Colors);
 
 		// Classes (Vanilla)
-		exp.set('Paths', Paths);
+		exp.set('VPaths', Paths); // Vanilla Paths, basically access the whole engine Paths
 		exp.set("Conductor", Conductor);
 
 		// Classes (Engine)
@@ -74,30 +81,50 @@ class ScriptHandler
 			exp.set("PlayState", PlayState);
 			exp.set("SaveData", SaveData); */
 
-		// Classes (Forever)
 		parser.allowTypes = true;
 		parser.allowJSON = true;
 	}
 
-	public static function loadModule(path:String, ?extraParams:StringMap<Dynamic>):ForeverModule
+	public static function loadModule(file:String, ?assetFolder:String, ?extraParams:StringMap<Dynamic>):ForeverModule
 	{
-		trace('Loading module $path');
-		var modulePath:String = Paths.module(path);
-		return new ForeverModule(parser.parseString(Paths.text(modulePath), modulePath), extraParams);
+		// Remove the extension as we will manually add it (and to avoid errors)
+		file = Path.withoutExtension(file);
+		trace('Loading module $file');
+
+		var modulePath:String = Paths.file('${assetFolder}/$file.hxs');
+		trace('Full path $modulePath');
+
+		var expr:Expr = null;
+		var module:ForeverModule = null;
+
+		try
+		{
+			expr = parser.parseString(Paths.text(modulePath), modulePath);
+			module = new ForeverModule(expr, assetFolder, extraParams);
+
+			// @:privateAccess
+			// cast(flixel.FlxG.state, base.ScriptableState).moduleBatch.push(module);
+		}
+		catch (ex)
+		{
+			trace(ex);
+		}
+
+		return module;
 	}
 }
 
 /**
  * The basic module class, for handling externalized scripts individually
  */
-class ForeverModule
+class ForeverModule implements IFlxDestroyable
 {
 	public var interp:Interp;
 
 	// Lifetime
 	public var active:Bool = true;
 
-	public function new(contents:Expr, ?extraParams:StringMap<Dynamic>)
+	public function new(contents:Expr, ?assetFolder:String, ?extraParams:StringMap<Dynamic>)
 	{
 		interp = new Interp();
 
@@ -112,14 +139,21 @@ class ForeverModule
 				interp.variables.set(i, extraParams.get(i));
 		}
 
+		// Define the current path (used within the script itself)
+		var modulePaths:ModulePaths = new ModulePaths(assetFolder);
+		interp.variables.set('Paths', modulePaths);
+
 		interp.execute(contents);
 	}
 
 	/**
-	 * [Sets the module as inactive, and disposing the interp]
+	 * [Sets the module as inactive and executes cleaning functions]
 	 */
-	public function dispose()
+	public function destroy()
 	{
+		if (exists('onDestroy'))
+			get('onDestroy')();
+
 		active = false;
 		interp = null;
 	}
@@ -147,4 +181,47 @@ class ForeverModule
 	 */
 	public function exists(field:String):Bool
 		return interp.variables.exists(field);
+}
+
+// https://github.com/SanicBTW/Forever-Engine-Archive/blob/rewrite/source/Paths.hx#L17
+class ModulePaths
+{
+	private var localPath:String;
+
+	public function new(localPath:String)
+	{
+		this.localPath = localPath;
+	}
+
+	public function getPath(file:String, ?library:Null<String>):String
+	{
+		if (library != null)
+			return getLibraryPath('$localPath/$file', library);
+
+		return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$localPath/$file';
+	}
+
+	public inline function getLibraryPath(file:String, library:String = "funkin")
+		return '$library:assets/$library/$file';
+
+	public inline function file(file:String, ?library:Null<String>)
+		return getPath(file, library);
+
+	public inline function text(path:String):String
+		return Assets.getText(path);
+
+	public inline function sound(key:String, ?library:Null<String>):Sound
+		return Cache.getSound(getPath('sounds/$key.ogg', library));
+
+	public inline function font(key:String)
+		return 'assets/fonts/$key';
+
+	public inline function music(key:String, ?library:Null<String>):Sound
+		return Cache.getSound(getPath('music/$key.ogg', library));
+
+	public inline function image(key:String, ?library:Null<String>):FlxGraphic
+		return Cache.getGraphic(getPath('images/$key.png', library));
+
+	public inline function getSparrowAtlas(key:String, ?folder:String = 'images', ?library:Null<String>):FlxAtlasFrames
+		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png', library)), getPath('$folder/$key.xml', library));
 }

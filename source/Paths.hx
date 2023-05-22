@@ -62,7 +62,7 @@ class Paths
 			return path;
 
 		// Returns the preload path
-		return '${Libraries.DEFAULT}:assets/funkin/$file';
+		return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$file';
 	}
 
 	public static function getLibraryFiles(?filter:String):Array<String>
@@ -76,12 +76,8 @@ class Paths
 	public static inline function file(file:String, type:AssetType = TEXT)
 		return getPath(file, type);
 
-	public static inline function text(key:String):String
-		return Assets.getText(key);
-
-	// better parsing soon ig
-	public static inline function module(key:String):String
-		return file(key.endsWith(".hxs") ? key : '$key.hxs');
+	public static inline function text(path:String):String
+		return Assets.getText(path);
 
 	public static inline function sound(key:String):Sound
 		return Cache.getSound(getPath('sounds/$key.ogg', SOUND));

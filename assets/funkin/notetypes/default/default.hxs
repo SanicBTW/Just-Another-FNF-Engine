@@ -1,9 +1,8 @@
-var folder:String = 'notetypes/default';
-var graphicPath:String = 'funkin:assets/funkin/notetypes/default/NOTE_assets.png';
+var graphicPath = 'funkin:assets/funkin/notetypes/default/images/NOTE_assets.png';
 
 function generateReceptor()
 {
-    receptor.frames = Paths.getSparrowAtlas('NOTE_assets', folder);
+    receptor.frames = Paths.getSparrowAtlas('NOTE_assets');
     Cache.makePersistent(graphicPath);
 
     var direction:String = getNoteDirection();
@@ -18,7 +17,7 @@ function generateReceptor()
 
 function generateNote()
 {
-    note.frames = Paths.getSparrowAtlas('NOTE_assets', folder);
+    note.frames = Paths.getSparrowAtlas('NOTE_assets');
     Cache.makePersistent(graphicPath);
 
     var color:String = getNoteColor();
@@ -30,7 +29,7 @@ function generateNote()
 // Maybe if the sustain isnt an end piece just add that animation?
 function generateSustain()
 {
-    note.frames = Paths.getSparrowAtlas('NOTE_assets', folder);
+    note.frames = Paths.getSparrowAtlas('NOTE_assets');
     Cache.makePersistent(graphicPath);
 
     var color:String = getNoteColor();
@@ -40,4 +39,9 @@ function generateSustain()
     note.animation.play(color + 'holdend');
     if (note.prevNote != null && note.prevNote.isSustain)
         note.prevNote.animation.play(color + 'hold');
+}
+
+function onDestroy()
+{
+    Cache.removePersistent(graphicPath);
 }

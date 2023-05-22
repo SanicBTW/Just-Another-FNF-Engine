@@ -1,14 +1,17 @@
 package base;
 
 import backend.Controls;
+import backend.ScriptHandler.ForeverModule;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.FlxSubState;
 import transitions.FadeTransition;
 
 // Holds the transitions, controls and language (soon)
-class InteractionState extends FlxState
+class ScriptableState extends FlxState
 {
+	private var moduleBatch:Array<ForeverModule> = [];
+
 	override function create()
 	{
 		if (!FadeTransition.skipTransOut)
@@ -25,12 +28,15 @@ class InteractionState extends FlxState
 	{
 		Controls.onActionPressed.remove(onActionPressed);
 		Controls.onActionReleased.remove(onActionReleased);
+		for (module in moduleBatch)
+			module.destroy();
+
 		super.destroy();
 	}
 
 	public static function switchState(nextState:FlxState)
 	{
-		var curState:InteractionState = cast FlxG.state;
+		var curState:ScriptableState = cast FlxG.state;
 		if (!FadeTransition.skipTransIn)
 		{
 			curState.openSubState(new FadeTransition(0.6, false));
@@ -52,8 +58,10 @@ class InteractionState extends FlxState
 	private function onActionReleased(action:String) {}
 }
 
-class InteractionSubState extends FlxSubState
+class ScriptableSubState extends FlxSubState
 {
+	private var moduleBatch:Array<ForeverModule> = [];
+
 	override function create()
 	{
 		Controls.onActionPressed.add(onActionPressed);
@@ -65,6 +73,9 @@ class InteractionSubState extends FlxSubState
 	{
 		Controls.onActionPressed.remove(onActionPressed);
 		Controls.onActionReleased.remove(onActionReleased);
+		for (module in moduleBatch)
+			module.destroy();
+
 		super.destroy();
 	}
 

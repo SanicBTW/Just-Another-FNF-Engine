@@ -304,11 +304,17 @@ class Cache
 	public static inline function exists(id:String):Bool
 		return Assets.exists(id);
 
-	// For the note modules
-	public static function makePersistent(id:String)
+	// For the modules
+	public static function makePersistent(file:String)
 	{
-		if (!persistentAssets.contains(id))
-			persistentAssets.push(id);
+		if (!persistentAssets.contains(file))
+			persistentAssets.push(file);
+	}
+
+	public static function removePersistent(file:String)
+	{
+		if (persistentAssets.contains(file))
+			persistentAssets.remove(file);
 	}
 }
 

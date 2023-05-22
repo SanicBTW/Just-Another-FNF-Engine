@@ -6,6 +6,7 @@ import flixel.FlxSprite;
 import funkin.notes.Receptor.ReceptorData;
 import haxe.Json;
 
+// Rewrite soon
 class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;
@@ -161,7 +162,7 @@ class Note extends FlxSprite
 		if (!scriptCache.exists(noteType))
 		{
 			trace('Setting note script $noteType');
-			scriptCache.set(noteType, ScriptHandler.loadModule('notetypes/$noteType/$noteType'));
+			scriptCache.set(noteType, ScriptHandler.loadModule(noteType, 'notetypes/$noteType'));
 		}
 		return scriptCache.get(noteType);
 	}

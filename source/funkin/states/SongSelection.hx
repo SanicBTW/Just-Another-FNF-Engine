@@ -3,7 +3,7 @@ package funkin.states;
 import Paths.Libraries;
 import backend.Controls;
 import backend.IO;
-import base.InteractionState;
+import base.ScriptableState;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -19,7 +19,7 @@ import network.pocketbase.Record.FunkinRecord;
 
 using StringTools;
 
-class SongSelection extends InteractionState
+class SongSelection extends ScriptableState
 {
 	private final pages:Array<String> = ["libraries", "funkin"];
 	private final libraries:Array<Libraries> = [FOF, SIXH];
@@ -40,7 +40,7 @@ class SongSelection extends InteractionState
 
 	private var networkCb:MultiCallback = new MultiCallback(() ->
 	{
-		InteractionState.switchState(new PlayState());
+		ScriptableState.switchState(new PlayState());
 	});
 
 	@:noCompletion
@@ -197,7 +197,7 @@ class SongSelection extends InteractionState
 					case "libraries":
 						{
 							songSelected = {songName: curText, songDiff: diffStore.get(curText)};
-							InteractionState.switchState(new PlayState());
+							ScriptableState.switchState(new PlayState());
 						}
 					case "funkin":
 						{
