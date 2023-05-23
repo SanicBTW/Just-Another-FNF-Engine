@@ -16,13 +16,14 @@ import network.MultiCallback;
 import network.pocketbase.Collection;
 import network.pocketbase.PBRequest;
 import network.pocketbase.Record.FunkinRecord;
+import window.debug.Overlay.OverlayCorner;
 
 using StringTools;
 
 class SongSelection extends ScriptableState
 {
 	private final pages:Array<String> = ["libraries", "funkin"];
-	private final libraries:Array<Libraries> = [FOF, SIXH];
+	private final libraries:Array<OverlayCorner> = [BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT];
 	private var curPage(default, set):Int = 0;
 	private var curSelected(default, set):Int = 0;
 	private var curLib(default, set):Int = 0;
@@ -83,7 +84,7 @@ class SongSelection extends ScriptableState
 		{
 			case "libraries":
 				{
-					Paths.changeLibrary(libraries[curLib], () ->
+					Paths.changeLibrary(FOF, () ->
 					{
 						diffStore.clear();
 
@@ -139,10 +140,9 @@ class SongSelection extends ScriptableState
 		if (curLib >= libraries.length)
 			curLib = 0;
 
-		curPage = 0;
+		// curPage = 0;
 
-		@:privateAccess
-		libIndicator.text = 'Library loaded: ${Paths._library}';
+		FlxG.game.overlay._cornerPos = libraries[curLib];
 
 		return value;
 	}

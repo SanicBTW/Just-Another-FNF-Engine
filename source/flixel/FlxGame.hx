@@ -229,14 +229,9 @@ class FlxGame extends Sprite
 	#end
 
 	/**
-	 * The FPS Counter display container.
+	 * The Debug Overlay that contains stats in-game
 	 */
-	var fpsCounter:FramerateCounter;
-
-	/**
-	 * The Memory Counter display container.
-	 */
-	var memoryCounter:MemoryCounter;
+	public var overlay:Overlay;
 
 	/**
 	 * Instantiate a new game object.
@@ -342,11 +337,8 @@ class FlxGame extends Sprite
 		#end
 		#end
 
-		fpsCounter = new FramerateCounter(10, 0);
-		addChild(fpsCounter);
-
-		memoryCounter = new MemoryCounter(10, 0);
-		addChild(memoryCounter);
+		overlay = new Overlay(10, 8);
+		addChild(overlay);
 
 		// Focus gained/lost monitoring
 		#if (desktop && openfl <= "4.0.0")
@@ -496,11 +488,8 @@ class FlxGame extends Sprite
 			postProcess.rebuild();
 		#end
 
-		if (fpsCounter != null)
-			fpsCounter.targetY = height - (fpsCounter.bg.height + memoryCounter.bg.height) - 10;
-
-		if (memoryCounter != null)
-			memoryCounter.targetY = (fpsCounter.bg.height + fpsCounter.targetY) + 1;
+		if (overlay != null)
+			overlay.reposition(width, height);
 	}
 
 	/**

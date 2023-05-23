@@ -1,4 +1,4 @@
-package window.ui;
+package window;
 
 import flixel.FlxG;
 import openfl.Lib;

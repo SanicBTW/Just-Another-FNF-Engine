@@ -7,7 +7,6 @@ import openfl.Lib;
 import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
-import openfl.utils.Assets;
 
 using StringTools;
 
@@ -71,6 +70,8 @@ class VolumeTray extends Tray
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
 
+		// Ok apparently it does the same shit as scale bru
+		// _volBar.width = FlxMath.lerp((FlxG.sound.muted ? 0 : (_width - 10) * volume), _volBar.width, lerpVal);
 		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : volume), _volBar.scaleX, lerpVal);
 
 		_volTracker.text = '${Math.round(_volBar.scaleX * 100)}%';
