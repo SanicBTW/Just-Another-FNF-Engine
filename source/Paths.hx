@@ -1,11 +1,9 @@
 package;
 
 import backend.Cache;
-import backend.IO;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import haxe.Exception;
-import haxe.io.Bytes;
 import lime.app.Future;
 import openfl.Assets;
 import openfl.media.Sound;

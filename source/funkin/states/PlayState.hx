@@ -83,11 +83,12 @@ class PlayState extends MusicBeatState
 
 		add(strumLines);
 
-		stageBuild = new Stage("stage");
+		stageBuild = new Stage(SONG.stage);
 		add(stageBuild);
 
 		conductorTracking = new FlxText(15, 15, 0, 'Steps: ?\n Beats: ?\nBPM: ${Conductor.bpm}', 24);
 		conductorTracking.setFormat(Paths.font('vcr.ttf'), 24);
+		conductorTracking.cameras = [camHUD];
 		add(conductorTracking);
 
 		FlxG.camera.zoom = (stageBuild != null) ? stageBuild.defaultCamZoom : 1;
@@ -106,6 +107,9 @@ class PlayState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
+		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.defaultCamZoom : 1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+
 		while ((ChartLoader.noteQueue[0] != null) && (ChartLoader.noteQueue[0].strumTime - Conductor.songPosition) < 3500)
 		{
 			var nextNote:Note = ChartLoader.noteQueue[0];
@@ -302,6 +306,15 @@ class PlayState extends MusicBeatState
 			ret[i] = Controls.isActionPressed(actionList[i]);
 		}
 		return ret;
+	}
+
+	override public function beatHit()
+	{
+		if (FlxG.camera.zoom < 1.35 && curBeat % 4 == 0)
+		{
+			FlxG.camera.zoom += 0.015;
+			camHUD.zoom += 0.03;
+		}
 	}
 
 	private function noteHit(note:Note)

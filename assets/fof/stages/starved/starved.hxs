@@ -1,0 +1,55 @@
+var fofStage;
+var cityBG;
+var lightBG;
+var sonicDead;
+var towerBG;
+
+function onCreate()
+{
+    stage.defaultCamZoom = 0.85;
+
+    cityBG = new FlxSprite(-117, -65, Paths.image('city'));
+    cityBG.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
+    cityBG.scale.set(1.25, 1.25);
+    cityBG.antialiasing = true;
+    cityBG.updateHitbox();
+    cityBG.scrollFactor.set(0.5);
+    cityBG.active = false;
+    add(cityBG);
+
+    towerBG = new FlxSprite(-117, -65, Paths.image('towers'));
+    towerBG.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
+    towerBG.scale.set(1.25, 1.25);
+    towerBG.antialiasing = true;
+    towerBG.updateHitbox();
+    towerBG.scrollFactor.set(0.5);
+    towerBG.active = false;
+    add(towerBG);
+
+    fofStage = new FlxSprite(-117, -65, Paths.image('stage'));
+    fofStage.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
+    fofStage.scale.set(1.25, 1.25);
+    fofStage.antialiasing = true;
+    fofStage.updateHitbox();
+    fofStage.scrollFactor.set(0.5);
+    fofStage.active = false;
+    add(fofStage);
+
+    sonicDead = new FlxSprite(325, 250, Paths.image('sonicisfuckingdead'));
+    sonicDead.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
+    sonicDead.scale.set(0.5, 0.5);
+    sonicDead.antialiasing = true;
+    sonicDead.updateHitbox();
+    sonicDead.scrollFactor.set(0.5);
+    sonicDead.active = false;
+    add(sonicDead);
+
+	lightBG = new FlxSprite(-117, -65, Paths.image('light'));
+	lightBG.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
+	lightBG.scale.set(1.25, 1.25);
+	lightBG.antialiasing = true;
+	lightBG.updateHitbox();
+	lightBG.scrollFactor.set(0.5);
+    lightBG.active = false;
+	add(lightBG);
+}

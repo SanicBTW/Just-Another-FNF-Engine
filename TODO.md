@@ -18,3 +18,7 @@ Improve Filesystem operations (IO) and the temp shit lol (it keeps throwing null
 Add a compilation flag to disable counters completely
 
 Real support for online charts bruh
+
+sometimes when starting the game, the volume bar will show up and after creating the initial state it will disappear
+
+apparently you cant use Std on HTML5??? (HScript)

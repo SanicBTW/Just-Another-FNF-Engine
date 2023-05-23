@@ -7,6 +7,8 @@ import haxe.ds.StringMap;
 
 class Stage extends FlxTypedGroup<FlxBasic>
 {
+	private static final DEFAULT:String = 'stage';
+
 	public var defaultCamZoom:Float = 1;
 	public var stageBuild:ForeverModule;
 
@@ -16,9 +18,12 @@ class Stage extends FlxTypedGroup<FlxBasic>
 
 		var exposure:StringMap<Dynamic> = new StringMap<Dynamic>();
 		exposure.set('stage', this);
-		stageBuild = ScriptHandler.loadModule(stage, 'stages/$stage', exposure);
+		exposure.set('add', add);
+
+		stageBuild = ScriptHandler.loadModule(stage, 'stages/$stage', exposure, DEFAULT);
 		if (stageBuild.exists('onCreate'))
 			stageBuild.get('onCreate')();
+
 		trace('Loaded $stage successfully');
 	}
 }

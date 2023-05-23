@@ -14,6 +14,7 @@ import flixel.math.*;
 import flixel.tweens.*;
 import flixel.util.*;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
+import haxe.Exception;
 import haxe.ds.StringMap;
 import haxe.io.Path;
 import hscript.Expr;
@@ -21,6 +22,8 @@ import hscript.Interp;
 import hscript.Parser;
 import openfl.media.Sound;
 import openfl.utils.Assets;
+
+using StringTools;
 
 class Colors
 {
@@ -51,7 +54,7 @@ class ScriptHandler
 
 		// Classes (Haxe)
 		#if sys exp.set("Sys", Sys); #end
-		exp.set("Std", Std);
+		exp.set("Std", Std); // Apparently you can't use Std on HTML5???
 		exp.set("Math", Math);
 		exp.set("StringTools", StringTools);
 
@@ -85,14 +88,40 @@ class ScriptHandler
 		parser.allowJSON = true;
 	}
 
-	public static function loadModule(file:String, ?assetFolder:String, ?extraParams:StringMap<Dynamic>):ForeverModule
+	/**
+	 * [Loads a Forever Module]
+	 * @param file The file name
+	 * @param assetFolder The folder where the file is located (Loaded module will be isolated to that path)
+	 * @param extraParams Extra variables you want to pass to the module (Optional)
+	 * @param fallback The file name that will be used in case it fails to get the target (Optional)
+	 * @return ForeverModule
+	 */
+	public static function loadModule(file:String, ?assetFolder:String, ?extraParams:StringMap<Dynamic>, ?fallback:String):ForeverModule
 	{
 		// Remove the extension as we will manually add it (and to avoid errors)
 		file = Path.withoutExtension(file);
-		trace('Loading module $file');
+		if (fallback != null)
+			fallback = Path.withoutExtension(fallback);
 
-		var modulePath:String = Paths.file('${assetFolder}/$file.hxs');
-		trace('Full path $modulePath');
+		trace('Loading module $file, fallback given $fallback');
+
+		// Goofy path parsing lol
+		var modulePath:String = Paths.file('$assetFolder/$file.hxs');
+		trace('Possible path $modulePath');
+
+		if (!Assets.exists(modulePath, TEXT))
+		{
+			if (fallback == null)
+				throw new Exception('Failed to load module $file');
+
+			// Ez replace
+			assetFolder = assetFolder.replace(file, fallback);
+			modulePath = Paths.file('$assetFolder/$fallback.hxs');
+			trace('Last path $modulePath');
+
+			if (!Assets.exists(modulePath, TEXT))
+				throw new Exception('Failed to load module $file and its fallback $fallback');
+		}
 
 		var expr:Expr = null;
 		var module:ForeverModule = null;
@@ -155,7 +184,6 @@ class ForeverModule implements IFlxDestroyable
 			get('onDestroy')();
 
 		active = false;
-		interp = null;
 	}
 
 	/**
@@ -193,35 +221,34 @@ class ModulePaths
 		this.localPath = localPath;
 	}
 
-	public function getPath(file:String, ?library:Null<String>):String
+	public function getPath(file:String):String
 	{
-		if (library != null)
-			return getLibraryPath('$localPath/$file', library);
+		@:privateAccess
+		var libPath:String = '${Paths._library}:assets/${Paths._library}/$localPath/$file';
+		if (Assets.exists(libPath))
+			return libPath;
 
 		return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$localPath/$file';
 	}
 
-	public inline function getLibraryPath(file:String, library:String = "funkin")
-		return '$library:assets/$library/$file';
-
-	public inline function file(file:String, ?library:Null<String>)
-		return getPath(file, library);
+	public inline function file(file:String)
+		return getPath(file);
 
 	public inline function text(path:String):String
 		return Assets.getText(path);
 
-	public inline function sound(key:String, ?library:Null<String>):Sound
-		return Cache.getSound(getPath('sounds/$key.ogg', library));
+	public inline function sound(key:String):Sound
+		return Cache.getSound(getPath('sounds/$key.ogg'));
 
 	public inline function font(key:String)
 		return 'assets/fonts/$key';
 
-	public inline function music(key:String, ?library:Null<String>):Sound
-		return Cache.getSound(getPath('music/$key.ogg', library));
+	public inline function music(key:String):Sound
+		return Cache.getSound(getPath('music/$key.ogg'));
 
-	public inline function image(key:String, ?library:Null<String>):FlxGraphic
-		return Cache.getGraphic(getPath('images/$key.png', library));
+	public inline function image(key:String):FlxGraphic
+		return Cache.getGraphic(getPath('images/$key.png'));
 
-	public inline function getSparrowAtlas(key:String, ?folder:String = 'images', ?library:Null<String>):FlxAtlasFrames
-		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png', library)), getPath('$folder/$key.xml', library));
+	public inline function getSparrowAtlas(key:String, ?folder:String = 'images'):FlxAtlasFrames
+		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png')), getPath('$folder/$key.xml'));
 }

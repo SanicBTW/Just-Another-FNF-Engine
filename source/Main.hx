@@ -7,7 +7,6 @@ import flixel.system.scaleModes.*;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
-import window.debug.*;
 
 class Main extends Sprite
 {

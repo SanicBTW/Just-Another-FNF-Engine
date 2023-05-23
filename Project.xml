@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project xmlns="http://lime.software/project/1.0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://lime.software/project/1.0.2 http://lime.software/xsd/project-1.0.2.xsd">
+<project>
 
 	<!-- _________________________ Application Settings _________________________ -->
 
@@ -51,9 +50,11 @@
 	
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 
-	<haxedef name="HXCPP_GC_BIG_BLOCKS" />
-	<haxedef name="HXCPP_CHECK_POINTER" />
-	<haxedef name="HXCPP_STACK_LINE" />
+	<section if="windows">
+		<haxedef name="HXCPP_GC_BIG_BLOCKS" />
+		<haxedef name="HXCPP_CHECK_POINTER" />
+		<haxedef name="HXCPP_STACK_LINE" />
+	</section>
 
 	<haxedef name="hscriptPos" />
 
