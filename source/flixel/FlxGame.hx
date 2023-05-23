@@ -497,10 +497,10 @@ class FlxGame extends Sprite
 		#end
 
 		if (fpsCounter != null)
-			fpsCounter.targetY = height - (fpsCounter.bg.height + memoryCounter.bg.height) - 9;
+			fpsCounter.targetY = height - (fpsCounter.bg.height + memoryCounter.bg.height) - 10;
 
 		if (memoryCounter != null)
-			memoryCounter.targetY = (fpsCounter.bg.height + fpsCounter.targetY) - 1;
+			memoryCounter.targetY = (fpsCounter.bg.height + fpsCounter.targetY) + 1;
 	}
 
 	/**

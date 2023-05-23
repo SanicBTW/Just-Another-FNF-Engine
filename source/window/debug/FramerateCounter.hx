@@ -1,7 +1,6 @@
 package window.debug;
 
 import flixel.FlxG;
-import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import openfl.display.Shape;
 import openfl.text.TextField;
@@ -12,13 +11,15 @@ class FramerateCounter extends OFLSprite
 {
 	public var currentFPS(default, null):Float;
 
-	@:noCompletion private var cacheCount:Int;
-	@:noCompletion private var currentTime:Float;
-	@:noCompletion private var times:Array<Float>;
+	private var cacheCount:Int;
+	private var times:Array<Float>;
 
 	private var bg:Shape;
 	private var fpsText:TextField;
-	private var offsetWidth:Float = 7;
+
+	private var padding:Array<Float> = [15, 15];
+
+	private var fontSize:Int = 16;
 
 	// lerping haha
 	public var targetX:Float = 0;
@@ -33,7 +34,6 @@ class FramerateCounter extends OFLSprite
 
 		currentFPS = 0;
 		cacheCount = 0;
-		currentTime = 0;
 		times = [];
 		mouseEnabled = false;
 	}
@@ -43,11 +43,11 @@ class FramerateCounter extends OFLSprite
 		fpsText = new TextField();
 		fpsText.text = 'FPS: 0';
 		fpsText.embedFonts = true;
-		fpsText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, 12, 0xFFFFFF);
+		fpsText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, fontSize, 0xFFFFFF);
 		fpsText.selectable = false;
 		fpsText.autoSize = LEFT;
 
-		bg = drawRound(x, y, fpsText.textWidth + offsetWidth, fpsText.textHeight + 5, [5], FlxColor.BLACK, 0.5);
+		bg = drawRound(x, y, fpsText.textWidth + padding[0], fpsText.height + padding[1], [10], FlxColor.BLACK, 0.5);
 
 		addChild(bg);
 		addChild(fpsText);
@@ -57,23 +57,27 @@ class FramerateCounter extends OFLSprite
 	{
 		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 
-		// bg shit
-		lerpTrack(bg, "width", fpsText.textWidth + offsetWidth, lerpVal);
+		// bg sizes
+		lerpTrack(bg, "width", fpsText.textWidth + padding[0], lerpVal);
+		lerpTrack(bg, "height", fpsText.textHeight + padding[1], lerpVal);
+
+		// bg pos
 		lerpTrack(bg, "x", targetX, lerpVal);
 		lerpTrack(bg, "y", targetY, lerpVal);
 
-		// text shit
-		lerpTrack(fpsText, "x", bg.x, lerpVal);
-		lerpTrack(fpsText, "y", bg.y, lerpVal);
+		// text pos based off bg pos and some shitty center calculation
+		// it only works with 15 padding lol
+		lerpTrack(fpsText, "x", bg.x + ((bg.width - fpsText.textWidth) / 2) - padding[0] / 4, lerpVal);
+		lerpTrack(fpsText, "y", bg.y + ((bg.height - fpsText.textHeight) / 2) - padding[1] / 4, lerpVal);
 		updateFPSText();
 	}
 
 	private function updateFPSText()
 	{
-		currentTime += rawElapsed;
-		times.push(currentTime);
+		var now:Float = haxe.Timer.stamp();
+		times.push(now);
 
-		while (times[0] < currentTime - 1000)
+		while (times[0] < now - 1)
 		{
 			times.shift();
 		}

@@ -71,8 +71,6 @@ class VolumeTray extends Tray
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
 
-		// Add an option to change between width or scaling (too lazy to actually uhhh move to width lol, funky maths shit)
-		// _volBar.width = FlxMath.lerp((FlxG.sound.muted ? ))
 		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : volume), _volBar.scaleX, lerpVal);
 
 		_volTracker.text = '${Math.round(_volBar.scaleX * 100)}%';

@@ -176,7 +176,7 @@ class ForeverModule implements IFlxDestroyable
 	}
 
 	/**
-	 * [Sets the module as inactive and executes cleaning functions]
+	 * [Sets the module as inactive and executes onDestroy function]
 	 */
 	public function destroy()
 	{

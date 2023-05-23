@@ -16,7 +16,10 @@ class MemoryCounter extends OFLSprite
 
 	private var bg:Shape;
 	private var memText:TextField;
-	private var offsetWidth:Float = 6;
+
+	private var padding:Array<Float> = [15, 15];
+
+	private var fontSize:Int = 16;
 
 	// lerping haha
 	public var targetX:Float = 0;
@@ -38,11 +41,11 @@ class MemoryCounter extends OFLSprite
 		memText = new TextField();
 		memText.text = '0 MB / 0 MB';
 		memText.embedFonts = true;
-		memText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, 12, 0xFFFFFF);
+		memText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, fontSize, 0xFFFFFF);
 		memText.selectable = false;
 		memText.autoSize = LEFT;
 
-		bg = drawRound(x, y, memText.textWidth + offsetWidth, memText.textHeight + 5, [5], FlxColor.BLACK, 0.5);
+		bg = drawRound(x, y, memText.textWidth + padding[0], memText.textHeight + padding[1], [10], FlxColor.BLACK, 0.5);
 
 		addChild(bg);
 		addChild(memText);
@@ -52,14 +55,18 @@ class MemoryCounter extends OFLSprite
 	{
 		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 
-		// da bg
-		lerpTrack(bg, "width", memText.textWidth + offsetWidth, lerpVal);
+		// them bg sizes
+		lerpTrack(bg, "width", memText.textWidth + padding[0], lerpVal);
+		lerpTrack(bg, "height", memText.textHeight + padding[1], lerpVal);
+
+		// them bg pos
 		lerpTrack(bg, "x", targetX, lerpVal);
 		lerpTrack(bg, "y", targetY, lerpVal);
 
-		// funky text
-		lerpTrack(memText, "x", bg.x, lerpVal);
-		lerpTrack(memText, "y", bg.y, lerpVal);
+		// text pos based off bg pos and some shitty center calculation
+		// its actually only good with 15 padding bruh
+		lerpTrack(memText, "x", bg.x + ((bg.width - memText.textWidth) / 2) - padding[0] / 4, lerpVal);
+		lerpTrack(memText, "y", bg.y + ((bg.height - memText.textHeight) / 2) - padding[1] / 4, lerpVal);
 		updateMemText();
 	}
 
@@ -99,6 +106,7 @@ class MemoryCounter extends OFLSprite
 		// allocation count -> seems like its the times it has allocated memory)?, increases overtime
 		return hl.Gc.stats().currentMemory;
 		#elseif cpp
+		// should i use cpp.vm.Gc.memInfo(3)
 		return untyped __global__.__hxcpp_gc_used_bytes();
 		#elseif java
 		// not tested

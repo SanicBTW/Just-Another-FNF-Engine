@@ -2,7 +2,6 @@ package window.ui;
 
 import flixel.FlxG;
 import openfl.Lib;
-import openfl.display.Sprite;
 
 // Made so I can update code automatically across files that extend this class
 class Tray extends OFLSprite
@@ -25,10 +24,9 @@ class Tray extends OFLSprite
 
 	override public function new()
 	{
+		super();
 		active = false;
 		visible = false;
-
-		super();
 
 		screenCenter();
 	}
