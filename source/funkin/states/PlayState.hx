@@ -419,7 +419,7 @@ class PlayState extends MusicBeatState
 			{
 				campointX = 0;
 				campointY = 0;
-				lastSection = Std.int(curStep / 16);
+				lastSection = id;
 			}
 		}
 

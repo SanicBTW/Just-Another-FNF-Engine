@@ -40,8 +40,3 @@ function generateSustain()
     if (note.prevNote != null && note.prevNote.isSustain)
         note.prevNote.animation.play(color + 'hold');
 }
-
-function onDestroy()
-{
-    Cache.removePersistent(graphicPath);
-}

@@ -11,6 +11,9 @@ class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;
 
+	// If not found it will try to get this one
+	private static final DEFAULT:String = "default";
+
 	// Vanilla
 	public var strumTime:Float;
 	public var noteData:Int = 0;
@@ -161,7 +164,7 @@ class Note extends FlxSprite
 		if (!scriptCache.exists(noteType))
 		{
 			trace('Setting note script $noteType');
-			var module:ForeverModule = ScriptHandler.loadModule(noteType, 'notetypes/$noteType');
+			var module:ForeverModule = ScriptHandler.loadModule(noteType, 'notetypes/$noteType', DEFAULT);
 			// We don't want the note script to get updated all the time
 			module.active = false;
 			scriptCache.set(noteType, module);

@@ -8,7 +8,7 @@ import flixel.FlxSubState;
 import transitions.FadeTransition;
 
 // Holds the transitions, controls and language (soon)
-class ScriptableState extends FlxState
+class ScriptableState extends FlxState implements ModuleManager
 {
 	private var moduleBatch:Array<ForeverModule> = [];
 
@@ -28,8 +28,7 @@ class ScriptableState extends FlxState
 	{
 		Controls.onActionPressed.remove(onActionPressed);
 		Controls.onActionReleased.remove(onActionReleased);
-		for (module in moduleBatch)
-			module.destroy();
+		callOnModules('destroy', null);
 
 		super.destroy();
 	}
@@ -57,7 +56,6 @@ class ScriptableState extends FlxState
 
 	private function onActionReleased(action:String) {}
 
-	// Totally not a ripoff FunkinLua from Psych Engine (its 3 am leave me alone)
 	private function callOnModules(event:String, args:Dynamic)
 	{
 		for (module in moduleBatch)
@@ -77,7 +75,7 @@ class ScriptableState extends FlxState
 	}
 }
 
-class ScriptableSubState extends FlxSubState
+class ScriptableSubState extends FlxSubState implements ModuleManager
 {
 	private var moduleBatch:Array<ForeverModule> = [];
 
@@ -92,8 +90,7 @@ class ScriptableSubState extends FlxSubState
 	{
 		Controls.onActionPressed.remove(onActionPressed);
 		Controls.onActionReleased.remove(onActionReleased);
-		for (module in moduleBatch)
-			module.destroy();
+		callOnModules('destroy', null);
 
 		super.destroy();
 	}
@@ -101,4 +98,34 @@ class ScriptableSubState extends FlxSubState
 	private function onActionPressed(action:String) {}
 
 	private function onActionReleased(action:String) {}
+
+	private function callOnModules(event:String, args:Dynamic)
+	{
+		for (module in moduleBatch)
+		{
+			if (module.active && module.exists(event))
+				module.get(event)(args);
+		}
+	}
+
+	private function setOnModules(variable:String, arg:Dynamic)
+	{
+		for (module in moduleBatch)
+		{
+			if (module.active)
+				module.set(variable, arg);
+		}
+	}
+}
+
+// Totally not a ripoff FunkinLua from Psych Engine (its 3 am leave me alone)
+
+interface ModuleManager
+{
+	// Array that contains all of the loaded modules (automatically pushed through ScriptHandler.loadModule)
+	private var moduleBatch:Array<ForeverModule>;
+
+	// Will only execute the active modules
+	private function callOnModules(event:String, args:Dynamic):Void;
+	private function setOnModules(variable:String, arg:Dynamic):Void;
 }

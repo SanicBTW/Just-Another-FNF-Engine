@@ -180,6 +180,7 @@ class Character extends OffsettedSprite
 		}
 
 		retPath = Paths.getPath('characters/$DEFAULT/$DEFAULT.json', TEXT);
+		curCharacter = DEFAULT;
 		extension = '.json';
 
 		return retPath;
