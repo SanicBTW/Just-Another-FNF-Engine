@@ -5,6 +5,7 @@ import backend.ScriptHandler;
 import base.Conductor;
 import base.sprites.OffsettedSprite;
 import flixel.math.FlxPoint;
+import flixel.tweens.FlxTween;
 import haxe.ds.StringMap;
 import openfl.utils.Assets;
 
@@ -55,6 +56,9 @@ class Character extends OffsettedSprite
 	// Positions
 	public var cameraPosition:FlxPoint;
 	public var characterPosition:FlxPoint;
+
+	// Misc
+	public var colorTween:FlxTween;
 
 	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{

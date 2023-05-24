@@ -43,8 +43,6 @@ class Note extends FlxSprite
 	public var holdingTime:Float = 0;
 
 	// Andromeda:L
-	public var gcTime:Float = 200;
-	public var garbage:Bool = false;
 	public var hitbox:Float = 166;
 
 	// Psych
@@ -138,7 +136,7 @@ class Note extends FlxSprite
 			{
 				if (prevNote.isSustain)
 				{
-					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((135 / 100) * (1.7 / prevNote.receptorData.size)) * Conductor.songSpeed;
+					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (2.4 / prevNote.receptorData.size)) * Conductor.songSpeed;
 					prevNote.updateHitbox();
 					offsetX = prevNote.offsetX;
 				}
@@ -185,11 +183,9 @@ class Note extends FlxSprite
 			var diff:Float = Math.abs(strumTime - Conductor.songPosition);
 
 			if (isSustain)
-				canBeHit = (diff <= hitbox * .5);
+				canBeHit = (diff <= ((hitbox * Conductor.timeScale) * .5) && diff >= (-hitbox * Conductor.timeScale) * .5);
 			else
-				canBeHit = (diff <= hitbox);
-
-			tooLate = (diff < -Conductor.safeZoneOffset && !wasGoodHit);
+				canBeHit = (diff <= ((hitbox * Conductor.timeScale)) && diff >= (-hitbox * Conductor.timeScale));
 		}
 
 		if (tooLate || (parent != null && parent.tooLate))

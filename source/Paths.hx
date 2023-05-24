@@ -12,6 +12,11 @@ import openfl.utils.AssetType;
 
 using StringTools;
 
+#if FS_ACCESS
+import backend.IO;
+import haxe.io.Bytes;
+#end
+
 class Paths
 {
 	private static var _library:Libraries = DEFAULT;

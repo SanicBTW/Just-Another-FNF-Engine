@@ -23,7 +23,7 @@ function generateNote()
     var color:String = getNoteColor();
     note.animation.addByPrefix(color + 'Scroll', color + '0');
 
-    note.animation.play(color+ 'Scroll');
+    note.animation.play(color + 'Scroll');
 }
 
 // Maybe if the sustain isnt an end piece just add that animation?

@@ -7,6 +7,9 @@ var zoomshit = 0;
 var bfx;
 var bfy;
 
+var whiteColor = 0xFFFFFFFF;
+var redColor = 0xFFFF0000;
+
 function onCreate()
 {
     stage.defaultCamZoom = 0.85;
@@ -63,19 +66,45 @@ function onCreatePost()
 {
     bfx = boyfriend.x;
     bfy = boyfriend.y;
+
+    var i = 0;
+    opponentStrums.visible = false;
+    for(receptor in playerStrums.receptors.members)
+	{
+        var endX = ((FlxG.width / 2) - receptor.swagWidth / 2);
+        endX += (i - ((4 - 1) / 2)) * receptor.swagWidth;
+
+        FlxTween.tween(receptor, {x: endX}, (Conductor.crochet * 4) / 1000,
+			{ease: FlxEase.circOut, startDelay: (Conductor.crochet / 1000) + ((Conductor.stepCrochet / 1000) * i)});
+
+        i++;
+	}
 }
 
 function onMoveCamera(who)
 {
-    if (who == "dad")
+    switch(who)
     {
-        stage.defaultCamZoom = 1;
-        camFollow.x += 20;
-        camFollow.y -= 70;
-    }
-    if (who == "bf")
-    {
-        stage.defaultCamZoom = 0.85;
+        case 'dad':
+        {
+            stage.defaultCamZoom = 1;
+            camFollow.x += 20;
+            camFollow.y -= 70;
+            for(receptor in playerStrums.receptors.members)
+			{
+                receptor.setAlpha = 0.25;
+				FlxTween.tween(receptor, {alpha: receptor.setAlpha}, 0.1, { ease: FlxEase.linear});
+			}
+        }
+        case 'bf':
+        {
+            stage.defaultCamZoom = 0.85;
+            for(receptor in playerStrums.receptors.members)
+			{
+                receptor.setAlpha = 0.8;
+				FlxTween.tween(receptor, {alpha: receptor.setAlpha}, 0.1, { ease: FlxEase.linear});
+			}
+        }
     }
 }
 
@@ -91,24 +120,33 @@ function onStepHit()
 {
     if (curStep == 1183 || curStep == 1472)
     {
-        FlxTween.color(sonicDead, 0.5, FlxColor.WHITE, 0xfff96d63, {ease: FlxEase.quadInOut});
+        FlxTween.color(sonicDead, 0.5, whiteColor, redColor, {ease: FlxEase.quadInOut});
         
         FlxTween.tween(cityBG, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
         FlxTween.tween(towerBG, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
         FlxTween.tween(fofStage, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
 
-        FlxTween.color(boyfriend, 0.5, FlxColor.WHITE, 0xfff96d63, {ease: FlxEase.quadInOut});
-        FlxTween.color(dad, 0.5, FlxColor.WHITE, 0xfff96d63, {ease: FlxEase.quadInOut});
+		boyfriend.colorTween = FlxTween.color(boyfriend, 0.5, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
+			boyfriend.colorTween = null;
+		}, ease: FlxEase.quadInOut});
+		dad.colorTween = FlxTween.color(dad, 0.5, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
+			dad.colorTween = null;
+		}, ease: FlxEase.quadInOut});
     }
     else if (curStep == 1437 || curStep == 1982)
     {
-        FlxTween.color(sonicDead, 0.5, 0xfff96d63, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+        FlxTween.color(sonicDead, 0.5, redColor, whiteColor, {ease: FlxEase.quadInOut});
         
         FlxTween.tween(cityBG, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
         FlxTween.tween(towerBG, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
         FlxTween.tween(fofStage, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
         
-        FlxTween.color(boyfriend, 0.5, 0xfff96d63, FlxColor.WHITE, {ease: FlxEase.quadInOut});
-        FlxTween.color(dad, 0.5, 0xfff96d63, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+        boyfriend.colorTween = FlxTween.color(boyfriend, 0.5, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
+			boyfriend.colorTween = null;
+		}, ease: FlxEase.quadInOut});
+
+		dad.colorTween = FlxTween.color(dad, 0.5, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
+			dad.colorTween = null;
+		}, ease: FlxEase.quadInOut});
     }
 }

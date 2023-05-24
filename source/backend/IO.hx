@@ -45,10 +45,7 @@ class IO
 	public static function cleanTemp()
 	{
 		if (persistentTemp)
-		{
-			trace("IO - Not deleting temporary files");
 			return;
-		}
 
 		try
 		{

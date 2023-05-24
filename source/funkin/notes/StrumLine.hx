@@ -129,10 +129,11 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 
 			strumNote.angle = -receptor.direction;
 
-			var center:Float = receptorY + Note.swagWidth / 2;
+			var noteSize:Float = (strumNote.receptorData.separation * strumNote.receptorData.size);
+			var center:Float = receptorY + (noteSize / 2);
 			if (strumNote.isSustain)
 			{
-				strumNote.y -= ((strumNote.height / 2) * downscrollMultiplier);
+				strumNote.y -= ((noteSize / 2) * downscrollMultiplier);
 
 				if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
 					&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
@@ -142,6 +143,31 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 					swagRect.y = (center - strumNote.y) / strumNote.scale.y;
 					swagRect.height -= swagRect.y;
 					strumNote.clipRect = swagRect;
+				}
+			}
+
+			if (!strumNote.tooLate
+				&& strumNote.mustPress
+				&& strumNote.strumTime - Conductor.songPosition < -strumNote.hitbox
+				&& !strumNote.wasGoodHit)
+			{
+				// If it is a single note or is the head of the sustain
+				if (!strumNote.isSustain || strumNote.parent == null)
+				{
+					strumNote.tooLate = true;
+					onMiss.dispatch(strumNote);
+				}
+				else if (strumNote.isSustain && strumNote.parent != null)
+				{
+					// bro this shit is so fucking strict omg (sustain end)
+					var parent:Note = strumNote.parent;
+					parent.tooLate = true;
+					for (child in parent.tail)
+					{
+						child.tooLate = true;
+					}
+
+					onMiss.dispatch(parent);
 				}
 			}
 

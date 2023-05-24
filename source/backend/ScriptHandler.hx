@@ -96,13 +96,6 @@ class ScriptHandler
 		// Classes (Engine)
 		exp.set('Cache', Cache);
 
-		/*
-			exp.set("Events", Events);
-			exp.set("Boyfriend", Boyfriend);
-			exp.set("HealthIcon", HealthIcon);
-			exp.set("PlayState", PlayState);
-			exp.set("SaveData", SaveData); */
-
 		parser.allowTypes = true;
 		parser.allowJSON = true;
 	}

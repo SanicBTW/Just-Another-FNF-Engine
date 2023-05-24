@@ -2,8 +2,11 @@ package base;
 
 import flixel.FlxG;
 import flixel.system.FlxSound;
+import flixel.tweens.*;
 import flixel.util.FlxSignal.FlxTypedSignal;
+import funkin.ChartLoader;
 import funkin.SongTools.SongData;
+import funkin.notes.Note;
 import openfl.media.Sound;
 
 typedef BPMChangeEvent =
@@ -20,8 +23,11 @@ class Conductor
 {
 	// Time and speed
 	public static var songPosition:Float = 0;
-	public static var songSpeed:Float = 2;
+	public static var songSpeed(default, set):Float;
 	public static var songRate:Float = 0.45;
+	private static var speedTwn:FlxTween;
+	// easy enough
+	public static var speedBasedBPM:Bool = true;
 
 	// Steps and beats
 	public static var stepPosition:Int = 0;
@@ -52,6 +58,7 @@ class Conductor
 	// Input
 	public static var safeFrames:Int = 10;
 	public static var safeZoneOffset:Float = (safeFrames / 60) * 1000;
+	public static var timeScale:Float = safeZoneOffset / 166;
 
 	public function new() {}
 
@@ -113,14 +120,42 @@ class Conductor
 		if (newVocals != null)
 			boundVocals = new FlxSound().loadEmbedded(newVocals);
 
-		SONG = newData;
-
 		FlxG.sound.list.add(boundInst);
 		FlxG.sound.list.add(boundVocals);
 
+		SONG = newData;
 		changeBPM(SONG.bpm);
+		songSpeed = songRate * SONG.speed;
 
 		reset();
+	}
+
+	@:noCompletion
+	private static function set_songSpeed(value:Float):Float
+	{
+		if (ChartLoader.noteQueue.length <= 0 || ChartLoader.noteQueue[0] == null)
+			return songSpeed = value;
+
+		if (speedTwn != null)
+			speedTwn.cancel();
+
+		// 0.2 would fit osu i guess
+		speedTwn = FlxTween.num(songSpeed, value, 0.5, {
+			ease: FlxEase.linear,
+			onComplete: (_) ->
+			{
+				speedTwn = null;
+			}
+		}, function(f:Float)
+		{
+			songSpeed = f;
+			for (note in ChartLoader.noteQueue)
+			{
+				note.updateSustainScale();
+			}
+		});
+
+		return value;
 	}
 
 	public static function changeBPM(newBPM:Float)
@@ -130,8 +165,24 @@ class Conductor
 		crochet = calculateCrochet(newBPM);
 		stepCrochet = (crochet / 4);
 
-		if (SONG != null)
-			songSpeed = songRate * SONG.speed;
+		if (SONG == null)
+			return;
+
+		var baseSpeed:Float = songRate * SONG.speed;
+
+		if (speedBasedBPM)
+		{
+			var bps:Float = (bpm / 60) / songRate;
+
+			var nearestNote:Note = ChartLoader.noteQueue[0];
+			var noteDiff:Float = 1;
+			if (nearestNote != null)
+				noteDiff = (nearestNote.strumTime - songPosition) / 1000;
+
+			songSpeed = baseSpeed * (bps / noteDiff);
+		}
+		else
+			songSpeed = baseSpeed;
 	}
 
 	public static function resyncTime()

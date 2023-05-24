@@ -27,8 +27,6 @@ class Stage extends FlxTypedGroup<FlxBasic>
 		module = ScriptHandler.loadModule(stage, 'stages/$stage', exposure, DEFAULT);
 		if (module.exists('onCreate'))
 			module.get('onCreate')();
-
-		trace('Loaded $stage successfully');
 	}
 
 	override public function update(elapsed:Float)

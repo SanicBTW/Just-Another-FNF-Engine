@@ -490,6 +490,11 @@ class FlxGame extends Sprite
 
 		if (overlay != null)
 			overlay.reposition(width, height);
+
+		// Re-assign the FlxG saved on the ScriptHandler static exposure and loaded modules
+		backend.ScriptHandler.exp.set('FlxG', FlxG);
+		@:privateAccess
+		cast(_state, base.ScriptableState).setOnModules('FlxG', FlxG);
 	}
 
 	/**
