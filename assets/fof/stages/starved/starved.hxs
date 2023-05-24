@@ -3,10 +3,15 @@ var cityBG;
 var lightBG;
 var sonicDead;
 var towerBG;
+var zoomshit = 0;
+var bfx;
+var bfy;
 
 function onCreate()
 {
     stage.defaultCamZoom = 0.85;
+    stage.boyfriend = [366.5, 400];
+    stage.opponent = [672.5, 171.3];
 
     cityBG = new FlxSprite(-117, -65, Paths.image('city'));
     cityBG.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
@@ -52,4 +57,58 @@ function onCreate()
 	lightBG.scrollFactor.set(0.5);
     lightBG.active = false;
 	add(lightBG);
+}
+
+function onCreatePost()
+{
+    bfx = boyfriend.x;
+    bfy = boyfriend.y;
+}
+
+function onMoveCamera(who)
+{
+    if (who == "dad")
+    {
+        stage.defaultCamZoom = 1;
+        camFollow.x += 20;
+        camFollow.y -= 70;
+    }
+    if (who == "bf")
+    {
+        stage.defaultCamZoom = 0.85;
+    }
+}
+
+function onUpdate(elapsed)
+{
+    zoomshit = camGame.zoom / 0.75;
+    boyfriend.scale.set(zoomshit, zoomshit);
+    boyfriend.x = bfx * zoomshit;
+    boyfriend.y = bfy * zoomshit;
+}
+
+function onStepHit()
+{
+    if (curStep == 1183 || curStep == 1472)
+    {
+        FlxTween.color(sonicDead, 0.5, FlxColor.WHITE, 0xfff96d63, {ease: FlxEase.quadInOut});
+        
+        FlxTween.tween(cityBG, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(towerBG, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(fofStage, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
+
+        FlxTween.color(boyfriend, 0.5, FlxColor.WHITE, 0xfff96d63, {ease: FlxEase.quadInOut});
+        FlxTween.color(dad, 0.5, FlxColor.WHITE, 0xfff96d63, {ease: FlxEase.quadInOut});
+    }
+    else if (curStep == 1437 || curStep == 1982)
+    {
+        FlxTween.color(sonicDead, 0.5, 0xfff96d63, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+        
+        FlxTween.tween(cityBG, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(towerBG, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(fofStage, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
+        
+        FlxTween.color(boyfriend, 0.5, 0xfff96d63, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+        FlxTween.color(dad, 0.5, 0xfff96d63, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+    }
 }

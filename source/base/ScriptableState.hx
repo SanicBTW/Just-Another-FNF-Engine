@@ -56,6 +56,25 @@ class ScriptableState extends FlxState
 	private function onActionPressed(action:String) {}
 
 	private function onActionReleased(action:String) {}
+
+	// Totally not a ripoff FunkinLua from Psych Engine (its 3 am leave me alone)
+	private function callOnModules(event:String, args:Dynamic)
+	{
+		for (module in moduleBatch)
+		{
+			if (module.active && module.exists(event))
+				module.get(event)(args);
+		}
+	}
+
+	private function setOnModules(variable:String, arg:Dynamic)
+	{
+		for (module in moduleBatch)
+		{
+			if (module.active)
+				module.set(variable, arg);
+		}
+	}
 }
 
 class ScriptableSubState extends FlxSubState

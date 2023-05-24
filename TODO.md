@@ -20,3 +20,5 @@ Add a compilation flag to disable counters completely or make them basic, like o
 Real support for online charts bruh
 
 apparently you cant use Std on HTML5??? (HScript)
+
+add bf

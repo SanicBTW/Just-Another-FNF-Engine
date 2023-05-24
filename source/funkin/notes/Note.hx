@@ -101,16 +101,15 @@ class Note extends FlxSprite
 		y -= 2000;
 
 		if (noteData > -1)
-		{
 			loadNote(noteType);
-			x += swagWidth * noteData;
-		}
 	}
 
 	public function loadNote(noteType:String)
 	{
 		receptorData = returnNoteData(noteType);
 		noteModule = returnNoteScript(noteType);
+
+		noteModule.active = false;
 
 		noteModule.interp.variables.set('note', this);
 		noteModule.interp.variables.set('getNoteDirection', getNoteDirection);
@@ -162,7 +161,10 @@ class Note extends FlxSprite
 		if (!scriptCache.exists(noteType))
 		{
 			trace('Setting note script $noteType');
-			scriptCache.set(noteType, ScriptHandler.loadModule(noteType, 'notetypes/$noteType'));
+			var module:ForeverModule = ScriptHandler.loadModule(noteType, 'notetypes/$noteType');
+			// We don't want the note script to get updated all the time
+			module.active = false;
+			scriptCache.set(noteType, module);
 		}
 		return scriptCache.get(noteType);
 	}

@@ -130,7 +130,7 @@ class Paths
 	}
 
 	public static inline function getSparrowAtlas(key:String, ?folder:String = 'images'):FlxAtlasFrames
-		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png', IMAGE)), getPath('$folder/$key.xml', IMAGE));
+		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png', IMAGE)), text(getPath('$folder/$key.xml', TEXT)));
 
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");

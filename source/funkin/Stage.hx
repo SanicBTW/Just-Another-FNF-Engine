@@ -9,8 +9,12 @@ class Stage extends FlxTypedGroup<FlxBasic>
 {
 	private static final DEFAULT:String = 'stage';
 
+	// Default positions
+	public var boyfriend:Array<Float> = [770, 100];
+	public var opponent:Array<Float> = [100, 100];
+
 	public var defaultCamZoom:Float = 1;
-	public var stageBuild:ForeverModule;
+	public var module:ForeverModule;
 
 	public function new(stage:String)
 	{
@@ -20,10 +24,21 @@ class Stage extends FlxTypedGroup<FlxBasic>
 		exposure.set('stage', this);
 		exposure.set('add', add);
 
-		stageBuild = ScriptHandler.loadModule(stage, 'stages/$stage', exposure, DEFAULT);
-		if (stageBuild.exists('onCreate'))
-			stageBuild.get('onCreate')();
+		module = ScriptHandler.loadModule(stage, 'stages/$stage', exposure, DEFAULT);
+		if (module.exists('onCreate'))
+			module.get('onCreate')();
 
 		trace('Loaded $stage successfully');
+	}
+
+	override public function update(elapsed:Float)
+	{
+		if (module.exists('onUpdate'))
+			module.get('onUpdate')(elapsed);
+
+		super.update(elapsed);
+
+		if (module.exists('onUpdatePost'))
+			module.get('onUpdatePost')(elapsed);
 	}
 }
