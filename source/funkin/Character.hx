@@ -6,6 +6,7 @@ import base.Conductor;
 import base.sprites.OffsettedSprite;
 import flixel.math.FlxPoint;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxColor;
 import haxe.ds.StringMap;
 import openfl.utils.Assets;
 
@@ -53,12 +54,23 @@ class Character extends OffsettedSprite
 	public var singDuration:Float = 4;
 	public var danceEveryNumBeats:Int = 2;
 
+	// GF Dance shit
+	public var danceIdle:Bool = false;
+	public var danced:Bool = false;
+
 	// Positions
 	public var cameraPosition:FlxPoint;
 	public var characterPosition:FlxPoint;
 
+	// Health
+	public var healthIcon:String = 'bf';
+	public var healthColor:FlxColor;
+
+	public var startedDeath:Bool = false;
+
 	// Misc
 	public var colorTween:FlxTween;
+	public var stunned:Bool = false;
 
 	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{
@@ -86,10 +98,14 @@ class Character extends OffsettedSprite
 						updateHitbox();
 					}
 
+					healthIcon = json.healthicon;
 					singDuration = json.sing_duration;
 					characterPosition.set(json.position[0], json.position[1]);
 					cameraPosition.set(json.camera_position[0], json.camera_position[1]);
 					flipX = !!json.flip_x;
+
+					if (json.healthbar_colors != null && json.healthbar_colors.length > 2)
+						healthColor = FlxColor.fromRGB(json.healthbar_colors[0], json.healthbar_colors[1], json.healthbar_colors[2]);
 
 					if (json.no_antialiasing)
 						antialiasing = false;
@@ -123,6 +139,7 @@ class Character extends OffsettedSprite
 				}
 		}
 
+		danceIdle = (animation.getByName('danceLeft') != null && animation.getByName('danceRight') != null);
 		dance();
 
 		if (isPlayer)
@@ -156,6 +173,9 @@ class Character extends OffsettedSprite
 
 				if (animation.curAnim.name.endsWith('miss') && animation.curAnim.finished)
 					dance();
+
+				if (animation.curAnim.name == 'firstDeath' && animation.curAnim.finished && startedDeath)
+					playAnim('deathLoop');
 			}
 		}
 
@@ -164,7 +184,31 @@ class Character extends OffsettedSprite
 
 	public function dance(forced:Bool = true)
 	{
-		playAnim('idle', forced);
+		if (danceIdle)
+		{
+			danced = !danced;
+
+			playAnim('dance${danced ? 'Right' : 'Left'}', forced);
+		}
+		else
+			playAnim('idle', forced);
+	}
+
+	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)
+	{
+		super.playAnim(AnimName, Force, Reversed, Frame);
+
+		if (curCharacter.startsWith("gf"))
+		{
+			if (AnimName == "singLEFT")
+				danced = true;
+
+			if (AnimName == "singRIGHT")
+				danced = false;
+
+			if (AnimName == "singUP" || AnimName == "singDOWN")
+				danced = !danced;
+		}
 	}
 
 	private function getCharPath():String

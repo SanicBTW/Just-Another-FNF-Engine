@@ -170,10 +170,10 @@ class Note extends FlxSprite
 		return scriptCache.get(noteType);
 	}
 
-	function getNoteDirection()
+	public function getNoteDirection()
 		return receptorData.actions[noteData];
 
-	function getNoteColor()
+	public function getNoteColor()
 		return receptorData.colors[noteData];
 
 	override function update(elapsed:Float)

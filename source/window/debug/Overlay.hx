@@ -28,12 +28,12 @@ class Overlay extends OFLSprite
 	private var _text:TextField;
 
 	// The corner where the overlay is situated
-	public var _cornerPos(default, set):OverlayCorner = BOTTOM_LEFT;
+	public var _cornerPos(default, set):OverlayCorner = TOP_LEFT;
 
 	// Won't change this since I'm too lazy to properly calculate the center
 	private var padding:Array<Float> = [20, 15];
 	private var offsets:Array<Float> = [0, 0];
-	private var fontSize:Int = 16;
+	private var fontSize:Int = #if html5 16 #else 14 #end;
 
 	// Lerping
 	public var targetX:Float = 0;

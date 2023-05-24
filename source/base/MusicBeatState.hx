@@ -5,7 +5,7 @@ import funkin.SongTools.SongData;
 
 class MusicBeatState extends ScriptableState implements MusicHandler
 {
-	public var updateTime:Bool = true;
+	public var updateTime:Bool = false;
 	@:isVar public var SONG(get, never):SongData;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;
@@ -46,18 +46,18 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 		super.destroy();
 	}
 
-	public function stepHit()
+	public function stepHit() {}
+
+	public function beatHit()
 	{
 		if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
 			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
 	}
-
-	public function beatHit() {}
 }
 
 class MusicBeatSubState extends ScriptableSubState implements MusicHandler
 {
-	public var updateTime:Bool = true;
+	public var updateTime:Bool = false;
 	@:isVar public var SONG(get, never):SongData;
 	@:isVar public var curStep(get, never):Int = 0;
 	@:isVar public var curBeat(get, never):Int = 0;

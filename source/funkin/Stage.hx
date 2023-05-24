@@ -9,9 +9,18 @@ class Stage extends FlxTypedGroup<FlxBasic>
 {
 	private static final DEFAULT:String = 'stage';
 
+	// Contains metadata from psych stages
 	// Default positions
 	public var boyfriend:Array<Float> = [770, 100];
+	public var girlfriend:Array<Float> = [400, 130];
 	public var opponent:Array<Float> = [100, 100];
+
+	public var hide_girlfriend:Bool = false;
+
+	public var camera_boyfriend:Array<Float> = [0, 0];
+	public var camera_opponent:Array<Float> = [0, 0];
+	public var camera_girlfriend:Array<Float> = [0, 0];
+	public var camera_speed:Float = 1;
 
 	public var defaultCamZoom:Float = 1;
 	public var module:ForeverModule;
@@ -27,16 +36,5 @@ class Stage extends FlxTypedGroup<FlxBasic>
 		module = ScriptHandler.loadModule(stage, 'stages/$stage', exposure, DEFAULT);
 		if (module.exists('onCreate'))
 			module.get('onCreate')();
-	}
-
-	override public function update(elapsed:Float)
-	{
-		if (module.exists('onUpdate'))
-			module.get('onUpdate')(elapsed);
-
-		super.update(elapsed);
-
-		if (module.exists('onUpdatePost'))
-			module.get('onUpdatePost')(elapsed);
 	}
 }
