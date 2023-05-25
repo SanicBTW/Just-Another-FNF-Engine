@@ -4,7 +4,6 @@ import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import haxe.ds.StringMap;
 
 using StringTools;
 
@@ -24,6 +23,8 @@ class UI extends FlxSpriteGroup
 		scoreText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
 		scoreText.y -= 50;
 		add(scoreText);
+
+		updateText();
 	}
 
 	public function updateText()
