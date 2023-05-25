@@ -9,4 +9,10 @@ A rewrite of Friday Night Funkin' mixing:
 
 and more!
 
-## Experimental HUB will be back soon
+# Pages
+
+- [Latest release](https://funkin.sancopublic.com/)
+- [Old online version](https://onlinefunky.pages.dev/)
+- [Last commit before rewritting (221672c)](https://funkye.pages.dev/)
+- [Latest stable commit (eade65d)](https://hxstest.funkye.pages.dev/)
+- Experimental HUB will be back soon
