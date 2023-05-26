@@ -9,7 +9,7 @@ class Stage extends FlxTypedGroup<FlxBasic>
 {
 	private static final DEFAULT:String = 'stage';
 
-	// Contains metadata from psych stages
+	// Contains metadata from psych stages and some extra stuff
 	// Default positions
 	public var boyfriend:Array<Float> = [770, 100];
 	public var girlfriend:Array<Float> = [400, 130];
@@ -23,7 +23,10 @@ class Stage extends FlxTypedGroup<FlxBasic>
 	public var camera_speed:Float = 1;
 
 	public var defaultCamZoom:Float = 1;
-	public var module:ForeverModule;
+
+	public var skip_defaultCountdown:Bool = false;
+
+	private var module:ForeverModule;
 
 	public function new(stage:String)
 	{

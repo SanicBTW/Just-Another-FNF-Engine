@@ -10,57 +10,39 @@ var bfy;
 var whiteColor = 0xFFFFFFFF;
 var redColor = 0xFFFF0000;
 var conductorOGState;
+var tweenTime = 1;
 
 function onCreate()
 {
     stage.defaultCamZoom = 0.85;
     stage.hide_girlfriend = true;
-    stage.boyfriend = [366.5, 400];
-    stage.opponent = [672.5, 171.3];
     stage.camera_opponent = [20, -60];
-    cityBG = new FlxSprite(-117, -65, Paths.image('city'));
-    cityBG.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
-    cityBG.scale.set(1.25, 1.25);
-    cityBG.antialiasing = true;
-    cityBG.updateHitbox();
-    cityBG.scrollFactor.set(0.5);
-    cityBG.active = false;
+    stage.skip_defaultCountdown = true;
+
+    cityBG = new FlxSprite(-100, 0, Paths.image('city'));
+    cityBG.setGraphicSize(Math.round(cityBG.width * 1.5));
+    cityBG.scrollFactor.set(1, 0.9);
     add(cityBG);
 
-    towerBG = new FlxSprite(-117, -65, Paths.image('towers'));
-    towerBG.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
-    towerBG.scale.set(1.25, 1.25);
-    towerBG.antialiasing = true;
-    towerBG.updateHitbox();
-    towerBG.scrollFactor.set(0.5);
-    towerBG.active = false;
+    towerBG = new FlxSprite(-100, 0, Paths.image('towers'));
+    towerBG.setGraphicSize(Math.round(towerBG.width * 1.5));
+    towerBG.scrollFactor.set(1, 0.9);
     add(towerBG);
 
-    fofStage = new FlxSprite(-117, -65, Paths.image('stage'));
-    fofStage.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
-    fofStage.scale.set(1.25, 1.25);
-    fofStage.antialiasing = true;
-    fofStage.updateHitbox();
-    fofStage.scrollFactor.set(0.5);
-    fofStage.active = false;
+    fofStage = new FlxSprite(-100, 0, Paths.image('stage'));
+    fofStage.setGraphicSize(Math.round(fofStage.width * 1.5));
+    fofStage.scrollFactor.set(1, 0.9);
     add(fofStage);
 
-    sonicDead = new FlxSprite(325, 250, Paths.image('sonicisfuckingdead'));
-    sonicDead.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
-    sonicDead.scale.set(0.5, 0.5);
-    sonicDead.antialiasing = true;
-    sonicDead.updateHitbox();
-    sonicDead.scrollFactor.set(0.5);
-    sonicDead.active = false;
+    sonicDead = new FlxSprite(0, 100, Paths.image('sonicisfuckingdead'));
+    sonicDead.setGraphicSize(Math.round(sonicDead.width * 0.65));
+    sonicDead.scrollFactor.set(1, 0.9);
     add(sonicDead);
 
-	lightBG = new FlxSprite(-117, -65, Paths.image('light'));
-	lightBG.setGraphicSize(Math.round(FlxG.width), Math.round(FlxG.height));
-	lightBG.scale.set(1.25, 1.25);
-	lightBG.antialiasing = true;
-	lightBG.updateHitbox();
-	lightBG.scrollFactor.set(0.5);
-    lightBG.active = false;
+	lightBG = new FlxSprite(-100, 0, Paths.image('light'));
+	lightBG.setGraphicSize(Math.round(lightBG.width * 1.5));
+	lightBG.scrollFactor.set(1, 0.9);
+    lightBG.alpha = 0;
 	add(lightBG);
 
     conductorOGState = Conductor.speedBasedBPM;
@@ -69,6 +51,11 @@ function onCreate()
 
 function onCreatePost()
 {
+    boyfriend.x -= 500;
+    //boyfriend.y += 75;
+    dad.x += 300;
+    dad.y -= 350;
+
     bfx = boyfriend.x;
     bfy = boyfriend.y;
 
@@ -103,8 +90,6 @@ function onMoveCamera(who)
     {
         case 'dad':
         {
-            // disable the camera movement on starved
-            PlayState.bfTurn = true;
             stage.defaultCamZoom = 1;
             for(receptor in playerStrums.receptors.members)
 			{
@@ -136,33 +121,28 @@ function onStepHit()
 {
     if (curStep == 1183 || curStep == 1472)
     {
-        FlxTween.color(sonicDead, 0.5, whiteColor, redColor, {ease: FlxEase.quadInOut});
-        
-        FlxTween.tween(cityBG, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
-        FlxTween.tween(towerBG, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
-        FlxTween.tween(fofStage, {alpha: 0}, 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(lightBG, {alpha: 1}, tweenTime, {ease: FlxEase.quadInOut});
+        FlxTween.color(sonicDead, tweenTime, whiteColor, redColor, {ease: FlxEase.quadInOut});
 
-		boyfriend.colorTween = FlxTween.color(boyfriend, 0.5, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
+        FlxTween.tween(cityBG, {alpha: 0}, tweenTime, {ease: FlxEase.quadInOut});
+        FlxTween.tween(towerBG, {alpha: 0}, tweenTime, {ease: FlxEase.quadInOut});
+        FlxTween.tween(fofStage, {alpha: 0}, tweenTime, {ease: FlxEase.quadInOut});
+
+		boyfriend.colorTween = FlxTween.color(boyfriend, tweenTime, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
 			boyfriend.colorTween = null;
-		}, ease: FlxEase.quadInOut});
-		dad.colorTween = FlxTween.color(dad, 0.5, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
-			dad.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
     else if (curStep == 1437 || curStep == 1982)
     {
-        FlxTween.color(sonicDead, 0.5, redColor, whiteColor, {ease: FlxEase.quadInOut});
+        FlxTween.tween(lightBG, {alpha: 0}, tweenTime + 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.color(sonicDead, tweenTime + 0.5, redColor, whiteColor, {ease: FlxEase.quadInOut});
         
-        FlxTween.tween(cityBG, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
-        FlxTween.tween(towerBG, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
-        FlxTween.tween(fofStage, {alpha: 1}, 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(cityBG, {alpha: 1}, tweenTime + 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(towerBG, {alpha: 1}, tweenTime + 0.5, {ease: FlxEase.quadInOut});
+        FlxTween.tween(fofStage, {alpha: 1}, tweenTime + 0.5, {ease: FlxEase.quadInOut});
         
-        boyfriend.colorTween = FlxTween.color(boyfriend, 0.5, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
+        boyfriend.colorTween = FlxTween.color(boyfriend, tweenTime, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
 			boyfriend.colorTween = null;
-		}, ease: FlxEase.quadInOut});
-
-		dad.colorTween = FlxTween.color(dad, 0.5, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
-			dad.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
 }

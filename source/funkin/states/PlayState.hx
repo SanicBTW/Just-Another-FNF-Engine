@@ -179,8 +179,9 @@ class PlayState extends MusicBeatState
 		setOnModules('opponentStrums', opponentStrums);
 		setOnModules('PlayState', this);
 		setOnModules('UI', ui);
+		setOnModules('moveCamera', moveCamera);
+		setOnModules('moveCameraSection', moveCameraSection);
 
-		moveCameraSection(0);
 		startingSong = true;
 
 		callOnModules('onCreatePost', '');
@@ -418,13 +419,16 @@ class PlayState extends MusicBeatState
 		var introArray:Array<FlxGraphic> = [];
 		var soundsArray:Array<Sound> = [];
 
-		var introName:Array<String> = ['ready', 'set', 'go'];
-		for (intro in introName)
-			introArray.push(Paths.image('ui/$intro'));
+		if (!stageBuild.skip_defaultCountdown)
+		{
+			var introName:Array<String> = ['ready', 'set', 'go'];
+			for (intro in introName)
+				introArray.push(Paths.image('ui/$intro'));
 
-		var soundNames:Array<String> = ['intro3', 'intro2', 'intro1', 'introGo'];
-		for (sound in soundNames)
-			soundsArray.push(Paths.sound(sound));
+			var soundNames:Array<String> = ['intro3', 'intro2', 'intro1', 'introGo'];
+			for (sound in soundNames)
+				soundsArray.push(Paths.sound(sound));
+		}
 
 		var countdown:Int = -1;
 
@@ -455,7 +459,7 @@ class PlayState extends MusicBeatState
 				opponent.dance();
 			}
 
-			if (countdown >= 0 && countdown < introArray.length)
+			if (!stageBuild.skip_defaultCountdown && countdown >= 0 && countdown < introArray.length)
 			{
 				var introSprite:FlxSprite = new FlxSprite().loadGraphic(introArray[countdown]);
 				introSprite.scrollFactor.set();
@@ -476,7 +480,8 @@ class PlayState extends MusicBeatState
 			callOnModules('onCountdownTick', countdown);
 
 			countdown++;
-			FlxG.sound.play(soundsArray[countdown], 0.6);
+			if (!stageBuild.skip_defaultCountdown)
+				FlxG.sound.play(soundsArray[countdown], 0.6);
 		}, 5);
 	}
 
