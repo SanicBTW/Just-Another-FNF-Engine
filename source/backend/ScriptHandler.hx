@@ -11,10 +11,14 @@ import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.math.*;
+import flixel.system.FlxSound;
+import flixel.text.FlxText;
 import flixel.tweens.*;
+import flixel.ui.FlxBar;
 import flixel.util.*;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import funkin.Character;
+import funkin.Timings;
 import haxe.Exception;
 import haxe.ds.StringMap;
 import haxe.io.Path;
@@ -87,6 +91,11 @@ class ScriptHandler
 		exp.set("FlxTimer", FlxTimer);
 		exp.set("FlxEase", FlxEase);
 		exp.set("FlxColor", Colors);
+		// will change it to my better bar ig
+		exp.set('FlxBar', FlxBar);
+		exp.set('FlxBarFillDirection', FlxBarFillDirection);
+		exp.set('FlxText', FlxText);
+		exp.set('FlxSound', FlxSound);
 
 		// Classes (Vanilla)
 		exp.set('VPaths', Paths); // Vanilla Paths, basically access the whole engine Paths
@@ -95,6 +104,7 @@ class ScriptHandler
 
 		// Classes (Engine)
 		exp.set('Cache', Cache);
+		exp.set('Timings', Timings);
 
 		parser.allowTypes = true;
 		parser.allowJSON = true;
@@ -146,9 +156,9 @@ class ScriptHandler
 			@:privateAccess
 			cast(flixel.FlxG.state, base.ScriptableState).moduleBatch.push(module);
 		}
-		catch (ex)
+		catch (ex:Error)
 		{
-			trace(ex);
+			trace('HScript parsing exception, caused at line ${ex.line} on ${ex.origin} (${ex.e})');
 		}
 
 		return module;

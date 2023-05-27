@@ -7,10 +7,22 @@ var zoomshit = 0;
 var bfx;
 var bfy;
 
+var transparentColor = 0x00000000;
+var blackColor = 0xFF000000;
 var whiteColor = 0xFFFFFFFF;
 var redColor = 0xFFFF0000;
 var conductorOGState;
 var tweenTime = 1;
+
+var blackFuck;
+var startCircle;
+var startText;
+
+// fortinait o la bbg
+var fear = 0;
+var fearBBorder;
+var fearBBG;
+var fearBar;
 
 function onCreate()
 {
@@ -45,12 +57,83 @@ function onCreate()
     lightBG.alpha = 0;
 	add(lightBG);
 
+    blackFuck = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, blackColor);
+    startCircle = new FlxSprite();
+    startText = new FlxSprite();
+
+    fearBBorder = new FlxSprite(FlxG.width - 100, FlxG.height * 0.23, Paths.image('fearbar'));
+    fearBBorder.scrollFactor.set();
+
+    fearBBG = new FlxSprite(fearBBorder.x + 16, fearBBorder.y, Paths.image('fearbarBG'));
+    fearBBG.angle = 0;
+    fearBBG.scrollFactor.set();
+    fearBBG.scale.set(0.60, 1);
+    fearBBG.updateHitbox();
+
+    fearBar = new FlxBar(fearBBG.x + 12, fearBBG.y + 16, FlxBarFillDirection.BOTTOM_TO_TOP, Math.round(fearBBG.width), Math.round(fearBBG.height), null,
+	    '', 0, 100);
+	fearBar.angle = 0;
+	fearBar.scrollFactor.set();
+	fearBar.createFilledBar(transparentColor, redColor);
+	fearBar.numDivisions = 800;
+	fearBar.scale.set(0.56, 0.90);
+	fearBar.updateHitbox();
+
     conductorOGState = Conductor.speedBasedBPM;
     Conductor.speedBasedBPM = false;
 }
 
+function onStartCountdown()
+{
+    UI.add(fearBBorder);
+    UI.add(fearBBG);
+	UI.add(fearBar);
+
+    UI.alpha = 0;
+
+    add(blackFuck);
+
+    startCircle.loadGraphic(Paths.image('Circle-fight-or-flight'));
+    startCircle.screenCenter();
+    startCircle.scale.set(1.5, 1.5);
+    startCircle.x += 777;
+    add(startCircle);
+
+    startText.loadGraphic(Paths.image("Text-fight-or-flight"));
+    startText.screenCenter();
+    startText.scale.set(1.5, 1.5);
+    startText.x -= 1200;
+    add(startText);
+
+    new FlxTimer().start(0.6, function(tmr:FlxTimer)
+    {
+        FlxTween.tween(startCircle, {x: 250}, 0.5);
+        FlxTween.tween(startText, {x: 250}, 0.5);
+    });
+
+    new FlxTimer().start(1.9, function(tmr:FlxTimer)
+	{
+		FlxTween.tween(startCircle, {alpha: 0}, 1, {onComplete: function(twn:FlxTween)
+		{
+			remove(startCircle);
+		}});
+		FlxTween.tween(startText, {alpha: 0}, 1, {onComplete: function(twn:FlxTween)
+		{
+			remove(startText);
+		}});
+		FlxTween.tween(blackFuck, {alpha: 0}, 1, {onComplete: function(twn:FlxTween)
+		{
+			remove(blackFuck);
+		}});
+	});
+}
+
 function onCreatePost()
 {
+    blackFuck.cameras = [camHUD];
+    startCircle.cameras = [camHUD];
+    startText.cameras = [camHUD];
+
     boyfriend.x -= 500;
     //boyfriend.y += 75;
     dad.x += 300;
@@ -58,6 +141,10 @@ function onCreatePost()
 
     bfx = boyfriend.x;
     bfy = boyfriend.y;
+
+    // apparently fixes camera position
+    beatHit();
+    moveCamera();
 
     UI.textFormat = "Sacrifices: $misses | Accuracy: $accuracy";
     UI.scoreText.x = 0;
@@ -77,6 +164,16 @@ function onCreatePost()
 
         i++;
 	}
+}
+
+function onNoteMiss()
+{
+    fear += 0.6;
+}
+
+function onSongStart()
+{
+    FlxTween.tween(UI, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
 }
 
 function onEndSong()
@@ -115,6 +212,9 @@ function onUpdate(elapsed)
     boyfriend.scale.set(zoomshit, zoomshit);
     boyfriend.x = bfx * zoomshit;
     boyfriend.y = bfy * zoomshit;
+
+    fear += 0.475 * elapsed;
+    fearBar.value = fear;
 }
 
 function onStepHit()

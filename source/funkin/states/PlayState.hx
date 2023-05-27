@@ -179,6 +179,8 @@ class PlayState extends MusicBeatState
 		setOnModules('opponentStrums', opponentStrums);
 		setOnModules('PlayState', this);
 		setOnModules('UI', ui);
+		setOnModules('stepHit', stepHit);
+		setOnModules('beatHit', beatHit);
 		setOnModules('moveCamera', moveCamera);
 		setOnModules('moveCameraSection', moveCameraSection);
 

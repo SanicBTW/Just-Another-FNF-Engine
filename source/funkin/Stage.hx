@@ -35,6 +35,7 @@ class Stage extends FlxTypedGroup<FlxBasic>
 		var exposure:StringMap<Dynamic> = new StringMap<Dynamic>();
 		exposure.set('stage', this);
 		exposure.set('add', add);
+		exposure.set('remove', remove);
 
 		module = ScriptHandler.loadModule(stage, 'stages/$stage', exposure, DEFAULT);
 		if (module.exists('onCreate'))
