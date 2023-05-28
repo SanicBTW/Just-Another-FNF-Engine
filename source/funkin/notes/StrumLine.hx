@@ -1,8 +1,7 @@
 package funkin.notes;
 
 import base.Conductor;
-import flixel.FlxBasic;
-import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
 import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
@@ -10,12 +9,12 @@ import flixel.tweens.FlxTween;
 import flixel.util.FlxSignal.FlxTypedSignal;
 import funkin.notes.Receptor.ReceptorData;
 
-class StrumLine extends FlxTypedGroup<FlxBasic>
+class StrumLine extends FlxSpriteGroup
 {
-	public var receptors(default, null):FlxTypedGroup<Receptor>;
-	public var notesGroup(default, null):FlxTypedGroup<Note>;
-	public var holdGroup(default, null):FlxTypedGroup<Note>;
-	public var allNotes(default, null):FlxTypedGroup<Note>;
+	public var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
+	public var notesGroup(default, null):FlxTypedSpriteGroup<Note>;
+	public var holdGroup(default, null):FlxTypedSpriteGroup<Note>;
+	public var allNotes(default, null):FlxTypedSpriteGroup<Note>;
 
 	public var onBotHit(default, null):FlxTypedSignal<Note->Void> = new FlxTypedSignal<Note->Void>();
 	public var onMiss(default, null):FlxTypedSignal<Note->Void> = new FlxTypedSignal<Note->Void>();
@@ -25,14 +24,14 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 	public var keyAmount:Int = 4;
 	public var receptorData:ReceptorData;
 
-	public function new(X:Float = 0, Y:Float = 0, ?strumLineType:String = 'default')
+	public function new(X:Float = 0, Y:Float = 0, ?strumLineType:String = 'default', ?overrideSize:Float)
 	{
 		super();
 
-		receptors = new FlxTypedGroup<Receptor>();
-		notesGroup = new FlxTypedGroup<Note>();
-		holdGroup = new FlxTypedGroup<Note>();
-		allNotes = new FlxTypedGroup<Note>();
+		receptors = new FlxTypedSpriteGroup<Receptor>();
+		notesGroup = new FlxTypedSpriteGroup<Note>();
+		holdGroup = new FlxTypedSpriteGroup<Note>();
+		allNotes = new FlxTypedSpriteGroup<Note>();
 
 		receptorData = Note.returnNoteData(strumLineType);
 		keyAmount = receptorData.keyAmount;
@@ -45,6 +44,12 @@ class StrumLine extends FlxTypedGroup<FlxBasic>
 			receptor.setGraphicSize(Std.int(receptor.width * receptorData.size));
 			receptor.updateHitbox();
 			receptor.swagWidth = receptorData.separation * receptorData.size;
+			if (overrideSize != null)
+			{
+				receptor.setGraphicSize(Std.int((receptor.width / receptorData.size) * overrideSize));
+				receptor.updateHitbox();
+				receptor.swagWidth = receptorData.separation * overrideSize;
+			}
 
 			receptor.setPosition(X - receptor.swagWidth / 2, Y - receptor.swagWidth / 2);
 			receptor.noteData = i;

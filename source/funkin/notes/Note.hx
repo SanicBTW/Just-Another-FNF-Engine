@@ -5,6 +5,7 @@ import base.Conductor;
 import flixel.FlxSprite;
 import funkin.notes.Receptor.ReceptorData;
 import haxe.Json;
+import openfl.Assets;
 
 // Rewrite soon
 class Note extends FlxSprite
@@ -52,7 +53,6 @@ class Note extends FlxSprite
 	// Psych
 	public var noteType(default, set):String = null;
 
-	// public var texture(default, set):String = null;
 	// FE:L
 	public var endHoldOffset:Float = Math.NEGATIVE_INFINITY;
 
@@ -63,22 +63,13 @@ class Note extends FlxSprite
 	public var noteModule:ForeverModule;
 	public var receptorData:ReceptorData;
 
-	/*
-		@:noCompletion
-		private function set_texture(value:String):String
-		{
-			if (texture != value)
-				reloadNote('', value);
-
-			texture = value;
-			return value;
-	}*/
 	@:noCompletion
 	private function set_noteType(value:String):String
 	{
 		if (noteData > -1 && noteType != value)
 		{
 			switch (value) {}
+			loadNote(value);
 			noteType = value;
 		}
 
@@ -99,10 +90,9 @@ class Note extends FlxSprite
 		this.prevNote = prevNote;
 		this.isSustain = isSustain;
 
-		y -= 2000;
+		this.noteType = noteType;
 
-		if (noteData > -1)
-			loadNote(noteType);
+		y -= 2000;
 	}
 
 	public function loadNote(noteType:String)
@@ -151,7 +141,13 @@ class Note extends FlxSprite
 		if (!dataCache.exists(noteType))
 		{
 			trace('Setting note data $noteType');
-			dataCache.set(noteType, cast Json.parse(Paths.text(Paths.file('notetypes/$noteType/$noteType.json'))));
+
+			// i forgot
+			var path:String = Paths.file('notetypes/$noteType/$noteType.json');
+			if (!Assets.exists(path))
+				path = Paths.file('notetypes/$DEFAULT/$DEFAULT.json');
+
+			dataCache.set(noteType, cast Json.parse(Paths.text(path)));
 		}
 		return dataCache.get(noteType);
 	}

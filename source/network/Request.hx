@@ -24,6 +24,12 @@ class Request<T>
 
 		switch (type)
 		{
+			// I'm dumb
+			case RAW_STRING:
+				req.onData = (data:String) ->
+				{
+					callback(cast data);
+				}
 			case STRING:
 				req.onData = (data:String) ->
 				{
@@ -102,4 +108,5 @@ enum RequestType
 	BYTES;
 	SOUND;
 	IMAGE;
+	RAW_STRING;
 }

@@ -1,24 +1,17 @@
-Add proper Soloud support
+Add proper Soloud support (Might move to BASS once I make a library for it)
 - set an audio handle for soloud on FlxSound?
 
-Transitions between states
-- everything on a file and music beat state extends from it
-- separated files
-- think about a proper name for the state handling (not scriptable state cuz its not scriptable [why did even yoshubs call it like this on fe rewrite])
-- uhhhhhhhhh
-
 Paths
-- new library system (instead of having one single preloaded, separate the files between libraries and follow a file tree schema)
-
-Add proper network cache
-- its hard wtf
+- fix new library system
 
 Improve Filesystem operations (IO) and the temp shit lol (it keeps throwing null on closing and cleanin files bru)
 
 Add a compilation flag to disable counters completely or make them basic, like old times
 
-Real support for online charts bruh
-
 apparently you cant use Std on HTML5??? (HScript)
 
-add bf
+move to the latest forever engine rewrite callback method (.get(method)(this))
+
+properly parse paths and fallbacks, splashes and shit
+
+Add dearimgui support

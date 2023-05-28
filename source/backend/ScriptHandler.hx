@@ -17,14 +17,13 @@ import flixel.tweens.*;
 import flixel.ui.FlxBar;
 import flixel.util.*;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import funkin.Character;
-import funkin.Timings;
+import funkin.*;
+import funkin.notes.*;
 import haxe.Exception;
 import haxe.ds.StringMap;
 import haxe.io.Path;
-import hscript.Expr;
-import hscript.Interp;
-import hscript.Parser;
+import hscript.*;
+import hscript.Expr.Error;
 import openfl.media.Sound;
 import openfl.utils.Assets;
 
@@ -102,9 +101,11 @@ class ScriptHandler
 		exp.set("Conductor", Conductor);
 		exp.set("Character", Character);
 
-		// Classes (Engine)
+		// Classes (Engine / Forever)
 		exp.set('Cache', Cache);
 		exp.set('Timings', Timings);
+		exp.set('Note', Note);
+		exp.set('StrumLine', StrumLine);
 
 		parser.allowTypes = true;
 		parser.allowJSON = true;

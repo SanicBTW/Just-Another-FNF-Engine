@@ -1,14 +1,18 @@
 package funkin;
 
-import backend.IO;
 import base.Conductor;
 import flixel.util.FlxSort;
 import funkin.SongTools;
 import funkin.notes.Note;
-import haxe.io.Path;
+import openfl.media.Sound;
 import openfl.utils.Assets;
 
 using StringTools;
+
+#if FS_ACCESS
+import backend.IO;
+import haxe.io.Path;
+#end
 
 class ChartLoader
 {
@@ -16,11 +20,31 @@ class ChartLoader
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
 
+	public static function loadNetChart(rawChart:String, inst:Sound, ?vocals:Sound):SongData
+	{
+		Conductor.bpmChanges = [];
+		noteQueue = [];
+		var startTime:Float = haxe.Timer.stamp();
+
+		var swagSong:SongData = SongTools.loadSong(rawChart);
+		if (vocals == null)
+			swagSong.needsVoices = false;
+
+		Conductor.bindSong(swagSong, inst, vocals);
+
+		parseNotes(swagSong);
+
+		var endTime:Float = haxe.Timer.stamp();
+		trace('end chart parse time ${endTime - startTime}');
+
+		return swagSong;
+	}
+
 	public static function loadChart(songName:String, difficulty:Int):SongData
 	{
 		Conductor.bpmChanges = [];
 		noteQueue = [];
-		var startTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
+		var startTime:Float = haxe.Timer.stamp();
 
 		var rawChart:String = "";
 		var swagSong:SongData = null;
@@ -48,7 +72,7 @@ class ChartLoader
 
 		parseNotes(swagSong);
 
-		var endTime:Float = #if sys Sys.time(); #else Date.now().getTime(); #end
+		var endTime:Float = haxe.Timer.stamp();
 		trace('end chart parse time ${endTime - startTime}');
 
 		return swagSong;
@@ -65,6 +89,7 @@ class ChartLoader
 		var curBPM:Float = swagSong.bpm;
 		var totalSteps:Int = 0;
 		var totalPos:Float = 0;
+
 		for (section in swagSong.notes)
 		{
 			if (section.changeBPM && section.bpm != curBPM)
@@ -102,10 +127,9 @@ class ChartLoader
 						if (noteQueue.length > 0)
 							oldNote = noteQueue[Std.int(noteQueue.length - 1)];
 
-						var newNote:Note = new Note(strumTime, noteData, 'default', strumLine, oldNote);
+						var newNote:Note = new Note(strumTime, noteData, songNotes[3], strumLine, oldNote);
 						newNote.mustPress = hitNote;
 						newNote.sustainLength = Math.round(songNotes[2] / curChange.stepCrochet) * curChange.stepCrochet;
-						newNote.noteType = songNotes[3];
 						noteQueue.push(newNote);
 
 						var holdLength:Float = newNote.sustainLength;
@@ -117,9 +141,8 @@ class ChartLoader
 							{
 								var time:Float = strumTime + (curChange.stepCrochet * note) + curChange.stepCrochet;
 
-								var sustainNote:Note = new Note(time, noteData, 'default', strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
+								var sustainNote:Note = new Note(time, noteData, newNote.noteType, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
 								sustainNote.mustPress = hitNote;
-								sustainNote.noteType = newNote.noteType;
 
 								sustainNote.parent = newNote;
 								sustainNote.isSustainEnd = (note == Math.round(holdLength) - 1);
