@@ -103,12 +103,6 @@ class ChartLoader
 
 	private static function parseNotes(swagSong:SongData)
 	{
-		var curChange:BPMChangeEvent = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: swagSong.bpm,
-			stepCrochet: Conductor.stepCrochet
-		};
 		var curBPM:Float = swagSong.bpm;
 		var totalSteps:Int = 0;
 		var totalPos:Float = 0;
@@ -125,7 +119,6 @@ class ChartLoader
 					stepCrochet: (Conductor.calculateCrochet(curBPM) / 4)
 				};
 				Conductor.bpmChanges.push(bpmChange);
-				curChange = bpmChange;
 			}
 
 			var deltaSteps:Int = (section.sectionBeats != null ? Math.round(section.sectionBeats) * 4 : section.lengthInSteps);
@@ -137,7 +130,7 @@ class ChartLoader
 				switch (songNotes[1])
 				{
 					default:
-						var stepTime:Float = songNotes[0] / curChange.stepCrochet;
+						var stepTime:Float = songNotes[0] / Conductor.stepCrochet;
 						var noteData:Int = Std.int(songNotes[1] % 4);
 						var hitNote:Bool = section.mustHitSection;
 
@@ -152,7 +145,7 @@ class ChartLoader
 
 						var newNote:Note = new Note(stepTime, noteData, songNotes[3], strumLine, oldNote);
 						newNote.mustPress = hitNote;
-						newNote.sustainLength = songNotes[2] / curChange.stepCrochet;
+						newNote.sustainLength = songNotes[2] / Conductor.stepCrochet;
 						noteQueue.push(newNote);
 
 						var holdLength:Float = newNote.sustainLength + 1;

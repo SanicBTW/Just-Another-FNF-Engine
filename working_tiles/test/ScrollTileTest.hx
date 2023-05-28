@@ -87,6 +87,8 @@ class ScrollTileTest extends MusicBeatState
 
 	#if !html5
 	var noteMutex:sys.thread.Mutex = new sys.thread.Mutex();
+	#else
+	var noteReleased:Bool = true;
 	#end
 
 	// tried doing the FlxG.cameras.setDefaultDrawTarget but broke everything so moved to the old one
@@ -327,7 +329,7 @@ class ScrollTileTest extends MusicBeatState
 			i.destroy();
 		notesGroup.clear();
 
-		noteMutex.acquire();
+		#if !html5 noteMutex.acquire(); #else noteReleased = false; #end
 		for (qNote in ChartLoader.noteQueue)
 		{
 			var note:Note = new Note(qNote.stepTime, qNote.noteData, qNote.noteType, qNote.strumLine);
@@ -362,14 +364,12 @@ class ScrollTileTest extends MusicBeatState
 				holdsMap.set(note, {holdLength: qNote.sustainLength, hold: hold, end: end});
 			}
 		}
-		noteMutex.release();
+		#if !html5 noteMutex.release(); #else noteReleased = true; #end
 		trace('finished generating notes');
 	}
 
 	override function update(elapsed:Float)
 	{
-		var lastChange:BPMChangeEvent = Conductor.getBPMFromStep(curStep);
-
 		if (FlxG.keys.pressed.ALT)
 		{
 			if (FlxG.mouse.wheel != 0)
@@ -383,10 +383,13 @@ class ScrollTileTest extends MusicBeatState
 
 		super.update(elapsed);
 
-		boardPattern.scale.y = chartZoom;
-		boardPattern.height = ((Conductor.boundInst.length / lastChange.stepCrochet) * cellSize) * chartZoom;
+		if (Conductor.boundInst != null)
+		{
+			boardPattern.scale.y = chartZoom;
+			boardPattern.height = ((Conductor.boundInst.length / Conductor.stepCrochet) * cellSize) * chartZoom;
+		}
 
-		conductorCrochet.y = getYFromStep(Conductor.songPosition / lastChange.stepCrochet) + (cellSize * 0.5);
+		conductorCrochet.y = getYFromStep(Conductor.songPosition / Conductor.stepCrochet) + (cellSize * 0.5);
 		for (strumline in receptorGroup)
 			strumline.y = conductorCrochet.y - (cellSize * 0.5);
 
@@ -423,7 +426,7 @@ class ScrollTileTest extends MusicBeatState
 			}
 		}
 
-		if (noteMutex.tryAcquire())
+		if (#if !html5 noteMutex.tryAcquire() #else noteReleased #end)
 		{
 			for (daNote in notesGroup)
 			{
@@ -439,12 +442,15 @@ class ScrollTileTest extends MusicBeatState
 
 				if (Conductor.boundInst.playing)
 				{
-					if ((daNote.stepTime * lastChange.stepCrochet) >= lastTiming
-						&& (daNote.stepTime * lastChange.stepCrochet) <= Conductor.songPosition && lastTiming >= Conductor.songPosition)
+					// kinda wacky but aight
+					var strumTime:Float = (daNote.stepTime * Conductor.stepCrochet);
+
+					if (daNote.stepTime >= lastTiming / Conductor.stepCrochet
+						&& daNote.stepTime <= Conductor.songPosition / Conductor.stepCrochet
+						&& lastTiming >= Conductor.songPosition / Conductor.stepCrochet)
 					{
-						trace('what');
 						receptorGroup.members[daNote.strumLine].receptors.members[daNote.noteData].playAnim('confirm');
-						lastTiming = Conductor.songPosition;
+						lastTiming = strumTime;
 					}
 				}
 			}
@@ -482,7 +488,7 @@ class ScrollTileTest extends MusicBeatState
 
 					if (holdsMap[note].hold.alive && Conductor.boundInst.playing)
 					{
-						var conductorPos:Float = getYFromStep(Conductor.songPosition / lastChange.stepCrochet);
+						var conductorPos:Float = getYFromStep(Conductor.songPosition / Conductor.stepCrochet);
 						if (conductorPos >= holdsMap[note].hold.y
 							&& conductorPos <= holdsMap[note].hold.y + holdsMap[note].hold.height + holdsMap[note].end.height)
 						{
