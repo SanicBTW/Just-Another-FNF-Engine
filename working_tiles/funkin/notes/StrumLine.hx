@@ -116,7 +116,8 @@ class StrumLine extends FlxSpriteGroup
 			var receptor:Receptor = receptors.members[Math.floor(strumNote.noteData)];
 			var receptorY:Float = receptor.y + (Note.swagWidth / 6);
 
-			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
+			var pseudoY:Float = strumNote.offsetY
+				+ (downscrollMultiplier * -((Conductor.songPosition - (strumNote.stepTime * Conductor.stepCrochet)) * Conductor.songSpeed));
 
 			strumNote.x = receptor.x
 				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * strumNote.offsetX)
@@ -147,8 +148,7 @@ class StrumLine extends FlxSpriteGroup
 
 			if (!strumNote.tooLate
 				&& strumNote.mustPress
-				&& strumNote.strumTime - Conductor.songPosition < -strumNote.hitbox
-				&& !strumNote.wasGoodHit)
+				&& (strumNote.stepTime * Conductor.stepCrochet) - Conductor.songPosition < -strumNote.hitbox && !strumNote.wasGoodHit)
 			{
 				// If it is a single note or is the head of the sustain
 				if (!strumNote.isSustain || strumNote.parent == null)
@@ -170,7 +170,7 @@ class StrumLine extends FlxSpriteGroup
 				}
 			}
 
-			if (botPlay && !strumNote.tooLate && strumNote.strumTime <= Conductor.songPosition)
+			if (botPlay && !strumNote.tooLate && (strumNote.stepTime * Conductor.stepCrochet) <= Conductor.songPosition)
 				onBotHit.dispatch(strumNote);
 
 			if ((strumNote.y < -strumNote.height) && (strumNote.tooLate || strumNote.wasGoodHit))

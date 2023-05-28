@@ -89,8 +89,6 @@ function onStartCountdown()
     UI.add(fearBBG);
 	UI.add(fearBar);
 
-    UI.alpha = 0;
-
     PlayState.camMov = 15;
 
     add(blackFuck);
@@ -172,6 +170,12 @@ function onCreatePost()
 function onNoteMiss()
 {
     fear += 0.6;
+}
+
+function onCountdownStarted()
+{
+    FlxTween.cancelTweensOf(UI);
+    UI.alpha = 0;
 }
 
 function onSongStart()

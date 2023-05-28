@@ -177,7 +177,7 @@ class Conductor
 			var nearestNote:Note = ChartLoader.noteQueue[0];
 			var noteDiff:Float = 1;
 			if (nearestNote != null)
-				noteDiff = (nearestNote.strumTime - songPosition) / 1000;
+				noteDiff = ((nearestNote.stepTime * stepCrochet) - songPosition) / 1000;
 
 			songSpeed = baseSpeed * (bps / noteDiff);
 		}
