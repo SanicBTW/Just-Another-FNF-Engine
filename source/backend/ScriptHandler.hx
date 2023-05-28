@@ -7,6 +7,7 @@ package backend;
  */
 import Paths.Libraries;
 import base.Conductor;
+import base.ScriptableState;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -96,16 +97,15 @@ class ScriptHandler
 		exp.set('FlxText', FlxText);
 		exp.set('FlxSound', FlxSound);
 
-		// Classes (Vanilla)
+		// Classes (Engine / Forever)
 		exp.set('VPaths', Paths); // Vanilla Paths, basically access the whole engine Paths
 		exp.set("Conductor", Conductor);
 		exp.set("Character", Character);
-
-		// Classes (Engine / Forever)
 		exp.set('Cache', Cache);
 		exp.set('Timings', Timings);
 		exp.set('Note', Note);
 		exp.set('StrumLine', StrumLine);
+		exp.set('ScriptableState', ScriptableState);
 
 		parser.allowTypes = true;
 		parser.allowJSON = true;
@@ -155,7 +155,7 @@ class ScriptHandler
 			module = new ForeverModule(expr, assetFolder, extraParams);
 
 			@:privateAccess
-			cast(flixel.FlxG.state, base.ScriptableState).moduleBatch.push(module);
+			cast(flixel.FlxG.state, ScriptableState).moduleBatch.push(module);
 		}
 		catch (ex:Error)
 		{

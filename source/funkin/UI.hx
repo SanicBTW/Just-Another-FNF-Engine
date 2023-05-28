@@ -17,7 +17,7 @@ class UI extends FlxSpriteGroup
 	{
 		super();
 
-		scoreText = new FlxText(30, (FlxG.height / 2) + (FlxG.height / 4), FlxG.width, '', 20);
+		scoreText = new FlxText(30, (FlxG.height / 2) + (FlxG.height / 4), FlxG.width, '', 32);
 		scoreText.font = Paths.font('vcr.ttf');
 		scoreText.alignment = LEFT;
 		scoreText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);

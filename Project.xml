@@ -39,6 +39,8 @@
 
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
+	<haxelib name="SSIni" />
+	<!-- <haxelib name="imgui-hx" /> --> <!-- (NOT HANDLED BY FLIXEL) haxelib git imgui-hx https://github.com/jeremyfa/imgui-hx -->
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
@@ -65,9 +67,6 @@
 
 	<!-- Enable Discord Rich Presence -->
 	<define name="DISCORD_PRESENCE" if="windows" />
-
-	<!-- Cache FlxText's graphics, crashes less without it actually -->
-	<!-- <define name="CACHE_FLX_TEXT" unless="html5"/> -->
 
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>

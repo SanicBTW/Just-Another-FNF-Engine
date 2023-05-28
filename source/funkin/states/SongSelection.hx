@@ -221,7 +221,7 @@ class SongSelection extends ScriptableState
 									IO.saveFile('${curRec.song}_inst.$extension', inst);
 									instCb();
 
-									if (curRec.voices != null)
+									if (curRec.voices != '')
 									{
 										PBRequest.getFile(curRec, "voices", (voices:Bytes) ->
 										{

@@ -254,6 +254,9 @@ class PlayState extends MusicBeatState
 
 	override private function onActionPressed(action:String)
 	{
+		if (startingSong)
+			return;
+
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
 		{

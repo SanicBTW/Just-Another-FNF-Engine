@@ -90,6 +90,10 @@ class IO
 
 		return null;
 	}
+
+	// dumbass
+	public static function exists(file:String):Bool
+		return FileSystem.exists(file);
 }
 #else
 // Only copy fields to avoid a bunch of compilation shits
@@ -106,6 +110,8 @@ class IO
 	public static function saveFile<T>(name:String, content:T) {}
 
 	public static function getFile(file:String, method:FileGetType) {}
+
+	public static function exists(file:String) {}
 }
 #end
 

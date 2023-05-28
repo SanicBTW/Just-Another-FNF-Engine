@@ -91,6 +91,8 @@ function onStartCountdown()
 
     UI.alpha = 0;
 
+    PlayState.camMov = 15;
+
     add(blackFuck);
 
     startCircle.loadGraphic(Paths.image('Circle-fight-or-flight'));
@@ -107,8 +109,8 @@ function onStartCountdown()
 
     new FlxTimer().start(0.6, function(tmr:FlxTimer)
     {
-        FlxTween.tween(startCircle, {x: 250}, 0.5);
-        FlxTween.tween(startText, {x: 250}, 0.5);
+        FlxTween.tween(startCircle, {x: (FlxG.width - startCircle.width) / 2}, 0.5);
+        FlxTween.tween(startText, {x: (FlxG.width - startText.width) / 2}, 0.5);
     });
 
     new FlxTimer().start(1.9, function(tmr:FlxTimer)
@@ -150,6 +152,7 @@ function onCreatePost()
     UI.scoreText.x = 0;
     UI.scoreText.y = (FlxG.height - 45) - 5;
     UI.scoreText.alignment = "center";
+    UI.scoreText.size = 20;
     UI.updateText();
 
     var i = 0;
@@ -213,8 +216,14 @@ function onUpdate(elapsed)
     boyfriend.x = bfx * zoomshit;
     boyfriend.y = bfy * zoomshit;
 
-    fear += 0.475 * elapsed;
-    fearBar.value = fear;
+    if (PlayState.updateTime)
+    {
+        fear += 0.475 * elapsed;
+        fearBar.value = fear;
+    }
+
+    if (fear >= 100)
+        ScriptableState.resetState();
 }
 
 function onStepHit()

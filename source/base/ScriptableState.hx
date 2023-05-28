@@ -52,6 +52,23 @@ class ScriptableState extends FlxState implements ModuleManager
 		FlxG.switchState(nextState);
 	}
 
+	// dumbass
+	public static function resetState()
+	{
+		var curState:ScriptableState = cast FlxG.state;
+		if (!FadeTransition.skipTransIn)
+		{
+			curState.openSubState(new FadeTransition(0.6, false));
+			FadeTransition.finishCallback = function()
+			{
+				FlxG.resetState();
+			};
+			return;
+		}
+		FadeTransition.skipTransIn = false;
+		FlxG.resetState();
+	}
+
 	private function onActionPressed(action:String) {}
 
 	private function onActionReleased(action:String) {}

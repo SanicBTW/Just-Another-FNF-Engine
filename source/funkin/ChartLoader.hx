@@ -14,6 +14,7 @@ import backend.IO;
 import haxe.io.Path;
 #end
 
+// ugly functions :heart_eyes:
 class ChartLoader
 {
 	public static var noteQueue:Array<Note> = [];
@@ -40,34 +41,56 @@ class ChartLoader
 		return swagSong;
 	}
 
-	public static function loadChart(songName:String, difficulty:Int):SongData
+	#if FS_ACCESS
+	public static function loadFSChart(songName:String):SongData
 	{
 		Conductor.bpmChanges = [];
 		noteQueue = [];
 		var startTime:Float = haxe.Timer.stamp();
 
-		var rawChart:String = "";
-		var swagSong:SongData = null;
+		songName = Path.withoutExtension(songName);
 
-		#if sys
-		if (songName.contains("temp") || songName.contains("persistent"))
-		{
-			songName = Path.withoutExtension(songName);
+		var instPath:String = '${songName}_inst.ogg';
+		var voicesPath:String = '${songName}_voices.ogg';
+		var rawChart:String = cast IO.getFile('${songName}_chart.json', CONTENT);
 
-			rawChart = cast IO.getFile('${songName}_chart.json', CONTENT);
-		}
-		else
+		var swagSong:SongData = SongTools.loadSong(rawChart);
+
+		swagSong.needsVoices = IO.exists(voicesPath);
+
+		var swagSong:SongData = SongTools.loadSong(rawChart);
+
+		Conductor.bindSong(swagSong, Paths.inst(songName), swagSong.needsVoices ? Paths.voices(songName) : null);
+
+		parseNotes(swagSong);
+
+		var endTime:Float = haxe.Timer.stamp();
+		trace('end chart parse time ${endTime - startTime}');
+
+		return swagSong;
+	}
+	#end
+
+	// move fs to another method???
+	public static function loadChart(songName:String, difficulty:Int):SongData
+	{
+		#if FS_ACCESS
+		if (songName.contains("temp") || songName.contains("persistent") || songName.contains("cache"))
 		{
-			var formattedSongName:String = Paths.formatString(songName);
-			rawChart = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
+			loadFSChart(songName);
+			return null;
 		}
-		#else
-		var formattedSongName:String = Paths.formatString(songName);
-		rawChart = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
 		#end
 
-		swagSong = SongTools.loadSong(rawChart);
+		Conductor.bpmChanges = [];
+		noteQueue = [];
+		var startTime:Float = haxe.Timer.stamp();
 
+		var formattedSongName:String = Paths.formatString(songName);
+		var rawChart:String = Assets.getText(Paths.getPath('songs/$formattedSongName/$formattedSongName${strDiffMap[difficulty]}.json', TEXT)).trim();
+		var swagSong:SongData = SongTools.loadSong(rawChart);
+
+		// should be handled by the binding method smh
 		Conductor.bindSong(swagSong, Paths.inst(songName), Paths.voices(songName));
 
 		parseNotes(swagSong);

@@ -126,7 +126,7 @@ class Note extends FlxSprite
 			{
 				if (prevNote.isSustain)
 				{
-					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (2.4 / prevNote.receptorData.size)) * Conductor.songSpeed;
+					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (2.38 / prevNote.receptorData.size)) * Conductor.songSpeed;
 					prevNote.updateHitbox();
 					offsetX = prevNote.offsetX;
 				}

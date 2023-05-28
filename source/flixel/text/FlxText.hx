@@ -168,6 +168,8 @@ class FlxText extends FlxSprite
 	var _bitmap:BitmapData;
 	var _zeroOffset:Point;
 
+	var _lastKey:String;
+
 	/**
 	 * Creates a new `FlxText` object at the specified position.
 	 *
@@ -231,6 +233,7 @@ class FlxText extends FlxSprite
 		_formatAdjusted = null;
 		_zeroOffset = null;
 		shadowOffset = FlxDestroyUtil.put(shadowOffset);
+		clean();
 		super.destroy();
 	}
 
@@ -526,6 +529,15 @@ class FlxText extends FlxSprite
 	{
 		regenGraphic();
 		super.updateHitbox();
+	}
+
+	function clean()
+	{
+		if (_lastKey != null)
+			FlxG.bitmap.removeByKey(_lastKey);
+		FlxG.bitmap.remove(graphic);
+		if (graphic != null)
+			graphic.destroy();
 	}
 
 	@:noCompletion
@@ -839,16 +851,11 @@ class FlxText extends FlxSprite
 			var intWidth:Int = Std.int(newWidth);
 			var intHeight:Int = Std.int(newHeight);
 
-			#if CACHE_FLX_TEXT
-			var newName:String = 'text:${intWidth}x${intHeight}';
-
-			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
-			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT, false), GRAPHIC, newName));
-			#else
 			var key:String = FlxG.bitmap.getUniqueKey("text");
+			_lastKey = key;
+
 			_bitmap = new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT);
 			makeGraphic(intWidth, intHeight, FlxColor.TRANSPARENT, false, key);
-			#end
 
 			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			if (_hasBorderAlpha)
@@ -863,14 +870,7 @@ class FlxText extends FlxSprite
 			if (_hasBorderAlpha)
 			{
 				if (_borderPixels == null)
-				{
-					#if CACHE_FLX_TEXT
-					var newName:String = 'textbp:${frameWidth}x${frameHeight}';
-					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
-					#else
 					_borderPixels = new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT);
-					#end
-				}
 				else
 					_borderPixels.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			}
