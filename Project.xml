@@ -20,7 +20,7 @@
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 
-	<source path="source" />
+	<source path="working_tiles" />
 	<assets path="assets" />
 
 	<library name="funkin" preload="true" />
@@ -40,7 +40,6 @@
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
 	<haxelib name="SSIni" />
-	<!-- <haxelib name="imgui-hx" /> --> <!-- (NOT HANDLED BY FLIXEL) haxelib git imgui-hx https://github.com/jeremyfa/imgui-hx -->
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
@@ -67,6 +66,20 @@
 
 	<!-- Enable Discord Rich Presence -->
 	<define name="DISCORD_PRESENCE" if="windows" />
+
+	<!-- Enables the new library system (Windows atm) -->
+
+	<!--
+		It works like this (HTML5):
+		Using OpenFL/Lime we get the library files and we push file references and libraries into an .ini file (using SSIni)
+
+		It works like this (NATIVE):
+		Using FileSystem.readDirectory we get each library files and push file references to its section on an .ini file (using SSIni)
+		Then to access a file it will be through the ini sections and file references
+		
+		Might be hard since deleting default libraries/manifests might break default library preloading but will need to see how to override them
+	-->
+	<define name="RUNTIME_LIBRARIES" />
 
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>
