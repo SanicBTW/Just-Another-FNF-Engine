@@ -14,6 +14,6 @@ and more!
 - [Latest release](https://funkin.sancopublic.com/)
 - [Old online version](https://onlinefunky.pages.dev/)
 - [Last commit before rewritting (221672c)](https://funkye.pages.dev/)
-- [Latest stable commit (?)](https://hxstest.funkye.pages.dev/)
-- [Latest tiling test (?)](https://tiless.funkye.pages.dev/)
+- [Latest stable commit (ef538d6)](https://hxstest.funkye.pages.dev/)
+- [Latest tiling test (ef538d6)](https://tiless.funkye.pages.dev/)
 - Experimental HUB will be back soon
