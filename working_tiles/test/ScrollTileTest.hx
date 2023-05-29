@@ -218,6 +218,7 @@ class ScrollTileTest extends MusicBeatState
 		FlxCamera.defaultCameras = [chartHUD];
 
 		boardPattern = new FlxTiledSprite(checkerboard, cellSize * keyAmount * strumlines, cellSize * 16);
+		boardPattern.alpha = 0;
 		boardPattern.screenCenter(X);
 		add(boardPattern);
 
@@ -282,7 +283,7 @@ class ScrollTileTest extends MusicBeatState
 		{
 			var lineSprite:FlxSprite = new FlxSprite(0, 0, sectionLine);
 			lineSprite.active = false;
-			lineSprite.alpha = 0.45;
+			lineSprite.alpha = 0.95;
 			sectionGroup.add(lineSprite);
 			var thisSection:CharterSection = {header: lineSprite, body: [], numbers: []};
 
@@ -298,7 +299,7 @@ class ScrollTileTest extends MusicBeatState
 			for (j in 1...4)
 			{
 				var thinLine:FlxSprite = new FlxSprite(0, 0, line);
-				thinLine.alpha = 0.75;
+				thinLine.alpha = 0.8;
 				thinLine.active = lineSprite.active;
 				thisSection.body.push(thinLine);
 				sectionGroup.add(thinLine);

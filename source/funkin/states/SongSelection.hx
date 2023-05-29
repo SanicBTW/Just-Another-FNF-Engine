@@ -16,6 +16,7 @@ import network.MultiCallback;
 import network.pocketbase.Collection;
 import network.pocketbase.PBRequest;
 import network.pocketbase.Record.FunkinRecord;
+import openfl.media.Sound;
 import window.debug.Overlay.OverlayCorner;
 
 using StringTools;
@@ -35,7 +36,13 @@ class SongSelection extends ScriptableState
 
 	private var blockInputs = false;
 
-	public static var songSelected:SongAsset = {songName: '', songDiff: 1};
+	public static var songSelected:SongAsset = {
+		songName: null,
+		songDiff: 1,
+		netChart: null,
+		netInst: null,
+		netVoices: null
+	};
 
 	private var libIndicator:FlxText;
 
@@ -196,11 +203,46 @@ class SongSelection extends ScriptableState
 				{
 					case "libraries":
 						{
-							songSelected = {songName: curText, songDiff: diffStore.get(curText)};
+							songSelected = {
+								songName: curText,
+								songDiff: diffStore.get(curText),
+								netChart: null,
+								netInst: null,
+								netVoices: null
+							};
 							ScriptableState.switchState(new PlayState());
 						}
 					case "funkin":
 						{
+							var curRec:FunkinRecord = songStore.get(curText);
+
+							var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
+							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
+							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
+
+							PBRequest.getFile(curRec, "chart", (chart:String) ->
+							{
+								songSelected.netChart = chart;
+								chartCb();
+
+								PBRequest.getFile(curRec, "inst", (inst:Sound) ->
+								{
+									songSelected.netInst = inst;
+									instCb();
+
+									if (curRec.voices != '')
+									{
+										PBRequest.getFile(curRec, "voices", (voices:Sound) ->
+										{
+											songSelected.netVoices = voices;
+											voicesCb();
+										}, SOUND);
+									}
+									else
+										voicesCb();
+								}, SOUND);
+							}, RAW_STRING);
+
 							#if sys
 							var curRec:FunkinRecord = songStore.get(curText);
 
@@ -278,4 +320,7 @@ typedef SongAsset =
 {
 	var songName:String;
 	var songDiff:Int;
+	var netChart:String;
+	var netInst:Sound;
+	var netVoices:Null<Sound>;
 }
