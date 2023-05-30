@@ -41,47 +41,8 @@ class ChartLoader
 		return swagSong;
 	}
 
-	#if FS_ACCESS
-	public static function loadFSChart(songName:String):SongData
-	{
-		Conductor.bpmChanges = [];
-		noteQueue = [];
-		var startTime:Float = haxe.Timer.stamp();
-
-		songName = Path.withoutExtension(songName);
-
-		var instPath:String = '${songName}_inst.ogg';
-		var voicesPath:String = '${songName}_voices.ogg';
-		var rawChart:String = cast IO.getFile('${songName}_chart.json', CONTENT);
-
-		var swagSong:SongData = SongTools.loadSong(rawChart);
-
-		swagSong.needsVoices = IO.exists(voicesPath);
-
-		var swagSong:SongData = SongTools.loadSong(rawChart);
-
-		Conductor.bindSong(swagSong, Paths.inst(songName), swagSong.needsVoices ? Paths.voices(songName) : null);
-
-		parseNotes(swagSong);
-
-		var endTime:Float = haxe.Timer.stamp();
-		trace('end chart parse time ${endTime - startTime}');
-
-		return swagSong;
-	}
-	#end
-
-	// move fs to another method???
 	public static function loadChart(songName:String, difficulty:Int):SongData
 	{
-		#if FS_ACCESS
-		if (songName.contains("temp") || songName.contains("persistent") || songName.contains("cache"))
-		{
-			loadFSChart(songName);
-			return null;
-		}
-		#end
-
 		Conductor.bpmChanges = [];
 		noteQueue = [];
 		var startTime:Float = haxe.Timer.stamp();

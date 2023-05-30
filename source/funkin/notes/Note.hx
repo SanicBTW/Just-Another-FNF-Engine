@@ -69,7 +69,6 @@ class Note extends FlxSprite
 		if (noteData > -1 && noteType != value)
 		{
 			switch (value) {}
-			loadNote(value);
 			noteType = value;
 		}
 
@@ -93,6 +92,9 @@ class Note extends FlxSprite
 		this.noteType = noteType;
 
 		y -= 2000;
+
+		if (noteData > -1)
+			loadNote(noteType);
 	}
 
 	public function loadNote(noteType:String)

@@ -1,9 +1,8 @@
 package backend;
 
-import haxe.ds.Either;
 import haxe.io.Bytes;
 import haxe.io.Path;
-#if sys
+#if FS_ACCESS
 import lime.app.Application;
 import lime.system.System;
 import sys.FileSystem;
@@ -14,109 +13,56 @@ using StringTools;
 class IO
 {
 	/**
-	 * If true, temporary files won't be deleted upon closing the engine
+	 * The application folders where files are stored
 	 */
-	public static var persistentTemp:Bool = true;
+	private static var appFolders:Map<AssetFolder, String> = new Map();
 
 	/**
-	 * The path where all the temporary files will be stored
-	 */
-	private static var appPath:String = Path.join([
-		System.userDirectory,
-		'jafe_files',
-		(persistentTemp)
-		? 'persistent' : 'temp_${Random.uniqueId()}'
-	]);
-
-	/**
-	 * Sets variables and creates the temporary folder
+	 * Sets folders
 	 */
 	public static function Initialize()
 	{
-		// Read from save
-		trace('IO - Making path at $appPath');
-		if (persistentTemp && !FileSystem.exists(appPath) || !FileSystem.exists(appPath))
-			FileSystem.createDirectory(appPath);
-	}
+		// Set the parent folder, in future versions it will be changeable
+		appFolders.set(PARENT, Path.join([System.documentsDirectory, 'just_another_fnf_engine']));
 
-	/**
-	 * Removes the temporary files path, only called upon closing
-	 */
-	public static function cleanTemp()
-	{
-		if (persistentTemp)
-			return;
+		addFolder(DATA);
+		addFolder(SONGS);
+		addFolder(IMAGES);
+		addFolder(CHARACTERS);
+		addFolder(STAGES);
+		addFolder(MUSIC);
+		addFolder(SOUNDS);
 
-		try
+		// The idea of the mods folder is to manage its own assets and shit, basically like fof -> the engine asset tree / rolling again -> the engine asset tree but different assets etc
+		addFolder(MODS);
+
+		for (name => path in appFolders)
 		{
-			for (file in FileSystem.readDirectory(appPath))
-			{
-				trace('Deleting $file from temp path');
-				FileSystem.deleteFile(file);
-			}
-			FileSystem.deleteDirectory(appPath);
-		}
-		catch (ex)
-		{
-			trace(ex);
-		}
-	}
-
-	public static function saveFile<T>(name:String, content:T):String
-	{
-		var outPath:String = Path.join([appPath, name]);
-		trace('Saving to $outPath');
-
-		if (content is String)
-			File.saveContent(outPath, cast content);
-		if (content is Bytes)
-			File.saveBytes(outPath, cast content);
-
-		return outPath;
-	}
-
-	public static function getFile(file:String, method:FileGetType):Dynamic
-	{
-		trace('Getting $file');
-
-		switch (method)
-		{
-			case CONTENT:
-				return File.getContent(file);
-
-			case BYTES:
-				return File.getBytes(file);
+			trace('Checking if $name at $path exists');
+			if (!FileSystem.exists(path))
+				FileSystem.createDirectory(path);
 		}
 
-		return null;
+		Cache.collect();
 	}
 
-	// dumbass
-	public static function exists(file:String):Bool
-		return FileSystem.exists(file);
+	private static function addFolder(name:AssetFolder, parent:AssetFolder = PARENT)
+		appFolders.set(name, Path.join([appFolders.get(parent), name]));
+
+	// Helper functions
+	public static inline function exists(folder:AssetFolder) {}
 }
 #else
-// Only copy fields to avoid a bunch of compilation shits
-class IO
-{
-	public static var persistentTemp:Bool = false;
-
-	private static var appPath:String = "";
-
-	public static function Initialize() {}
-
-	public static function cleanTemp() {}
-
-	public static function saveFile<T>(name:String, content:T) {}
-
-	public static function getFile(file:String, method:FileGetType) {}
-
-	public static function exists(file:String) {}
-}
 #end
-
-enum abstract FileGetType(String) to String
+enum abstract AssetFolder(String) to String
 {
-	var CONTENT = "Content";
-	var BYTES = "Bytes";
+	var PARENT = "parent";
+	var DATA = "data";
+	var SONGS = "songs";
+	var IMAGES = "images";
+	var CHARACTERS = "characters";
+	var STAGES = "stages";
+	var MUSIC = "music";
+	var SOUNDS = "sounds";
+	var MODS = "mods";
 }

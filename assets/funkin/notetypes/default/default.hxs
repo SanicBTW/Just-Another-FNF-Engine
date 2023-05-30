@@ -1,9 +1,6 @@
-var graphicPath = 'funkin:assets/funkin/notetypes/default/images/NOTE_assets.png';
-
 function generateReceptor()
 {
     receptor.frames = Paths.getSparrowAtlas('NOTE_assets');
-    Cache.makePersistent(graphicPath);
 
     var direction:String = getNoteDirection();
     receptor.action = 'note_' + direction;
@@ -18,7 +15,6 @@ function generateReceptor()
 function generateNote()
 {
     note.frames = Paths.getSparrowAtlas('NOTE_assets');
-    Cache.makePersistent(graphicPath);
 
     var color:String = getNoteColor();
     note.animation.addByPrefix(color + 'Scroll', color + '0');
@@ -30,7 +26,6 @@ function generateNote()
 function generateSustain()
 {
     note.frames = Paths.getSparrowAtlas('NOTE_assets');
-    Cache.makePersistent(graphicPath);
 
     var color:String = getNoteColor();
     note.animation.addByPrefix(color + 'hold', color + ' hold piece');

@@ -29,7 +29,7 @@ class Cache
 	private static var keyedSounds:Map<String, Sound> = [];
 
 	// Non-cleanable assets
-	private static var persistentAssets:Array<String> = ["funkin:assets/funkin/images/alphabet.png"];
+	private static var persistentAssets:Array<String> = [];
 
 	// Currently used assets
 	private static var localKeyedAssets:Array<String> = [];

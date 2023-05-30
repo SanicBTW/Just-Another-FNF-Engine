@@ -242,43 +242,6 @@ class SongSelection extends ScriptableState
 										voicesCb();
 								}, SOUND);
 							}, RAW_STRING);
-
-							#if sys
-							var curRec:FunkinRecord = songStore.get(curText);
-
-							var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
-							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
-							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
-
-							PBRequest.getFile(curRec, "chart", (chart:Bytes) ->
-							{
-								var extension:String = Path.extension(curRec.chart);
-								var endPath:String = IO.saveFile('${curRec.song}_chart.$extension', chart);
-								songSelected.songName = endPath.replace("_chart", "");
-								chartCb();
-
-								PBRequest.getFile(curRec, "inst", (inst:Bytes) ->
-								{
-									extension = Path.extension(curRec.inst);
-									IO.saveFile('${curRec.song}_inst.$extension', inst);
-									instCb();
-
-									if (curRec.voices != '')
-									{
-										PBRequest.getFile(curRec, "voices", (voices:Bytes) ->
-										{
-											extension = Path.extension(curRec.voices);
-											IO.saveFile('${curRec.song}_voices.$extension', voices);
-											voicesCb();
-										}, BYTES);
-									}
-									else
-									{
-										voicesCb();
-									}
-								}, BYTES);
-							}, BYTES);
-							#end
 						}
 				}
 		}

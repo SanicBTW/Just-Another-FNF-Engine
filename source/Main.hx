@@ -47,16 +47,11 @@ class Main extends Sprite
 		ScriptHandler.Initialize();
 		setupGame();
 
-		FlxG.signals.preStateCreate.add((state:FlxState) ->
+		FlxG.signals.preStateCreate.add((_) ->
 		{
 			Cache.clearStoredMemory();
-			FlxG.bitmap.dumpCache();
-			Cache.collect();
-		});
-
-		FlxG.signals.preStateSwitch.add(() ->
-		{
 			Cache.clearUnusedMemory();
+			FlxG.bitmap.dumpCache();
 			Cache.collect();
 		});
 	}
