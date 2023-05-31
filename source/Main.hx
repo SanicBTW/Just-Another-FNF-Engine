@@ -43,7 +43,7 @@ class Main extends Sprite
 
 		Save.Initialize();
 		Controls.Initialize();
-		IO.Initialize();
+		#if FS_ACCESS IO.Initialize(); #end
 		ScriptHandler.Initialize();
 		setupGame();
 

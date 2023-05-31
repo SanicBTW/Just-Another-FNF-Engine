@@ -14,7 +14,7 @@ import backend.IO;
 import haxe.io.Path;
 #end
 
-// ugly functions :heart_eyes:
+// Rewrite this or something
 class ChartLoader
 {
 	public static var noteQueue:Array<Note> = [];
