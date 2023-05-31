@@ -134,6 +134,9 @@ class Timings
 
 	public static function call()
 	{
+		ratingName = "N/A";
+		ratingFC = null;
+
 		lowestRating = "marvelous";
 		maxCombo = 0;
 		combo = 0;

@@ -45,6 +45,7 @@ class Main extends Sprite
 		Controls.Initialize();
 		#if FS_ACCESS IO.Initialize(); #end
 		ScriptHandler.Initialize();
+		Async.Initialize();
 		setupGame();
 
 		FlxG.signals.preStateCreate.add((_) ->

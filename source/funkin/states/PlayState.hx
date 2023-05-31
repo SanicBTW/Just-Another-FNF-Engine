@@ -86,7 +86,9 @@ class PlayState extends MusicBeatState
 			FlxG.sound.music.stop();
 
 		// dumb
-		if (SongSelection.songSelected.netChart != null)
+		if (SongSelection.songSelected.isFS)
+			ChartLoader.loadFSChart(SongSelection.songSelected.songName);
+		else if (SongSelection.songSelected.netChart != null)
 			ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
 		else
 			ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);

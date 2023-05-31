@@ -41,7 +41,8 @@ class SongSelection extends ScriptableState
 		songDiff: 1,
 		netChart: null,
 		netInst: null,
-		netVoices: null
+		netVoices: null,
+		isFS: false
 	};
 
 	private var libIndicator:FlxText;
@@ -98,7 +99,6 @@ class SongSelection extends ScriptableState
 						var regenArray:Array<String> = [];
 
 						var assets:Array<String> = Paths.getLibraryFiles("TEXT");
-						trace(assets);
 						for (i in 0...assets.length)
 						{
 							if (assets[i].contains("songs"))
@@ -199,6 +199,8 @@ class SongSelection extends ScriptableState
 				curPage = 1;
 
 			case "confirm":
+				blockInputs = true;
+
 				switch (pages[curPage])
 				{
 					case "libraries":
@@ -208,7 +210,8 @@ class SongSelection extends ScriptableState
 								songDiff: diffStore.get(curText),
 								netChart: null,
 								netInst: null,
-								netVoices: null
+								netVoices: null,
+								isFS: false
 							};
 							ScriptableState.switchState(new PlayState());
 						}
@@ -220,6 +223,8 @@ class SongSelection extends ScriptableState
 							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
 							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
 
+							#if html5
+							songSelected.isFS = false;
 							PBRequest.getFile(curRec, "chart", (chart:String) ->
 							{
 								songSelected.netChart = chart;
@@ -242,6 +247,33 @@ class SongSelection extends ScriptableState
 										voicesCb();
 								}, SOUND);
 							}, RAW_STRING);
+							#else
+							songSelected.isFS = true;
+
+							PBRequest.getFile(curRec, "chart", (chart:Bytes) ->
+							{
+								IO.saveSong(curRec.song, CHART, chart, 1);
+								songSelected.songName = curRec.song;
+								chartCb();
+
+								PBRequest.getFile(curRec, "inst", (inst:Bytes) ->
+								{
+									IO.saveSong(curRec.song, INST, inst);
+									instCb();
+
+									if (curRec.voices != '')
+									{
+										PBRequest.getFile(curRec, "voices", (voices:Bytes) ->
+										{
+											IO.saveSong(curRec.song, VOICES, voices);
+											voicesCb();
+										}, BYTES);
+									}
+									else
+										voicesCb();
+								}, BYTES);
+							}, BYTES);
+							#end
 						}
 				}
 		}
@@ -286,4 +318,5 @@ typedef SongAsset =
 	var netChart:String;
 	var netInst:Sound;
 	var netVoices:Null<Sound>;
+	var isFS:Bool;
 }

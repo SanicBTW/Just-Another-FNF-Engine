@@ -22,7 +22,6 @@ class Paths
 	// Search for a better way to change library (crashes after a couple of changes)
 	public static function changeLibrary(newLibrary:Libraries, onFinish:Void->Void)
 	{
-		trace('\nTarget library $newLibrary \nCurrent library $_library \nOld library $_oldLibrary');
 		if (_library == newLibrary)
 			onFinish();
 

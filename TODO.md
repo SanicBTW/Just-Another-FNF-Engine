@@ -19,3 +19,7 @@ https://lime.openfl.org/api/lime/utils/AssetManifest.html
 
 https://haxe.org/manual/std-Lambda.html
 https://github.com/SanicBTW/Just-Another-FNF-Engine/blob/935478c4706f6f1d15788c281e1e6a0c196f5b1a/source/base/system/SqliteKeyValue.hx
+
+when doing a request on fs_access check if the file exists already and load it instantly instead of doing the request
+
+fix bullshit io bruhh

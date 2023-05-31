@@ -121,6 +121,13 @@ class ScriptHandler
 	 */
 	public static function loadModule(file:String, ?assetFolder:String, ?extraParams:StringMap<Dynamic>, ?fallback:String):ForeverModule
 	{
+		// Prefer FS Content than Asset Content
+		#if FS_ACCESS
+		var parseContent:Null<String> = null;
+		var folder:IO.AssetFolder = cast assetFolder.split("/")[0];
+		trace(folder);
+		#end
+
 		// Remove the extension as we will manually add it (and to avoid errors)
 		file = Path.withoutExtension(file);
 		if (fallback != null)
@@ -134,6 +141,13 @@ class ScriptHandler
 
 		if (!Assets.exists(modulePath, TEXT))
 		{
+			#if FS_ACCESS
+			modulePath = Path.join([IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$file.hxs']);
+			trace('Checking on Filesystem, possible path $modulePath');
+			if (IO.exists(modulePath))
+				parseContent = sys.io.File.getContent(modulePath);
+			#end
+
 			if (fallback == null)
 				throw new Exception('Failed to load module $file');
 
@@ -143,7 +157,16 @@ class ScriptHandler
 			trace('Last path $modulePath');
 
 			if (!Assets.exists(modulePath, TEXT))
+			{
+				#if FS_ACCESS
+				modulePath = Path.join([IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$fallback.hxs']);
+				trace('Checking on Filesystem, last path $modulePath');
+				if (IO.exists(modulePath))
+					parseContent = sys.io.File.getContent(modulePath);
+				else
+				#end
 				throw new Exception('Failed to load module $file and its fallback $fallback');
+			}
 		}
 
 		var expr:Expr = null;
@@ -151,8 +174,11 @@ class ScriptHandler
 
 		try
 		{
-			expr = parser.parseString(Paths.text(modulePath), modulePath);
-			module = new ForeverModule(expr, assetFolder, extraParams);
+			var parseEnd:String = #if FS_ACCESS parseContent != null ? parseContent : Paths.text(modulePath) #else Paths.text(modulePath) #end;
+			var parseFolder:String = #if FS_ACCESS folder != null ? IO.getFolderPath(folder) : assetFolder #else assetFolder #end;
+
+			expr = parser.parseString(parseEnd, modulePath);
+			module = new ForeverModule(expr, parseFolder, extraParams);
 
 			@:privateAccess
 			cast(flixel.FlxG.state, ScriptableState).moduleBatch.push(module);
@@ -192,7 +218,7 @@ class ForeverModule implements IFlxDestroyable
 		}
 
 		// Define the current path (used within the script itself)
-		var modulePaths:ModulePaths = new ModulePaths(assetFolder);
+		var modulePaths:ModulePaths = new ModulePaths(assetFolder, assetFolder.contains('Users'));
 		interp.variables.set('Paths', modulePaths);
 
 		interp.execute(contents);
@@ -238,33 +264,38 @@ class ForeverModule implements IFlxDestroyable
 class ModulePaths
 {
 	private var localPath:String;
+	private var isFS:Bool = false;
 
-	public function new(localPath:String)
+	public function new(localPath:String, isFS:Bool = false)
 	{
 		this.localPath = localPath;
+		this.isFS = isFS;
 	}
 
 	public function getPath(file:String):String
 	{
-		@:privateAccess
-		var libPath:String = '${Paths._library}:assets/${Paths._library}/$localPath/$file';
-		if (Assets.exists(libPath))
-			return libPath;
+		if (isFS)
+		{
+			var path:String = Path.join([IO.getFolderPath(cast localPath), file]);
+			trace(path);
+			return path;
+		}
+		else
+		{
+			@:privateAccess
+			var libPath:String = '${Paths._library}:assets/${Paths._library}/$localPath/$file';
+			if (Assets.exists(libPath))
+				return libPath;
 
-		return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$localPath/$file';
+			return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$localPath/$file';
+		}
 	}
-
-	public inline function file(file:String)
-		return getPath(file);
 
 	public inline function text(path:String):String
 		return Assets.getText(path);
 
 	public inline function sound(key:String):Sound
 		return Cache.getSound(getPath('sounds/$key.ogg'));
-
-	public inline function font(key:String)
-		return 'assets/fonts/$key';
 
 	public inline function music(key:String):Sound
 		return Cache.getSound(getPath('music/$key.ogg'));

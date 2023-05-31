@@ -21,6 +21,30 @@ class ChartLoader
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
 
+	public static function loadFSChart(songName:String):SongData
+	{
+		Conductor.bpmChanges = [];
+		noteQueue = [];
+		var startTime:Float = haxe.Timer.stamp();
+
+		var rawChart:String = IO.getSong(songName, CHART, 1);
+		var inst:Sound = IO.getSong(songName, INST);
+		var vocals:Null<Sound> = IO.getSong(songName, VOICES);
+
+		var swagSong:SongData = SongTools.loadSong(rawChart);
+		if (vocals == null)
+			swagSong.needsVoices = false;
+
+		Conductor.bindSong(swagSong, inst, vocals);
+
+		parseNotes(swagSong);
+
+		var endTime:Float = haxe.Timer.stamp();
+		trace('end chart parse time ${endTime - startTime}');
+
+		return swagSong;
+	}
+
 	public static function loadNetChart(rawChart:String, inst:Sound, ?vocals:Sound):SongData
 	{
 		Conductor.bpmChanges = [];
