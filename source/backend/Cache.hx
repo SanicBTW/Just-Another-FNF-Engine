@@ -18,7 +18,7 @@ import hl.Gc;
 import java.vm.Gc;
 #end
 
-// Once again rewritten
+// Once again rewritten (about to do it again bruhh)
 // Mix between Psych Engine, a little bit of Flaty, Forever Engine Rewrite and some cleaner code
 class Cache
 {
@@ -72,13 +72,13 @@ class Cache
 		if (isCached(id, BITMAP))
 			return keyedBitmaps.get(id);
 
-		if (!exists(id))
+		if (!exists(id) && !fromFS(id))
 		{
 			trace('$id not found, returning null');
 			return null;
 		}
 
-		var bitmap:BitmapData = Assets.getBitmapData(id);
+		var bitmap:BitmapData = (fromFS(id)) ? BitmapData.fromFile(id) : Assets.getBitmapData(id);
 		keyedBitmaps.set(id, bitmap);
 		track(id);
 
@@ -91,7 +91,7 @@ class Cache
 		if (isCached(id, GRAPHIC))
 			return keyedGraphics.get(id);
 
-		if (!exists(id))
+		if (!exists(id) && !fromFS(id))
 		{
 			trace('$id not found, returning null');
 			return null;
@@ -138,13 +138,13 @@ class Cache
 		if (isCached(id, SOUND))
 			return keyedSounds.get(id);
 
-		if (!exists(id))
+		if (!exists(id) && !fromFS(id))
 		{
 			trace('$id not found, returning null');
 			return null;
 		}
 
-		var sound:Sound = Assets.getSound(id);
+		var sound:Sound = (fromFS(id)) ? Sound.fromFile(id) : Assets.getSound(id);
 		keyedSounds.set(id, sound);
 		track(id);
 
@@ -323,6 +323,9 @@ class Cache
 		if (!localKeyedAssets.contains(id))
 			localKeyedAssets.push(id);
 	}
+
+	public static inline function fromFS(id:String):Bool
+		return id.contains("just_another_fnf_engine");
 
 	// For the modules
 	public static function makePersistent(file:String)

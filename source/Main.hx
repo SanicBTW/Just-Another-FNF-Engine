@@ -8,13 +8,15 @@ import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
 
+using StringTools;
+
 class Main extends Sprite
 {
 	private var gameWidth:Int = 1280;
 	private var gameHeight:Int = 720;
 	private var initialClass:Class<FlxState> = funkin.states.SongSelection;
 	private var zoom:Float = -1;
-	private var framerate:Int = #if native 250 #else 60 #end;
+	private var framerate:Int = 250;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -22,6 +24,15 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
+
+		for (arg in Sys.args())
+		{
+			if (arg.contains("-enable_gpu_rendering"))
+				Cache.gpuRender = true;
+
+			if (arg.contains("-fps"))
+				setFPS(Std.parseInt(arg.split(":")[1]));
+		}
 
 		if (stage != null)
 			init();
@@ -83,5 +94,20 @@ class Main extends Sprite
 		FlxG.mouse.visible = false;
 		FlxG.mouse.useSystemCursor = true;
 		#end
+	}
+
+	public static function setFPS(newFPS:Int)
+	{
+		Lib.current.stage.frameRate = newFPS;
+		if (newFPS > FlxG.drawFramerate)
+		{
+			FlxG.updateFramerate = newFPS;
+			FlxG.drawFramerate = newFPS;
+		}
+		else
+		{
+			FlxG.drawFramerate = newFPS;
+			FlxG.updateFramerate = newFPS;
+		}
 	}
 }

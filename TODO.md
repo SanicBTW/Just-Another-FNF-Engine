@@ -23,3 +23,5 @@ https://github.com/SanicBTW/Just-Another-FNF-Engine/blob/935478c4706f6f1d15788c2
 when doing a request on fs_access check if the file exists already and load it instantly instead of doing the request
 
 fix bullshit io bruhh
+
+add Vanilla Paths filesystem support

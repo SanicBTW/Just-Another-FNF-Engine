@@ -75,19 +75,33 @@ class ScriptableState extends FlxState implements ModuleManager
 
 	private function callOnModules(event:String, args:Dynamic)
 	{
-		for (module in moduleBatch)
+		try
 		{
-			if (module.active && module.exists(event))
-				module.get(event)(args);
+			for (module in moduleBatch)
+			{
+				if (module.active && module.exists(event))
+					module.get(event)(args);
+			}
+		}
+		catch (ex)
+		{
+			trace('Failed to execute $event on modules ($ex)');
 		}
 	}
 
 	private function setOnModules(variable:String, arg:Dynamic)
 	{
-		for (module in moduleBatch)
+		try
 		{
-			if (module.active)
-				module.set(variable, arg);
+			for (module in moduleBatch)
+			{
+				if (module.active)
+					module.set(variable, arg);
+			}
+		}
+		catch (ex)
+		{
+			trace('Failed to set $variable on modules ($ex)');
 		}
 	}
 }
@@ -118,19 +132,33 @@ class ScriptableSubState extends FlxSubState implements ModuleManager
 
 	private function callOnModules(event:String, args:Dynamic)
 	{
-		for (module in moduleBatch)
+		try
 		{
-			if (module.active && module.exists(event))
-				module.get(event)(args);
+			for (module in moduleBatch)
+			{
+				if (module.active && module.exists(event))
+					module.get(event)(args);
+			}
+		}
+		catch (ex)
+		{
+			trace('Failed to execute $event on modules ($ex)');
 		}
 	}
 
 	private function setOnModules(variable:String, arg:Dynamic)
 	{
-		for (module in moduleBatch)
+		try
 		{
-			if (module.active)
-				module.set(variable, arg);
+			for (module in moduleBatch)
+			{
+				if (module.active)
+					module.set(variable, arg);
+			}
+		}
+		catch (ex)
+		{
+			trace('Failed to set $variable on modules ($ex)');
 		}
 	}
 }

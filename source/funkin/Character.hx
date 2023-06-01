@@ -1,5 +1,6 @@
 package funkin;
 
+import backend.IO;
 import backend.ScriptHandler.ForeverModule;
 import backend.ScriptHandler;
 import base.Conductor;
@@ -8,6 +9,7 @@ import flixel.math.FlxPoint;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import haxe.ds.StringMap;
+import haxe.io.Path;
 import openfl.utils.Assets;
 
 using StringTools;
@@ -219,12 +221,30 @@ class Character extends OffsettedSprite
 			extension = '.hxs';
 			return retPath;
 		}
+		else
+		{
+			retPath = Path.join([IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.hxs']);
+			if (IO.exists(retPath))
+			{
+				extension = '.hxs';
+				return retPath;
+			}
+		}
 
 		retPath = Paths.getPath('characters/$curCharacter/$curCharacter.json', TEXT);
 		if (Assets.exists(retPath))
 		{
 			extension = '.json';
 			return retPath;
+		}
+		else
+		{
+			retPath = Path.join([IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.json']);
+			if (IO.exists(retPath))
+			{
+				extension = '.json';
+				return retPath;
+			}
 		}
 
 		retPath = Paths.getPath('characters/$DEFAULT/$DEFAULT.json', TEXT);

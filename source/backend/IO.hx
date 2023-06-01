@@ -95,7 +95,10 @@ class IO
 			case CHART:
 				var diffString:String = ChartLoader.strDiffMap.get(diff);
 				var chartPath:String = Path.join([parentPath, '${song}${diffString}.json']);
-				File.saveContent(chartPath, content); // most likely to be text
+				if (content is Bytes)
+					File.saveBytes(chartPath, content);
+				else
+					File.saveContent(chartPath, content);
 				return chartPath;
 
 			case INST:

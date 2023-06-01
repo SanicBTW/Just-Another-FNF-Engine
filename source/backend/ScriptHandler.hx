@@ -27,6 +27,7 @@ import hscript.*;
 import hscript.Expr.Error;
 import openfl.media.Sound;
 import openfl.utils.Assets;
+import sys.io.File;
 
 using StringTools;
 
@@ -111,6 +112,8 @@ class ScriptHandler
 		parser.allowJSON = true;
 	}
 
+	// there has to be a better way for sure
+
 	/**
 	 * [Loads a Forever Module]
 	 * @param file The file name
@@ -121,11 +124,13 @@ class ScriptHandler
 	 */
 	public static function loadModule(file:String, ?assetFolder:String, ?extraParams:StringMap<Dynamic>, ?fallback:String):ForeverModule
 	{
+		var expr:Expr = null;
+		var module:ForeverModule = null;
+
 		// Prefer FS Content than Asset Content
 		#if FS_ACCESS
 		var parseContent:Null<String> = null;
 		var folder:IO.AssetFolder = cast assetFolder.split("/")[0];
-		trace(folder);
 		#end
 
 		// Remove the extension as we will manually add it (and to avoid errors)
@@ -139,13 +144,36 @@ class ScriptHandler
 		var modulePath:String = Paths.file('$assetFolder/$file.hxs');
 		trace('Possible path $modulePath');
 
+		function parse()
+		{
+			try
+			{
+				var parseEnd:String = #if FS_ACCESS parseContent != null ? parseContent : Paths.text(modulePath) #else Paths.text(modulePath) #end;
+				var parseFolder:String = #if FS_ACCESS parseContent != null ? Path.join([IO.getFolderPath(folder), file]) : assetFolder #else assetFolder #end;
+
+				expr = parser.parseString(parseEnd, modulePath);
+				module = new ForeverModule(expr, parseFolder, extraParams);
+
+				@:privateAccess
+				cast(flixel.FlxG.state, ScriptableState).moduleBatch.push(module);
+			}
+			catch (ex:Error)
+			{
+				trace('HScript parsing exception, caused at line ${ex.line} on ${ex.origin} (${ex.e})');
+			}
+		}
+
 		if (!Assets.exists(modulePath, TEXT))
 		{
 			#if FS_ACCESS
 			modulePath = Path.join([IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$file.hxs']);
 			trace('Checking on Filesystem, possible path $modulePath');
 			if (IO.exists(modulePath))
+			{
 				parseContent = sys.io.File.getContent(modulePath);
+				parse();
+				return module;
+			}
 			#end
 
 			if (fallback == null)
@@ -162,31 +190,18 @@ class ScriptHandler
 				modulePath = Path.join([IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$fallback.hxs']);
 				trace('Checking on Filesystem, last path $modulePath');
 				if (IO.exists(modulePath))
+				{
 					parseContent = sys.io.File.getContent(modulePath);
+					parse();
+					return module;
+				}
 				else
 				#end
 				throw new Exception('Failed to load module $file and its fallback $fallback');
 			}
 		}
 
-		var expr:Expr = null;
-		var module:ForeverModule = null;
-
-		try
-		{
-			var parseEnd:String = #if FS_ACCESS parseContent != null ? parseContent : Paths.text(modulePath) #else Paths.text(modulePath) #end;
-			var parseFolder:String = #if FS_ACCESS folder != null ? IO.getFolderPath(folder) : assetFolder #else assetFolder #end;
-
-			expr = parser.parseString(parseEnd, modulePath);
-			module = new ForeverModule(expr, parseFolder, extraParams);
-
-			@:privateAccess
-			cast(flixel.FlxG.state, ScriptableState).moduleBatch.push(module);
-		}
-		catch (ex:Error)
-		{
-			trace('HScript parsing exception, caused at line ${ex.line} on ${ex.origin} (${ex.e})');
-		}
+		parse();
 
 		return module;
 	}
@@ -218,7 +233,7 @@ class ForeverModule implements IFlxDestroyable
 		}
 
 		// Define the current path (used within the script itself)
-		var modulePaths:ModulePaths = new ModulePaths(assetFolder, assetFolder.contains('Users'));
+		var modulePaths:ModulePaths = new ModulePaths(assetFolder, assetFolder.toLowerCase().contains('users'));
 		interp.variables.set('Paths', modulePaths);
 
 		interp.execute(contents);
@@ -268,6 +283,7 @@ class ModulePaths
 
 	public function new(localPath:String, isFS:Bool = false)
 	{
+		trace(localPath);
 		this.localPath = localPath;
 		this.isFS = isFS;
 	}
@@ -276,8 +292,11 @@ class ModulePaths
 	{
 		if (isFS)
 		{
-			var path:String = Path.join([IO.getFolderPath(cast localPath), file]);
+			var path:String = Path.join([localPath, file]);
 			trace(path);
+			if (!IO.exists(path))
+				throw new Exception('Failed to get $file on $localPath');
+
 			return path;
 		}
 		else
@@ -292,7 +311,7 @@ class ModulePaths
 	}
 
 	public inline function text(path:String):String
-		return Assets.getText(path);
+		return (isFS) ? File.getContent(path) : Assets.getText(path);
 
 	public inline function sound(key:String):Sound
 		return Cache.getSound(getPath('sounds/$key.ogg'));
@@ -303,6 +322,6 @@ class ModulePaths
 	public inline function image(key:String):FlxGraphic
 		return Cache.getGraphic(getPath('images/$key.png'));
 
-	public inline function getSparrowAtlas(key:String, ?folder:String = 'images'):FlxAtlasFrames
-		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png')), getPath('$folder/$key.xml'));
+	public inline function getSparrowAtlas(key:String):FlxAtlasFrames
+		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$key.png')), text(getPath('$key.xml')));
 }
