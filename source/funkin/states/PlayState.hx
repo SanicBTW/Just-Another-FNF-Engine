@@ -257,6 +257,8 @@ class PlayState extends MusicBeatState
 
 		if (Timings.health <= 0)
 		{
+			callOnModules('onGameOver', null);
+			player.stunned = true;
 			updateTime = persistentDraw = persistentUpdate = false;
 
 			if (SONG.needsVoices)
@@ -606,7 +608,10 @@ class PlayState extends MusicBeatState
 			receptor.playAnim('confirm', true);
 
 			if (!note.isSustain)
-				Timings.judge(-(note.strumTime - Conductor.songPosition));
+			{
+				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
+				ui.displayJudgement(rating, (note.strumTime < Conductor.songPosition));
+			}
 
 			characterSing(player, 'sing${receptor.getNoteDirection().toUpperCase()}');
 
@@ -636,6 +641,7 @@ class PlayState extends MusicBeatState
 			characterSing(player, 'sing${note.getNoteDirection().toUpperCase()}miss');
 
 		Timings.judge(Timings.judgements[Timings.judgements.length - 1].timing);
+		ui.displayJudgement('miss', true);
 
 		callOnModules('noteMiss', [
 			ChartLoader.noteQueue.indexOf(note),

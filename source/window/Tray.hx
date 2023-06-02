@@ -37,6 +37,6 @@ class Tray extends OFLSprite
 		var rWidth:Float = Reflect.getProperty(this, "_width");
 		scaleX = _defaultScale;
 		scaleY = _defaultScale;
-		x = (0.5 * (Lib.current.stage.stageWidth - (Math.isNaN(rWidth) ? width : rWidth) * _defaultScale));
+		x = (0.5 * (Lib.current.stage.stageWidth - (Math.isNaN(rWidth) ? width : rWidth) * _defaultScale) - FlxG.game.x);
 	}
 }

@@ -27,7 +27,7 @@ class Conductor
 	public static var songRate:Float = 0.45;
 	private static var speedTwn:FlxTween;
 	// easy enough
-	public static var speedBasedBPM:Bool = true;
+	public static var speedBasedBPM:Bool = false;
 
 	// Steps and beats
 	public static var stepPosition:Int = 0;

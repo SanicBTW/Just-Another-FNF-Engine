@@ -11,7 +11,7 @@ typedef Judgement =
 	var timing:Float; // MS to achieve the judgement
 	var weight:Float; // The weight/accuracy of the judgement
 
-	var fcStatus:Null<String>; // The FC rating aka MFC/SFC/FC
+	var fcStatus:Null<String>; // The FC rating aka SFC/FC
 	var score:Int; // Given score by achieving the judgement
 	var health:Float; // Amount of health given
 	var shortName:String; // The initials? (what is displayed if there isn't any combo)
@@ -30,7 +30,7 @@ class Timings
 	public static var misses:Int = 0;
 
 	// Combo & FC lowest
-	public static var lowestRating:String = "marvelous";
+	public static var lowestRating:String = "sick";
 	public static var maxCombo:Int = 0;
 	public static var combo:Int = 0;
 
@@ -45,7 +45,11 @@ class Timings
 
 	@:noCompletion
 	private static function get_accuracy():Float
-		return Math.min(100, Math.max(0, notesAccuracy / totalHits));
+	{
+		// might do an option to change accuracy calculation
+		// notesAccuracy / totalHits
+		return Math.min(100, Math.max(0, score / ((totalHits + misses) * judgements[0].score)) * 100);
+	}
 
 	// HUD
 	public static var ratingName:String = "N/A";
@@ -55,20 +59,9 @@ class Timings
 	// All health values are half the prev (beginning 0.07)
 	public static final judgements:Array<Judgement> = [
 		{
-			name: "marvelous",
-			timing: 18,
-			weight: 100,
-			fcStatus: 'MFC',
-			health: 0.07,
-			score: 450,
-			shortName: "MV",
-			color: FlxColor.fromRGB(255, 255, 153),
-			track: "marvs"
-		},
-		{
 			name: 'sick',
 			timing: 43,
-			weight: 98.25,
+			weight: 100,
 			fcStatus: 'SFC',
 			health: 0.035,
 			score: 350,
@@ -79,7 +72,7 @@ class Timings
 		{
 			name: 'good',
 			timing: 76,
-			weight: 65,
+			weight: 75,
 			fcStatus: 'GFC',
 			health: 0.0175,
 			score: 150,
@@ -90,7 +83,7 @@ class Timings
 		{
 			name: 'bad',
 			timing: 106,
-			weight: 25,
+			weight: 50,
 			fcStatus: 'FC',
 			health: -0.00875,
 			score: 50,
@@ -101,7 +94,7 @@ class Timings
 		{
 			name: 'shit',
 			timing: 127,
-			weight: -100,
+			weight: 25,
 			fcStatus: null,
 			health: -0.2,
 			score: -50,
@@ -137,7 +130,7 @@ class Timings
 		ratingName = "N/A";
 		ratingFC = null;
 
-		lowestRating = "marvelous";
+		lowestRating = "sick";
 		maxCombo = 0;
 		combo = 0;
 
