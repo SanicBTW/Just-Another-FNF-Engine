@@ -119,9 +119,12 @@ class Controls
 		return null;
 	}
 
+	// bruuuuuuuuuuuuuuh
 	private static function onKeyDown(evt:KeyboardEvent)
 	{
-		if (FlxG.keys.enabled && (FlxG.state.active || FlxG.state.persistentUpdate))
+		if (FlxG.keys.enabled
+			&& ((FlxG.state.active || FlxG.state.persistentUpdate)
+				|| (FlxG.state.subState != null && (FlxG.state.subState.active || FlxG.state.subState.persistentUpdate))))
 		{
 			if (!keysPressed.contains(evt.keyCode))
 			{
@@ -135,7 +138,9 @@ class Controls
 
 	private static function onKeyUp(evt:KeyboardEvent)
 	{
-		if (FlxG.keys.enabled && (FlxG.state.active || FlxG.state.persistentUpdate))
+		if (FlxG.keys.enabled
+			&& ((FlxG.state.active || FlxG.state.persistentUpdate)
+				|| (FlxG.state.subState != null && (FlxG.state.subState.active || FlxG.state.subState.persistentUpdate))))
 		{
 			if (keysPressed.contains(evt.keyCode))
 			{

@@ -36,9 +36,10 @@ class IO
 		addFolder(NOTETYPES);
 		addFolder(MUSIC);
 		addFolder(SOUNDS);
+		addFolder(EVENTS);
 
 		// The idea of the mods folder is to manage its own assets and shit, basically like fof -> the engine asset tree / rolling again -> the engine asset tree but different assets etc
-		addFolder(MODS);
+		// addFolder(MODS);
 
 		for (name => path in appFolders)
 		{
@@ -144,6 +145,7 @@ enum abstract AssetFolder(String) to String
 	var NOTETYPES = "notetypes";
 	var MUSIC = "music";
 	var SOUNDS = "sounds";
+	var EVENTS = "events";
 	var MODS = "mods";
 }
 

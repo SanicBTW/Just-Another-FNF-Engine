@@ -3,6 +3,7 @@ package funkin.states;
 import Paths.Libraries;
 import backend.Cache;
 import backend.Controls;
+import backend.DiscordPresence;
 import base.Conductor;
 import base.MusicBeatState;
 import base.ScriptableState;
@@ -25,6 +26,7 @@ import funkin.ChartLoader;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
+import funkin.substates.GameOverSubstate;
 import lime.graphics.Image;
 import lime.utils.Assets;
 import network.Request;
@@ -94,6 +96,7 @@ class PlayState extends MusicBeatState
 			ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
 
 		Controls.targetActions = NOTES;
+		GameOverSubstate.resetVariables();
 		Timings.call();
 
 		camGame = new FlxCamera();
@@ -193,7 +196,6 @@ class PlayState extends MusicBeatState
 		startingSong = true;
 
 		callOnModules('onCreatePost', '');
-
 		setupCountdown();
 
 		super.create();
@@ -253,6 +255,17 @@ class PlayState extends MusicBeatState
 
 		holdNotes(elapsed);
 
+		if (Timings.health <= 0)
+		{
+			updateTime = persistentDraw = persistentUpdate = false;
+
+			if (SONG.needsVoices)
+				Conductor.boundVocals.stop();
+			Conductor.boundInst.stop();
+			DiscordPresence.changePresence("Game Over");
+			openSubState(new GameOverSubstate(player.x, player.y));
+		}
+
 		setOnModules('cameraX', camFollowPos.x);
 		setOnModules('cameraY', camFollowPos.y);
 		callOnModules('onUpdatePost', elapsed);
@@ -266,11 +279,14 @@ class PlayState extends MusicBeatState
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
 		{
-			case "reset" | "confirm":
+			case "confirm":
 				return;
 
 			case "back":
 				Conductor.boundInst.onComplete();
+
+			case "reset":
+				Timings.health = 0;
 
 			default:
 				if (!playerStrums.botPlay && startedCountdown && !player.stunned)
@@ -616,7 +632,8 @@ class PlayState extends MusicBeatState
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 0;
 
-		characterSing(player, 'sing${note.getNoteDirection().toUpperCase()}miss');
+		if (player.hasMissAnimations)
+			characterSing(player, 'sing${note.getNoteDirection().toUpperCase()}miss');
 
 		Timings.judge(Timings.judgements[Timings.judgements.length - 1].timing);
 

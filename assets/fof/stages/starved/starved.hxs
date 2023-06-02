@@ -31,6 +31,12 @@ function onCreate()
     stage.camera_opponent = [20, -60];
     stage.skip_defaultCountdown = true;
 
+    GameOverSubstate.characterName = 'bf-starved-die';
+    GameOverSubstate.deathSoundName = 'starved-death';
+    GameOverSubstate.loopSoundName = 'starved-loop';
+    GameOverSubstate.endSoundName = 'starved-retry';
+    GameOverSubstate.snapCamera = true;
+
     cityBG = new FlxSprite(-100, 0, Paths.image('city'));
     cityBG.setGraphicSize(Math.round(cityBG.width * 1.5));
     cityBG.scrollFactor.set(1, 0.9);
@@ -195,22 +201,18 @@ function onMoveCamera(who)
         case 'dad':
         {
             stage.defaultCamZoom = 1;
-            for(receptor in playerStrums.receptors.members)
-			{
-                receptor.setAlpha = 0.25;
-				FlxTween.tween(receptor, {alpha: receptor.setAlpha}, 0.1, { ease: FlxEase.linear});
-			}
         }
         case 'boyfriend':
         {
             stage.defaultCamZoom = 0.85;
-            for(receptor in playerStrums.receptors.members)
-			{
-                receptor.setAlpha = 0.8;
-				FlxTween.tween(receptor, {alpha: receptor.setAlpha}, 0.1, { ease: FlxEase.linear});
-			}
         }
     }
+}
+
+function onGameOverConfirm(isRestart)
+{
+    FlxG.camera.flash(redColor, 3, null, true);
+    boyfriend_dead.visible = false;
 }
 
 function onUpdate(elapsed)
@@ -227,7 +229,7 @@ function onUpdate(elapsed)
     }
 
     if (fear >= 100)
-        ScriptableState.resetState();
+        health = 0;
 }
 
 function onStepHit()

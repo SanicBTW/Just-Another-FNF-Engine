@@ -73,7 +73,7 @@ class ScriptableState extends FlxState implements ModuleManager
 
 	private function onActionReleased(action:String) {}
 
-	private function callOnModules(event:String, args:Dynamic)
+	public function callOnModules(event:String, args:Dynamic)
 	{
 		try
 		{
@@ -89,7 +89,7 @@ class ScriptableState extends FlxState implements ModuleManager
 		}
 	}
 
-	private function setOnModules(variable:String, arg:Dynamic)
+	public function setOnModules(variable:String, arg:Dynamic)
 	{
 		try
 		{
@@ -106,10 +106,8 @@ class ScriptableState extends FlxState implements ModuleManager
 	}
 }
 
-class ScriptableSubState extends FlxSubState implements ModuleManager
+class ScriptableSubState extends FlxSubState
 {
-	private var moduleBatch:Array<ForeverModule> = [];
-
 	override function create()
 	{
 		Controls.onActionPressed.add(onActionPressed);
@@ -130,35 +128,42 @@ class ScriptableSubState extends FlxSubState implements ModuleManager
 
 	private function onActionReleased(action:String) {}
 
-	private function callOnModules(event:String, args:Dynamic)
+	// It will use the current state module batch
+	public function callOnModules(event:String, args:Dynamic)
 	{
-		try
+		@:privateAccess
 		{
-			for (module in moduleBatch)
+			try
 			{
-				if (module.active && module.exists(event))
-					module.get(event)(args);
+				for (module in cast(FlxG.state, ScriptableState).moduleBatch)
+				{
+					if (module.active && module.exists(event))
+						module.get(event)(args);
+				}
 			}
-		}
-		catch (ex)
-		{
-			trace('Failed to execute $event on modules ($ex)');
+			catch (ex)
+			{
+				trace('Failed to execute $event on modules ($ex)');
+			}
 		}
 	}
 
-	private function setOnModules(variable:String, arg:Dynamic)
+	public function setOnModules(variable:String, arg:Dynamic)
 	{
-		try
+		@:privateAccess
 		{
-			for (module in moduleBatch)
+			try
 			{
-				if (module.active)
-					module.set(variable, arg);
+				for (module in cast(FlxG.state, ScriptableState).moduleBatch)
+				{
+					if (module.active)
+						module.set(variable, arg);
+				}
 			}
-		}
-		catch (ex)
-		{
-			trace('Failed to set $variable on modules ($ex)');
+			catch (ex)
+			{
+				trace('Failed to set $variable on modules ($ex)');
+			}
 		}
 	}
 }
@@ -171,6 +176,6 @@ interface ModuleManager
 	private var moduleBatch:Array<ForeverModule>;
 
 	// Will only execute the active modules
-	private function callOnModules(event:String, args:Dynamic):Void;
-	private function setOnModules(variable:String, arg:Dynamic):Void;
+	public function callOnModules(event:String, args:Dynamic):Void;
+	public function setOnModules(variable:String, arg:Dynamic):Void;
 }

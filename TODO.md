@@ -25,3 +25,5 @@ when doing a request on fs_access check if the file exists already and load it i
 fix bullshit io bruhh
 
 add Vanilla Paths filesystem support
+
+fix controls crashing upon pressing on state creation

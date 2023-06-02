@@ -1,6 +1,5 @@
 package network;
 
-import backend.Async;
 import backend.Cache;
 import flixel.graphics.FlxGraphic;
 import haxe.Exception;
@@ -98,7 +97,7 @@ class Request<T>
 		if (type != SOUND || type != IMAGE)
 			req.request();
 		#else
-		Async.execAsync(() -> req.request());
+		req.request();
 		#end
 	}
 }

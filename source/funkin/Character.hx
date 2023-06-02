@@ -69,6 +69,7 @@ class Character extends OffsettedSprite
 	public var healthColor:FlxColor;
 
 	public var startedDeath:Bool = false;
+	public var hasMissAnimations:Bool = false;
 
 	// Misc
 	public var colorTween:FlxTween;
@@ -142,6 +143,8 @@ class Character extends OffsettedSprite
 		}
 
 		danceIdle = (animation.getByName('danceLeft') != null && animation.getByName('danceRight') != null);
+		if (animOffsets.exists('singLEFTmiss') || animOffsets.exists('singDOWNmiss') || animOffsets.exists('singUPmiss') || animOffsets.exists('singRIGHTmiss'))
+			hasMissAnimations = true;
 		dance();
 
 		if (isPlayer)

@@ -35,6 +35,14 @@
 	<library name="fonts" preload="true" />
 	<assets path="assets/fonts" embed='true' library="fonts" />
 
+	<!-- _________________________________ Defines ______________________________ -->
+
+	<!-- Allow the engine to access the FileSystem -->
+	<define name="FS_ACCESS" if="windows" />
+
+	<!-- Enable Discord Rich Presence -->
+	<define name="DISCORD_PRESENCE" if="windows" />
+
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
@@ -59,27 +67,7 @@
 
 	<haxedef name="hscriptPos" />
 
-	<!-- _________________________________ Custom _______________________________ -->
-
-	<!-- Allow the engine to access the FileSystem -->
-	<define name="FS_ACCESS" if="windows" />
-
-	<!-- Enable Discord Rich Presence -->
-	<define name="DISCORD_PRESENCE" if="windows" />
-
-	<!-- Enables the new library system (Windows atm) -->
-
-	<!--
-		It works like this (HTML5):
-		Using OpenFL/Lime we get the library files and we push file references and libraries into an .ini file (using SSIni)
-
-		It works like this (NATIVE):
-		Using FileSystem.readDirectory we get each library files and push file references to its section on an .ini file (using SSIni)
-		Then to access a file it will be through the ini sections and file references
-		
-		Might be hard since deleting default libraries/manifests might break default library preloading but will need to see how to override them
-	-->
-	<define name="RUNTIME_LIBRARIES" />
+	<!-- _________________________________ Icons ________________________________ -->
 
 	<icon path="icons/icon16.png" size='16'/>
 	<icon path="icons/icon32.png" size='32'/>

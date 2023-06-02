@@ -16,7 +16,7 @@ class Main extends Sprite
 	private var gameHeight:Int = 720;
 	private var initialClass:Class<FlxState> = funkin.states.SongSelection;
 	private var zoom:Float = -1;
-	private var framerate:Int = 250;
+	private var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate; // VSync :troll:
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -24,15 +24,6 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
-
-		for (arg in Sys.args())
-		{
-			if (arg.contains("-enable_gpu_rendering"))
-				Cache.gpuRender = true;
-
-			if (arg.contains("-fps"))
-				setFPS(Std.parseInt(arg.split(":")[1]));
-		}
 
 		if (stage != null)
 			init();
@@ -55,8 +46,8 @@ class Main extends Sprite
 		Save.Initialize();
 		Controls.Initialize();
 		#if FS_ACCESS IO.Initialize(); #end
+		DiscordPresence.Initialize();
 		ScriptHandler.Initialize();
-		Async.Initialize();
 		setupGame();
 
 		FlxG.signals.preStateCreate.add((_) ->
@@ -66,6 +57,15 @@ class Main extends Sprite
 			FlxG.bitmap.dumpCache();
 			Cache.collect();
 		});
+
+		for (arg in Sys.args())
+		{
+			if (arg.contains("-enable_gpu_rendering"))
+				Cache.gpuRender = true;
+
+			if (arg.contains("-fps"))
+				setFPS(Std.parseInt(arg.split(":")[1]));
+		}
 	}
 
 	private function setupGame()
@@ -81,8 +81,6 @@ class Main extends Sprite
 			gameWidth = Math.ceil(stageWidth / zoom);
 			gameHeight = Math.ceil(stageHeight / zoom);
 		}
-
-		// vsync shit right here bois framerate = lime.system.System.getDisplay(0).currentMode.refreshRate;
 
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));

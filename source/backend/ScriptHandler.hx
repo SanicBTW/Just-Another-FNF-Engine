@@ -20,6 +20,7 @@ import flixel.util.*;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import funkin.*;
 import funkin.notes.*;
+import funkin.substates.GameOverSubstate;
 import haxe.Exception;
 import haxe.ds.StringMap;
 import haxe.io.Path;
@@ -107,6 +108,7 @@ class ScriptHandler
 		exp.set('Note', Note);
 		exp.set('StrumLine', StrumLine);
 		exp.set('ScriptableState', ScriptableState);
+		exp.set('GameOverSubstate', GameOverSubstate);
 
 		parser.allowTypes = true;
 		parser.allowJSON = true;
@@ -283,7 +285,6 @@ class ModulePaths
 
 	public function new(localPath:String, isFS:Bool = false)
 	{
-		trace(localPath);
 		this.localPath = localPath;
 		this.isFS = isFS;
 	}
@@ -293,7 +294,6 @@ class ModulePaths
 		if (isFS)
 		{
 			var path:String = Path.join([localPath, file]);
-			trace(path);
 			if (!IO.exists(path))
 				throw new Exception('Failed to get $file on $localPath');
 
