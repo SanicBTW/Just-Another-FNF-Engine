@@ -1,6 +1,7 @@
 package funkin.states;
 
 import Paths.Libraries;
+import backend.Cache;
 import backend.Controls;
 import backend.IO;
 import base.ScriptableState;
@@ -73,6 +74,15 @@ class SongSelection extends ScriptableState
 
 			if (item.targetY == 0)
 				item.alpha = 1;
+		}
+
+		switch (pages[curPage])
+		{
+			case "funkin":
+				{
+					if (IO.existsOnFolder(SONGS, '$curText/Inst.ogg'))
+						FlxG.sound.playMusic(Cache.getSound(Path.join([IO.getFolderPath(SONGS), curText, 'Inst.ogg'])));
+				}
 		}
 
 		return curSelected;
@@ -200,6 +210,7 @@ class SongSelection extends ScriptableState
 
 			case "confirm":
 				blockInputs = true;
+				FlxG.sound.music.stop();
 
 				switch (pages[curPage])
 				{
@@ -217,38 +228,20 @@ class SongSelection extends ScriptableState
 						}
 					case "funkin":
 						{
+							songSelected.isFS = true;
+
+							if (IO.existsOnFolder(SONGS, curText))
+							{
+								songSelected.songName = curText;
+								networkCb.callback();
+								return;
+							}
+
 							var curRec:FunkinRecord = songStore.get(curText);
 
 							var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
 							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
 							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
-
-							#if html5
-							songSelected.isFS = false;
-							PBRequest.getFile(curRec, "chart", (chart:String) ->
-							{
-								songSelected.netChart = chart;
-								chartCb();
-
-								PBRequest.getFile(curRec, "inst", (inst:Sound) ->
-								{
-									songSelected.netInst = inst;
-									instCb();
-
-									if (curRec.voices != '')
-									{
-										PBRequest.getFile(curRec, "voices", (voices:Sound) ->
-										{
-											songSelected.netVoices = voices;
-											voicesCb();
-										}, SOUND);
-									}
-									else
-										voicesCb();
-								}, SOUND);
-							}, RAW_STRING);
-							#else
-							songSelected.isFS = true;
 
 							PBRequest.getFile(curRec, "chart", (chart:Bytes) ->
 							{
@@ -273,7 +266,6 @@ class SongSelection extends ScriptableState
 										voicesCb();
 								}, BYTES);
 							}, BYTES);
-							#end
 						}
 				}
 		}

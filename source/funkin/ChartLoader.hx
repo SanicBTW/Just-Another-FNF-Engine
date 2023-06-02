@@ -1,7 +1,9 @@
 package funkin;
 
+import backend.ScriptHandler;
 import base.Conductor;
 import flixel.util.FlxSort;
+import funkin.Events.EventNote;
 import funkin.SongTools;
 import funkin.notes.Note;
 import openfl.media.Sound;
@@ -18,13 +20,13 @@ import haxe.io.Path;
 class ChartLoader
 {
 	public static var noteQueue:Array<Note> = [];
+	public static var eventQueue:Array<EventNote> = [];
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
 
 	public static function loadFSChart(songName:String):SongData
 	{
-		Conductor.bpmChanges = [];
-		noteQueue = [];
+		resetQueues();
 		var startTime:Float = haxe.Timer.stamp();
 
 		var rawChart:String = IO.getSong(songName, CHART, 1);
@@ -47,8 +49,7 @@ class ChartLoader
 
 	public static function loadNetChart(rawChart:String, inst:Sound, ?vocals:Sound):SongData
 	{
-		Conductor.bpmChanges = [];
-		noteQueue = [];
+		resetQueues();
 		var startTime:Float = haxe.Timer.stamp();
 
 		var swagSong:SongData = SongTools.loadSong(rawChart);
@@ -67,8 +68,7 @@ class ChartLoader
 
 	public static function loadChart(songName:String, difficulty:Int):SongData
 	{
-		Conductor.bpmChanges = [];
-		noteQueue = [];
+		resetQueues();
 		var startTime:Float = haxe.Timer.stamp();
 
 		var formattedSongName:String = Paths.formatString(songName);
@@ -163,16 +163,62 @@ class ChartLoader
 						}
 
 					case -1:
-						trace("Event");
+						pushEvent(songNotes);
 				}
 			}
+		}
+
+		for (eventNotes in swagSong.events)
+		{
+			pushEvent(eventNotes);
 		}
 
 		noteQueue.sort(sortByShit);
 	}
 
+	private static function pushEvent(eventParams:Array<Dynamic>)
+	{
+		for (i in 0...eventParams[1].length)
+		{
+			var newEventNote:Array<Dynamic> = [eventParams[0], eventParams[1][i][0], eventParams[1][i][1], eventParams[1][i][2]];
+			var subEvent:EventNote = {
+				strumTime: newEventNote[0],
+				event: newEventNote[1],
+				value1: newEventNote[2],
+				value2: newEventNote[3]
+			};
+			trace(subEvent);
+
+			if (Events.eventList.contains(subEvent.event))
+			{
+				var mySelectedEvent:String = Events.eventList[Events.eventList.indexOf(subEvent.event)];
+				if (mySelectedEvent != null)
+				{
+					var module:ForeverModule = Events.loadedModules.get(subEvent.event);
+					var delay:Float = 0;
+					if (module.exists("returnDelay"))
+						delay = module.get("returnDelay")();
+
+					subEvent.strumTime -= delay;
+
+					if (module.exists("initFunction"))
+						module.get("initFunction")(subEvent.value1, subEvent.value2);
+
+					eventQueue.push(subEvent);
+				}
+			}
+		}
+	}
+
 	private static function sortByShit(Obj1:Note, Obj2:Note):Int
 	{
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
+	}
+
+	private static function resetQueues()
+	{
+		Conductor.bpmChanges = [];
+		noteQueue = [];
+		eventQueue = [];
 	}
 }

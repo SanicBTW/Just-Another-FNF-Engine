@@ -4,6 +4,7 @@ import Paths.Libraries;
 import backend.Cache;
 import backend.Controls;
 import backend.DiscordPresence;
+import backend.ScriptHandler.ForeverModule;
 import base.Conductor;
 import base.MusicBeatState;
 import base.ScriptableState;
@@ -79,6 +80,10 @@ class PlayState extends MusicBeatState
 	private var girlfriend:Character;
 	private var opponent:Character;
 
+	public var boyfriendMap:Map<String, Character> = new Map();
+	public var dadMap:Map<String, Character> = new Map();
+	public var gfMap:Map<String, Character> = new Map();
+
 	// Them input
 	private final actionList:Array<Action> = [Action.NOTE_LEFT, Action.NOTE_DOWN, Action.NOTE_UP, Action.NOTE_RIGHT];
 
@@ -87,6 +92,13 @@ class PlayState extends MusicBeatState
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 			FlxG.sound.music.stop();
 
+		Controls.targetActions = NOTES;
+		GameOverSubstate.resetVariables();
+		Timings.call();
+		Events.obtainEvents();
+
+		setOnModules('addCharacterToList', addCharacterToList);
+
 		// dumb
 		if (SongSelection.songSelected.isFS)
 			ChartLoader.loadFSChart(SongSelection.songSelected.songName);
@@ -94,10 +106,6 @@ class PlayState extends MusicBeatState
 			ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
 		else
 			ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
-
-		Controls.targetActions = NOTES;
-		GameOverSubstate.resetVariables();
-		Timings.call();
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -117,12 +125,12 @@ class PlayState extends MusicBeatState
 
 		var separation:Float = FlxG.width / 4;
 
-		opponentStrums = new StrumLine((FlxG.width / 2) - separation, FlxG.height / 6);
+		opponentStrums = new StrumLine((FlxG.width / 2) - separation, FlxG.height / 8);
 		opponentStrums.botPlay = true;
 		opponentStrums.onBotHit.add(botHit);
 		strumLines.add(opponentStrums);
 
-		playerStrums = new StrumLine((FlxG.width / 2) + separation, FlxG.height / 6);
+		playerStrums = new StrumLine((FlxG.width / 2) + separation, FlxG.height / 8);
 		playerStrums.onMiss.add(noteMiss);
 		strumLines.add(playerStrums);
 
@@ -229,6 +237,19 @@ class PlayState extends MusicBeatState
 		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.defaultCamZoom : 1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
+		if (Timings.health <= 0)
+		{
+			callOnModules('onGameOver', null);
+			player.stunned = true;
+			updateTime = persistentDraw = persistentUpdate = false;
+
+			if (SONG.needsVoices)
+				Conductor.boundVocals.stop();
+			Conductor.boundInst.stop();
+			DiscordPresence.changePresence("Game Over");
+			openSubState(new GameOverSubstate(player.x, player.y));
+		}
+
 		while ((ChartLoader.noteQueue[0] != null) && (ChartLoader.noteQueue[0].strumTime - Conductor.songPosition) < 3500)
 		{
 			var nextNote:Note = ChartLoader.noteQueue[0];
@@ -254,19 +275,7 @@ class PlayState extends MusicBeatState
 		}
 
 		holdNotes(elapsed);
-
-		if (Timings.health <= 0)
-		{
-			callOnModules('onGameOver', null);
-			player.stunned = true;
-			updateTime = persistentDraw = persistentUpdate = false;
-
-			if (SONG.needsVoices)
-				Conductor.boundVocals.stop();
-			Conductor.boundInst.stop();
-			DiscordPresence.changePresence("Game Over");
-			openSubState(new GameOverSubstate(player.x, player.y));
-		}
+		checkEventNote();
 
 		setOnModules('cameraX', camFollowPos.x);
 		setOnModules('cameraY', camFollowPos.y);
@@ -807,6 +816,61 @@ class PlayState extends MusicBeatState
 		cameraMovement(anim, char == opponent);
 		char.playAnim(anim, true);
 		char.holdTimer = 0;
+	}
+
+	private function checkEventNote()
+	{
+		while (ChartLoader.eventQueue.length > 0)
+		{
+			var leStrumTime:Float = ChartLoader.eventQueue[0].strumTime;
+			if (Conductor.songPosition < leStrumTime)
+				break;
+
+			var module:ForeverModule = Events.loadedModules.get(ChartLoader.eventQueue[0].event);
+
+			var value1:String = "";
+			if (ChartLoader.eventQueue[0].value1 != null)
+				value1 = ChartLoader.eventQueue[0].value1;
+
+			var value2:String = "";
+			if (ChartLoader.eventQueue[0].value2 != null)
+				value2 = ChartLoader.eventQueue[0].value2;
+
+			if (module.exists("eventFunction"))
+				module.get("eventFunction")(value1, value2);
+			ChartLoader.eventQueue.shift();
+		}
+	}
+
+	public function addCharacterToList(newCharacter:String, type:Int)
+	{
+		switch (type)
+		{
+			case 0:
+				if (!boyfriendMap.exists(newCharacter))
+				{
+					var newBoyfriend:Character = new Character(0, 0, newCharacter);
+					boyfriendMap.set(newCharacter, newBoyfriend);
+					newBoyfriend.alpha = 0.00001;
+				}
+
+			case 1:
+				if (!dadMap.exists(newCharacter))
+				{
+					var newDad:Character = new Character(0, 0, newCharacter);
+					dadMap.set(newCharacter, newDad);
+					newDad.alpha = 0.00001;
+				}
+
+			case 2:
+				if (girlfriend != null && !gfMap.exists(newCharacter))
+				{
+					var newGf:Character = new Character(0, 0, newCharacter);
+					newGf.scrollFactor.set(0.95, 0.95);
+					gfMap.set(newCharacter, newGf);
+					newGf.alpha = 0.00001;
+				}
+		}
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
