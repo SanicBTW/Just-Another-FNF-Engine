@@ -86,7 +86,6 @@ class Character extends OffsettedSprite
 		antialiasing = true;
 
 		var charPath:String = getCharPath();
-		trace(charPath);
 
 		switch (extension)
 		{

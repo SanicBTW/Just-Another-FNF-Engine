@@ -138,6 +138,8 @@ class SongSelection extends ScriptableState
 						{
 							songStore.set(song.song, song);
 							regenArray.push(song.song);
+							if (IO.existsOnFolder(SONGS, '${song.song}/Inst.ogg'))
+								Cache.getSound(Path.join([IO.getFolderPath(SONGS), song.song, 'Inst.ogg']));
 						}
 						regenMenu(regenArray);
 					});

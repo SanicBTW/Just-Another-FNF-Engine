@@ -55,6 +55,8 @@ class UI extends FlxSpriteGroup
 
 	public function displayJudgement(judgement:String, late:Bool, preload:Bool = false)
 	{
+		var perfect:Bool = Timings.ratingFC != null && Timings.ratingFC == "SFC";
+
 		var curJudgement:DepthSprite = judgementGroup.recycle(DepthSprite, function()
 		{
 			var newJudgement:DepthSprite = new DepthSprite();
@@ -73,7 +75,7 @@ class UI extends FlxSpriteGroup
 
 		curJudgement.z = -Conductor.songPosition;
 		curJudgement.animation.play(judgement + (late ? '-late' : '-early'));
-		if (Timings.ratingFC != null && Timings.ratingFC == "SFC")
+		if (perfect)
 			curJudgement.animation.play('sick-perfect');
 
 		curJudgement.setGraphicSize(Std.int(curJudgement.frameWidth * 0.7));
@@ -88,13 +90,18 @@ class UI extends FlxSpriteGroup
 
 		judgementGroup.add(curJudgement);
 
-		FlxTween.tween(curJudgement, {alpha: 0}, (Conductor.stepCrochet) / 1000, {
-			onComplete: function(_)
-			{
-				curJudgement.kill();
-			},
-			startDelay: ((Conductor.crochet + Conductor.stepCrochet * 2) / 1000)
-		});
+		if (preload)
+			curJudgement.kill();
+		else
+		{
+			FlxTween.tween(curJudgement, {alpha: 0}, (Conductor.stepCrochet) / 1000, {
+				onComplete: function(_)
+				{
+					curJudgement.kill();
+				},
+				startDelay: ((Conductor.crochet + Conductor.stepCrochet * 2) / 1000)
+			});
+		}
 
 		var comboString:String = Std.string(Timings.combo);
 		var stringArray:Array<String> = comboString.split("");
@@ -106,7 +113,10 @@ class UI extends FlxSpriteGroup
 				newCombo.loadGraphic(Paths.image('ui/combo'), true, 100, 140);
 				newCombo.animation.add('-', [0]);
 				for (i in 0...10)
-					newCombo.animation.add('$i', [i + 1]);
+				{
+					newCombo.animation.add('$i', [(i + 1)], 0, false);
+					newCombo.animation.add('$i-perfect', [(i + 1) + 11], 0, false);
+				}
 				return newCombo;
 			});
 
@@ -114,6 +124,8 @@ class UI extends FlxSpriteGroup
 
 			combo.z = -Conductor.songPosition;
 			combo.animation.play(stringArray[i]);
+			if (perfect)
+				combo.animation.play(stringArray[i] + "-perfect");
 
 			combo.setGraphicSize(Std.int(combo.frameWidth * 0.5));
 
@@ -126,13 +138,18 @@ class UI extends FlxSpriteGroup
 
 			comboGroup.add(combo);
 
-			FlxTween.tween(combo, {alpha: 0}, (Conductor.stepCrochet * 2) / 1000, {
-				onComplete: function(tween:FlxTween)
-				{
-					combo.kill();
-				},
-				startDelay: (Conductor.crochet) / 1000
-			});
+			if (preload)
+				combo.kill();
+			else
+			{
+				FlxTween.tween(combo, {alpha: 0}, (Conductor.stepCrochet * 2) / 1000, {
+					onComplete: function(tween:FlxTween)
+					{
+						combo.kill();
+					},
+					startDelay: (Conductor.crochet) / 1000
+				});
+			}
 		}
 
 		judgementGroup.sort(DepthSprite.depthSorting, FlxSort.DESCENDING);

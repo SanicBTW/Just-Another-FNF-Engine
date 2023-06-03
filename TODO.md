@@ -25,3 +25,5 @@ fix bullshit io bruhh
 add Vanilla Paths filesystem support
 
 fix controls crashing upon pressing on state creation
+
+search for an alternative to Std on html5 or smth
