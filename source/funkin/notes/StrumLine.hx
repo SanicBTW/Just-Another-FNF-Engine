@@ -135,9 +135,6 @@ class StrumLine extends FlxSpriteGroup
 			{
 				strumNote.y -= ((strumNote.height / 2) * downscrollMultiplier);
 
-				if (strumNote.isSustainEnd)
-					strumNote.y -= ((strumNote.prevNote.height / 2) * downscrollMultiplier);
-
 				if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
 					&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
 					&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))

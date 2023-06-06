@@ -155,7 +155,7 @@ class ChartLoader
 
 						if (Math.round(holdLength) > 0)
 						{
-							for (note in 0...Math.round(holdLength))
+							for (note in 0...Math.round(holdLength) + 1)
 							{
 								var time:Float = strumTime + (curChange.stepCrochet * note) + curChange.stepCrochet;
 
