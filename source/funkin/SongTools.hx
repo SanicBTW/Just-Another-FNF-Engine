@@ -109,7 +109,6 @@ class SongTools
 				charType = 2;
 		}
 
-		trace(charType);
 		return charType;
 	}
 }

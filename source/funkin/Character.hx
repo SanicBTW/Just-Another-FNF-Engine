@@ -57,6 +57,9 @@ class Character extends OffsettedSprite
 	public var singDuration:Float = 4;
 	public var danceEveryNumBeats:Int = 2;
 
+	public var heyTimer:Float = 0;
+	public var specialAnim:Bool = false;
+
 	// GF Dance shit
 	public var danceIdle:Bool = false;
 	public var danced:Bool = false;
@@ -181,6 +184,25 @@ class Character extends OffsettedSprite
 	{
 		if (animation.curAnim != null)
 		{
+			if (heyTimer > 0)
+			{
+				heyTimer -= elapsed;
+				if (heyTimer <= 0)
+				{
+					if (specialAnim && animation.curAnim.name == 'hey' || animation.curAnim.name == 'cheer')
+					{
+						specialAnim = false;
+						dance();
+					}
+					heyTimer = 0;
+				}
+			}
+			else if (specialAnim && animation.curAnim.finished)
+			{
+				specialAnim = false;
+				dance();
+			}
+
 			if (!isPlayer)
 			{
 				if (animation.curAnim.name.startsWith("sing"))
@@ -212,18 +234,22 @@ class Character extends OffsettedSprite
 
 	public function dance(forced:Bool = true)
 	{
-		if (danceIdle)
+		if (!specialAnim)
 		{
-			danced = !danced;
+			if (danceIdle)
+			{
+				danced = !danced;
 
-			playAnim('dance${danced ? 'Right' : 'Left'}', forced);
+				playAnim('dance${danced ? 'Right' : 'Left'}', forced);
+			}
+			else
+				playAnim('idle', forced);
 		}
-		else
-			playAnim('idle', forced);
 	}
 
 	override public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0)
 	{
+		specialAnim = false;
 		super.playAnim(AnimName, Force, Reversed, Frame);
 
 		if (curCharacter.startsWith("gf"))
