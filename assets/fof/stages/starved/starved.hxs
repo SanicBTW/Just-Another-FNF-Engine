@@ -31,6 +31,9 @@ function onCreate()
     stage.camera_opponent = [20, -60];
     stage.skip_defaultCountdown = true;
 
+    stage.boyfriend = [270, 175];
+    stage.opponent = [400, -250];
+
     GameOverSubstate.characterName = 'bf-starved-die';
     GameOverSubstate.deathSoundName = 'starved-death';
     GameOverSubstate.loopSoundName = 'starved-loop';
@@ -140,13 +143,8 @@ function onCreatePost()
     startCircle.cameras = [camHUD];
     startText.cameras = [camHUD];
 
-    boyfriend.x -= 500;
-    //boyfriend.y += 75;
-    dad.x += 300;
-    dad.y -= 350;
-
-    bfx = boyfriend.x;
-    bfy = boyfriend.y;
+    bfx = PlayState.boyfriendGroup.x;
+    bfy = PlayState.boyfriendGroup.y;
 
     // apparently fixes camera position
     beatHit();
@@ -218,9 +216,9 @@ function onGameOverConfirm(isRestart)
 function onUpdate(elapsed)
 {
     zoomshit = camGame.zoom / 0.75;
-    boyfriend.scale.set(zoomshit, zoomshit);
-    boyfriend.x = bfx * zoomshit;
-    boyfriend.y = bfy * zoomshit;
+    PlayState.player.scale.set(zoomshit, zoomshit);
+    PlayState.player.x = bfx * zoomshit;
+    PlayState.player.y = bfy * zoomshit;
 
     if (PlayState.updateTime)
     {
@@ -229,7 +227,7 @@ function onUpdate(elapsed)
     }
 
     if (fear >= 100)
-        health = 0;
+        Timings.health = 0;
 }
 
 function onStepHit()
@@ -243,8 +241,11 @@ function onStepHit()
         FlxTween.tween(towerBG, {alpha: 0}, tweenTime, {ease: FlxEase.quadInOut});
         FlxTween.tween(fofStage, {alpha: 0}, tweenTime, {ease: FlxEase.quadInOut});
 
-		boyfriend.colorTween = FlxTween.color(boyfriend, tweenTime, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
-			boyfriend.colorTween = null;
+        if (PlayState.SONG.song == "Lucha or funa")
+            return;
+
+		PlayState.player.colorTween = FlxTween.color(PlayState.player, tweenTime, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
+			PlayState.player.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
     else if (curStep == 1437 || curStep == 1982)
@@ -256,8 +257,11 @@ function onStepHit()
         FlxTween.tween(towerBG, {alpha: 1}, tweenTime + 0.5, {ease: FlxEase.quadInOut});
         FlxTween.tween(fofStage, {alpha: 1}, tweenTime + 0.5, {ease: FlxEase.quadInOut});
         
-        boyfriend.colorTween = FlxTween.color(boyfriend, tweenTime, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
-			boyfriend.colorTween = null;
+        if (PlayState.SONG.song == "Lucha or funa")
+            return;
+
+        PlayState.player.colorTween = FlxTween.color(PlayState.player, tweenTime, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
+			PlayState.player.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
 }

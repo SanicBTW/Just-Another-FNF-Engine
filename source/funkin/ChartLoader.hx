@@ -16,6 +16,13 @@ import backend.IO;
 import haxe.io.Path;
 #end
 
+typedef EventInit =
+{
+	var module:ForeverModule;
+	var value1:String;
+	var value2:String;
+}
+
 // Rewrite this or something
 class ChartLoader
 {
@@ -23,6 +30,9 @@ class ChartLoader
 	public static var eventQueue:Array<EventNote> = [];
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
+
+	// Dumb queue/fix to init events post PlayState creation to avoid error
+	private static var initQueue:Array<EventInit> = [];
 
 	public static function loadFSChart(songName:String):SongData
 	{
@@ -163,6 +173,7 @@ class ChartLoader
 						}
 
 					case -1:
+						trace('event');
 						pushEvent(songNotes);
 				}
 			}
@@ -201,12 +212,20 @@ class ChartLoader
 
 					subEvent.strumTime -= delay;
 
-					if (module.exists("initFunction"))
-						module.get("initFunction")(subEvent.value1, subEvent.value2);
-
+					initQueue.push({module: module, value1: subEvent.value1, value2: subEvent.value2});
 					eventQueue.push(subEvent);
 				}
 			}
+		}
+	}
+
+	// dumb fix sorry
+	public static function initEvents()
+	{
+		for (event in initQueue)
+		{
+			if (event.module.exists('initFunction'))
+				event.module.get('initFunction')(event.value1, event.value2);
 		}
 	}
 
@@ -220,5 +239,6 @@ class ChartLoader
 		Conductor.bpmChanges = [];
 		noteQueue = [];
 		eventQueue = [];
+		initQueue = [];
 	}
 }

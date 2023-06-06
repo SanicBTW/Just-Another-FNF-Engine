@@ -13,8 +13,10 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.FlxSubState;
 import flixel.graphics.FlxGraphic;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.system.FlxSound;
@@ -28,6 +30,7 @@ import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
 import funkin.substates.GameOverSubstate;
+import funkin.substates.PauseSubstate;
 import lime.graphics.Image;
 import lime.utils.Assets;
 import network.Request;
@@ -76,16 +79,24 @@ class PlayState extends MusicBeatState
 
 	private var ui:UI;
 
-	private var player:Character;
-	private var girlfriend:Character;
-	private var opponent:Character;
-
 	public var boyfriendMap:Map<String, Character> = new Map();
 	public var dadMap:Map<String, Character> = new Map();
 	public var gfMap:Map<String, Character> = new Map();
 
+	public var boyfriendGroup:FlxSpriteGroup;
+	public var dadGroup:FlxSpriteGroup;
+	public var gfGroup:FlxSpriteGroup;
+
+	public var player:Character;
+	public var girlfriend:Character;
+	public var opponent:Character;
+
 	// Them input
 	private final actionList:Array<Action> = [Action.NOTE_LEFT, Action.NOTE_DOWN, Action.NOTE_UP, Action.NOTE_RIGHT];
+
+	// Pause handling
+	public static var paused:Bool = false;
+	public static var canPause:Bool = true;
 
 	override public function create()
 	{
@@ -96,8 +107,6 @@ class PlayState extends MusicBeatState
 		GameOverSubstate.resetVariables();
 		Timings.call();
 		Events.obtainEvents();
-
-		setOnModules('addCharacterToList', addCharacterToList);
 
 		// dumb
 		if (SongSelection.songSelected.isFS)
@@ -139,18 +148,26 @@ class PlayState extends MusicBeatState
 		stageBuild = new Stage(SONG.stage);
 		add(stageBuild);
 
-		player = new Character(stageBuild.boyfriend[0], stageBuild.boyfriend[1], true, SONG.player1);
-		opponent = new Character(stageBuild.opponent[0], stageBuild.opponent[1], false, SONG.player2);
+		boyfriendGroup = new FlxSpriteGroup(stageBuild.boyfriend[0], stageBuild.boyfriend[1]);
+		dadGroup = new FlxSpriteGroup(stageBuild.opponent[0], stageBuild.opponent[1]);
+		gfGroup = new FlxSpriteGroup(stageBuild.girlfriend[0], stageBuild.girlfriend[1]);
+
+		add(gfGroup);
+		add(dadGroup);
+		add(boyfriendGroup);
+
+		player = new Character(0, 0, true, SONG.player1);
+		opponent = new Character(0, 0, false, SONG.player2);
 
 		if (!stageBuild.hide_girlfriend)
 		{
-			girlfriend = new Character(stageBuild.girlfriend[0], stageBuild.girlfriend[1], false, SONG.gfVersion);
+			girlfriend = new Character(0, 0, false, SONG.gfVersion);
 			girlfriend.scrollFactor.set(0.95, 0.95);
-			add(girlfriend);
+			gfGroup.add(girlfriend);
 		}
 
-		add(opponent);
-		add(player);
+		dadGroup.add(opponent);
+		boyfriendGroup.add(player);
 
 		ui = new UI();
 		ui.cameras = [camHUD];
@@ -201,6 +218,8 @@ class PlayState extends MusicBeatState
 		setOnModules('moveCamera', moveCamera);
 		setOnModules('moveCameraSection', moveCameraSection);
 
+		ChartLoader.initEvents();
+
 		startingSong = true;
 
 		callOnModules('onCreatePost', '');
@@ -220,13 +239,16 @@ class PlayState extends MusicBeatState
 
 		super.update(elapsed);
 
-		if (startedCountdown && startingSong)
+		if (!paused)
+			DiscordPresence.changePresence('Playing ${SONG.song}', null, null, true, Conductor.boundInst.length - Conductor.songPosition);
+
+		if (startedCountdown && startingSong && !paused)
 		{
 			// do not toggle update time as it will resync
 			Conductor.songPosition += elapsed * 1000;
 		}
 
-		if (startingSong)
+		if (startingSong && !paused)
 		{
 			if (startedCountdown && Conductor.songPosition >= 0)
 				startSong();
@@ -284,19 +306,20 @@ class PlayState extends MusicBeatState
 
 	override private function onActionPressed(action:String)
 	{
-		if (startingSong)
-			return;
-
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
 		{
 			case "confirm":
-				return;
-
-			case "back":
-				Conductor.boundInst.onComplete();
+				if (canPause)
+				{
+					persistentUpdate = false;
+					persistentDraw = true;
+					openSubState(new PauseSubstate());
+				}
 
 			case "reset":
+				if (startingSong)
+					return;
 				Timings.health = 0;
 
 			default:
@@ -346,7 +369,6 @@ class PlayState extends MusicBeatState
 
 							for (note in dumbNotes)
 							{
-								trace("Killing dumb note");
 								playerStrums.destroyNote(note);
 							}
 
@@ -395,7 +417,7 @@ class PlayState extends MusicBeatState
 
 	private function holdNotes(elapsed:Float)
 	{
-		if (playerStrums == null)
+		if (playerStrums == null || paused)
 			return;
 
 		var holdArray:Array<Bool> = parseKeys();
@@ -435,6 +457,48 @@ class PlayState extends MusicBeatState
 			ret[i] = Controls.isActionPressed(actionList[i]);
 		}
 		return ret;
+	}
+
+	override function openSubState(SubState:FlxSubState)
+	{
+		if (!paused)
+		{
+			if (Conductor.boundInst != null)
+			{
+				Conductor.boundInst.pause();
+				if (SONG.needsVoices)
+					Conductor.boundVocals.pause();
+			}
+
+			if (startTimer != null && !startTimer.finished)
+				startTimer.active = false;
+
+			DiscordPresence.changePresence('Playing ${SONG.song}', "Paused");
+			paused = true;
+			callOnModules('onPause', null);
+			canPause = false;
+		}
+
+		super.openSubState(SubState);
+	}
+
+	override function closeSubState()
+	{
+		if (paused)
+		{
+			if (!startingSong)
+				Conductor.resyncTime();
+
+			if (startTimer != null && !startTimer.finished)
+				startTimer.active = true;
+
+			DiscordPresence.changePresence('Playing ${SONG.song}');
+			paused = false;
+			callOnModules('onResume', null);
+			canPause = true;
+		}
+
+		super.closeSubState();
 	}
 
 	private function setupCountdown()
@@ -836,40 +900,16 @@ class PlayState extends MusicBeatState
 			if (ChartLoader.eventQueue[0].value2 != null)
 				value2 = ChartLoader.eventQueue[0].value2;
 
-			if (module.exists("eventFunction"))
-				module.get("eventFunction")(value1, value2);
+			try
+			{
+				if (module.exists("eventFunction"))
+					module.get("eventFunction")(value1, value2);
+			}
+			catch (ex)
+			{
+				trace('Failed to execute event ($ex)');
+			}
 			ChartLoader.eventQueue.shift();
-		}
-	}
-
-	public function addCharacterToList(newCharacter:String, type:Int)
-	{
-		switch (type)
-		{
-			case 0:
-				if (!boyfriendMap.exists(newCharacter))
-				{
-					var newBoyfriend:Character = new Character(0, 0, newCharacter);
-					boyfriendMap.set(newCharacter, newBoyfriend);
-					newBoyfriend.alpha = 0.00001;
-				}
-
-			case 1:
-				if (!dadMap.exists(newCharacter))
-				{
-					var newDad:Character = new Character(0, 0, newCharacter);
-					dadMap.set(newCharacter, newDad);
-					newDad.alpha = 0.00001;
-				}
-
-			case 2:
-				if (girlfriend != null && !gfMap.exists(newCharacter))
-				{
-					var newGf:Character = new Character(0, 0, newCharacter);
-					newGf.scrollFactor.set(0.95, 0.95);
-					gfMap.set(newCharacter, newGf);
-					newGf.alpha = 0.00001;
-				}
 		}
 	}
 

@@ -79,7 +79,11 @@ class ScriptHandler
 
 		// Classes (Haxe)
 		#if sys exp.set("Sys", Sys); #end
-		exp.set("Std", Std); // Apparently you can't use Std on HTML5???
+		// I Love C#
+		exp.set('toString', Std.string);
+		exp.set('toInt', Std.parseInt);
+		exp.set('toInt32', Std.int);
+		exp.set('toFloat', Std.parseFloat);
 		exp.set("Math", Math);
 		exp.set("StringTools", StringTools);
 
@@ -109,6 +113,7 @@ class ScriptHandler
 		exp.set('StrumLine', StrumLine);
 		exp.set('ScriptableState', ScriptableState);
 		exp.set('GameOverSubstate', GameOverSubstate);
+		exp.set('parseCharType', SongTools.parseCharType);
 
 		parser.allowTypes = true;
 		parser.allowJSON = true;
@@ -144,7 +149,6 @@ class ScriptHandler
 
 		// Goofy path parsing lol
 		var modulePath:String = Paths.file('$assetFolder/$file.hxs');
-		trace('Possible path $modulePath');
 
 		function parse()
 		{
@@ -169,7 +173,6 @@ class ScriptHandler
 		{
 			#if FS_ACCESS
 			modulePath = Path.join([IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$file.hxs']);
-			trace('Checking on Filesystem, possible path $modulePath');
 			if (IO.exists(modulePath))
 			{
 				parseContent = sys.io.File.getContent(modulePath);
@@ -184,13 +187,11 @@ class ScriptHandler
 			// Ez replace
 			assetFolder = assetFolder.replace(file, fallback);
 			modulePath = Paths.file('$assetFolder/$fallback.hxs');
-			trace('Last path $modulePath');
 
 			if (!Assets.exists(modulePath, TEXT))
 			{
 				#if FS_ACCESS
 				modulePath = Path.join([IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$fallback.hxs']);
-				trace('Checking on Filesystem, last path $modulePath');
 				if (IO.exists(modulePath))
 				{
 					parseContent = sys.io.File.getContent(modulePath);

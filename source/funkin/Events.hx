@@ -24,7 +24,6 @@ class Events
 	{
 		loadedModules.clear();
 		eventList = IO.getFolderFiles(EVENTS);
-		trace(eventList);
 		if (eventList == null)
 			eventList = [];
 

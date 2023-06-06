@@ -28,7 +28,7 @@ class ScriptableState extends FlxState implements ModuleManager
 	{
 		Controls.onActionPressed.remove(onActionPressed);
 		Controls.onActionReleased.remove(onActionReleased);
-		callOnModules('destroy', null);
+		callOnModules('onDestroy', null);
 
 		super.destroy();
 	}

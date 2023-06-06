@@ -27,3 +27,13 @@ add Vanilla Paths filesystem support
 fix controls crashing upon pressing on state creation
 
 search for an alternative to Std on html5 or smth
+
+make it that when a character changes change the reference on modules
+
+change player to boyfriend and opponent to dad on module vars
+
+fix input (hitting too early will rate it as sick)
+
+MOD MANAGER (C# WPF NET 7.0)
+WILL BE USED FOR DOWNLOADING MOD ASSETS INSTEAD OF BUNDLING THEM WITH THE ENGINE
+WILL BE ALSO USED TO DOWNLOAD ALL THE EVENT FILES AND SHIT

@@ -1,5 +1,6 @@
 package funkin;
 
+import backend.Cache;
 import backend.IO;
 import backend.ScriptHandler.ForeverModule;
 import backend.ScriptHandler;
@@ -74,6 +75,7 @@ class Character extends OffsettedSprite
 	// Misc
 	public var colorTween:FlxTween;
 	public var stunned:Bool = false;
+	public var alreadyLoaded:Bool = true;
 
 	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
 	{
@@ -89,10 +91,32 @@ class Character extends OffsettedSprite
 
 		switch (extension)
 		{
+			// smart ass parsing (i want to kms)
 			case ".json":
 				{
-					var json:CharacterFile = cast haxe.Json.parse(Paths.text(charPath));
-					frames = Paths.getSparrowAtlas(json.image.replace("characters/", ""), 'characters/$curCharacter');
+					var isFS:Bool = Cache.fromFS(charPath);
+
+					charPath = charPath.substring(0, charPath.lastIndexOf("/"));
+
+					// ayo using this is actually really smart ngl
+					var isolatedPaths:ModulePaths = new ModulePaths(charPath, isFS);
+					var json:CharacterFile = cast haxe.Json.parse(isolatedPaths.text('$charPath/$curCharacter$extension'));
+
+					if (!isFS)
+					{
+						if (charPath.contains(":"))
+						{
+							var lib:String = charPath.split(":")[0];
+							charPath = charPath.replace('$lib:', "");
+							charPath = charPath.substring(charPath.indexOf(lib) + lib.length + 1);
+						}
+
+						// change the local path to the new parsed one (kind of uhhhhhhhhhhhhhhhhhhhhhhhhhhh)
+						@:privateAccess
+						isolatedPaths.localPath = charPath;
+					}
+
+					frames = isolatedPaths.getSparrowAtlas(json.image.replace("characters/", ""));
 
 					if (json.scale != 1)
 					{
@@ -215,6 +239,7 @@ class Character extends OffsettedSprite
 		}
 	}
 
+	// goofy
 	private function getCharPath():String
 	{
 		var retPath:String = Paths.getPath('characters/$curCharacter/$curCharacter.hxs', TEXT);

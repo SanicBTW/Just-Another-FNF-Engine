@@ -92,4 +92,24 @@ class SongTools
 		onLoadJson(songJson);
 		return songJson;
 	}
+
+	public static function parseCharType(value:String):Int
+	{
+		var charType = 0;
+
+		switch (value.toLowerCase())
+		{
+			default:
+				charType = Std.parseInt(value);
+				if (Math.isNaN(charType))
+					charType = 0;
+			case 'dad' | 'opponent' | '1':
+				charType = 1;
+			case 'gf' | 'girlfriend' | '2':
+				charType = 2;
+		}
+
+		trace(charType);
+		return charType;
+	}
 }

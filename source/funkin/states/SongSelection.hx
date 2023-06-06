@@ -212,7 +212,6 @@ class SongSelection extends ScriptableState
 
 			case "confirm":
 				blockInputs = true;
-				FlxG.sound.music.stop();
 
 				switch (pages[curPage])
 				{
