@@ -13,7 +13,7 @@ typedef EventNote =
 
 /*So my old implementation on psych was based off Lullaby's system https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/hxs-forever/source/hxs/Events.hx
 	I will be mixing it with the Hybrid method https://github.com/SanicBTW/Forever-Engine-Archive/blob/hybrid/source/base/Events.hx 
-	I don't know how to make it for HTML so it can suck a cock for now
+	Get files filtering folder (Paths.getLibraryFile(TEXT, 'events'))
  */
 class Events
 {

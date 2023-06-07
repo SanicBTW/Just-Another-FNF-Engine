@@ -62,12 +62,30 @@ class Paths
 		return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$file';
 	}
 
-	public static function getLibraryFiles(?filter:String):Array<String>
+	// ofl - open fl filter / ffl - folder filter loll
+	public static function getLibraryFiles(?ofl:String, ?ffl:String):Array<String>
 	{
 		if (!Assets.hasLibrary(_library))
 			changeLibrary(_library, () -> {});
 
-		return Assets.getLibrary(_library).list(filter);
+		var files:Array<String> = Assets.getLibrary(_library).list(ofl);
+		var finalRet:Array<String> = [];
+
+		if (ffl != null)
+		{
+			for (file in files)
+			{
+				if (file.contains(ffl))
+				{
+					trace(file);
+					finalRet.push(file);
+				}
+			}
+		}
+		else
+			finalRet = files;
+
+		return finalRet;
 	}
 
 	public static inline function file(file:String, type:AssetType = TEXT)

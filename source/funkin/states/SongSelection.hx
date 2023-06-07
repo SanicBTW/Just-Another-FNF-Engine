@@ -229,6 +229,7 @@ class SongSelection extends ScriptableState
 						}
 					case "funkin":
 						{
+							#if FS_ACCESS
 							songSelected.isFS = true;
 
 							if (IO.existsOnFolder(SONGS, curText))
@@ -237,6 +238,7 @@ class SongSelection extends ScriptableState
 								networkCb.callback();
 								return;
 							}
+							#end
 
 							var curRec:FunkinRecord = songStore.get(curText);
 
@@ -244,6 +246,7 @@ class SongSelection extends ScriptableState
 							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
 							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
 
+							#if FS_ACCESS
 							PBRequest.getFile(curRec, "chart", (chart:Bytes) ->
 							{
 								IO.saveSong(curRec.song, CHART, chart, 1);
@@ -267,6 +270,31 @@ class SongSelection extends ScriptableState
 										voicesCb();
 								}, BYTES);
 							}, BYTES);
+							#else
+							songSelected.isFS = false;
+							PBRequest.getFile(curRec, "chart", (chart:String) ->
+							{
+								songSelected.netChart = chart;
+								chartCb();
+
+								PBRequest.getFile(curRec, "inst", (inst:Sound) ->
+								{
+									songSelected.netInst = inst;
+									instCb();
+
+									if (curRec.voices != '')
+									{
+										PBRequest.getFile(curRec, "voices", (voices:Sound) ->
+										{
+											songSelected.netVoices = voices;
+											voicesCb();
+										}, SOUND);
+									}
+									else
+										voicesCb();
+								}, SOUND);
+							}, RAW_STRING);
+							#end
 						}
 				}
 		}

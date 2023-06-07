@@ -45,7 +45,7 @@ class Main extends Sprite
 
 		Save.Initialize();
 		Controls.Initialize();
-		#if FS_ACCESS IO.Initialize(); #end
+		IO.Initialize();
 		DiscordPresence.Initialize();
 		ScriptHandler.Initialize();
 		setupGame();
@@ -58,6 +58,7 @@ class Main extends Sprite
 			Cache.collect();
 		});
 
+		#if sys
 		for (arg in Sys.args())
 		{
 			if (arg.contains("-enable_gpu_rendering"))
@@ -66,6 +67,7 @@ class Main extends Sprite
 			if (arg.contains("-fps"))
 				setFPS(Std.parseInt(arg.split(":")[1]));
 		}
+		#end
 	}
 
 	private function setupGame()

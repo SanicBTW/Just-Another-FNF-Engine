@@ -120,20 +120,47 @@ class IO
 	private static function addFolder(name:AssetFolder, parent:AssetFolder = PARENT)
 		appFolders.set(name, Path.join([appFolders.get(parent), name]));
 
-	public static inline function exists(file:String)
+	public static inline function exists(file:String):Bool
 		return FileSystem.exists(file);
 
-	public static inline function existsOnFolder(folder:AssetFolder = PARENT, file:String)
+	public static inline function existsOnFolder(folder:AssetFolder = PARENT, file:String):Bool
 		return FileSystem.exists(Path.join([appFolders.get(folder), file]));
 
-	public static inline function getFolderPath(folder:AssetFolder = PARENT)
+	public static inline function getFolderPath(folder:AssetFolder = PARENT):String
 		return appFolders.get(folder);
 
-	public static inline function getFolderFiles(folder:AssetFolder = PARENT)
+	public static inline function getFolderFiles(folder:AssetFolder = PARENT):Array<String>
 		return FileSystem.readDirectory(appFolders.get(folder));
 }
 #else
+class IO
+{
+	private static var appFolders:Map<AssetFolder, String> = new Map();
+
+	public static function Initialize() {}
+
+	public static function getSong(song:String, file:SongFile, diff:Int = 1):Dynamic
+		return null;
+
+	public static function saveSong(song:String, file:SongFile, content:Dynamic, diff:Int = 1):String
+		return '';
+
+	private static function addFolder(name:AssetFolder, parent:AssetFolder = PARENT) {}
+
+	public static inline function exists(file:String):Bool
+		return false;
+
+	public static inline function existsOnFolder(folder:AssetFolder = PARENT, file:String):Bool
+		return false;
+
+	public static inline function getFolderPath(folder:AssetFolder = PARENT):String
+		return '';
+
+	public static inline function getFolderFiles(folder:AssetFolder = PARENT):Array<String>
+		return [];
+}
 #end
+
 enum abstract AssetFolder(String) to String
 {
 	var PARENT = "parent";

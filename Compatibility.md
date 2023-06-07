@@ -1,12 +1,12 @@
 # Currently supported platforms
 - Windows
+- HTML5
 
 # Not tested / Has issues
 - Neko (Crashes when starting up)
 - Android
 - Linux
 - HashLink 1.3.0 (HScript execution issues)
-- HTML5 (I need to adapt IO code)
 
 # Tested with
 - flixel-addons: 3.0.2

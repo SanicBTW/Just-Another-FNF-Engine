@@ -1,20 +1,17 @@
 package funkin;
 
+import backend.IO;
 import backend.ScriptHandler;
 import base.Conductor;
 import flixel.util.FlxSort;
 import funkin.Events.EventNote;
 import funkin.SongTools;
 import funkin.notes.Note;
+import haxe.io.Path;
 import openfl.media.Sound;
 import openfl.utils.Assets;
 
 using StringTools;
-
-#if FS_ACCESS
-import backend.IO;
-import haxe.io.Path;
-#end
 
 typedef EventInit =
 {

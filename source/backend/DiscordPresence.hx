@@ -92,11 +92,15 @@ class DiscordPresence
 // In order to avoid having to fill the code with compiler conditionals everywhere the presence is in, I'll just write an empty class that contains all the functions the working class has
 class DiscordPresence
 {
+	private static final kanaFunky:Array<String> = ['kanadepre'];
+
+	public static var largeImageKey:String = kanaFunky[Std.int(Math.random() * kanaFunky.length)];
+
 	public function new() {}
 
 	private static function onReady() {}
 
-	public static function initPresence() {}
+	public static function Initialize() {}
 
 	public static function changePresence(details:String = '', ?state:String, ?smallImageKey:String, hasStartTimestamp:Bool = false, endTimeStamp:Float = 0) {}
 

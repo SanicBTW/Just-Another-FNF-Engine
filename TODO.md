@@ -6,8 +6,6 @@ Paths
 
 Add a compilation flag to disable counters completely or make them basic, like old times
 
-apparently you cant use Std on HTML5??? (HScript)
-
 move to the latest forever engine rewrite callback method (.get(method)(this))
 
 properly parse paths and fallbacks, splashes and shit
@@ -25,8 +23,6 @@ fix bullshit io bruhh
 add Vanilla Paths filesystem support
 
 fix controls crashing upon pressing on state creation
-
-search for an alternative to Std on html5 or smth
 
 make it that when a character changes change the reference on modules
 

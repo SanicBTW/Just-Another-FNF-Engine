@@ -28,9 +28,12 @@ import hscript.*;
 import hscript.Expr.Error;
 import openfl.media.Sound;
 import openfl.utils.Assets;
-import sys.io.File;
 
 using StringTools;
+
+#if FS_ACCESS
+import sys.io.File;
+#end
 
 // FlxColor but class
 class Colors
@@ -79,7 +82,7 @@ class ScriptHandler
 
 		// Classes (Haxe)
 		#if sys exp.set("Sys", Sys); #end
-		// I Love C#
+		// I Love C# (OMG IT WORKS ON HTML NO WAY OMGGG)
 		exp.set('toString', Std.string);
 		exp.set('toInt', Std.parseInt);
 		exp.set('toInt32', Std.int);
@@ -292,6 +295,7 @@ class ModulePaths
 
 	public function getPath(file:String):String
 	{
+		#if FS_ACCESS
 		if (isFS)
 		{
 			var path:String = Path.join([localPath, file]);
@@ -301,6 +305,7 @@ class ModulePaths
 			return path;
 		}
 		else
+		#end
 		{
 			@:privateAccess
 			var libPath:String = '${Paths._library}:assets/${Paths._library}/$localPath/$file';
@@ -312,7 +317,10 @@ class ModulePaths
 	}
 
 	public inline function text(path:String):String
-		return (isFS) ? File.getContent(path) : Assets.getText(path);
+	{
+		return #if FS_ACCESS (isFS) ? File.getContent(path) : #end
+		Assets.getText(path);
+	}
 
 	public inline function sound(key:String):Sound
 		return Cache.getSound(getPath('sounds/$key.ogg'));
