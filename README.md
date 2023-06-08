@@ -12,8 +12,21 @@ and more!
 # Pages
 
 - [Latest release](https://funkin.sancopublic.com/)
-- [Old online version](https://onlinefunky.pages.dev/)
-- [Last commit before rewritting (221672c)](https://funkye.pages.dev/)
-- [Latest stable commit (c419c03)](https://hxstest.funkye.pages.dev/)
-- [Latest tiling test (ef538d6)](https://tiless.funkye.pages.dev/)
+- [v0.2.7.1 (a118fe4)](https://onlinefunky.pages.dev/)
+- [V0.2.8 (221672c)](https://funkye.pages.dev/)
+- [V0.2.10 LStable (c419c03)](https://hxstest.funkye.pages.dev/)
+- [v0.2.x LTiles (ef538d6)](https://tiless.funkye.pages.dev/)
+- [v0.2.x LQuaver (c78d499)](https://quaverr.funkye.pages.dev/)
 - Experimental HUB will be back soon
+
+# Versioning
+
+### A Launcher is being developed to be available to download previews and more (see TODO.md ModManager)
+
+V0.2.7.1: Last Preview to contain online services (1v1), it was going to be rewritten someday but eventually gave up.
+
+V0.2.8: Latest Preview before the Rewrite, only available on HTML5.
+
+V0.2.10: Latest Preview of the Rewrite, only available on HTML5 and being updated frequently.
+
+V0.2.x: Versions that are meant to get feedback as well as getting updates to improve the code and user experience.
