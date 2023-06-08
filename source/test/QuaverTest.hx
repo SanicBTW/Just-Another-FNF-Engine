@@ -11,6 +11,8 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.addons.display.FlxGridOverlay;
+import flixel.addons.display.FlxTiledSprite;
 import flixel.graphics.FlxGraphic;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
@@ -20,6 +22,7 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import flixel.util.FlxGradient;
 import flixel.util.FlxTimer;
 import funkin.ChartLoader;
 import funkin.ChartLoader;
@@ -34,6 +37,7 @@ import network.Request;
 import network.pocketbase.Collection;
 import network.pocketbase.Record;
 import openfl.display.BitmapData;
+import openfl.display.BlendMode;
 import openfl.media.Sound;
 import transitions.FadeTransition;
 
@@ -47,11 +51,7 @@ class QuaverTest extends MusicBeatState
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 
-	// Strum handling
-	private var strumLines:FlxTypedGroup<StrumLine>;
-
-	public var playerStrums:StrumLine;
-	public var opponentStrums:StrumLine;
+	public var strums:StrumLine;
 
 	// Countdown
 	public var startedCountdown:Bool = false;
@@ -59,21 +59,20 @@ class QuaverTest extends MusicBeatState
 
 	private var startTimer:FlxTimer;
 
-	private var ui:UI;
-
 	// Them input
 	private final actionList:Array<Action> = [Action.NOTE_LEFT, Action.NOTE_DOWN, Action.NOTE_UP, Action.NOTE_RIGHT];
+
+	var cellSize:Int = 70;
+	var totalElapsed:Float = 0;
+
+	var gridBackground:FlxTiledSprite;
+	var boardPattern:FlxTiledSprite;
+	var checkerboard:FlxGraphic;
 
 	override public function create()
 	{
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 			FlxG.sound.music.stop();
-
-		// dumb
-		if (SongSelection.songSelected.netChart != null)
-			ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
-		else
-			ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
 
 		Controls.targetActions = NOTES;
 		Timings.call();
@@ -91,25 +90,13 @@ class QuaverTest extends MusicBeatState
 		camOther.bgColor.alpha = 0;
 		FlxG.cameras.add(camOther, false);
 
-		strumLines = new FlxTypedGroup<StrumLine>();
-		strumLines.cameras = [camHUD];
+		strums = new StrumLine((FlxG.width / 2), FlxG.height / 6);
+		strums.onMiss.add(noteMiss);
+		strums.cameras = [camHUD];
+		add(strums);
 
-		var separation:Float = FlxG.width / 4;
-
-		opponentStrums = new StrumLine((FlxG.width / 2) - separation, FlxG.height / 6);
-		opponentStrums.botPlay = true;
-		opponentStrums.onBotHit.add(botHit);
-		strumLines.add(opponentStrums);
-
-		playerStrums = new StrumLine((FlxG.width / 2) + separation, FlxG.height / 6);
-		playerStrums.onMiss.add(noteMiss);
-		strumLines.add(playerStrums);
-
-		add(strumLines);
-
-		ui = new UI();
-		ui.cameras = [camHUD];
-		add(ui);
+		generateBackground();
+		QuaverParser.parse('107408');
 
 		Conductor.songPosition = -5000;
 
@@ -119,10 +106,7 @@ class QuaverTest extends MusicBeatState
 
 		setOnModules('camGame', camGame);
 		setOnModules('camHUD', camHUD);
-		setOnModules('playerStrums', playerStrums);
-		setOnModules('opponentStrums', opponentStrums);
 		setOnModules('PlayState', this);
-		setOnModules('UI', ui);
 		setOnModules('stepHit', stepHit);
 		setOnModules('beatHit', beatHit);
 
@@ -165,15 +149,8 @@ class QuaverTest extends MusicBeatState
 			var nextNote:Note = ChartLoader.noteQueue[0];
 			if (nextNote != null)
 			{
-				var strumLine:StrumLine = strumLines.members[nextNote.strumLine];
-				if (strumLine != null)
-					strumLine.push(nextNote);
-				else
-				{
-					// If we cant push to the targeted strum line, then we push to the current one and mark the note as must press so it  can be pressed lol
-					nextNote.mustPress = true;
-					playerStrums.push(nextNote);
-				}
+				nextNote.mustPress = true;
+				strums.push(nextNote);
 				callOnModules('onSpawnNote', [
 					ChartLoader.noteQueue.indexOf(nextNote),
 					nextNote.noteData,
@@ -185,6 +162,11 @@ class QuaverTest extends MusicBeatState
 		}
 
 		holdNotes(elapsed);
+
+		gridBackground.scrollX += (elapsed / (1 / 60)) * 0.5;
+		var increaseUpTo:Float = gridBackground.height / 8;
+		gridBackground.scrollY = Math.sin(totalElapsed / increaseUpTo) * increaseUpTo;
+		totalElapsed += (elapsed / (1 / 60)) * 0.5;
 
 		callOnModules('onUpdatePost', elapsed);
 	}
@@ -201,24 +183,24 @@ class QuaverTest extends MusicBeatState
 				return;
 
 			case "back":
-				Conductor.boundInst.onComplete();
+				FlxG.sound.music.onComplete();
 
 			default:
-				if (!playerStrums.botPlay && startedCountdown)
+				if (!strums.botPlay && startedCountdown)
 				{
-					for (receptor in playerStrums.receptors)
+					for (receptor in strums.receptors)
 					{
 						if (action == receptor.action)
 						{
 							var data:Int = receptor.noteData;
 							var lastTime:Float = Conductor.songPosition;
-							Conductor.songPosition = Conductor.boundInst.time;
+							Conductor.songPosition = FlxG.sound.music.time;
 
 							var possibleNotes:Array<Note> = [];
 							var directionList:Array<Int> = [];
 							var dumbNotes:Array<Note> = [];
 
-							playerStrums.notesGroup.forEachAlive(function(daNote:Note)
+							strums.notesGroup.forEachAlive(function(daNote:Note)
 							{
 								if ((daNote.noteData == data) && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustain)
 								{
@@ -250,8 +232,7 @@ class QuaverTest extends MusicBeatState
 
 							for (note in dumbNotes)
 							{
-								trace("Killing dumb note");
-								playerStrums.destroyNote(note);
+								strums.destroyNote(note);
 							}
 
 							if (possibleNotes.length > 0)
@@ -283,9 +264,9 @@ class QuaverTest extends MusicBeatState
 				return;
 
 			default:
-				if (!playerStrums.botPlay && startedCountdown)
+				if (!strums.botPlay && startedCountdown)
 				{
-					for (receptor in playerStrums.receptors)
+					for (receptor in strums.receptors)
 					{
 						if (action == receptor.action)
 						{
@@ -299,14 +280,14 @@ class QuaverTest extends MusicBeatState
 
 	private function holdNotes(elapsed:Float)
 	{
-		if (playerStrums == null)
+		if (strums == null)
 			return;
 
 		var holdArray:Array<Bool> = parseKeys();
 
-		if (!playerStrums.botPlay)
+		if (!strums.botPlay)
 		{
-			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
+			strums.allNotes.forEachAlive(function(coolNote:Note)
 			{
 				if (holdArray[coolNote.noteData])
 				{
@@ -335,15 +316,11 @@ class QuaverTest extends MusicBeatState
 
 	private function setupCountdown()
 	{
-		for (strumline in strumLines)
+		for (receptor in strums.receptors)
 		{
-			for (receptor in strumline.receptors)
-			{
-				receptor.y -= 32;
-				receptor.alpha = 0;
-			}
+			receptor.y -= 32;
+			receptor.alpha = 0;
 		}
-		ui.alpha = 0;
 
 		startCountdown();
 	}
@@ -362,17 +339,13 @@ class QuaverTest extends MusicBeatState
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;
 
-		for (strumline in strumLines)
+		var i = 0;
+		for (receptor in strums.receptors)
 		{
-			var i = 0;
-			for (receptor in strumline.receptors)
-			{
-				FlxTween.tween(receptor, {y: receptor.initialY, alpha: receptor.setAlpha}, (Conductor.crochet * 4) / 1000,
-					{ease: FlxEase.circOut, startDelay: (Conductor.crochet / 1000) + ((Conductor.stepCrochet / 1000) * i)});
-				i++;
-			}
+			FlxTween.tween(receptor, {y: receptor.initialY, alpha: receptor.setAlpha}, (Conductor.crochet * 4) / 1000,
+				{ease: FlxEase.circOut, startDelay: (Conductor.crochet / 1000) + ((Conductor.stepCrochet / 1000) * i)});
+			i++;
 		}
-		FlxTween.tween(ui, {alpha: 1}, (Conductor.crochet * 2) / 1000, {startDelay: (Conductor.crochet / 1000)});
 
 		setOnModules('startedCountdown', true);
 		callOnModules('onCountdownStarted', null);
@@ -418,14 +391,12 @@ class QuaverTest extends MusicBeatState
 	{
 		startingSong = false;
 
-		Conductor.boundInst.play();
-		Conductor.boundInst.onComplete = endSong.bind();
-
-		Conductor.boundVocals.play();
+		FlxG.sound.music.play();
+		FlxG.sound.music.onComplete = endSong.bind();
 
 		updateTime = true;
 
-		setOnModules('songLength', Conductor.boundInst.length);
+		setOnModules('songLength', FlxG.sound.music.length);
 		callOnModules('onSongStart', null);
 	}
 
@@ -437,8 +408,6 @@ class QuaverTest extends MusicBeatState
 
 	override public function beatHit()
 	{
-		super.beatHit();
-
 		if (FlxG.camera.zoom < 1.35 && curBeat % 4 == 0)
 		{
 			FlxG.camera.zoom += 0.015;
@@ -453,15 +422,12 @@ class QuaverTest extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
-			var receptor:Receptor = getReceptor(playerStrums, note.noteData);
+			var receptor:Receptor = getReceptor(strums, note.noteData);
 			note.wasGoodHit = true;
 			receptor.playAnim('confirm', true);
 
 			if (!note.isSustain)
 				Timings.judge(-(note.strumTime - Conductor.songPosition));
-
-			if (SONG.needsVoices)
-				Conductor.boundVocals.volume = 1;
 
 			callOnModules('goodNoteHit', [
 				ChartLoader.noteQueue.indexOf(note),
@@ -471,17 +437,12 @@ class QuaverTest extends MusicBeatState
 			]);
 
 			if (!note.isSustain)
-				playerStrums.destroyNote(note);
-
-			ui.updateText();
+				strums.destroyNote(note);
 		}
 	}
 
 	private function noteMiss(note:Note)
 	{
-		if (SONG.needsVoices)
-			Conductor.boundVocals.volume = 0;
-
 		Timings.judge(Timings.judgements[Timings.judgements.length - 1].timing);
 
 		callOnModules('noteMiss', [
@@ -490,46 +451,50 @@ class QuaverTest extends MusicBeatState
 			note.noteType,
 			note.isSustain
 		]);
-		ui.updateText();
-	}
-
-	private function botHit(note:Note)
-	{
-		var curStrums:StrumLine = (note.mustPress ? playerStrums : opponentStrums);
-		if (!note.wasGoodHit)
-		{
-			var receptor:Receptor = getReceptor(curStrums, note.noteData);
-			note.wasGoodHit = true;
-
-			if (SONG.needsVoices)
-				Conductor.boundVocals.volume = 1;
-
-			var time:Float = 0.15;
-			if (note.isSustain && !note.isSustainEnd)
-				time += 0.15;
-
-			receptor.playAnim('confirm', true);
-			receptor.holdTimer = time;
-
-			callOnModules("botNoteHit", [
-				ChartLoader.noteQueue.indexOf(note),
-				note.noteData,
-				note.noteType,
-				note.isSustain
-			]);
-
-			if (!note.isSustain)
-				curStrums.destroyNote(note);
-		}
 	}
 
 	private function endSong():Void
 	{
 		updateTime = false;
-		Conductor.boundInst.stop();
-		Conductor.boundVocals.stop();
+		FlxG.sound.music.stop();
 		callOnModules('onEndSong', null);
-		ScriptableState.switchState(new SongSelection());
+	}
+
+	function generateBackground()
+	{
+		gridBackground = new FlxTiledSprite(Paths.image('chart/gridPurple'), FlxG.width, FlxG.height);
+		gridBackground.cameras = [camGame];
+		add(gridBackground);
+
+		var background:FlxSprite = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height,
+			[FlxColor.fromRGB(167, 103, 225), FlxColor.fromRGB(137, 20, 181)]);
+		background.alpha = 0.6;
+		background.cameras = [camGame];
+		add(background);
+
+		// dark background
+		var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
+		darkBackground.setGraphicSize(Std.int(FlxG.width));
+		darkBackground.cameras = [camGame];
+		darkBackground.scrollFactor.set();
+		darkBackground.screenCenter();
+		darkBackground.alpha = 0.7;
+		add(darkBackground);
+
+		// dark background
+		var funkyBack:FlxSprite = new FlxSprite().loadGraphic(Paths.image('chart/bg'));
+		funkyBack.setGraphicSize(Std.int(FlxG.width));
+		funkyBack.cameras = [camGame];
+		funkyBack.scrollFactor.set();
+		funkyBack.blend = BlendMode.DIFFERENCE;
+		funkyBack.screenCenter();
+		funkyBack.alpha = 0.07;
+		add(funkyBack);
+
+		@:privateAccess
+		checkerboard = new FlxGraphic('board$cellSize',
+			FlxGridOverlay.createGrid(cellSize, cellSize, cellSize * 2, cellSize * 2, true, FlxColor.WHITE, FlxColor.BLACK), true);
+		checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, cellSize * 2, cellSize * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.20));
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor

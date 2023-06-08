@@ -8,7 +8,7 @@
 - Added debug overlay
 - Automatically re-scale the camera sizes on game resize
 - Hide property methods
-- Added FLX_DEFAULT_ASSETS to user definables (doesnt seem to be working correctly)
+- ~~Added FLX_DEFAULT_ASSETS to user definables~~ (Pending fix)
 - Changed FlxPreloader text font and size
 - Automatically change stored FlxG on HScript exposure and Modules
 
