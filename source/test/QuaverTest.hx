@@ -90,12 +90,15 @@ class QuaverTest extends MusicBeatState
 		camOther.bgColor.alpha = 0;
 		FlxG.cameras.add(camOther, false);
 
+		generateBackground();
+
 		strums = new StrumLine((FlxG.width / 2), FlxG.height / 6);
+		strums.botPlay = true;
+		strums.onBotHit.add(botHit);
 		strums.onMiss.add(noteMiss);
 		strums.cameras = [camHUD];
 		add(strums);
 
-		generateBackground();
 		QuaverParser.parse('107408');
 
 		Conductor.songPosition = -5000;
@@ -162,6 +165,17 @@ class QuaverTest extends MusicBeatState
 		}
 
 		holdNotes(elapsed);
+
+		// better resync or something (notes lag on bot hit and shit gotta look into that)
+		if (Math.abs(FlxG.sound.music.time - Conductor.songPosition) > Conductor.comparisonThreshold)
+		{
+			trace('Resyncing song time ${FlxG.sound.music.time}, ${Conductor.songPosition}');
+
+			FlxG.sound.music.play();
+			Conductor.songPosition = FlxG.sound.music.time;
+
+			trace('New song time ${FlxG.sound.music.time}, ${Conductor.songPosition}');
+		}
 
 		gridBackground.scrollX += (elapsed / (1 / 60)) * 0.5;
 		var increaseUpTo:Float = gridBackground.height / 8;
@@ -430,6 +444,32 @@ class QuaverTest extends MusicBeatState
 				Timings.judge(-(note.strumTime - Conductor.songPosition));
 
 			callOnModules('goodNoteHit', [
+				ChartLoader.noteQueue.indexOf(note),
+				note.noteData,
+				note.noteType,
+				note.isSustain
+			]);
+
+			if (!note.isSustain)
+				strums.destroyNote(note);
+		}
+	}
+
+	private function botHit(note:Note)
+	{
+		if (!note.wasGoodHit)
+		{
+			var receptor:Receptor = getReceptor(strums, note.noteData);
+			note.wasGoodHit = true;
+
+			var time:Float = 0.15;
+			if (note.isSustain && !note.isSustainEnd)
+				time += 0.15;
+
+			receptor.playAnim('confirm', true);
+			receptor.holdTimer = time;
+
+			callOnModules("goodNoteHit", [
 				ChartLoader.noteQueue.indexOf(note),
 				note.noteData,
 				note.noteType,

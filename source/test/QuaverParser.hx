@@ -166,22 +166,45 @@ class QuaverParser
 			trace(quaverMap);
 			var audioshit = Cache.getSound(Paths.file('quaver/${quaverMap.AudioFile}'));
 			Conductor.changeBPM(quaverMap.TimingPoints[0].Bpm);
+			Conductor.songSpeed = (Conductor.songRate * 2.7);
 			flixel.FlxG.sound.music = new flixel.system.FlxSound().loadEmbedded(audioshit);
 
+			// uses old hold length method
 			for (hitObject in quaverMap.HitObjects)
 			{
 				var strumTime:Float = hitObject.StartTime;
-				var noteData:Int = hitObject.Lane;
-				var sustainLength:Float = hitObject.EndTime - hitObject.StartTime;
+				var noteData:Int = hitObject.Lane - 1; // you fucking dumbass, for some fucking reason 0 1 2 3 basically 4 is null
+				var endTime:Float = 0;
 
-				trace(sustainLength);
+				if (hitObject.EndTime > 0)
+					endTime = hitObject.EndTime;
 
 				var oldNote:Note = null;
 				if (ChartLoader.noteQueue.length > 0)
 					oldNote = ChartLoader.noteQueue[Std.int(ChartLoader.noteQueue.length - 1)];
 
 				var newNote:Note = new Note(strumTime, noteData, "default", 1, oldNote);
+				var holdStep:Float = newNote.sustainLength = (endTime > 0) ? Math.round((endTime - strumTime) / Conductor.stepCrochet) : 0;
 				ChartLoader.noteQueue.push(newNote);
+
+				if (holdStep > 0)
+				{
+					var floorStep:Int = Std.int(holdStep + 1);
+					for (note in 0...floorStep)
+					{
+						var time:Float = strumTime + (Conductor.stepCrochet * (note + 1));
+
+						var sustainNote:Note = new Note(time, noteData, newNote.noteType, 1, ChartLoader.noteQueue[Std.int(ChartLoader.noteQueue.length - 1)],
+							true);
+						sustainNote.parent = newNote;
+						sustainNote.isSustainEnd = (note == floorStep - 1);
+
+						newNote.tail.push(sustainNote);
+						newNote.unhitTail.push(sustainNote);
+
+						ChartLoader.noteQueue.push(sustainNote);
+					}
+				}
 			}
 			// flixel.FlxG.sound.music.loopTime = flixel.FlxG.sound.music.time = quaverMap.SongPreviewTime;
 		});
