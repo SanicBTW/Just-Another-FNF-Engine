@@ -39,6 +39,7 @@ import network.pocketbase.Record;
 import openfl.display.BitmapData;
 import openfl.display.BlendMode;
 import openfl.media.Sound;
+import test.QuaverParser.QuaverMap;
 import transitions.FadeTransition;
 
 using StringTools;
@@ -67,7 +68,8 @@ class QuaverTest extends MusicBeatState
 
 	var gridBackground:FlxTiledSprite;
 	var boardPattern:FlxTiledSprite;
-	var checkerboard:FlxGraphic;
+
+	public static var map:QuaverMap = null;
 
 	override public function create()
 	{
@@ -128,6 +130,9 @@ class QuaverTest extends MusicBeatState
 	{
 		callOnModules('onUpdate', elapsed);
 
+		if (map == null)
+			return;
+
 		super.update(elapsed);
 
 		if (startedCountdown && startingSong)
@@ -167,7 +172,7 @@ class QuaverTest extends MusicBeatState
 		holdNotes(elapsed);
 
 		// better resync or something (notes lag on bot hit and shit gotta look into that)
-		if (Math.abs(FlxG.sound.music.time - Conductor.songPosition) > Conductor.comparisonThreshold)
+		if (FlxG.sound.music != null && Math.abs(FlxG.sound.music.time - Conductor.songPosition) > Conductor.comparisonThreshold)
 		{
 			trace('Resyncing song time ${FlxG.sound.music.time}, ${Conductor.songPosition}');
 
@@ -530,11 +535,6 @@ class QuaverTest extends MusicBeatState
 		funkyBack.screenCenter();
 		funkyBack.alpha = 0.07;
 		add(funkyBack);
-
-		@:privateAccess
-		checkerboard = new FlxGraphic('board$cellSize',
-			FlxGridOverlay.createGrid(cellSize, cellSize, cellSize * 2, cellSize * 2, true, FlxColor.WHITE, FlxColor.BLACK), true);
-		checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, cellSize * 2, cellSize * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.20));
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor

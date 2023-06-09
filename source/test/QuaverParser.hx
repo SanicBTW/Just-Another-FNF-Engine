@@ -7,10 +7,9 @@ import funkin.notes.Note;
 
 using StringTools;
 
-// holds array of lines and metadata
-// heavily inspired in https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/6f1ce5b990fc9a332c654828f4813dd7370b9765/source/osu/Beatmap.hx
-// and https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/6f1ce5b990fc9a332c654828f4813dd7370b9765/source/osu/BeatmapConverter.hx
-// should just read every line or make a custom parser shit that might be hardcoded
+// https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/6f1ce5b990fc9a332c654828f4813dd7370b9765/source/osu/Beatmap.hx
+// https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/6f1ce5b990fc9a332c654828f4813dd7370b9765/source/osu/BeatmapConverter.hx
+// array stuff is not functional lol
 
 typedef TimingPoint =
 {
@@ -51,7 +50,17 @@ class QuaverMap
 	var SliderVelocities:Array<Dynamic> = []; // What is the type
 	var HitObjects:Array<HitObject> = []; // uhhhhhh
 
-	private final exclusions:Array<String> = ['HitObjects', 'TimingPoints'];
+	private final exclusions:Array<String> = [
+		'HitObjects',
+		'TimingPoints',
+		// Arrays
+		'EditorLayers',
+		'CustomAudioSamples',
+		'SoundEffects',
+		'SliderVelocities'
+	];
+
+	private var fields:Array<String> = [];
 
 	// new will parse content directly
 	// everything is a fucking integer why the fuck am i parsing it as fucking floating points bruh
@@ -62,6 +71,7 @@ class QuaverMap
 		var lines:Array<String> = unparsedContent.trim().split("\n");
 		var lastTiming:TimingPoint = null;
 		var lastHitObj:HitObject = null;
+		fields = Type.getInstanceFields(Type.getClass(this));
 
 		for (i in 0...lines.length)
 		{
@@ -70,14 +80,16 @@ class QuaverMap
 				var section:String = lines[i].split(":")[0];
 				var value:Null<String> = lines[i].split(":")[1];
 
-				if (value.length > 2 && !exclusions.contains(section))
+				if (value.length > 2
+					&& !(exclusions.contains(lastSection) || exclusions.contains(section.trim()))
+					&& fields.contains(section))
 				{
-					if (Reflect.hasField(this, section))
-						Reflect.setField(this, section, value.trim());
+					Reflect.setField(this, section, value.trim());
+					trace(section, Reflect.field(this, section));
 				}
 
 				// fucking dumbass
-				if (section == "SliderVelocities")
+				if (section.trim() == "SliderVelocities")
 					lastSection = '';
 
 				if (value.length <= 2)
@@ -163,8 +175,11 @@ class QuaverParser
 
 		new QuaverMap(Paths.text(Paths.file('quaver/$map.qua')), (quaverMap:QuaverMap) ->
 		{
-			trace(quaverMap);
-			var audioshit = Cache.getSound(Paths.file('quaver/${quaverMap.AudioFile}'));
+			QuaverTest.map = quaverMap;
+
+			var soundName:String = #if html5 quaverMap.AudioFile #else quaverMap.AudioFile.replace("mp3", "ogg") #end;
+			var audioshit = Cache.getSound(Paths.file('quaver/$soundName'));
+
 			Conductor.changeBPM(quaverMap.TimingPoints[0].Bpm);
 			Conductor.songSpeed = (Conductor.songRate * 2.7);
 			flixel.FlxG.sound.music = new flixel.system.FlxSound().loadEmbedded(audioshit);
