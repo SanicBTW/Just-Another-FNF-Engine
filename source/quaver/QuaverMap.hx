@@ -1,4 +1,4 @@
-package test;
+package quaver;
 
 import backend.Cache;
 import base.Conductor;
@@ -6,10 +6,6 @@ import funkin.ChartLoader;
 import funkin.notes.Note;
 
 using StringTools;
-
-// https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/6f1ce5b990fc9a332c654828f4813dd7370b9765/source/osu/Beatmap.hx
-// https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/6f1ce5b990fc9a332c654828f4813dd7370b9765/source/osu/BeatmapConverter.hx
-// array stuff is not functional lol
 
 typedef TimingPoint =
 {

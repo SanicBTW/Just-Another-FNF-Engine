@@ -68,6 +68,7 @@ class Main extends Sprite
 				setFPS(Std.parseInt(arg.split(":")[1]));
 		}
 		#end
+		FlxG.console.registerFunction('setFPS', setFPS);
 	}
 
 	private function setupGame()
