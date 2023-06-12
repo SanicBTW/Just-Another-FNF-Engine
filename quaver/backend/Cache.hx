@@ -19,7 +19,7 @@ import java.vm.Gc;
 #end
 
 // Once again rewritten
-// Mix between Psych Engine, a little bit of Flaty, Forever Engine Rewrite and some cleaner code
+// Mix between Flaty Engine, Forever Engine Rewrite and some cleaner code
 class Cache
 {
 	// Cached assets
@@ -29,23 +29,16 @@ class Cache
 	private static var keyedSounds:Map<String, Sound> = [];
 
 	// Non-cleanable assets
-	private static var persistentAssets:Array<String> = ["funkin:assets/funkin/images/alphabet.png"];
-
-	// Currently used assets
-	private static var localKeyedAssets:Array<String> = [];
+	private static var persistentAssets:Array<String> = [];
 
 	// Use GPU to render textures
 	public static var gpuRender:Bool = false;
 
 	// Generic stuff hurts my brain, so imma try to do the least with it
 	// Dynamic set
-	public static function set<T>(asset:T, map:CacheMap, ?key:String):T
+	public static function set<T>(asset:T, map:CacheMap, key:String):T
 	{
-		if (key == null)
-			key = Random.uniqueId().split("-")[0];
-
 		trace('Setting new asset $key');
-		track(key);
 
 		if (isCached(key, map) || asset == null)
 			return cast(Reflect.field(Cache, 'keyed${map}'), Map<String, Dynamic>).get(key);
@@ -59,7 +52,6 @@ class Cache
 	// Basic get
 	public static function get(key:String, map:CacheMap):Dynamic
 	{
-		track(key);
 		if (isCached(key, map))
 			return cast(Reflect.field(Cache, 'keyed${map}'), Map<String, Dynamic>).get(key);
 
@@ -80,7 +72,6 @@ class Cache
 
 		var bitmap:BitmapData = Assets.getBitmapData(id);
 		keyedBitmaps.set(id, bitmap);
-		track(id);
 
 		// Return bitmap on first call
 		return bitmap;
@@ -109,7 +100,6 @@ class Cache
 			newGraphic = FlxGraphic.fromBitmapData(bitmap, false, id);
 
 		keyedGraphics.set(id, newGraphic);
-		track(id);
 
 		// Return graphic on first call
 		return newGraphic;
@@ -127,7 +117,6 @@ class Cache
 		bitmap.dispose();
 		bitmap.disposeImage();
 		bitmap = null;
-		track(id);
 
 		// Return texture on first call
 		return texture;
@@ -146,7 +135,6 @@ class Cache
 
 		var sound:Sound = Assets.getSound(id);
 		keyedSounds.set(id, sound);
-		track(id);
 
 		// Return sound on first call
 		return sound;
@@ -220,10 +208,10 @@ class Cache
 	{
 		for (key in keyedGraphics.keys())
 		{
-			if (!localKeyedAssets.contains(key) && !persistentAssets.contains(key))
+			if (!persistentAssets.contains(key))
 			{
 				var graphic:Null<FlxGraphic> = keyedGraphics.get(key);
-				if (graphic != null)
+				if (graphic != null && graphic.useCount <= 0)
 					removeGraphic(key);
 			}
 		}
@@ -234,7 +222,7 @@ class Cache
 			{
 				if (!persistentAssets.contains(key))
 				{
-					var texture:Null<Texture> = keyedTextures.get(key);
+					var texture:Texture = keyedTextures.get(key);
 					if (texture != null)
 					{
 						texture.dispose();
@@ -268,8 +256,6 @@ class Cache
 		}
 
 		clearUnusedSounds();
-
-		localKeyedAssets = [];
 
 		collect();
 	}
@@ -318,24 +304,8 @@ class Cache
 	public static inline function exists(id:String):Bool
 		return Assets.exists(id);
 
-	public static function track(id:String)
-	{
-		if (!localKeyedAssets.contains(id))
-			localKeyedAssets.push(id);
-	}
-
-	// For the modules
-	public static function makePersistent(file:String)
-	{
-		if (!persistentAssets.contains(file))
-			persistentAssets.push(file);
-	}
-
-	public static function removePersistent(file:String)
-	{
-		if (persistentAssets.contains(file))
-			persistentAssets.remove(file);
-	}
+	public static inline function fromFS(id:String):Bool
+		return id.contains("just_another_fnf_engine");
 }
 
 enum abstract CacheMap(String) to String

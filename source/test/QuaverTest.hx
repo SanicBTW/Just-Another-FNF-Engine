@@ -39,7 +39,7 @@ import network.pocketbase.Record;
 import openfl.display.BitmapData;
 import openfl.display.BlendMode;
 import openfl.media.Sound;
-import test.QuaverParser.QuaverMap;
+import quaver.QuaverMap;
 import transitions.FadeTransition;
 
 using StringTools;

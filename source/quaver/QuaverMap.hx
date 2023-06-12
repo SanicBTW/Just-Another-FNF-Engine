@@ -171,7 +171,7 @@ class QuaverParser
 
 		new QuaverMap(Paths.text(Paths.file('quaver/$map.qua')), (quaverMap:QuaverMap) ->
 		{
-			QuaverTest.map = quaverMap;
+			test.QuaverTest.map = quaverMap;
 
 			var soundName:String = #if html5 quaverMap.AudioFile #else quaverMap.AudioFile.replace("mp3", "ogg") #end;
 			var audioshit = Cache.getSound(Paths.file('quaver/$soundName'));

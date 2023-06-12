@@ -3,7 +3,6 @@ package;
 import backend.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
-import flixel.system.scaleModes.*;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
@@ -12,9 +11,9 @@ class Main extends Sprite
 {
 	private var gameWidth:Int = 1280;
 	private var gameHeight:Int = 720;
-	private var initialClass:Class<FlxState> = test.ScrollTileTest;
+	private var initialClass:Class<FlxState> = TestState;
 	private var zoom:Float = -1;
-	private var framerate:Int = #if native 250 #else 60 #end;
+	private var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate; // VSync :troll:
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -41,22 +40,15 @@ class Main extends Sprite
 		hl.Gc.enable(true);
 		#end
 
-		Save.Initialize();
-		Controls.Initialize();
-		IO.Initialize();
-		ScriptHandler.Initialize();
+		Controls.Init();
+		// ScriptHandler.Initialize();
 		setupGame();
 
-		FlxG.signals.preStateCreate.add((state:FlxState) ->
+		FlxG.signals.preStateCreate.add((_) ->
 		{
 			Cache.clearStoredMemory();
-			FlxG.bitmap.dumpCache();
-			Cache.collect();
-		});
-
-		FlxG.signals.preStateSwitch.add(() ->
-		{
 			Cache.clearUnusedMemory();
+			FlxG.bitmap.dumpCache();
 			Cache.collect();
 		});
 	}
@@ -75,12 +67,9 @@ class Main extends Sprite
 			gameHeight = Math.ceil(stageHeight / zoom);
 		}
 
-		// vsync shit right here bois framerate = lime.system.System.getDisplay(0).currentMode.refreshRate;
-
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
-		// FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
