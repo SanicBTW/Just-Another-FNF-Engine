@@ -6,6 +6,7 @@ import flixel.graphics.FlxGraphic;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
+import window.VolumePanel;
 
 class Main extends Sprite
 {
@@ -69,6 +70,9 @@ class Main extends Sprite
 
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
+
+		var cock:VolumePanel = new VolumePanel();
+		addChild(cock);
 
 		FlxG.fixedTimestep = false;
 		#if !android
