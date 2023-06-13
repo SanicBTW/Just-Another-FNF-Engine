@@ -6,6 +6,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.text.FlxText;
+import flixel.util.FlxColor;
 
 class TestState extends FlxState
 {
@@ -15,11 +16,15 @@ class TestState extends FlxState
 
 	override function create()
 	{
+		FlxG.camera.bgColor = FlxColor.WHITE;
 		sex = new FlxSprite(0, 0);
-		sex.frames = paths.getSparrowAtlas('SMOOTH_NOTE_assets');
-		sex.animation.addByPrefix('static', 'arrowDOWN', 60, false);
-		sex.animation.addByPrefix('pressed', 'down press', 60, false);
-		sex.animation.addByPrefix('confirm', 'down confirm', 60, false);
+
+		sex.frames = paths.getSparrowAtlas('LITE_NOTE_assets');
+		sex.setGraphicSize(Std.int(sex.frameWidth * 0.7));
+		sex.animation.addByIndices('static', 'staticBlue', [0], '', 24, false);
+		sex.animation.addByIndices('pressed', 'staticBlue', [1], '', 24, false);
+		sex.animation.addByIndices('confirm', 'staticBlue', [2], '', 24, false);
+
 		sex.screenCenter();
 		sex.antialiasing = true;
 		add(sex);
@@ -31,11 +36,19 @@ class TestState extends FlxState
 	{
 		if (controls.confirm.state == PRESSED)
 		{
-			if (sex.animation.curAnim.name != "confirm")
-				sex.animation.play('confirm');
+			if (sex.animation.curAnim.name != "pressed")
+			{
+				sex.animation.play('pressed');
+			}
 		}
 		else
 			sex.animation.play('static');
+
+		if (controls.reset.state == PRESSED)
+		{
+			Main.cock.screenCenter();
+			trace('centring');
+		}
 
 		super.update(elapsed);
 	}

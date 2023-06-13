@@ -3,6 +3,7 @@ package;
 import backend.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
+import flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
@@ -15,6 +16,8 @@ class Main extends Sprite
 	private var initialClass:Class<FlxState> = TestState;
 	private var zoom:Float = -1;
 	private var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate; // VSync :troll:
+
+	public static var cock:VolumePanel;
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -71,9 +74,10 @@ class Main extends Sprite
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
-		var cock:VolumePanel = new VolumePanel();
+		cock = new VolumePanel();
 		addChild(cock);
 
+		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;

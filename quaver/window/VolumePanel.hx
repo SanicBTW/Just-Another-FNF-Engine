@@ -12,56 +12,53 @@ class VolumePanel extends ExSprite
 
 	private var _width:Int = 240;
 	private var _height:Int = 100;
+	private var _outlineSize:Int = 5;
 
 	private var targetX:Float = 0.0;
 	private var targetY:Float = 0.0;
 
 	private var _bg:Shape;
-
-	private var gWidth(get, null):Int;
-
-	@:noCompletion
-	private function get_gWidth():Int
-		return Std.int(FlxG.game.width);
-
-	private var gHeight(get, null):Int;
-
-	@:noCompletion
-	private function get_gHeight():Int
-		return Std.int(FlxG.game.height);
+	private var _outline:Shape;
 
 	override public function create()
 	{
-		width = _width;
-		height = _height;
+		_outline = drawRound(0, 0, _width + _outlineSize, _height + _outlineSize, [15], FlxColor.BLACK, 0.25);
+		_bg = drawRound(_outlineSize * 0.5, _outlineSize * 0.5, _width, _height, [15], FlxColor.WHITE, 0.6);
 
-		_bg = drawRound(0, 0, _width, _height, [15], FlxColor.WHITE, 0.6);
+		_width += _outlineSize;
+		_height += _outlineSize;
+
 		screenCenter();
+		addChild(_outline);
 		addChild(_bg);
 
-		FlxG.signals.gameResized.add((_, _) ->
+		FlxG.signals.gameResized.add((w, h) ->
 		{
-			screenCenter();
+			reposition(w, h);
 		});
 	}
 
 	override function update(elapsed:Float, deltaTime:Float)
 	{
-		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 8.6), 0, 1);
+		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 7.315), 0, 1);
 
-		lerpTrack(_bg, "x", targetX, lerpVal);
-		lerpTrack(_bg, "y", targetY, lerpVal);
-
-		targetX = (0.5 * (FlxG.mouse.x - _width * _defaultScale));
-		targetY = (0.5 * (FlxG.mouse.y - _height * _defaultScale));
+		lerpTrack(this, "x", targetX, lerpVal);
+		lerpTrack(this, "y", targetY, lerpVal);
 	}
 
 	override function screenCenter()
 	{
-		scaleX = _defaultScale;
-		scaleY = _defaultScale;
+		scaleX = scaleY = _defaultScale;
 
-		x = (0.5 * (openfl.Lib.current.stage.stageWidth - _width * _defaultScale));
-		y = (0.5 * (openfl.Lib.current.stage.stageHeight - _height * _defaultScale));
+		targetX = (0.5 * (openfl.Lib.current.stage.stageWidth - _width * _defaultScale) - FlxG.game.x);
+		targetY = (0.5 * (openfl.Lib.current.stage.stageHeight - _height * _defaultScale) - FlxG.game.y);
+	}
+
+	function reposition(newWidth:Float, newHeight:Float)
+	{
+		// cuz uh
+		var margin:Float = (_outlineSize * 2);
+		targetX = margin;
+		targetY = (newHeight - (_height + _outline.height)) - margin;
 	}
 }
