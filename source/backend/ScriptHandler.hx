@@ -239,7 +239,7 @@ class ForeverModule implements IFlxDestroyable
 		}
 
 		// Define the current path (used within the script itself)
-		var modulePaths:ModulePaths = new ModulePaths(assetFolder, assetFolder.toLowerCase().contains('users'));
+		var modulePaths:ModulePaths = new ModulePaths(assetFolder, Cache.fromFS(assetFolder));
 		interp.variables.set('Paths', modulePaths);
 
 		interp.execute(contents);
@@ -299,7 +299,7 @@ class ModulePaths
 		if (isFS)
 		{
 			var path:String = Path.join([localPath, file]);
-			if (!IO.exists(path))
+			if (!sys.FileSystem.exists(path))
 				throw new Exception('Failed to get $file on $localPath');
 
 			return path;
@@ -316,12 +316,6 @@ class ModulePaths
 		}
 	}
 
-	public inline function text(path:String):String
-	{
-		return #if FS_ACCESS (isFS) ? File.getContent(path) : #end
-		Assets.getText(path);
-	}
-
 	public inline function sound(key:String):Sound
 		return Cache.getSound(getPath('sounds/$key.ogg'));
 
@@ -332,5 +326,5 @@ class ModulePaths
 		return Cache.getGraphic(getPath('images/$key.png'));
 
 	public inline function getSparrowAtlas(key:String):FlxAtlasFrames
-		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$key.png')), text(getPath('$key.xml')));
+		return Cache.getAtlas(getPath(key), Sparrow);
 }

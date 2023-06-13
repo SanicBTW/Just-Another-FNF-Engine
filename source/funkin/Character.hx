@@ -103,7 +103,7 @@ class Character extends OffsettedSprite
 
 					// ayo using this is actually really smart ngl
 					var isolatedPaths:ModulePaths = new ModulePaths(charPath, isFS);
-					var json:CharacterFile = cast haxe.Json.parse(isolatedPaths.text('$charPath/$curCharacter$extension'));
+					var json:CharacterFile = cast haxe.Json.parse(Cache.getText('$charPath/$curCharacter$extension'));
 
 					if (!isFS)
 					{
@@ -119,7 +119,7 @@ class Character extends OffsettedSprite
 						isolatedPaths.localPath = charPath;
 					}
 
-					frames = isolatedPaths.getSparrowAtlas(json.image.replace("characters/", ""));
+					frames = isolatedPaths.getSparrowAtlas(json.image.replace("characters/", "") + ".png");
 
 					if (json.scale != 1)
 					{

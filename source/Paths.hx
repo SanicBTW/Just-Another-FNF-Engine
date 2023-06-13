@@ -113,7 +113,7 @@ class Paths
 		return Cache.getSound(getPath('songs/${formatString(song)}/Voices.ogg', MUSIC));
 
 	public static inline function getSparrowAtlas(key:String, ?folder:String = 'images'):FlxAtlasFrames
-		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$folder/$key.png', IMAGE)), text(getPath('$folder/$key.xml', TEXT)));
+		return Cache.getAtlas(getPath('$folder/$key', IMAGE), Sparrow);
 
 	public static inline function formatString(string:String)
 		return string.toLowerCase().replace(" ", "-");

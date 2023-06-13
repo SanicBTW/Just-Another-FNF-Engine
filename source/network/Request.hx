@@ -77,16 +77,7 @@ class Request<T>
 				{
 					var limeImg:Image = Image.fromBytes(bytes);
 					var bitData:BitmapData = BitmapData.fromImage(limeImg);
-					var newGraphic:FlxGraphic;
-
-					if (Cache.gpuRender)
-					{
-						var texture:Texture = Cache.getTexture(url, bitData);
-						newGraphic = FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture));
-					}
-					else
-						newGraphic = FlxGraphic.fromBitmapData(bitData);
-
+					var newGraphic:FlxGraphic = FlxGraphic.fromBitmapData(bitData);
 					callback(cast newGraphic);
 				}
 				#end
