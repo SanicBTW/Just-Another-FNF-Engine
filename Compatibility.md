@@ -17,7 +17,7 @@
 # Android requires:
 - Haxe Version: 4.2.5 (Required to avoid getting a HXCPP version error)
 - hxcpp: 4.2.1
-- openfl: 9.2.1
+- openfl: 9.1.0
 
 # Linux requires:
 - ?
