@@ -33,9 +33,6 @@ fix input (hitting too early will rate it as sick)
 
 im so lame with fucking defines (fix FLX_DEFAULT_ASSETS and beep shit)
 
-fix textures on stable source
-fix frames not cleaning on stable source
-
 MOD MANAGER (C# WPF NET 7.0)
 WILL BE USED FOR DOWNLOADING MOD ASSETS INSTEAD OF BUNDLING THEM WITH THE ENGINE
 WILL BE ALSO USED TO DOWNLOAD ALL THE EVENT FILES AND SHIT

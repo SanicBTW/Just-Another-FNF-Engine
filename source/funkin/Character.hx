@@ -119,7 +119,7 @@ class Character extends OffsettedSprite
 						isolatedPaths.localPath = charPath;
 					}
 
-					frames = isolatedPaths.getSparrowAtlas(json.image.replace("characters/", "") + ".png");
+					frames = isolatedPaths.getSparrowAtlas(json.image.replace("characters/", ""));
 
 					if (json.scale != 1)
 					{

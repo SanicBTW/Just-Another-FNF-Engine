@@ -326,5 +326,5 @@ class ModulePaths
 		return Cache.getGraphic(getPath('images/$key.png'));
 
 	public inline function getSparrowAtlas(key:String):FlxAtlasFrames
-		return Cache.getAtlas(getPath(key), Sparrow);
+		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$key.png')), Cache.getText(getPath('$key.xml')));
 }

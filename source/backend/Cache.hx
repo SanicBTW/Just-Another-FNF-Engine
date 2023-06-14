@@ -2,9 +2,7 @@ package backend;
 
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
-import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.system.FlxSound;
-import flixel.util.FlxDestroyUtil;
 import openfl.display.BitmapData;
 import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
@@ -20,27 +18,34 @@ import hl.Gc;
 import java.vm.Gc;
 #end
 
-// Once again rewritten
-// Mix between Flaty Engine, Forever Engine Rewrite and some cleaner code
+// Once again rewritten (about to do it again bruhh)
+// Mix between Psych Engine, a little bit of Flaty, Forever Engine Rewrite and some cleaner code
 class Cache
 {
 	// Cached assets
 	private static var keyedBitmaps:Map<String, BitmapData> = [];
 	private static var keyedGraphics:Map<String, FlxGraphic> = [];
-	private static var keyedAtlases:Map<String, CachedAtlas> = [];
+	private static var keyedTextures:Map<String, Texture> = [];
 	private static var keyedSounds:Map<String, Sound> = [];
 
 	// Non-cleanable assets
 	private static var persistentAssets:Array<String> = [];
+
+	// Currently used assets
+	private static var localKeyedAssets:Array<String> = [];
 
 	// Use GPU to render textures
 	public static var gpuRender:Bool = false;
 
 	// Generic stuff hurts my brain, so imma try to do the least with it
 	// Dynamic set
-	public static function set<T>(asset:T, map:CacheMap, key:String):T
+	public static function set<T>(asset:T, map:CacheMap, ?key:String):T
 	{
+		if (key == null)
+			key = Random.uniqueId().split("-")[0];
+
 		trace('Setting new asset $key');
+		track(key);
 
 		if (isCached(key, map) || asset == null)
 			return cast(Reflect.field(Cache, 'keyed${map}'), Map<String, Dynamic>).get(key);
@@ -54,6 +59,7 @@ class Cache
 	// Basic get
 	public static function get(key:String, map:CacheMap):Dynamic
 	{
+		track(key);
 		if (isCached(key, map))
 			return cast(Reflect.field(Cache, 'keyed${map}'), Map<String, Dynamic>).get(key);
 
@@ -73,20 +79,8 @@ class Cache
 		}
 
 		var bitmap:BitmapData = (fromFS(id)) ? BitmapData.fromFile(id) : Assets.getBitmapData(id);
-
-		if (gpuRender)
-		{
-			bitmap.lock();
-
-			var texture:Texture = FlxG.stage.context3D.createTexture(bitmap.width, bitmap.height, RGBA_HALF_FLOAT, true, 0);
-			texture.uploadFromBitmapData(bitmap);
-
-			bitmap.disposeImage();
-			FlxDestroyUtil.dispose(bitmap);
-			bitmap = BitmapData.fromTexture(texture);
-		}
-
 		keyedBitmaps.set(id, bitmap);
+		track(id);
 
 		// Return bitmap on first call
 		return bitmap;
@@ -104,9 +98,18 @@ class Cache
 		}
 
 		var bitmap:BitmapData = getBitmap(id);
-		var newGraphic:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, id);
+		var newGraphic:FlxGraphic;
+
+		if (gpuRender)
+		{
+			var texture:Texture = getTexture(id, bitmap);
+			newGraphic = FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture), false, id);
+		}
+		else
+			newGraphic = FlxGraphic.fromBitmapData(bitmap, false, id);
 
 		keyedGraphics.set(id, newGraphic);
+		track(id);
 
 		// Return graphic on first call
 		return newGraphic;
@@ -118,39 +121,22 @@ class Cache
 		Assets.getText(path);
 	}
 
-	public static function getAtlas(id:String, type:AtlasType):Null<FlxAtlasFrames>
+	public static function getTexture(id:String, bitmap:BitmapData):Texture
 	{
-		if (isCached(id, ATLAS))
-			return keyedAtlases.get(id).frames;
+		if (isCached(id, TEXTURE))
+			return keyedTextures.get(id);
 
-		var path:String = id;
-		if (!path.endsWith('.png'))
-			path += ".png";
+		var texture:Texture = FlxG.stage.context3D.createTexture(bitmap.width, bitmap.height, BGRA, true, 0);
+		texture.uploadFromBitmapData(bitmap);
+		keyedTextures.set(id, texture);
 
-		var frames:FlxAtlasFrames = null;
+		bitmap.dispose();
+		bitmap.disposeImage();
+		bitmap = null;
+		track(id);
 
-		var graphic:FlxGraphic = getGraphic(path);
-		path = path.substring(0, path.length - 4);
-
-		switch (type)
-		{
-			case Sparrow:
-				path += ".xml";
-				var text:String = getText(path);
-				frames = FlxAtlasFrames.fromSparrow(graphic, text);
-			case Packer:
-				path += ".txt";
-				var text:String = getText(path);
-				frames = FlxAtlasFrames.fromSpriteSheetPacker(graphic, text);
-		}
-
-		if (frames != null)
-		{
-			keyedAtlases.set(id, {frames: frames, type: type});
-			return frames;
-		}
-
-		return frames;
+		// Return texture on first call
+		return texture;
 	}
 
 	public static function getSound(id:String):Null<Sound>
@@ -166,6 +152,7 @@ class Cache
 
 		var sound:Sound = (fromFS(id)) ? Sound.fromFile(id) : Assets.getSound(id);
 		keyedSounds.set(id, sound);
+		track(id);
 
 		// Return sound on first call
 		return sound;
@@ -192,25 +179,10 @@ class Cache
 		@:privateAccess
 		if (graphic != null)
 		{
-			removeAtlas(id);
 			removeBitmapData(id);
 			FlxG.bitmap._cache.remove(id);
 			graphic.destroy();
 			keyedGraphics.remove(id);
-			return true;
-		}
-		return false;
-	}
-
-	public static function removeAtlas(id:String):Bool
-	{
-		id = id.substring(0, id.length - 4);
-
-		var atlas:Null<CachedAtlas> = keyedAtlases.get(id);
-		if (atlas != null)
-		{
-			atlas.frames = FlxDestroyUtil.destroy(atlas.frames);
-			keyedAtlases.remove(id);
 			return true;
 		}
 		return false;
@@ -254,11 +226,27 @@ class Cache
 	{
 		for (key in keyedGraphics.keys())
 		{
-			if (!persistentAssets.contains(key))
+			if (!localKeyedAssets.contains(key) && !persistentAssets.contains(key))
 			{
 				var graphic:Null<FlxGraphic> = keyedGraphics.get(key);
-				if (graphic != null && graphic.useCount <= 0)
+				if (graphic != null)
 					removeGraphic(key);
+			}
+		}
+
+		if (gpuRender)
+		{
+			for (key in keyedTextures.keys())
+			{
+				if (!persistentAssets.contains(key))
+				{
+					var texture:Null<Texture> = keyedTextures.get(key);
+					if (texture != null)
+					{
+						texture.dispose();
+						keyedTextures.remove(key);
+					}
+				}
 			}
 		}
 
@@ -286,6 +274,8 @@ class Cache
 		}
 
 		clearUnusedSounds();
+
+		localKeyedAssets = [];
 
 		collect();
 	}
@@ -334,26 +324,33 @@ class Cache
 	public static inline function exists(id:String):Bool
 		return Assets.exists(id);
 
+	public static function track(id:String)
+	{
+		if (!localKeyedAssets.contains(id))
+			localKeyedAssets.push(id);
+	}
+
 	public static inline function fromFS(id:String):Bool
 		return id.contains("just_another_fnf_engine");
+
+	// For the modules
+	public static function makePersistent(file:String)
+	{
+		if (!persistentAssets.contains(file))
+			persistentAssets.push(file);
+	}
+
+	public static function removePersistent(file:String)
+	{
+		if (persistentAssets.contains(file))
+			persistentAssets.remove(file);
+	}
 }
 
 enum abstract CacheMap(String) to String
 {
 	var BITMAP = "Bitmaps";
 	var GRAPHIC = "Graphics";
-	var ATLAS = "Atlases";
+	var TEXTURE = "Textures";
 	var SOUND = "Sounds";
-}
-
-typedef CachedAtlas =
-{
-	var frames:FlxAtlasFrames;
-	var type:AtlasType;
-}
-
-enum AtlasType
-{
-	Sparrow;
-	Packer;
 }
