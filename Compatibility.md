@@ -1,16 +1,23 @@
-# Currently supported platforms
-- Windows
-- HTML5
+# Required versions:
+- flixel: 4.11.0
+- flixel-addons: 3.1.0
+- lime: 8.0.1
 
-# Not tested / Has issues
-- Neko (Crashes when starting up)
-- Android
-- Linux
-- HashLink 1.3.0 (HScript execution issues)
-
-# Tested with
-- flixel-addons: 3.0.2
-- flixel: 4.11.0 (Modified and enforced in the repo)
+# Windows/HL requires:
+- Haxe Version: 4.3.1
 - hxcpp: 4.3.2
-- lime: 8.0.1 (Previously using 7.9.0, moved to compile to HL)
-- openfl: 9.2.1 (Previously using 9.1.0, sometimes 9.2.1 will show a cropped stage, use 9.2.0 for that)
+- openfl: 9.2.1
+- HashLink 1.3.0 (Has HScript execution issues)
+
+# HTML5 requires:
+- Haxe Version: 4.3.1
+- hxcpp: 4.3.2 (Doesn't matter here)
+- openfl: 9.2.0
+
+# Android requires:
+- Haxe Version: 4.2.5 (Required to avoid getting a HXCPP version error)
+- hxcpp: 4.2.1
+- openfl: 9.2.1
+
+# Linux requires:
+- ?

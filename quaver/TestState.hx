@@ -5,14 +5,18 @@ import backend.IsolatedPaths;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import network.Request;
 
 class TestState extends FlxState
 {
 	var controls:Controls = new Controls();
 	var paths:IsolatedPaths = new IsolatedPaths('quaver');
 	var sex:FlxSprite;
+	var gfsex:FlxSprite;
 
 	override function create()
 	{
@@ -28,6 +32,27 @@ class TestState extends FlxState
 		sex.screenCenter();
 		sex.antialiasing = true;
 		add(sex);
+
+		new Request('https://storage.sancopublic.com/gfDanceTitle.xml', (xmlshit:String) ->
+		{
+			new Request('https://storage.sancopublic.com/gfDanceTitle.png', (gfbooby:FlxGraphic) ->
+			{
+				gfsex = new FlxSprite(FlxG.width * 0.4, FlxG.height * 0.07);
+				gfsex.frames = FlxAtlasFrames.fromSparrow(gfbooby, xmlshit);
+				gfsex.animation.addByIndices('danceLeft', 'gfDance', [30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], "", 24, false);
+				gfsex.animation.addByIndices('danceRight', 'gfDance', [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], "", 24, false);
+				gfsex.animation.play('danceLeft');
+				gfsex.antialiasing = true;
+				gfsex.animation.finishCallback = (ani:String) ->
+				{
+					if (ani == 'danceLeft')
+						gfsex.animation.play('danceRight');
+					else
+						gfsex.animation.play('danceLeft');
+				};
+				add(gfsex);
+			}, IMAGE);
+		}, RAW_STRING);
 
 		super.create();
 	}
