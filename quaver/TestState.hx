@@ -94,6 +94,7 @@ class TestState extends FlxState
 		if (loaded == false && avatar != null)
 		{
 			avContainr.loadGraphic(avatar);
+			avContainr.antialiasing = true;
 			avContainr.screenCenter();
 			add(avContainr);
 			loaded = true;

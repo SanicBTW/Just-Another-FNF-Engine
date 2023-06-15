@@ -1,8 +1,10 @@
 package network.pocketbase;
 
+import backend.Immediate;
 import flixel.graphics.FlxGraphic;
 import haxe.Http;
 import haxe.Json;
+import haxe.Timer;
 import haxe.io.Bytes;
 import network.pocketbase.PBRequest.PBRError;
 
@@ -48,18 +50,27 @@ class User
 	// Basically stores the response object
 	private var _profile:UserReponse = null;
 
+	@:noCompletion
+	private var _imm:Immediate = new Immediate();
+
+	private var ready:Bool = false;
+	private var tries:Int = 0;
+
 	public function new(credentials:UserCredentials)
 	{
 		this._credentials = credentials;
 
 		var req:Http = new Http('https://pb.sancopublic.com/api/collections/users/auth-with-password');
 		req.addHeader('Content-Type', 'application/json; charset=UTF-8');
-		req.addHeader('User-Agent', Request.userAgent);
+
+		// Refused to set unsafe header "User-Agent"
+		#if !html5 req.addHeader('User-Agent', Request.userAgent); #end
 		req.setPostData(Json.stringify(credentials));
 
 		req.onData = (raw:String) ->
 		{
 			this._profile = Json.parse(raw);
+			ready = true;
 			trace(this._profile);
 		}
 
@@ -76,26 +87,32 @@ class User
 		req.request(true);
 	}
 
-	public function getAvatar():FlxGraphic
+	public function getAvatar():Null<FlxGraphic>
 	{
+		if (!ready)
+			return null;
+
 		var record:UserRecord = _profile.record; // because _profile.record.salkjdlkasjdlkas is really long
 		var url:String = 'https://pb.sancopublic.com/api/files/${record.collectionId}/${record.id}/${record.avatar}';
 
 		if (backend.Cache.isCached(url, GRAPHIC))
 			return backend.Cache.get(url, GRAPHIC);
 
-		#if html5
-		// TODO
-		#else
 		var newGraphic:Null<FlxGraphic> = null;
-
+		#if html5
+		lime.graphics.Image.loadFromFile(url).onComplete((image:lime.graphics.Image) ->
+		{
+			var bitmap:openfl.display.BitmapData = openfl.display.BitmapData.fromImage(image);
+			newGraphic = backend.Cache.set(FlxGraphic.fromBitmapData(bitmap), GRAPHIC, url);
+		});
+		#else
 		var req:Http = new Http(url);
 		req.addHeader('User-Agent', Request.userAgent);
 
 		req.onBytes = (bytes:Bytes) ->
 		{
-			var img:lime.graphics.Image = lime.graphics.Image.fromBytes(bytes);
-			var bitmap:openfl.display.BitmapData = backend.Cache.set(openfl.display.BitmapData.fromImage(img), BITMAP, url);
+			var image:lime.graphics.Image = lime.graphics.Image.fromBytes(bytes);
+			var bitmap:openfl.display.BitmapData = openfl.display.BitmapData.fromImage(image);
 			newGraphic = backend.Cache.set(FlxGraphic.fromBitmapData(bitmap), GRAPHIC, url);
 		}
 
@@ -109,8 +126,7 @@ class User
 		}
 
 		req.request();
-
-		return newGraphic;
 		#end
+		return newGraphic;
 	}
 }

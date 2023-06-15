@@ -19,7 +19,10 @@ class Request<T>
 	public function new(url:String, callback:T->Void, type:RequestType)
 	{
 		var req:Http = new Http(url);
-		req.addHeader('User-Agent', userAgent);
+
+		// Refused to set unsafe header "User-Agent"
+		#if !html5 req.addHeader('User-Agent', userAgent); #end
+
 		req.onError = (error:String) ->
 		{
 			throw('Failed to fetch $url ($error)');
