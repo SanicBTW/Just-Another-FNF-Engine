@@ -1,5 +1,7 @@
 package network.pocketbase;
 
+import flixel.util.typeLimit.OneOfTwo;
+import haxe.DynamicAccess;
 import network.Request.RequestType;
 import network.pocketbase.Collection;
 import network.pocketbase.Record;
@@ -21,4 +23,12 @@ class PBRequest<R:FunkinRecord, C:Collection<R>> extends Request<C>
 	public static function getFile<R:FunkinRecord, C:Collection<R>>(record:R, file:String, callback:Dynamic->Void, type:RequestType)
 		new PBRequest(base + filesExt.replace(":col", record.collectionName).replace(":id", record.id).replace(":file", Reflect.field(record, file)),
 			callback, type);
+}
+
+// Error typedef because its related to request error lol
+typedef PBRError = // PocketBase Request Error
+{
+	var code:OneOfTwo<Int, String>;
+	var message:String;
+	@:optional var data:DynamicAccess<PBRError>;
 }

@@ -20,7 +20,7 @@
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 
-	<source path="source" />
+	<source path="quaver" />
 	<assets path="assets" />
 
 	<library name="funkin" preload="true" />
@@ -48,6 +48,7 @@
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
 	<haxelib name="SSIni" />
+	<haxelib name="format" />
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 

@@ -10,6 +10,7 @@ import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import network.Request;
+import network.pocketbase.User;
 
 class TestState extends FlxState
 {
@@ -32,6 +33,8 @@ class TestState extends FlxState
 		sex.screenCenter();
 		sex.antialiasing = true;
 		add(sex);
+
+		var user = new User({identity: 'sanco', password: ''});
 
 		new Request('https://storage.sancopublic.com/gfDanceTitle.xml', (xmlshit:String) ->
 		{
