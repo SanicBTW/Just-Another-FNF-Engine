@@ -7,10 +7,15 @@ import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import format.mp3.Tools;
 import network.Request;
 import network.pocketbase.User;
+import openfl.media.Sound;
+
+using StringTools;
 
 class TestState extends FlxState
 {
@@ -18,6 +23,11 @@ class TestState extends FlxState
 	var paths:IsolatedPaths = new IsolatedPaths('quaver');
 	var sex:FlxSprite;
 	var gfsex:FlxSprite;
+
+	var user:User;
+	var avatar:Null<FlxGraphic> = null;
+	var avContainr:FlxSprite;
+	var loaded:Bool = false;
 
 	override function create()
 	{
@@ -34,7 +44,10 @@ class TestState extends FlxState
 		sex.antialiasing = true;
 		add(sex);
 
-		var user = new User({identity: 'sanco', password: ''});
+		avContainr = new FlxSprite(0, 0);
+
+		user = new User({identity: 'sanco', password: 'fakepor9'});
+		avatar = user.getAvatar();
 
 		new Request('https://storage.sancopublic.com/gfDanceTitle.xml', (xmlshit:String) ->
 		{
@@ -76,6 +89,14 @@ class TestState extends FlxState
 		{
 			Main.cock.screenCenter();
 			trace('centring');
+		}
+
+		if (loaded == false && avatar != null)
+		{
+			avContainr.loadGraphic(avatar);
+			avContainr.screenCenter();
+			add(avContainr);
+			loaded = true;
 		}
 
 		super.update(elapsed);

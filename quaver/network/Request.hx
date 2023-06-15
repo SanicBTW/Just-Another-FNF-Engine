@@ -2,7 +2,6 @@ package network;
 
 import backend.Cache;
 import flixel.graphics.FlxGraphic;
-import haxe.Exception;
 import haxe.Http;
 import haxe.io.Bytes;
 import lime.graphics.Image;
@@ -12,14 +11,18 @@ import openfl.media.Sound;
 import openfl.display3D.textures.Texture;
 #end
 
+// Rewrite soon again
 class Request<T>
 {
+	public static final userAgent:String = 'JAFE 0.2.X'; // See README.md Versioning
+
 	public function new(url:String, callback:T->Void, type:RequestType)
 	{
 		var req:Http = new Http(url);
+		req.addHeader('User-Agent', userAgent);
 		req.onError = (error:String) ->
 		{
-			throw new Exception('Failed to fetch $url ($error)');
+			throw('Failed to fetch $url ($error)');
 		}
 
 		switch (type)

@@ -2,7 +2,6 @@ package backend;
 
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
-import haxe.Exception;
 import haxe.io.Path;
 import openfl.media.Sound;
 import openfl.utils.Assets;
@@ -24,7 +23,7 @@ class IsolatedPaths
 		{
 			var path:String = Path.join([localPath, file]);
 			if (!sys.FileSystem.exists(path))
-				throw new Exception('Failed to get $file on $localPath');
+				throw('Failed to get $file on $localPath');
 
 			return path;
 		}
