@@ -108,7 +108,7 @@ class User
 		var req:Http = new Http(url);
 		req.addHeader('User-Agent', Request.userAgent);
 
-		req.onBytes = (bytes:Bytes) ->
+		req.onBytes = (bytes:haxe.io.Bytes) ->
 		{
 			var image:lime.graphics.Image = lime.graphics.Image.fromBytes(bytes);
 			var bitmap:openfl.display.BitmapData = openfl.display.BitmapData.fromImage(image);
@@ -126,6 +126,7 @@ class User
 
 		req.request();
 		#end
+		schedule.flush();
 		return avatar;
 	}
 

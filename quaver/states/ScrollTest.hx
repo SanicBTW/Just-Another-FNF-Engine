@@ -53,18 +53,19 @@ class ScrollTest extends FlxState
 		// Automatic update haha
 		add(Conductor);
 
-		super.create();
-
 		user.schedule.push(() ->
 		{
 			var sex:UserCard = new UserCard(10, FlxG.width / 6, user);
 			sex.cameras = [camHUD];
 			add(sex);
 		});
+		user.getAvatar();
 
 		FlxG.camera.zoom = 1;
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
+
+		super.create();
 	}
 
 	override function update(elapsed:Float)

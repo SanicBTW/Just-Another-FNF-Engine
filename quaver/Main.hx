@@ -16,7 +16,7 @@ class Main extends Sprite
 	private var initialClass:Class<FlxState> = states.ScrollTest;
 	private var zoom:Float = -1;
 
-	public static var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate; // VSync :troll:
+	public static var framerate:Int = 0; // VSync :troll:
 
 	public static var cock:VolumePanel;
 
@@ -26,6 +26,8 @@ class Main extends Sprite
 	public function new()
 	{
 		super();
+
+		framerate = lime.system.System.getDisplay(0).currentMode.refreshRate;
 
 		if (stage != null)
 			init();
