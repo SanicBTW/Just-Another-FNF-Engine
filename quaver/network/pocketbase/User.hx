@@ -50,11 +50,11 @@ class User
 	// Basically stores the response object
 	private var _profile:UserReponse = null;
 
-	@:noCompletion
-	private var _imm:Immediate = new Immediate();
+	private var schedule:Immediate = new Immediate();
 
 	private var ready:Bool = false;
-	private var tries:Int = 0;
+
+	public var avatar:Null<FlxGraphic> = null;
 
 	public function new(credentials:UserCredentials)
 	{
@@ -71,6 +71,7 @@ class User
 		{
 			this._profile = Json.parse(raw);
 			ready = true;
+			schedule.flush();
 			trace(this._profile);
 		}
 
@@ -90,7 +91,11 @@ class User
 	public function getAvatar():Null<FlxGraphic>
 	{
 		if (!ready)
+		{
+			// Wacky HTML5 fix
+			schedule.push(getAvatar);
 			return null;
+		}
 
 		var record:UserRecord = _profile.record; // because _profile.record.salkjdlkasjdlkas is really long
 		var url:String = 'https://pb.sancopublic.com/api/files/${record.collectionId}/${record.id}/${record.avatar}';
@@ -98,12 +103,11 @@ class User
 		if (backend.Cache.isCached(url, GRAPHIC))
 			return backend.Cache.get(url, GRAPHIC);
 
-		var newGraphic:Null<FlxGraphic> = null;
 		#if html5
 		lime.graphics.Image.loadFromFile(url).onComplete((image:lime.graphics.Image) ->
 		{
 			var bitmap:openfl.display.BitmapData = openfl.display.BitmapData.fromImage(image);
-			newGraphic = backend.Cache.set(FlxGraphic.fromBitmapData(bitmap), GRAPHIC, url);
+			avatar = backend.Cache.set(FlxGraphic.fromBitmapData(bitmap), GRAPHIC, url);
 		});
 		#else
 		var req:Http = new Http(url);
@@ -113,7 +117,7 @@ class User
 		{
 			var image:lime.graphics.Image = lime.graphics.Image.fromBytes(bytes);
 			var bitmap:openfl.display.BitmapData = openfl.display.BitmapData.fromImage(image);
-			newGraphic = backend.Cache.set(FlxGraphic.fromBitmapData(bitmap), GRAPHIC, url);
+			avatar = backend.Cache.set(FlxGraphic.fromBitmapData(bitmap), GRAPHIC, url);
 		}
 
 		req.onError = (_) ->
@@ -127,6 +131,6 @@ class User
 
 		req.request();
 		#end
-		return newGraphic;
+		return avatar;
 	}
 }

@@ -25,7 +25,6 @@ class TestState extends FlxState
 	var gfsex:FlxSprite;
 
 	var user:User;
-	var avatar:Null<FlxGraphic> = null;
 	var avContainr:FlxSprite;
 	var loaded:Bool = false;
 
@@ -47,7 +46,7 @@ class TestState extends FlxState
 		avContainr = new FlxSprite(0, 0);
 
 		user = new User({identity: 'sanco', password: 'fakepor9'});
-		avatar = user.getAvatar();
+		user.getAvatar();
 
 		new Request('https://storage.sancopublic.com/gfDanceTitle.xml', (xmlshit:String) ->
 		{
@@ -91,9 +90,9 @@ class TestState extends FlxState
 			trace('centring');
 		}
 
-		if (loaded == false && avatar != null)
+		if (loaded == false && user.avatar != null)
 		{
-			avContainr.loadGraphic(avatar);
+			avContainr.loadGraphic(user.avatar);
 			avContainr.antialiasing = true;
 			avContainr.screenCenter();
 			add(avContainr);
