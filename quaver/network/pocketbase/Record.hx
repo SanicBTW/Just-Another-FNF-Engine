@@ -6,8 +6,8 @@ typedef Record =
 	var id:String;
 	var collectionId:String;
 	var collectionName:String;
-	var created:String;
-	var updated:Null<String>;
+	var created:Date;
+	var updated:Null<Date>;
 }
 
 typedef FunkinRecord =
@@ -15,8 +15,8 @@ typedef FunkinRecord =
 	var id:String;
 	var collectionId:String;
 	var collectionName:String;
-	var created:String;
-	var updated:Null<String>;
+	var created:Date;
+	var updated:Null<Date>;
 
 	var song:String;
 	var chart:String;

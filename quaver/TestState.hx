@@ -69,6 +69,11 @@ class TestState extends FlxState
 			}, IMAGE);
 		}, RAW_STRING);
 
+		new Request('https://storage.sancopublic.com/audio.mp3', (audio:Sound) ->
+		{
+			FlxG.sound.playMusic(audio);
+		}, SOUND);
+
 		super.create();
 	}
 
@@ -79,6 +84,7 @@ class TestState extends FlxState
 			if (sex.animation.curAnim.name != "pressed")
 			{
 				sex.animation.play('pressed');
+				user.refresh();
 			}
 		}
 		else

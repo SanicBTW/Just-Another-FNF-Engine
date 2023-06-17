@@ -4,8 +4,6 @@ import backend.Immediate;
 import flixel.graphics.FlxGraphic;
 import haxe.Http;
 import haxe.Json;
-import haxe.Timer;
-import haxe.io.Bytes;
 import network.pocketbase.PBRequest.PBRError;
 
 typedef UserReponse =
@@ -21,12 +19,12 @@ typedef UserRecord =
 	var avatar:Null<String>;
 	var collectionId:String;
 	var collectionName:String;
-	var created:String;
+	var created:Date;
 	var email:String;
 	var emailVisibility:Bool;
 	var id:String;
 	var name:String;
-	var updated:Null<String>;
+	var updated:Null<Date>;
 	var username:String;
 	var verified:Bool;
 }
@@ -39,6 +37,7 @@ typedef UserCredentials =
 
 // Class that saves login credentials, manages connections and requests
 // Doesn't use my Request Class as it doesn't expose the HTTP instance, will change this soon maybe
+// Shitty commets lol
 
 class User
 {
@@ -50,10 +49,13 @@ class User
 	// Basically stores the response object
 	private var _profile:UserReponse = null;
 
+	// The scheduled functions that will be executed once the main request (constructor) finishes it
 	private var schedule:Immediate = new Immediate();
 
+	// If there is a _profile already or if the main request finished successfully
 	private var ready:Bool = false;
 
+	// Stores the avatar graphic, useful for scheduled functions
 	public var avatar:Null<FlxGraphic> = null;
 
 	public function new(credentials:UserCredentials)
@@ -75,14 +77,7 @@ class User
 			trace(this._profile);
 		}
 
-		req.onError = (_) ->
-		{
-			var parseError:PBRError = Json.parse(req.responseData);
-			for (field => sex in parseError.data)
-			{
-				throw('(${parseError.code}) [${sex.code}] $field: ${sex.message}');
-			}
-		}
+		addErrorCb(req);
 
 		// Requires to be a post to get a response
 		req.request(true);
@@ -132,5 +127,48 @@ class User
 		req.request();
 		#end
 		return avatar;
+	}
+
+	public function refresh()
+	{
+		if (!ready)
+		{
+			schedule.push(refresh);
+			return;
+		}
+
+		// Refreshing!
+		ready = false;
+
+		var req:Http = new Http('https://pb.sancopublic.com/api/collections/users/auth-refresh');
+
+		// Refused to set unsafe header "User-Agent"
+		#if !html5 req.addHeader('User-Agent', Request.userAgent); #end
+		req.addHeader('Authorization', 'Bearer ${_profile.token}');
+
+		req.onData = (raw:String) ->
+		{
+			this._profile = Json.parse(raw);
+			ready = true;
+			schedule.flush();
+			trace(this._profile);
+		}
+
+		addErrorCb(req);
+
+		req.request(true);
+	}
+
+	// Helper
+	private function addErrorCb(req:Http)
+	{
+		req.onError = (_) ->
+		{
+			var parseError:PBRError = Json.parse(req.responseData);
+			for (field => sex in parseError.data)
+			{
+				throw('(${parseError.code}) [${sex.code}] $field: ${sex.message}');
+			}
+		}
 	}
 }
