@@ -31,6 +31,7 @@ enum abstract ActionType(String) to String
 }
 
 // Better? controls support (Static usage and non-static usage) (looks like the controls from fnf vanilla lmao)
+// On property getter, change the original variable shit for Reflect to work and not return IDLE
 class Controls
 {
 	// Base map which is used to get the keys in non-static variables

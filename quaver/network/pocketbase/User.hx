@@ -50,7 +50,7 @@ class User
 	private var _profile:UserReponse = null;
 
 	// The scheduled functions that will be executed once the main request (constructor) finishes it
-	private var schedule:Immediate = new Immediate();
+	public var schedule:Immediate = new Immediate();
 
 	// If there is a _profile already or if the main request finished successfully
 	private var ready:Bool = false;

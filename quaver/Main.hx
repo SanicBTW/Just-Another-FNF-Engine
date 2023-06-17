@@ -13,9 +13,10 @@ class Main extends Sprite
 {
 	private var gameWidth:Int = 1280;
 	private var gameHeight:Int = 720;
-	private var initialClass:Class<FlxState> = TestState;
+	private var initialClass:Class<FlxState> = states.ScrollTest;
 	private var zoom:Float = -1;
-	private var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate; // VSync :troll:
+
+	public static var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate; // VSync :troll:
 
 	public static var cock:VolumePanel;
 
@@ -74,15 +75,15 @@ class Main extends Sprite
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
-		cock = new VolumePanel();
-		addChild(cock);
+		// cock = new VolumePanel();
+		// addChild(cock);
 
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
-		FlxG.mouse.visible = false;
-		FlxG.mouse.useSystemCursor = true;
+		FlxG.mouse.visible = true;
+		Cursor.setCursor(IDLE);
 		#end
 	}
 }
