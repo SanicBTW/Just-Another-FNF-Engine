@@ -3,7 +3,7 @@ package backend;
 // This is old code so I'm too lazy to rewrite it and shit
 class Cursor
 {
-	private static var cursorOffsets:Map<CursorState, Array<Int>> = [IDLE => [-31, -32], HOVER => [-25, -32]];
+	private static var cursorOffsets:Map<CursorState, Array<Int>> = [IDLE => [-31, -32], HOVER => [-31, -32]];
 	private static var Paths:backend.IsolatedPaths = new backend.IsolatedPaths('cursor');
 
 	public static var curState:CursorState = IDLE;

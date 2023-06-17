@@ -10,6 +10,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
 import network.pocketbase.User;
 import openfl.display.BlendMode;
+import quaver.Qua;
 
 class ScrollTest extends FlxState
 {
@@ -28,6 +29,7 @@ class ScrollTest extends FlxState
 
 	// aye i will change the dumb password wen i finish them online servers and support shit
 	var user:User = new User({identity: 'sanco', password: 'fakepor9'});
+	var qua:Qua = null;
 
 	override public function create()
 	{
@@ -50,12 +52,17 @@ class ScrollTest extends FlxState
 
 		generateBackground();
 
+		qua = new Qua(Cache.getText(Paths.getPath('90718/90718.qua')));
+		FlxG.sound.playMusic(Cache.getSound(Paths.getPath('${qua.MapId}/${qua.AudioFile}')));
+		// FlxG.sound.music.loopTime = FlxG.sound.music.time = sex.SongPreviewTime;
+		Conductor.bpm = qua.TimingPoints[0].Bpm;
+
 		// Automatic update haha
 		add(Conductor);
 
 		user.schedule.push(() ->
 		{
-			var sex:UserCard = new UserCard(10, FlxG.width / 6, user);
+			var sex:UserCard = new UserCard(10, FlxG.width / 8, user);
 			sex.cameras = [camHUD];
 			add(sex);
 		});
@@ -71,6 +78,20 @@ class ScrollTest extends FlxState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		for (property in [
+			"time",
+			"step",
+			"roundStep",
+			"beat",
+			"roundBeat",
+			"bpm",
+			"crochet",
+			"stepCrochet"
+		])
+		{
+			FlxG.watch.addQuick('Conductor.$property', Reflect.field(Conductor, property));
+		}
 
 		gridBackground.scrollX += (elapsed / (1 / Main.framerate)) * 0.5;
 		var increaseUpTo:Float = gridBackground.height / 8;

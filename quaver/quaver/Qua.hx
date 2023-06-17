@@ -1,6 +1,7 @@
 package quaver;
 
 using StringTools;
+using backend.Extensions;
 
 typedef TimingPoint =
 {
@@ -64,82 +65,100 @@ class Qua
 
 	private var fields:Array<String> = [];
 
-	public function new(unparsedContent:String)
+	@:noCompletion
+	// Instead of parsing it, just do a quick search and that shit yknow
+	private var lines:Array<String> = [];
+
+	public function new(rawContent:String, parse:Bool = true)
 	{
-		var lines:Array<String> = unparsedContent.trim().split("\n");
+		lines = rawContent.trim().split("\n");
 		fields = Type.getInstanceFields(Type.getClass(this));
 
+		// Metadata must be parsed, objects are not needed for a menu right
+		parseMetadata();
+
+		if (!parse)
+			return;
+
+		this.parseObjects();
+	}
+
+	// Not getting InitialScrollVelocity
+	public function parseMetadata()
+	{
+		var lastSection:String = '';
+
+		for (line in lines)
+		{
+			var section:String = line.split(":")[0];
+			var value:String = line.split(":")[1];
+
+			if (value.length > 2 && !(exclusions.contains(lastSection) || exclusions.contains(section.trim())) && fields.contains(section))
+			{
+				Reflect.setField(this, section, value.trim());
+				trace(section, Reflect.field(this, section));
+				continue;
+			}
+
+			if (exclusions.contains(section))
+				break;
+		}
+	}
+
+	public function parseObjects()
+	{
 		var lastSection:String = '';
 
 		for (i in 0...lines.length)
 		{
-			try
+			var section:String = lines[i].split(":")[0];
+			var value:Null<String> = lines[i].split(":")[1];
+
+			if (value.length <= 2)
+				lastSection = section;
+
+			// lil check
+			if (lastSection != section && section.trim() == "- StartTime")
 			{
-				var section:String = lines[i].split(":")[0];
-				var value:Null<String> = lines[i].split(":")[1];
-
-				if (value.length > 2
-					&& !(exclusions.contains(lastSection) || exclusions.contains(section.trim()))
-					&& fields.contains(section))
+				// i fucking hate this
+				switch (lastSection)
 				{
-					Reflect.setField(this, section, value.trim());
-					trace(section, Reflect.field(this, section));
+					case 'TimingPoints':
+						var timing:TimingPoint = {
+							StartTime: Std.parseFloat(value.trim()),
+							Bpm: Std.parseFloat(lines[i + 1].split(":")[1])
+						};
+						TimingPoints.push(timing);
+
+					case 'SliderVelocities':
+						var velocity:SliderVelocity = {
+							StartTime: Std.parseFloat(value.trim()),
+							Multiplier: Std.parseFloat(lines[i + 1].split(":")[1])
+						};
+						SliderVelocities.push(velocity);
+
+					case 'HitObjects':
+						var hitObj:HitObject = {
+							StartTime: Std.parseFloat(value.trim()),
+							Lane: Std.parseInt(lines[i + 1].split(":")[1]),
+							EndTime: 0,
+							KeySounds: []
+						};
+
+						var secSection:String = lines[i + 2].split(":")[0].trim();
+						switch (secSection)
+						{
+							case 'KeySounds':
+								hitObj.KeySounds = cast lines[i + 2].split(":")[1];
+							case 'EndTime':
+								hitObj.EndTime = Std.parseFloat(lines[i + 2].split(":")[1]);
+
+								// assuming the next section is uhhhhhhhh keysounds
+								hitObj.KeySounds = cast lines[i + 3].split(":")[1];
+						}
+
+						HitObjects.push(hitObj);
 				}
-
-				// fucking dumbass
-				if (section.trim() == "SliderVelocities")
-					lastSection = '';
-
-				if (value.length <= 2)
-					lastSection = section;
-
-				// lil check
-				if (lastSection != section && section.trim() == "- StartTime")
-				{
-					// i fucking hate this
-					switch (lastSection)
-					{
-						case 'TimingPoints':
-							var timing:TimingPoint = {
-								StartTime: Std.parseFloat(value.trim()),
-								Bpm: Std.parseFloat(lines[i + 1].split(":")[1])
-							};
-							TimingPoints.push(timing);
-
-						case 'SliderVelocities':
-							var velocity:SliderVelocity = {
-								StartTime: Std.parseFloat(value.trim()),
-								Multiplier: Std.parseFloat(lines[i + 1].split(":")[1])
-							};
-							SliderVelocities.push(velocity);
-
-						case 'HitObjects':
-							var hitObj:HitObject = {
-								StartTime: Std.parseFloat(value.trim()),
-								Lane: Std.parseInt(lines[i + 1].split(":")[1]),
-								EndTime: 0,
-								KeySounds: []
-							};
-
-							var secSection:String = lines[i + 2].split(":")[0].trim();
-							switch (secSection)
-							{
-								case 'KeySounds':
-									hitObj.KeySounds = cast lines[i + 2].split(":")[1];
-								case 'EndTime':
-									hitObj.EndTime = Std.parseFloat(lines[i + 2].split(":")[1]);
-
-									// assuming the next section is uhhhhhhhh keysounds
-									hitObj.KeySounds = cast lines[i + 3].split(":")[1];
-							}
-
-							HitObjects.push(hitObj);
-					}
-				}
-			}
-			catch (ex)
-			{
-				trace('Failed parsin Quaver Map $ex');
 			}
 		}
 	}

@@ -46,25 +46,25 @@ class Conductor extends FlxBasic
 
 	@:noCompletion
 	private function get_step()
-		return lastStep + ((time - lastTime) / stepCrochet);
+		return step = lastStep + ((time - lastTime) / stepCrochet);
 
 	var roundStep(get, null):Int = 0;
 
 	@:noCompletion
 	private function get_roundStep()
-		return Math.floor(step);
+		return roundStep = Math.floor(step);
 
 	var beat(get, null):Float = 0;
 
 	@:noCompletion
 	private function get_beat()
-		return lastBeat + ((time - lastTime) / crochet);
+		return beat = lastBeat + ((time - lastTime) / crochet);
 
 	var roundBeat(get, null):Int = 0;
 
 	@:noCompletion
 	private function get_roundBeat()
-		return Math.floor(beat);
+		return roundBeat = Math.floor(beat);
 
 	// BPM
 	var bpm(default, set):Float = 0;
@@ -94,21 +94,23 @@ class Conductor extends FlxBasic
 
 	@:noCompletion
 	private function get_lastTime()
-		return bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].time;
+		return lastTime = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].time;
 
 	var lastStep(get, null):Float = 0;
 
 	@:noCompletion
 	private function get_lastStep()
-		return bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].step;
+		return lastStep = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].step;
 
 	var lastBeat(get, null):Float = 0;
 
 	@:noCompletion
 	private function get_lastBeat()
-		return bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].beat;
+		return lastBeat = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].beat;
 
+	@:noCompletion
 	var lastStepHit:Int = -1;
+	@:noCompletion
 	var lastBeatHit:Int = -1;
 
 	// Events
