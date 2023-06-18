@@ -76,6 +76,7 @@ class Qua
 
 		// Metadata must be parsed, objects are not needed for a menu right
 		parseMetadata();
+		#if FS_ACCESS convertAudio(); #end
 
 		if (!parse)
 			return;
@@ -162,4 +163,32 @@ class Qua
 			}
 		}
 	}
+
+	#if FS_ACCESS
+	public function convertAudio()
+	{
+		var path:String = haxe.io.Path.join([
+			lime.system.System.documentsDirectory,
+			"just_another_fnf_engine",
+			"quaver",
+			'$MapId'
+		]);
+
+		// uhhhhhh
+		var audioPath:String = haxe.io.Path.join([Sys.getCwd(), "assets", "funkin", "quaver", '$MapId', AudioFile]);
+		AudioFile = AudioFile.replace("mp3", "ogg");
+
+		var output:String = haxe.io.Path.join([path, AudioFile]);
+		var ffmpeg:String = haxe.io.Path.join([Sys.getCwd(), "ffmpeg.exe"]);
+
+		if (!sys.FileSystem.exists(path))
+			sys.FileSystem.createDirectory(path);
+
+		if (sys.FileSystem.exists(output))
+			return;
+
+		if (Sys.command('$ffmpeg -i "$audioPath" -c:a libvorbis -q:a 4 "$output" -y') == 0)
+			trace('Finished converting audio file');
+	}
+	#end
 }

@@ -6,6 +6,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.addons.display.FlxTiledSprite;
+import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
 import network.pocketbase.User;
@@ -16,17 +17,15 @@ class ScrollTest extends FlxState
 {
 	var Controls:Controls = new Controls();
 	var Paths:IsolatedPaths = new IsolatedPaths('quaver');
+	var LocalPaths:IsolatedPaths = new IsolatedPaths(haxe.io.Path.join([lime.system.System.documentsDirectory, "just_another_fnf_engine", "quaver"]));
 	var Conductor:Conductor = new Conductor();
-
 	var camHUD:FlxCamera;
 	var camGame:FlxCamera;
 	var camBG:FlxCamera;
 	var camOther:FlxCamera;
-
 	var accum:Float = 0;
 	var gridBackground:FlxTiledSprite;
 	var boardPattern:FlxTiledSprite;
-
 	// aye i will change the dumb password wen i finish them online servers and support shit
 	var user:User = new User({identity: 'sanco', password: 'fakepor9'});
 	var qua:Qua = null;
@@ -52,9 +51,8 @@ class ScrollTest extends FlxState
 
 		generateBackground();
 
-		qua = new Qua(Cache.getText(Paths.getPath('90718/90718.qua')));
-		FlxG.sound.playMusic(Cache.getSound(Paths.getPath('${qua.MapId}/${qua.AudioFile}')));
-		// FlxG.sound.music.loopTime = FlxG.sound.music.time = sex.SongPreviewTime;
+		qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
+		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end));
 		Conductor.bpm = qua.TimingPoints[0].Bpm;
 
 		// Automatic update haha
@@ -62,36 +60,33 @@ class ScrollTest extends FlxState
 
 		user.schedule.push(() ->
 		{
-			var sex:UserCard = new UserCard(10, FlxG.width / 8, user);
+			var sex:UserCard = new UserCard(10, FlxG.width / 12, user);
 			sex.cameras = [camHUD];
 			add(sex);
 		});
 		user.getAvatar();
 
 		FlxG.camera.zoom = 1;
-
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
+
+		Conductor.onBeatHit.add((curBeat) ->
+		{
+			if (curBeat % 4 == 0)
+			{
+				FlxG.camera.zoom += 0.015;
+				camHUD.zoom += 0.03;
+			}
+		});
 
 		super.create();
 	}
 
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
+		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
-		for (property in [
-			"time",
-			"step",
-			"roundStep",
-			"beat",
-			"roundBeat",
-			"bpm",
-			"crochet",
-			"stepCrochet"
-		])
-		{
-			FlxG.watch.addQuick('Conductor.$property', Reflect.field(Conductor, property));
-		}
+		super.update(elapsed);
 
 		gridBackground.scrollX += (elapsed / (1 / Main.framerate)) * 0.5;
 		var increaseUpTo:Float = gridBackground.height / 8;

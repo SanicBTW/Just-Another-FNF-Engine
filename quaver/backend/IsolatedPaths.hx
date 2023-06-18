@@ -19,7 +19,7 @@ class IsolatedPaths
 	public function getPath(file:String):String
 	{
 		#if FS_ACCESS
-		if (Cache.fromFS(file))
+		if (Cache.fromFS(localPath))
 		{
 			var path:String = Path.join([localPath, file]);
 			if (!sys.FileSystem.exists(path))

@@ -52,6 +52,8 @@
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
+	<assets path="ffmpeg.exe" if="FS_ACCESS" /> 
+
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
 	<haxedef name="FLX_NO_DEBUG" unless="debug"/>
