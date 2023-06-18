@@ -97,7 +97,6 @@ class Qua
 			if (value.length > 2 && !(exclusions.contains(lastSection) || exclusions.contains(section.trim())) && fields.contains(section))
 			{
 				Reflect.setField(this, section, value.trim());
-				trace(section, Reflect.field(this, section));
 				continue;
 			}
 

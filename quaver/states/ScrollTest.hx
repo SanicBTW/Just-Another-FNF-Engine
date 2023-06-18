@@ -12,20 +12,25 @@ import flixel.util.FlxGradient;
 import network.pocketbase.User;
 import openfl.display.BlendMode;
 import quaver.Qua;
+import quaver.notes.StrumLine;
 
 class ScrollTest extends FlxState
 {
-	var Controls:Controls = new Controls();
-	var Paths:IsolatedPaths = new IsolatedPaths('quaver');
-	var LocalPaths:IsolatedPaths = new IsolatedPaths(haxe.io.Path.join([lime.system.System.documentsDirectory, "just_another_fnf_engine", "quaver"]));
-	var Conductor:Conductor = new Conductor();
+	public static var Controls:Controls = new Controls();
+	public static var Paths:IsolatedPaths = new IsolatedPaths('quaver');
+	public static var LocalPaths:IsolatedPaths = new IsolatedPaths(haxe.io.Path.join([lime.system.System.documentsDirectory, "just_another_fnf_engine", "quaver"]));
+	public static var Conductor:Conductor;
+
 	var camHUD:FlxCamera;
 	var camGame:FlxCamera;
 	var camBG:FlxCamera;
 	var camOther:FlxCamera;
+
 	var accum:Float = 0;
 	var gridBackground:FlxTiledSprite;
-	var boardPattern:FlxTiledSprite;
+
+	var strums:StrumLine;
+
 	// aye i will change the dumb password wen i finish them online servers and support shit
 	var user:User = new User({identity: 'sanco', password: 'fakepor9'});
 	var qua:Qua = null;
@@ -49,34 +54,17 @@ class ScrollTest extends FlxState
 		camOther.bgColor.alpha = 0;
 		FlxG.cameras.add(camOther, false);
 
-		generateBackground();
-
-		qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
-		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end));
-		Conductor.bpm = qua.TimingPoints[0].Bpm;
-
 		// Automatic update haha
+		// Gotta create it on create (haha i want to kms) because of some issue with them signals and events lol
+		Conductor = new Conductor();
 		add(Conductor);
 
-		user.schedule.push(() ->
-		{
-			var sex:UserCard = new UserCard(10, FlxG.width / 12, user);
-			sex.cameras = [camHUD];
-			add(sex);
-		});
-		user.getAvatar();
+		generateBackground();
+		generateChart();
+		loadUser();
 
 		FlxG.camera.zoom = 1;
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
-
-		Conductor.onBeatHit.add((curBeat) ->
-		{
-			if (curBeat % 4 == 0)
-			{
-				FlxG.camera.zoom += 0.015;
-				camHUD.zoom += 0.03;
-			}
-		});
 
 		super.create();
 	}
@@ -88,10 +76,10 @@ class ScrollTest extends FlxState
 
 		super.update(elapsed);
 
-		gridBackground.scrollX += (elapsed / (1 / Main.framerate)) * 0.5;
+		gridBackground.scrollX += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
 		var increaseUpTo:Float = gridBackground.height / 8;
 		gridBackground.scrollY = Math.sin(accum / increaseUpTo) * increaseUpTo;
-		accum += (elapsed / (1 / Main.framerate)) * 0.5;
+		accum += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
 	}
 
 	function generateBackground()
@@ -124,5 +112,36 @@ class ScrollTest extends FlxState
 		funkyBack.screenCenter();
 		funkyBack.alpha = 0.07;
 		add(funkyBack);
+
+		strums = new StrumLine((FlxG.width / 2) + FlxG.width / 4, 50);
+		strums.cameras = [camHUD];
+		add(strums);
+	}
+
+	function generateChart()
+	{
+		qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
+		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end));
+		Conductor.bpm = qua.TimingPoints[0].Bpm;
+
+		Conductor.onBeatHit.add((curBeat) ->
+		{
+			if (curBeat % 4 == 0)
+			{
+				FlxG.camera.zoom += 0.015;
+				camHUD.zoom += 0.03;
+			}
+		});
+	}
+
+	function loadUser()
+	{
+		user.schedule.push(() ->
+		{
+			var sex:UserCard = new UserCard(10, FlxG.width / 12, user);
+			sex.cameras = [camHUD];
+			add(sex);
+		});
+		user.getAvatar();
 	}
 }

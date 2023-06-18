@@ -2,7 +2,7 @@ package backend;
 
 import flixel.FlxBasic;
 import flixel.FlxG;
-import lime.app.Event;
+import flixel.util.FlxSignal.FlxTypedSignal;
 
 typedef BPMChange =
 {
@@ -73,12 +73,12 @@ class Conductor extends FlxBasic
 	private function set_bpm(newBPM:Float)
 	{
 		crochet = (60 / newBPM) * 1000;
-		stepCrochet = crochet / 4; // Do a var of snap divisor or compass scale or that shit dunno i failed music subject lol
+		stepCrochet = crochet / 4;
 		return bpm = newBPM;
 	}
 
-	var crochet:Float = 0;
-	var stepCrochet:Float = 0;
+	var crochet(default, null):Float = 0;
+	var stepCrochet(default, null):Float = 0;
 	var bpmChanges:Array<BPMChange> = [
 		{
 			step: 0,
@@ -109,14 +109,14 @@ class Conductor extends FlxBasic
 		return lastBeat = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].beat;
 
 	@:noCompletion
-	var lastStepHit:Int = -1;
+	var lastStepHit(default, null):Int = -1;
 	@:noCompletion
-	var lastBeatHit:Int = -1;
+	var lastBeatHit(default, null):Int = -1;
 
 	// Events
-	final onStepHit:Event<Int->Void> = new Event<Int->Void>();
-	final onBeatHit:Event<Int->Void> = new Event<Int->Void>();
-	final onBPMChange:Event<(Float, Float) -> Void> = new Event<(Float, Float) -> Void>();
+	var onStepHit(default, null):FlxTypedSignal<Int->Void> = new FlxTypedSignal<Int->Void>();
+	var onBeatHit(default, null):FlxTypedSignal<Int->Void> = new FlxTypedSignal<Int->Void>();
+	var onBPMChange(default, null):FlxTypedSignal<(Float, Float) -> Void> = new FlxTypedSignal<(Float, Float) -> Void>();
 
 	function new(bpm:Float = 100)
 	{
@@ -152,10 +152,6 @@ class Conductor extends FlxBasic
 
 	override function destroy()
 	{
-		onStepHit.cancel();
-		onBeatHit.cancel();
-		onBPMChange.cancel();
-
 		onStepHit.removeAll();
 		onBeatHit.removeAll();
 		onBPMChange.removeAll();
