@@ -1,6 +1,7 @@
 package states;
 
 import backend.*;
+import backend.Controls.ActionType;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -65,6 +66,9 @@ class ScrollTest extends FlxState
 		Conductor = new Conductor();
 		add(Conductor);
 
+		backend.Controls.onActionPressed.add(onActionPressed);
+		backend.Controls.onActionReleased.add(onActionReleased);
+
 		generateBackground();
 		generateChart();
 		loadUser();
@@ -79,7 +83,6 @@ class ScrollTest extends FlxState
 	{
 		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
-		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
 		super.update(elapsed);
 
@@ -87,6 +90,14 @@ class ScrollTest extends FlxState
 		var increaseUpTo:Float = gridBackground.height / 8;
 		gridBackground.scrollY = Math.sin(accum / increaseUpTo) * increaseUpTo;
 		accum += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
+	}
+
+	override function destroy()
+	{
+		backend.Controls.onActionPressed.remove(onActionPressed);
+		backend.Controls.onActionReleased.remove(onActionReleased);
+
+		super.destroy();
 	}
 
 	function generateBackground()
@@ -120,7 +131,7 @@ class ScrollTest extends FlxState
 		funkyBack.alpha = 0.07;
 		add(funkyBack);
 
-		strums = new StrumLine((FlxG.width / 2) + FlxG.width / 4, 50);
+		strums = new StrumLine((FlxG.width / 2) + FlxG.width / 4);
 		strums.cameras = [strumCam];
 		add(strums);
 	}
@@ -128,7 +139,9 @@ class ScrollTest extends FlxState
 	function generateChart()
 	{
 		qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
-		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end));
+		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
+			1,
+			false);
 		Conductor.bpm = qua.TimingPoints[0].Bpm;
 
 		Conductor.onBeatHit.add((curBeat) ->
@@ -137,7 +150,6 @@ class ScrollTest extends FlxState
 			{
 				FlxG.camera.zoom += 0.015;
 				camHUD.zoom += 0.03;
-				strumCam.zoom += 0.015;
 			}
 		});
 	}
@@ -151,5 +163,42 @@ class ScrollTest extends FlxState
 			add(sex);
 		});
 		user.getAvatar();
+	}
+
+	function onActionPressed(action:ActionType)
+	{
+		switch (action)
+		{
+			case BACK | CONFIRM | RESET:
+				return;
+
+			default:
+				for (receptor in strums.receptors)
+				{
+					if (action == receptor.action)
+					{
+						if (receptor.animation.curAnim.name != "confirm")
+							receptor.playAnim('pressed');
+					}
+				}
+		}
+	}
+
+	function onActionReleased(action:ActionType)
+	{
+		switch (action)
+		{
+			case BACK | CONFIRM | RESET:
+				return;
+
+			default:
+				for (receptor in strums.receptors)
+				{
+					if (action == receptor.action)
+					{
+						receptor.playAnim('static');
+					}
+				}
+		}
 	}
 }

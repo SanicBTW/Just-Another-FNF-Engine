@@ -1,15 +1,18 @@
 package quaver.notes;
 
+import backend.Controls.ActionType;
 import flixel.FlxSprite;
 import states.ScrollTest;
 
 class Receptor extends FlxSprite
 {
 	public var noteData:Int = 0;
+	public var action:ActionType;
 
 	public function new(X:Float, Y:Float, noteData:Int = 0)
 	{
 		this.noteData = noteData;
+		this.action = cast getArrowFromNum(noteData);
 		super(X, Y);
 
 		frames = ScrollTest.Paths.getSparrowAtlas('NOTE_assets');

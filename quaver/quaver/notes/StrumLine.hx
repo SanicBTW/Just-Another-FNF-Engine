@@ -1,8 +1,6 @@
 package quaver.notes;
 
 import backend.Cache;
-import backend.Conductor;
-import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -10,9 +8,8 @@ import flixel.addons.display.FlxGridOverlay;
 import flixel.addons.display.FlxTiledSprite;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
-import flixel.math.FlxMath;
+import flixel.math.FlxRect;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import states.ScrollTest;
@@ -39,12 +36,16 @@ enum NoteGraphicType
 
 @:publicFields
 // OK So instead of creating a camera in here and manipulate it and shit, use a dedicated camera (required to avoid any other bullshit issue) assigned on .cameras when creating it and using it somewhere else
-// TODO: FIX THE FUCKING POSITIONS
 class StrumLine extends FlxSpriteGroup
 {
 	static final CELL_SIZE:Int = 80;
 	static final keyAmount:Int = 4;
 	static final swagWidth:Float = 160 * (CELL_SIZE / 160);
+
+	/**
+	 * How many tiles is the camera ahead of the crochet
+	 */
+	static var CELL_OFFSET:Float = 3.75;
 
 	var noteGraphics(default, null):Map<NoteGraphicType, Array<FlxGraphic>> = [TAIL_BODY => [], TAIL_END => []];
 
@@ -58,15 +59,15 @@ class StrumLine extends FlxSpriteGroup
 	private var _boardPattern(default, null):FlxTiledSprite;
 	private var _conductorCrochet(default, null):FlxSprite;
 
-	private var _camObject:FlxObject;
+	private var _camFollow:FlxObject;
 
-	function new(X:Float = 0, Y:Float = 0)
+	function new(X:Float = 0)
 	{
-		super(X, Y);
+		super(X);
 
 		cacheGraphics();
 
-		_camObject = new FlxObject(X);
+		_camFollow = new FlxObject();
 
 		_boardPattern = new FlxTiledSprite(_checkerboard, CELL_SIZE * keyAmount, CELL_SIZE * 16);
 		_boardPattern.setPosition(0, 0);
@@ -102,11 +103,13 @@ class StrumLine extends FlxSpriteGroup
 	{
 		_boardPattern.height = ((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) * CELL_SIZE);
 
-		_conductorCrochet.y = (ScrollTest.Conductor.step * CELL_SIZE) + (CELL_SIZE * 0.5);
+		_conductorCrochet.y = getYFromStep(ScrollTest.Conductor.step) + (CELL_SIZE * 0.5);
 		receptors.y = _conductorCrochet.y - (CELL_SIZE * 0.5);
 
-		_camObject.y = _conductorCrochet.y + (CELL_SIZE * 4);
-		camera.follow(_camObject, LOCKON);
+		_camFollow.screenCenter(X);
+		_camFollow.y = _conductorCrochet.y + (CELL_SIZE * CELL_OFFSET);
+
+		camera.follow(_camFollow, LOCKON);
 
 		super.update(elapsed);
 	}
@@ -114,8 +117,8 @@ class StrumLine extends FlxSpriteGroup
 	private function cacheGraphics()
 	{
 		@:privateAccess
-		_checkerboard = new FlxGraphic('board$CELL_SIZE',
-			FlxGridOverlay.createGrid(CELL_SIZE, CELL_SIZE, CELL_SIZE * 2, CELL_SIZE * 2, true, FlxColor.WHITE, FlxColor.BLACK), true);
+		_checkerboard = FlxGraphic.fromBitmapData(Cache.set(FlxGridOverlay.createGrid(CELL_SIZE, CELL_SIZE, CELL_SIZE * 2, CELL_SIZE * 2, true,
+			FlxColor.WHITE, FlxColor.BLACK), BITMAP, 'board$CELL_SIZE'));
 		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.20));
 
 		_line = Cache.set(FlxG.bitmap.create(CELL_SIZE * keyAmount, 1, FlxColor.WHITE), GRAPHIC, 'chartline');
@@ -137,5 +140,11 @@ class StrumLine extends FlxSpriteGroup
 			noteEnd.destroy();
 			noteHold.destroy();
 		}
+	}
+
+	// I failed to strum time :pensive:
+	private inline function getYFromStep(step:Float):Float
+	{
+		return step * CELL_SIZE;
 	}
 }
