@@ -30,6 +30,8 @@ class ScrollTest extends FlxState
 	var gridBackground:FlxTiledSprite;
 
 	var strums:StrumLine;
+	// Dedicated cam for the strums so scrolling actually works and shit i hate my life
+	var strumCam:FlxCamera;
 
 	// aye i will change the dumb password wen i finish them online servers and support shit
 	var user:User = new User({identity: 'sanco', password: 'fakepor9'});
@@ -49,6 +51,10 @@ class ScrollTest extends FlxState
 		camHUD = new FlxCamera();
 		camHUD.bgColor.alpha = 0;
 		FlxG.cameras.add(camHUD, false);
+
+		strumCam = new FlxCamera();
+		strumCam.bgColor.alpha = 0;
+		FlxG.cameras.add(strumCam, false);
 
 		camOther = new FlxCamera();
 		camOther.bgColor.alpha = 0;
@@ -73,6 +79,7 @@ class ScrollTest extends FlxState
 	{
 		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
 		super.update(elapsed);
 
@@ -114,7 +121,7 @@ class ScrollTest extends FlxState
 		add(funkyBack);
 
 		strums = new StrumLine((FlxG.width / 2) + FlxG.width / 4, 50);
-		strums.cameras = [camHUD];
+		strums.cameras = [strumCam];
 		add(strums);
 	}
 
@@ -130,6 +137,7 @@ class ScrollTest extends FlxState
 			{
 				FlxG.camera.zoom += 0.015;
 				camHUD.zoom += 0.03;
+				strumCam.zoom += 0.015;
 			}
 		});
 	}

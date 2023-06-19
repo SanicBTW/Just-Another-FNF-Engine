@@ -38,9 +38,11 @@ enum NoteGraphicType
 }
 
 @:publicFields
+// OK So instead of creating a camera in here and manipulate it and shit, use a dedicated camera (required to avoid any other bullshit issue) assigned on .cameras when creating it and using it somewhere else
+// TODO: FIX THE FUCKING POSITIONS
 class StrumLine extends FlxSpriteGroup
 {
-	static final CELL_SIZE:Int = 70;
+	static final CELL_SIZE:Int = 80;
 	static final keyAmount:Int = 4;
 	static final swagWidth:Float = 160 * (CELL_SIZE / 160);
 
@@ -56,19 +58,15 @@ class StrumLine extends FlxSpriteGroup
 	private var _boardPattern(default, null):FlxTiledSprite;
 	private var _conductorCrochet(default, null):FlxSprite;
 
-	var camScroll:FlxCamera;
+	private var _camObject:FlxObject;
 
 	function new(X:Float = 0, Y:Float = 0)
 	{
 		super(X, Y);
 
-		camScroll = new FlxCamera();
-		camScroll.bgColor.alpha = 0;
-		FlxG.cameras.add(camScroll);
-
-		cameras = [camScroll];
-
 		cacheGraphics();
+
+		_camObject = new FlxObject(X);
 
 		_boardPattern = new FlxTiledSprite(_checkerboard, CELL_SIZE * keyAmount, CELL_SIZE * 16);
 		_boardPattern.setPosition(0, 0);
@@ -104,10 +102,11 @@ class StrumLine extends FlxSpriteGroup
 	{
 		_boardPattern.height = ((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) * CELL_SIZE);
 
-		_conductorCrochet.y = ((ScrollTest.Conductor.time / ScrollTest.Conductor.stepCrochet) + (CELL_SIZE * 0.5)) * CELL_SIZE;
+		_conductorCrochet.y = (ScrollTest.Conductor.step * CELL_SIZE) + (CELL_SIZE * 0.5);
 		receptors.y = _conductorCrochet.y - (CELL_SIZE * 0.5);
 
-		camScroll.y = FlxMath.lerp(_conductorCrochet.y + (CELL_SIZE * 4), camScroll.y, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		_camObject.y = _conductorCrochet.y + (CELL_SIZE * 4);
+		camera.follow(_camObject, LOCKON);
 
 		super.update(elapsed);
 	}
