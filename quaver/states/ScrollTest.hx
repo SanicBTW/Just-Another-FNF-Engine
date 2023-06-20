@@ -14,6 +14,7 @@ import network.pocketbase.User;
 import openfl.display.BlendMode;
 import quaver.Qua;
 import quaver.notes.Note;
+import quaver.notes.Receptor;
 import quaver.notes.StrumLine;
 
 class ScrollTest extends FlxState
@@ -147,7 +148,7 @@ class ScrollTest extends FlxState
 
 	function generateChart()
 	{
-		qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
+		qua = new Qua(Cache.getText(Paths.getPath('79274/79274.qua')));
 		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
 			1,
 			false);
@@ -218,6 +219,59 @@ class ScrollTest extends FlxState
 				{
 					if (action == receptor.action)
 					{
+						var data:Int = receptor.noteData;
+						var lastTime:Float = Conductor.time;
+						Conductor.time = FlxG.sound.music.time;
+
+						var possibleNotes:Array<Note> = [];
+						var directionList:Array<Int> = [];
+						var dumbNotes:Array<Note> = [];
+
+						strums.noteGroup.forEachAlive(function(daNote:Note)
+						{
+							if ((daNote.noteData == data) && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustain)
+							{
+								if (directionList.contains(data))
+								{
+									for (coolNote in possibleNotes)
+									{
+										if (coolNote.noteData == daNote.noteData && Math.abs(daNote.strumTime - coolNote.strumTime) < 10)
+										{
+											dumbNotes.push(daNote);
+											break;
+										}
+										else if (coolNote.noteData == daNote.noteData && daNote.strumTime < coolNote.strumTime)
+										{
+											possibleNotes.remove(coolNote);
+											possibleNotes.push(daNote);
+											break;
+										}
+									}
+								}
+								else
+								{
+									possibleNotes.push(daNote);
+									directionList.push(data);
+								}
+							}
+						});
+
+						for (note in dumbNotes)
+						{
+							strums.destroyNote(note);
+						}
+
+						if (possibleNotes.length > 0)
+						{
+							for (coolNote in possibleNotes)
+							{
+								if (coolNote.canBeHit && !coolNote.tooLate)
+									noteHit(coolNote);
+							}
+						}
+
+						Conductor.time = lastTime;
+
 						if (receptor.animation.curAnim.name != "confirm")
 							receptor.playAnim('pressed');
 					}
@@ -240,6 +294,19 @@ class ScrollTest extends FlxState
 						receptor.playAnim('static');
 					}
 				}
+		}
+	}
+
+	private function noteHit(note:Note)
+	{
+		if (!note.wasGoodHit)
+		{
+			var receptor:Receptor = strums.receptors.members[note.noteData];
+			note.wasGoodHit = true;
+			receptor.playAnim('confirm', true);
+
+			if (!note.isSustain)
+				strums.destroyNote(note);
 		}
 	}
 }

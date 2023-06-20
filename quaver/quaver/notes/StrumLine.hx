@@ -367,4 +367,21 @@ class StrumLine extends FlxSpriteGroup
 	// I failed to strum time :pensive:
 	private inline function getYFromStep(step:Float):Float
 		return step * CELL_SIZE;
+
+	public function destroyNote(note:Note)
+	{
+		note.exists = false;
+
+		note.kill();
+
+		(note.isSustain ? holdGroup.remove(note, true) : noteGroup.remove(note, true));
+
+		if (note.head != null)
+		{
+			if (note.head.tail.contains(note))
+				note.head.tail.remove(note);
+		}
+
+		note.destroy();
+	}
 }
