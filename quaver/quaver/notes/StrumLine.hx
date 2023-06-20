@@ -28,6 +28,7 @@ typedef CharterNote =
 	var holdLength:Float;
 	var hold:FlxTiledSprite;
 	var end:FlxTiledSprite;
+	var exists:Bool;
 }
 
 enum NoteGraphicType
@@ -40,9 +41,10 @@ enum NoteGraphicType
 // OK So instead of creating a camera in here and manipulate it and shit, use a dedicated camera (required to avoid any other bullshit issue) assigned on .cameras when creating it and using it somewhere else
 class StrumLine extends FlxSpriteGroup
 {
+	static final SEPARATION:Int = 160;
 	static final CELL_SIZE:Int = 80;
 	static final keyAmount:Int = 4;
-	static final swagWidth:Float = 160 * (CELL_SIZE / 160);
+	static final swagWidth:Float = SEPARATION * (CELL_SIZE / SEPARATION);
 
 	/**
 	 * How many tiles is the camera ahead of the crochet
@@ -54,14 +56,14 @@ class StrumLine extends FlxSpriteGroup
 
 	// shit receptors
 	var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
+	var noteGroup(default, null):FlxTypedSpriteGroup<Note>;
+	var holdGroup(default, null):FlxTypedSpriteGroup<FlxSprite>;
 
-	// uhhh notes that need to be rendered????
-	var noteGroup(default, null):Map<Note, CharterNote> = [];
+	var holdMap(default, null):Map<Note, CharterNote> = [];
 
 	// SECTIONS LESGOO
 	var sectionGroup:FlxTypedSpriteGroup<FlxSprite>;
-
-	var sectionsList:Array<Section> = [];
+	var sectionList:Array<Section> = [];
 
 	// Background shit and grid rendering I guess
 	private var _checkerboard(default, null):FlxGraphic;
@@ -98,12 +100,15 @@ class StrumLine extends FlxSpriteGroup
 		add(_conductorCrochet);
 
 		receptors = new FlxTypedSpriteGroup<Receptor>();
+		noteGroup = new FlxTypedSpriteGroup<Note>();
+		holdGroup = new FlxTypedSpriteGroup<FlxSprite>();
+
 		for (i in 0...keyAmount)
 		{
 			var receptor:Receptor = new Receptor(0, 0, i);
 			receptor.ID = i;
 
-			receptor.setGraphicSize(Std.int((receptor.width / 0.7) * (CELL_SIZE / 160)));
+			receptor.setGraphicSize(Std.int((receptor.width / 0.7) * (CELL_SIZE / SEPARATION)));
 			receptor.updateHitbox();
 
 			receptor.x -= ((keyAmount / 2) * swagWidth);
@@ -112,7 +117,10 @@ class StrumLine extends FlxSpriteGroup
 			receptor.playAnim('static');
 			receptors.add(receptor);
 		}
+
+		add(holdGroup);
 		add(receptors);
+		add(noteGroup);
 	}
 
 	override function update(elapsed:Float)
@@ -123,6 +131,7 @@ class StrumLine extends FlxSpriteGroup
 
 		updateCrochet();
 		updateSections();
+		updateNotes();
 		updateCamFollow();
 	}
 
@@ -139,15 +148,17 @@ class StrumLine extends FlxSpriteGroup
 		for (i in 0...keyAmount)
 		{
 			var noteHold:Note = new Note(0, i, null, true);
+			noteHold.generate();
 			var noteEnd:Note = new Note(0, i, noteHold, true);
+			noteEnd.generate();
 
 			var frameB:FlxFrame = noteHold.frames.framesHash.get(noteHold.animation.frameName);
 			var graphicB:FlxGraphic = FlxGraphic.fromFrame(frameB);
-			noteGraphics.get(TAIL_BODY).push(graphicB);
+			noteGraphics.get(TAIL_BODY).insert(i, graphicB);
 
 			var frameE:FlxFrame = noteEnd.frames.framesHash.get(noteEnd.animation.frameName);
 			var graphicE:FlxGraphic = FlxGraphic.fromFrame(frameE);
-			noteGraphics.get(TAIL_END).push(graphicE);
+			noteGraphics.get(TAIL_END).insert(i, graphicE);
 
 			noteEnd.destroy();
 			noteHold.destroy();
@@ -202,7 +213,44 @@ class StrumLine extends FlxSpriteGroup
 				curSection.body.push(thinLine);
 				sectionGroup.add(thinLine);
 			}
-			sectionsList.push(curSection);
+			sectionList.push(curSection);
+		}
+	}
+
+	function pushNote(note:Note)
+	{
+		if (note.generated)
+			return;
+
+		note.generate();
+		note.setGraphicSize(CELL_SIZE, CELL_SIZE);
+		note.updateHitbox();
+		note.exists = false;
+		noteGroup.add(note);
+
+		if (note.sustainLength > 0)
+		{
+			var resize:Float = (CELL_SIZE / SEPARATION);
+
+			var hold:FlxTiledSprite = new FlxTiledSprite(noteGraphics.get(TAIL_BODY)[note.noteData], CELL_SIZE, CELL_SIZE * note.sustainLength);
+			hold.width = hold.graphic.width * resize;
+			hold.scale.set(resize, CELL_SIZE);
+			hold.exists = false;
+			holdGroup.add(hold);
+
+			var end:FlxTiledSprite = new FlxTiledSprite(noteGraphics.get(TAIL_END)[note.noteData], CELL_SIZE, CELL_SIZE);
+			end.width = end.graphic.width * resize;
+			end.height = end.graphic.height * resize;
+			end.scale.set(resize, resize);
+			end.exists = false;
+			holdGroup.add(end);
+
+			holdMap.set(note, {
+				holdLength: note.sustainLength,
+				hold: hold,
+				end: end,
+				exists: false
+			});
 		}
 	}
 
@@ -216,9 +264,9 @@ class StrumLine extends FlxSpriteGroup
 	// TODO: Proper space check and shit though I believe this is already optimized
 	private function updateSections()
 	{
-		for (i in 0...sectionsList.length)
+		for (i in 0...sectionList.length)
 		{
-			var curSection:Section = sectionsList[i];
+			var curSection:Section = sectionList[i];
 
 			if (getYFromStep(i * 16) <= camera.scroll.y + camera.height && !curSection.exists)
 			{
@@ -261,6 +309,50 @@ class StrumLine extends FlxSpriteGroup
 					segment.active = false;
 				}
 			}
+		}
+	}
+
+	private function updateNotes()
+	{
+		for (note in noteGroup)
+		{
+			if (!note.generated || note == null)
+				break;
+
+			if (getYFromStep(note.stepTime) <= camera.scroll.y + camera.height && !note.isVisible)
+				note.isVisible = true;
+
+			if (getYFromStep(note.stepTime) <= camera.scroll.y - camera.height && note.isVisible)
+				note.isVisible = false;
+
+			note.exists = note.isVisible;
+			note.x = _boardPattern.x + note.noteData * CELL_SIZE;
+			note.y = getYFromStep(note.stepTime);
+		}
+
+		for (note in holdMap.keys())
+		{
+			if (!note.generated || note == null)
+				break;
+
+			var curHold:CharterNote = holdMap.get(note);
+
+			if (getYFromStep(note.stepTime + curHold.holdLength) <= camera.scroll.y + camera.height && !curHold.exists)
+				curHold.exists = true;
+
+			if (getYFromStep(note.stepTime + curHold.holdLength) <= camera.scroll.y - camera.height && curHold.exists)
+				curHold.exists = false;
+
+			curHold.hold.exists = curHold.exists;
+			curHold.end.exists = curHold.exists;
+
+			curHold.hold.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.hold.width / 2);
+			curHold.hold.y = getYFromStep(note.stepTime) + CELL_SIZE / 2;
+
+			curHold.hold.height = ((CELL_SIZE * curHold.holdLength) - CELL_SIZE);
+
+			curHold.end.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.end.width / 2);
+			curHold.end.y = curHold.hold.y + curHold.hold.height;
 		}
 	}
 

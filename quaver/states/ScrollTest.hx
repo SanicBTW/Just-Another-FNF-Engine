@@ -13,6 +13,7 @@ import flixel.util.FlxGradient;
 import network.pocketbase.User;
 import openfl.display.BlendMode;
 import quaver.Qua;
+import quaver.notes.Note;
 import quaver.notes.StrumLine;
 
 class ScrollTest extends FlxState
@@ -36,6 +37,8 @@ class ScrollTest extends FlxState
 
 	// aye i will change the dumb password wen i finish them online servers and support shit
 	var qua:Qua = null;
+
+	var shitNotes:Array<Note> = [];
 
 	override public function create()
 	{
@@ -81,6 +84,14 @@ class ScrollTest extends FlxState
 	{
 		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+
+		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) < 3500)
+		{
+			var nextNote:Note = shitNotes[0];
+			if (nextNote != null)
+				strums.pushNote(nextNote);
+			shitNotes.splice(shitNotes.indexOf(nextNote), 1);
+		}
 
 		super.update(elapsed);
 
@@ -140,7 +151,39 @@ class ScrollTest extends FlxState
 		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
 			1,
 			false);
+		FlxG.sound.music.stop();
 		Conductor.bpm = qua.TimingPoints[0].Bpm;
+
+		for (hitObject in qua.HitObjects)
+		{
+			var startTime:Float = (hitObject.StartTime / Conductor.stepCrochet);
+			var noteData:Int = hitObject.Lane - 1;
+			var endTime:Float = 0;
+
+			if (hitObject.EndTime > 0)
+				endTime = (hitObject.EndTime / Conductor.stepCrochet);
+
+			var oldNote:Note = null;
+			if (shitNotes.length > 0)
+				oldNote = shitNotes[shitNotes.length - 1];
+
+			var newNote:Note = new Note(startTime, noteData, oldNote);
+			var holdStep:Int = newNote.sustainLength = (endTime > 0) ? Math.round((endTime - startTime) / Conductor.stepCrochet) + 1 : 0;
+			shitNotes.push(newNote);
+
+			if (holdStep > 0)
+			{
+				for (note in 0...holdStep)
+				{
+					var sustainNote:Note = new Note(startTime * note, noteData, shitNotes[shitNotes.length - 1], true);
+					sustainNote.head = newNote;
+					sustainNote.isSustainEnd = (note == holdStep - 1);
+
+					newNote.tail.push(sustainNote);
+					shitNotes.push(sustainNote);
+				}
+			}
+		}
 
 		Conductor.onBeatHit.add((curBeat) ->
 		{
@@ -150,6 +193,8 @@ class ScrollTest extends FlxState
 				camHUD.zoom += 0.03;
 			}
 		});
+
+		FlxG.sound.music.play(true);
 	}
 
 	function onActionPressed(action:ActionType)

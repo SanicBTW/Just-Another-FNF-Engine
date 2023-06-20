@@ -88,7 +88,7 @@ class Conductor extends FlxBasic
 	];
 
 	// Resync
-	final resyncThreshold:Float = 20;
+	final resyncThreshold:Float = 30;
 
 	var lastTime(get, null):Float = 0;
 
@@ -147,7 +147,19 @@ class Conductor extends FlxBasic
 		super.update(elapsed);
 
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
+		{
+			if (Math.abs(FlxG.sound.music.time - time) > resyncThreshold)
+			{
+				trace('Resyncing song time ${FlxG.sound.music.time}, $time');
+
+				FlxG.sound.music.play();
+				time = FlxG.sound.music.time;
+
+				trace('New song time ${FlxG.sound.music.time}, $time');
+			}
+
 			time += elapsed * 1000;
+		}
 	}
 
 	override function destroy()

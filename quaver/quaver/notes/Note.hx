@@ -8,7 +8,14 @@ class Note extends FlxSprite
 {
 	public static var swagWidth:Float = 160 * 0.7;
 
-	var strumTime:Float;
+	var stepTime:Float;
+
+	var strumTime(get, null):Float;
+
+	@:noCompletion
+	private function get_strumTime()
+		return (stepTime * ScrollTest.Conductor.stepCrochet);
+
 	var noteData:Int = 0;
 	var tooLate:Bool = false;
 	var canBeHit:Bool = false;
@@ -17,7 +24,7 @@ class Note extends FlxSprite
 	var prevNote:Note;
 	var head:Note = null;
 	var tail:Array<Note> = [];
-	var sustainLength:Float = 0;
+	var sustainLength:Int = 0;
 
 	var isSustain:Bool = false;
 	var isSustainEnd:Bool = false;
@@ -25,7 +32,10 @@ class Note extends FlxSprite
 	var tripTimer:Float = 1;
 	var holdingTime:Float = 0;
 
-	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, isSustain:Bool = false)
+	var generated:Bool = false;
+	var isVisible:Bool = false;
+
+	public function new(stepTime:Float, noteData:Int, ?prevNote:Note, isSustain:Bool = false)
 	{
 		super();
 
@@ -35,12 +45,16 @@ class Note extends FlxSprite
 		this.prevNote = prevNote;
 		this.isSustain = isSustain;
 		this.noteData = noteData;
-		this.strumTime;
+		this.stepTime = stepTime;
 
 		y -= 2000;
+	}
 
+	function generate()
+	{
 		if (noteData > -1)
 		{
+			generated = true;
 			frames = ScrollTest.Paths.getSparrowAtlas('NOTE_assets');
 			loadNoteAnims();
 			x += swagWidth * noteData;
