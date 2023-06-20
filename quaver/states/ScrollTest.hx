@@ -35,7 +35,6 @@ class ScrollTest extends FlxState
 	var strumCam:FlxCamera;
 
 	// aye i will change the dumb password wen i finish them online servers and support shit
-	var user:User = new User({identity: 'sanco', password: 'fakepor9'});
 	var qua:Qua = null;
 
 	override public function create()
@@ -69,9 +68,8 @@ class ScrollTest extends FlxState
 		backend.Controls.onActionPressed.add(onActionPressed);
 		backend.Controls.onActionReleased.add(onActionReleased);
 
-		generateBackground();
 		generateChart();
-		loadUser();
+		generateBackground();
 
 		FlxG.camera.zoom = 1;
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -131,7 +129,7 @@ class ScrollTest extends FlxState
 		funkyBack.alpha = 0.07;
 		add(funkyBack);
 
-		strums = new StrumLine((FlxG.width / 2) + FlxG.width / 4);
+		strums = new StrumLine((FlxG.width / 2));
 		strums.cameras = [strumCam];
 		add(strums);
 	}
@@ -154,23 +152,21 @@ class ScrollTest extends FlxState
 		});
 	}
 
-	function loadUser()
-	{
-		user.schedule.push(() ->
-		{
-			var sex:UserCard = new UserCard(10, FlxG.width / 12, user);
-			sex.cameras = [camHUD];
-			add(sex);
-		});
-		user.getAvatar();
-	}
-
 	function onActionPressed(action:ActionType)
 	{
 		switch (action)
 		{
-			case BACK | CONFIRM | RESET:
+			case BACK | RESET:
 				return;
+
+			case CONFIRM:
+				if (FlxG.sound.music != null)
+				{
+					if (FlxG.sound.music.playing)
+						FlxG.sound.music.pause();
+					else
+						FlxG.sound.music.play();
+				}
 
 			default:
 				for (receptor in strums.receptors)

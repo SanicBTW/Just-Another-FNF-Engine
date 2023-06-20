@@ -47,11 +47,21 @@ class StrumLine extends FlxSpriteGroup
 	 */
 	static var CELL_OFFSET:Float = 3.75;
 
+	// Useful shit right here guys
 	var noteGraphics(default, null):Map<NoteGraphicType, Array<FlxGraphic>> = [TAIL_BODY => [], TAIL_END => []];
 
+	// shit receptors
 	var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
+
+	// uhhh notes that need to be rendered????
 	var noteGroup(default, null):Map<Note, CharterNote> = [];
 
+	// SECTIONS LESGOO
+	var sectionGroup:FlxTypedSpriteGroup<FlxSprite>;
+
+	var sectionsList:Array<CharterSection> = [];
+
+	// Background shit and grid rendering I guess
 	private var _checkerboard(default, null):FlxGraphic;
 	private var _line(default, null):FlxGraphic;
 	private var _sectionLine(default, null):FlxGraphic;
@@ -74,6 +84,10 @@ class StrumLine extends FlxSpriteGroup
 		_boardPattern.x -= ((keyAmount / 2) * swagWidth);
 		_boardPattern.active = false;
 		add(_boardPattern);
+
+		sectionGroup = new FlxTypedSpriteGroup<FlxSprite>();
+		add(sectionGroup);
+		regenSections();
 
 		_conductorCrochet = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		_conductorCrochet.setGraphicSize(Std.int((CELL_SIZE * keyAmount) + CELL_SIZE), 2);
@@ -103,15 +117,11 @@ class StrumLine extends FlxSpriteGroup
 	{
 		_boardPattern.height = ((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) * CELL_SIZE);
 
-		_conductorCrochet.y = getYFromStep(ScrollTest.Conductor.step) + (CELL_SIZE * 0.5);
-		receptors.y = _conductorCrochet.y - (CELL_SIZE * 0.5);
-
-		_camFollow.screenCenter(X);
-		_camFollow.y = _conductorCrochet.y + (CELL_SIZE * CELL_OFFSET);
-
-		camera.follow(_camFollow, LOCKON);
-
 		super.update(elapsed);
+
+		updateCrochet();
+		updateSections();
+		updateCamFollow();
 	}
 
 	private function cacheGraphics()
@@ -142,9 +152,114 @@ class StrumLine extends FlxSpriteGroup
 		}
 	}
 
+	private function regenSections()
+	{
+		for (i in sectionGroup)
+			i.destroy();
+
+		sectionGroup.clear();
+
+		// TODO: get amount of sections possible on bpm changes and show the correct timing
+		// like if there are bpm changes and uh like the section lines are more near and shit like that, just copy osu dunno
+		// or even better, just dont implement it !!!!
+
+		for (i in 0...Std.int((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) / 16))
+		{
+			// Them header
+			var lineSprite:FlxSprite = new FlxSprite(0, 0, _sectionLine);
+			lineSprite.alpha = 0.45;
+			lineSprite.exists = false;
+			sectionGroup.add(lineSprite);
+
+			// TODO: add notes to the section instead of pushing them randomly without knowing section and that shit i dont know what im writing lol
+
+			var curSection:CharterSection = {header: lineSprite, body: [], numbers: []};
+
+			// Section indicator
+			for (j in 0...2)
+			{
+				var sectionNumbers:FlxText = new FlxText().setFormat(Cache.getFont('vcr.ttf'), 16, FlxColor.WHITE);
+				sectionNumbers.alpha = 0.45;
+				sectionNumbers.exists = lineSprite.exists;
+				curSection.numbers.push(sectionNumbers);
+				sectionGroup.add(sectionNumbers);
+			}
+
+			// Section body lines
+			for (j in 1...4)
+			{
+				var thinLine:FlxSprite = new FlxSprite(0, 0, _line);
+				thinLine.alpha = 0.75;
+				thinLine.exists = lineSprite.exists;
+				curSection.body.push(thinLine);
+				sectionGroup.add(thinLine);
+			}
+			sectionsList.push(curSection);
+		}
+	}
+
+	// Just sum update functions for uh debugging and clean code??
+	private function updateCrochet()
+	{
+		_conductorCrochet.y = getYFromStep(ScrollTest.Conductor.step) + (CELL_SIZE * 0.5);
+		receptors.y = _conductorCrochet.y - (CELL_SIZE * 0.5);
+	}
+
+	// TODO: Proper space check and shit though I believe this is already optimized
+	private function updateSections()
+	{
+		for (i in 0...sectionsList.length)
+		{
+			var curSection:CharterSection = sectionsList[i];
+
+			if (getYFromStep(i * 16) <= camera.scroll.y - camera.height && curSection.header.exists)
+			{
+				trace('out of bounds');
+				curSection.header.exists = false;
+				curSection.numbers[0].exists = false;
+				curSection.numbers[1].exists = false;
+				for (j in 0...curSection.body.length)
+					curSection.body[j].exists = false;
+			}
+
+			if (getYFromStep(i * 16) >= camera.scroll.y + camera.height && !curSection.header.exists)
+			{
+				trace('displaying at $i ${ScrollTest.Conductor.step}');
+				var displacement:Float = getYFromStep(i * 16);
+				curSection.header.setPosition(_boardPattern.x + _boardPattern.width / 2 - curSection.header.width / 2, _boardPattern.y + displacement);
+				curSection.header.exists = true;
+				curSection.header.active = false;
+
+				curSection.numbers[0].text = '$i';
+				curSection.numbers[0].setPosition(curSection.header.x - curSection.numbers[0].width - 8,
+					curSection.header.y - curSection.numbers[0].height / 2);
+				curSection.numbers[0].exists = curSection.header.exists;
+				curSection.numbers[0].active = curSection.header.active;
+				curSection.numbers[1].text = '$i';
+				curSection.numbers[1].setPosition(curSection.header.x + curSection.header.width + 8, curSection.header.y - curSection.numbers[0].height / 2);
+				curSection.numbers[1].exists = curSection.header.exists;
+				curSection.numbers[1].active = curSection.header.active;
+
+				for (j in 0...curSection.body.length)
+				{
+					var segment = curSection.body[j];
+					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(i * 16 + ((j + 1) * 4)));
+					segment.exists = curSection.header.exists;
+					segment.active = curSection.header.active;
+				}
+			}
+		}
+	}
+
+	private function updateCamFollow()
+	{
+		_camFollow.screenCenter(X);
+		_camFollow.y = _conductorCrochet.y + (CELL_SIZE * CELL_OFFSET);
+
+		camera.follow(_camFollow, LOCKON);
+	}
+
 	// I failed to strum time :pensive:
 	private inline function getYFromStep(step:Float):Float
-	{
 		return step * CELL_SIZE;
-	}
 }
