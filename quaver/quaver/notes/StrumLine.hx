@@ -14,11 +14,13 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import states.ScrollTest;
 
-typedef CharterSection =
+typedef Section =
 {
 	var header:FlxSprite;
 	var numbers:Array<FlxText>;
 	var body:Array<FlxSprite>;
+	var printed:Bool;
+	var exists:Bool;
 }
 
 typedef CharterNote =
@@ -59,7 +61,7 @@ class StrumLine extends FlxSpriteGroup
 	// SECTIONS LESGOO
 	var sectionGroup:FlxTypedSpriteGroup<FlxSprite>;
 
-	var sectionsList:Array<CharterSection> = [];
+	var sectionsList:Array<Section> = [];
 
 	// Background shit and grid rendering I guess
 	private var _checkerboard(default, null):FlxGraphic;
@@ -131,8 +133,8 @@ class StrumLine extends FlxSpriteGroup
 			FlxColor.WHITE, FlxColor.BLACK), BITMAP, 'board$CELL_SIZE'));
 		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.20));
 
-		_line = Cache.set(FlxG.bitmap.create(CELL_SIZE * keyAmount, 1, FlxColor.WHITE), GRAPHIC, 'chartline');
-		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 8, 2, FlxColor.WHITE), GRAPHIC, 'sectionline');
+		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 20, 2, FlxColor.WHITE), GRAPHIC, 'sectionline');
+		_line = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 14, 1, FlxColor.WHITE), GRAPHIC, 'chartline');
 
 		for (i in 0...keyAmount)
 		{
@@ -173,14 +175,20 @@ class StrumLine extends FlxSpriteGroup
 
 			// TODO: add notes to the section instead of pushing them randomly without knowing section and that shit i dont know what im writing lol
 
-			var curSection:CharterSection = {header: lineSprite, body: [], numbers: []};
+			var curSection:Section = {
+				header: lineSprite,
+				body: [],
+				numbers: [],
+				printed: false,
+				exists: lineSprite.exists
+			};
 
 			// Section indicator
 			for (j in 0...2)
 			{
 				var sectionNumbers:FlxText = new FlxText().setFormat(Cache.getFont('vcr.ttf'), 16, FlxColor.WHITE);
 				sectionNumbers.alpha = 0.45;
-				sectionNumbers.exists = lineSprite.exists;
+				sectionNumbers.exists = curSection.exists;
 				curSection.numbers.push(sectionNumbers);
 				sectionGroup.add(sectionNumbers);
 			}
@@ -190,7 +198,7 @@ class StrumLine extends FlxSpriteGroup
 			{
 				var thinLine:FlxSprite = new FlxSprite(0, 0, _line);
 				thinLine.alpha = 0.75;
-				thinLine.exists = lineSprite.exists;
+				thinLine.exists = curSection.exists;
 				curSection.body.push(thinLine);
 				sectionGroup.add(thinLine);
 			}
@@ -210,42 +218,47 @@ class StrumLine extends FlxSpriteGroup
 	{
 		for (i in 0...sectionsList.length)
 		{
-			var curSection:CharterSection = sectionsList[i];
+			var curSection:Section = sectionsList[i];
 
-			if (getYFromStep(i * 16) <= camera.scroll.y - camera.height && curSection.header.exists)
+			if (getYFromStep(i * 16) <= camera.scroll.y + camera.height && !curSection.exists)
 			{
-				trace('out of bounds');
-				curSection.header.exists = false;
-				curSection.numbers[0].exists = false;
-				curSection.numbers[1].exists = false;
-				for (j in 0...curSection.body.length)
-					curSection.body[j].exists = false;
+				if (!curSection.printed)
+				{
+					trace('Showing section $i at ${ScrollTest.Conductor.step}');
+					curSection.printed = true;
+				}
+				curSection.exists = true;
 			}
 
-			if (getYFromStep(i * 16) >= camera.scroll.y + camera.height && !curSection.header.exists)
+			if (getYFromStep(i * 16) <= camera.scroll.y - camera.height && curSection.exists)
+				curSection.exists = false;
+
+			curSection.header.exists = curSection.exists;
+			curSection.numbers[0].exists = curSection.exists;
+			curSection.numbers[1].exists = curSection.exists;
+			for (j in 0...curSection.body.length)
+				curSection.body[j].exists = curSection.exists;
+
+			if (curSection.exists)
 			{
-				trace('displaying at $i ${ScrollTest.Conductor.step}');
 				var displacement:Float = getYFromStep(i * 16);
 				curSection.header.setPosition(_boardPattern.x + _boardPattern.width / 2 - curSection.header.width / 2, _boardPattern.y + displacement);
-				curSection.header.exists = true;
 				curSection.header.active = false;
 
 				curSection.numbers[0].text = '$i';
 				curSection.numbers[0].setPosition(curSection.header.x - curSection.numbers[0].width - 8,
 					curSection.header.y - curSection.numbers[0].height / 2);
-				curSection.numbers[0].exists = curSection.header.exists;
-				curSection.numbers[0].active = curSection.header.active;
+				curSection.numbers[0].active = false;
+
 				curSection.numbers[1].text = '$i';
 				curSection.numbers[1].setPosition(curSection.header.x + curSection.header.width + 8, curSection.header.y - curSection.numbers[0].height / 2);
-				curSection.numbers[1].exists = curSection.header.exists;
-				curSection.numbers[1].active = curSection.header.active;
+				curSection.numbers[1].active = false;
 
 				for (j in 0...curSection.body.length)
 				{
 					var segment = curSection.body[j];
 					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(i * 16 + ((j + 1) * 4)));
-					segment.exists = curSection.header.exists;
-					segment.active = curSection.header.active;
+					segment.active = false;
 				}
 			}
 		}
