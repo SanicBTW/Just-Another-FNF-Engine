@@ -32,10 +32,9 @@ class Note extends FlxSprite
 	var tripTimer:Float = 1;
 	var holdingTime:Float = 0;
 
-	var generated:Bool = false;
 	var isVisible:Bool = false;
 
-	public function new(stepTime:Float, noteData:Int, ?prevNote:Note, isSustain:Bool = false)
+	function new(stepTime:Float, noteData:Int, ?prevNote:Note, isSustain:Bool = false)
 	{
 		super();
 
@@ -48,13 +47,9 @@ class Note extends FlxSprite
 		this.stepTime = stepTime;
 
 		y -= 2000;
-	}
 
-	function generate()
-	{
 		if (noteData > -1)
 		{
-			generated = true;
 			frames = ScrollTest.Paths.getSparrowAtlas('NOTE_assets');
 			loadNoteAnims();
 			x += swagWidth * noteData;

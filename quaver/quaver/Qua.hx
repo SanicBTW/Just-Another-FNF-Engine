@@ -69,6 +69,9 @@ class Qua
 	// Instead of parsing it, just do a quick search and that shit yknow
 	private var lines:Array<String> = [];
 
+	// 2 worked fine for a long ass time????
+	final length_min:Int = 1;
+
 	public function new(rawContent:String, parse:Bool = true)
 	{
 		lines = rawContent.trim().split("\n");
@@ -84,7 +87,6 @@ class Qua
 		this.parseObjects();
 	}
 
-	// Not getting InitialScrollVelocity
 	public function parseMetadata()
 	{
 		var lastSection:String = '';
@@ -94,7 +96,9 @@ class Qua
 			var section:String = line.split(":")[0];
 			var value:String = line.split(":")[1];
 
-			if (value.length > 2 && !(exclusions.contains(lastSection) || exclusions.contains(section.trim())) && fields.contains(section))
+			if (value.length > length_min
+				&& !(exclusions.contains(lastSection) || exclusions.contains(section.trim()))
+				&& fields.contains(section))
 			{
 				Reflect.setField(this, section, value.trim());
 				continue;
@@ -114,7 +118,7 @@ class Qua
 			var section:String = lines[i].split(":")[0];
 			var value:Null<String> = lines[i].split(":")[1];
 
-			if (value.length <= 2)
+			if (value.length <= length_min || value.trim() == "[]" && section.trim() != "KeySounds")
 				lastSection = section;
 
 			// lil check
@@ -156,7 +160,6 @@ class Qua
 								// assuming the next section is uhhhhhhhh keysounds
 								hitObj.KeySounds = cast lines[i + 3].split(":")[1];
 						}
-
 						HitObjects.push(hitObj);
 				}
 			}

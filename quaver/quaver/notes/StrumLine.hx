@@ -95,6 +95,7 @@ class StrumLine extends FlxSpriteGroup
 
 		_conductorCrochet = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		_conductorCrochet.setGraphicSize(Std.int((CELL_SIZE * keyAmount) + CELL_SIZE), 2);
+		_conductorCrochet.alpha = 0.5;
 		_conductorCrochet.y = CELL_SIZE / 2;
 		_conductorCrochet.active = _boardPattern.active;
 		add(_conductorCrochet);
@@ -148,9 +149,7 @@ class StrumLine extends FlxSpriteGroup
 		for (i in 0...keyAmount)
 		{
 			var noteHold:Note = new Note(0, i, null, true);
-			noteHold.generate();
 			var noteEnd:Note = new Note(0, i, noteHold, true);
-			noteEnd.generate();
 
 			var frameB:FlxFrame = noteHold.frames.framesHash.get(noteHold.animation.frameName);
 			var graphicB:FlxGraphic = FlxGraphic.fromFrame(frameB);
@@ -219,10 +218,6 @@ class StrumLine extends FlxSpriteGroup
 
 	function pushNote(note:Note)
 	{
-		if (note.generated)
-			return;
-
-		note.generate();
 		note.setGraphicSize(CELL_SIZE, CELL_SIZE);
 		note.updateHitbox();
 		note.exists = false;
@@ -316,7 +311,7 @@ class StrumLine extends FlxSpriteGroup
 	{
 		for (note in noteGroup)
 		{
-			if (!note.generated || note == null)
+			if (note == null)
 				break;
 
 			if (getYFromStep(note.stepTime) <= camera.scroll.y + camera.height && !note.isVisible)
@@ -332,7 +327,7 @@ class StrumLine extends FlxSpriteGroup
 
 		for (note in holdMap.keys())
 		{
-			if (!note.generated || note == null)
+			if (note == null)
 				break;
 
 			var curHold:CharterNote = holdMap.get(note);
@@ -348,7 +343,6 @@ class StrumLine extends FlxSpriteGroup
 
 			curHold.hold.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.hold.width / 2);
 			curHold.hold.y = getYFromStep(note.stepTime) + CELL_SIZE / 2;
-
 			curHold.hold.height = ((CELL_SIZE * curHold.holdLength) - CELL_SIZE);
 
 			curHold.end.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.end.width / 2);

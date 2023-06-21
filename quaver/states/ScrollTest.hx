@@ -86,13 +86,16 @@ class ScrollTest extends FlxState
 		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
-		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) < 3500)
+		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= camera.scroll.y + camera.height)
 		{
 			var nextNote:Note = shitNotes[0];
 			if (nextNote != null)
 				strums.pushNote(nextNote);
+
 			shitNotes.splice(shitNotes.indexOf(nextNote), 1);
 		}
+
+		holdNotes(elapsed);
 
 		super.update(elapsed);
 
@@ -148,7 +151,7 @@ class ScrollTest extends FlxState
 
 	function generateChart()
 	{
-		qua = new Qua(Cache.getText(Paths.getPath('79274/79274.qua')));
+		qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
 		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
 			1,
 			false);
@@ -196,6 +199,66 @@ class ScrollTest extends FlxState
 		});
 
 		FlxG.sound.music.play(true);
+	}
+
+	private function holdNotes(elapsed:Float)
+	{
+		if (strums == null)
+			return;
+
+		var holdArray:Array<Bool> = [
+			Controls.left.state == PRESSED,
+			Controls.down.state == PRESSED,
+			Controls.up.state == PRESSED,
+			Controls.right.state == PRESSED,
+		];
+
+		// Look into this
+		for (note in strums.holdMap.keys())
+		{
+			if (note.holdingTime < note.sustainLength && !note.tooLate && note.wasGoodHit)
+			{
+				var isHeld:Bool = holdArray[note.noteData];
+				var receptor:Receptor = strums.receptors.members[note.noteData];
+				if (isHeld && receptor.animation.curAnim.name != "confirm")
+					receptor.playAnim("confirm", true);
+
+				note.holdingTime = Conductor.time - note.strumTime;
+				var regrabTime:Float = 0.2;
+
+				if (isHeld)
+					note.tripTimer = 1;
+				else
+					note.tripTimer -= elapsed / regrabTime; // maybe make the regrab timer an option
+
+				if (note.tripTimer <= 0)
+				{
+					note.tripTimer = 0;
+					trace("tripped hold / roll");
+					note.tooLate = true;
+					note.wasGoodHit = false;
+					for (tail in note.tail)
+					{
+						if (!tail.wasGoodHit)
+							tail.tooLate = true;
+					}
+				}
+				else
+				{
+					for (tail in note.tail)
+					{
+						if ((tail.strumTime - 25) <= Conductor.time && !tail.wasGoodHit && !tail.tooLate)
+							noteHit(tail);
+					}
+
+					if (note.holdingTime >= note.sustainLength)
+					{
+						trace("finished hold / roll successfully");
+						note.holdingTime = note.sustainLength;
+					}
+				}
+			}
+		}
 	}
 
 	function onActionPressed(action:ActionType)
