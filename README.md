@@ -15,7 +15,7 @@ and more!
 - [v0.2.7.1 (a118fe4)](https://onlinefunky.pages.dev/)
 - [V0.2.8 (221672c)](https://funkye.pages.dev/)
 - [V0.2.10 LStable (c419c03)](https://hxstest.funkye.pages.dev/)
-- [v0.2.x LTiles (ef538d6)](https://tiless.funkye.pages.dev/) (Next release coming out in a couple of hours)
+- [v0.2.x LTiles (6719594)](https://tiless.funkye.pages.dev/)
 - [v0.2.x LQuaver (c78d499)](https://quaverr.funkye.pages.dev/)
 - Experimental HUB will be back soon
 
