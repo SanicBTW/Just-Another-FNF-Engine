@@ -253,7 +253,7 @@ class StrumLine extends FlxSpriteGroup
 	private function updateCrochet()
 	{
 		_conductorCrochet.y = getYFromStep(ScrollTest.Conductor.step) + (CELL_SIZE * 0.5);
-		receptors.y = _conductorCrochet.y - (CELL_SIZE * 0.5);
+		receptors.y = _conductorCrochet.y;
 	}
 
 	// TODO: Proper space check and shit though I believe this is already optimized
@@ -320,7 +320,27 @@ class StrumLine extends FlxSpriteGroup
 			if (getYFromStep(note.stepTime) <= camera.scroll.y - camera.height && note.isVisible)
 				note.isVisible = false;
 
+			// Input shit
+
+			// Note is above the crochet by half cell
+			if (getYFromStep(note.stepTime) + (note.height + (CELL_SIZE * 0.5)) <= _conductorCrochet.y)
+			{
+				note.tooLate = true;
+				note.canBeHit = false;
+				note.alpha = 0.3;
+
+				if (note.isSustain)
+					for (hold in note.tail)
+						hold.alpha = 0.3;
+			}
+			// Note is below the crochet
+			else
+			{
+				// strumTime > ScrollTest.Conductor.time - 166 && strumTime < ScrollTest.Conductor.time + (166 * 0.5)
+			}
+
 			note.exists = note.isVisible;
+			note.active = false;
 			note.x = _boardPattern.x + note.noteData * CELL_SIZE;
 			note.y = getYFromStep(note.stepTime);
 		}
@@ -338,8 +358,8 @@ class StrumLine extends FlxSpriteGroup
 			if (getYFromStep(note.stepTime + curHold.holdLength) <= camera.scroll.y - camera.height && curHold.exists)
 				curHold.exists = false;
 
-			curHold.hold.exists = curHold.exists;
-			curHold.end.exists = curHold.exists;
+			curHold.hold.exists = curHold.end.exists = curHold.exists;
+			curHold.hold.active = curHold.end.active = false;
 
 			curHold.hold.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.hold.width / 2);
 			curHold.hold.y = getYFromStep(note.stepTime) + CELL_SIZE / 2;

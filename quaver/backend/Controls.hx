@@ -39,10 +39,10 @@ class Controls
 		CONFIRM => [Keyboard.ENTER],
 		BACK => [Keyboard.ESCAPE],
 		RESET => [Keyboard.R],
-		LEFT => [Keyboard.LEFT, Keyboard.A],
-		DOWN => [Keyboard.DOWN, Keyboard.S],
-		UP => [Keyboard.UP, Keyboard.W],
-		RIGHT => [Keyboard.RIGHT, Keyboard.D]
+		LEFT => [Keyboard.LEFT, Keyboard.A, Keyboard.Z],
+		DOWN => [Keyboard.DOWN, Keyboard.S, Keyboard.X],
+		UP => [Keyboard.UP, Keyboard.W, Keyboard.COMMA],
+		RIGHT => [Keyboard.RIGHT, Keyboard.D, Keyboard.PERIOD]
 	];
 
 	private static var keysPressed:Array<Int> = [];

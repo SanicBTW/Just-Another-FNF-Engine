@@ -92,21 +92,4 @@ class Note extends FlxSprite
 		setGraphicSize(Std.int(width * 0.7));
 		updateHitbox();
 	}
-
-	override function update(elapsed:Float)
-	{
-		if (strumTime > ScrollTest.Conductor.time - 166 && strumTime < ScrollTest.Conductor.time + (166 * 0.5))
-			canBeHit = true;
-		else
-			canBeHit = false;
-
-		if (strumTime < ScrollTest.Conductor.time - 166 && !wasGoodHit)
-			tooLate = true;
-
-		if (tooLate)
-			if (alpha > 0.3)
-				alpha = 0.3;
-
-		super.update(elapsed);
-	}
 }
