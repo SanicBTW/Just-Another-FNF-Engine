@@ -17,7 +17,6 @@ import states.ScrollTest;
 typedef Section =
 {
 	var header:FlxSprite;
-	var numbers:Array<FlxText>;
 	var body:Array<FlxSprite>;
 	var printed:Bool;
 	var exists:Bool;
@@ -65,7 +64,7 @@ class StrumLine extends FlxSpriteGroup
 	var sectionGroup:FlxTypedSpriteGroup<FlxSprite>;
 	var sectionList:Array<Section> = [];
 
-	// Background shit and grid rendering I guess
+	// Cache graphics and bg rendering
 	private var _checkerboard(default, null):FlxGraphic;
 	private var _line(default, null):FlxGraphic;
 	private var _sectionLine(default, null):FlxGraphic;
@@ -74,6 +73,8 @@ class StrumLine extends FlxSpriteGroup
 	private var _conductorCrochet(default, null):FlxSprite;
 
 	private var _camFollow:FlxObject;
+
+	var botPlay:Bool = false;
 
 	function new(X:Float = 0)
 	{
@@ -141,10 +142,10 @@ class StrumLine extends FlxSpriteGroup
 		@:privateAccess
 		_checkerboard = FlxGraphic.fromBitmapData(Cache.set(FlxGridOverlay.createGrid(CELL_SIZE, CELL_SIZE, CELL_SIZE * 2, CELL_SIZE * 2, true,
 			FlxColor.WHITE, FlxColor.BLACK), BITMAP, 'board$CELL_SIZE'));
-		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.20));
+		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0));
 
-		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 20, 2, FlxColor.WHITE), GRAPHIC, 'sectionline');
-		_line = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 14, 1, FlxColor.WHITE), GRAPHIC, 'chartline');
+		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 30, 2, FlxColor.WHITE), GRAPHIC, 'sectionline');
+		_line = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 20, 1, FlxColor.WHITE), GRAPHIC, 'chartline');
 
 		for (i in 0...keyAmount)
 		{
@@ -171,10 +172,6 @@ class StrumLine extends FlxSpriteGroup
 
 		sectionGroup.clear();
 
-		// TODO: get amount of sections possible on bpm changes and show the correct timing
-		// like if there are bpm changes and uh like the section lines are more near and shit like that, just copy osu dunno
-		// or even better, just dont implement it !!!!
-
 		for (i in 0...Std.int((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) / 16))
 		{
 			// Them header
@@ -183,25 +180,12 @@ class StrumLine extends FlxSpriteGroup
 			lineSprite.exists = false;
 			sectionGroup.add(lineSprite);
 
-			// TODO: add notes to the section instead of pushing them randomly without knowing section and that shit i dont know what im writing lol
-
 			var curSection:Section = {
 				header: lineSprite,
 				body: [],
-				numbers: [],
 				printed: false,
 				exists: lineSprite.exists
 			};
-
-			// Section indicator
-			for (j in 0...2)
-			{
-				var sectionNumbers:FlxText = new FlxText().setFormat(Cache.getFont('vcr.ttf'), 16, FlxColor.WHITE);
-				sectionNumbers.alpha = 0.45;
-				sectionNumbers.exists = curSection.exists;
-				curSection.numbers.push(sectionNumbers);
-				sectionGroup.add(sectionNumbers);
-			}
 
 			// Section body lines
 			for (j in 1...4)
@@ -271,37 +255,33 @@ class StrumLine extends FlxSpriteGroup
 					curSection.printed = true;
 				}
 				curSection.exists = true;
-			}
 
-			if (getYFromStep(i * 16) <= camera.scroll.y - camera.height && curSection.exists)
-				curSection.exists = false;
+				curSection.header.exists = curSection.exists;
+				for (j in 0...curSection.body.length)
+					curSection.body[j].exists = curSection.exists;
 
-			curSection.header.exists = curSection.exists;
-			curSection.numbers[0].exists = curSection.exists;
-			curSection.numbers[1].exists = curSection.exists;
-			for (j in 0...curSection.body.length)
-				curSection.body[j].exists = curSection.exists;
-
-			if (curSection.exists)
-			{
 				var displacement:Float = getYFromStep(i * 16);
 				curSection.header.setPosition(_boardPattern.x + _boardPattern.width / 2 - curSection.header.width / 2, _boardPattern.y + displacement);
 				curSection.header.active = false;
-
-				curSection.numbers[0].text = '$i';
-				curSection.numbers[0].setPosition(curSection.header.x - curSection.numbers[0].width - 8,
-					curSection.header.y - curSection.numbers[0].height / 2);
-				curSection.numbers[0].active = false;
-
-				curSection.numbers[1].text = '$i';
-				curSection.numbers[1].setPosition(curSection.header.x + curSection.header.width + 8, curSection.header.y - curSection.numbers[0].height / 2);
-				curSection.numbers[1].active = false;
 
 				for (j in 0...curSection.body.length)
 				{
 					var segment = curSection.body[j];
 					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(i * 16 + ((j + 1) * 4)));
 					segment.active = false;
+				}
+			}
+
+			if (getYFromStep(i * 16) <= camera.scroll.y - camera.height && curSection.exists)
+			{
+				if (curSection.header.y <= camera.scroll.y - camera.height && curSection.header.exists)
+					curSection.header.exists = false;
+
+				for (j in 0...curSection.body.length)
+				{
+					var thinMf:FlxSprite = curSection.body[j];
+					if (thinMf.y <= camera.scroll.y - camera.height && thinMf.exists)
+						thinMf.exists = false;
 				}
 			}
 		}
@@ -336,6 +316,8 @@ class StrumLine extends FlxSpriteGroup
 			// Note is below the crochet
 			else
 			{
+				if (note.strumTime > ScrollTest.Conductor.time - 166 && note.strumTime < ScrollTest.Conductor.time + 166)
+					note.canBeHit = true;
 				// strumTime > ScrollTest.Conductor.time - 166 && strumTime < ScrollTest.Conductor.time + (166 * 0.5)
 			}
 
@@ -352,7 +334,7 @@ class StrumLine extends FlxSpriteGroup
 
 			var curHold:CharterNote = holdMap.get(note);
 
-			if (getYFromStep(note.stepTime + curHold.holdLength) <= camera.scroll.y + camera.height && !curHold.exists)
+			if (getYFromStep(note.stepTime) <= camera.scroll.y + camera.height && !curHold.exists)
 				curHold.exists = true;
 
 			if (getYFromStep(note.stepTime + curHold.holdLength) <= camera.scroll.y - camera.height && curHold.exists)
@@ -367,6 +349,22 @@ class StrumLine extends FlxSpriteGroup
 
 			curHold.end.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.end.width / 2);
 			curHold.end.y = curHold.hold.y + curHold.hold.height;
+
+			if (botPlay)
+			{
+				var conductorPos:Float = _conductorCrochet.y;
+				if (conductorPos >= curHold.hold.y && conductorPos <= curHold.hold.y + curHold.hold.height + curHold.end.height)
+					receptors.members[note.noteData].playAnim('confirm', true);
+			}
+		}
+
+		if (botPlay)
+		{
+			for (receptor in receptors)
+			{
+				if (receptor.animation.finished)
+					receptor.playAnim('static');
+			}
 		}
 	}
 

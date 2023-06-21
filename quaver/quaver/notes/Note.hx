@@ -20,6 +20,8 @@ class Note extends FlxSprite
 	var tooLate:Bool = false;
 	var canBeHit:Bool = false;
 	var wasGoodHit:Bool = false;
+	var mustPress:Bool = false;
+	var strumLine:Int = 0;
 
 	var prevNote:Note;
 	var head:Note = null;
@@ -29,8 +31,7 @@ class Note extends FlxSprite
 	var isSustain:Bool = false;
 	var isSustainEnd:Bool = false;
 
-	var tripTimer:Float = 1;
-	var holdingTime:Float = 0;
+	var holding:Bool = false;
 
 	var isVisible:Bool = false;
 
@@ -70,9 +71,6 @@ class Note extends FlxSprite
 			if (prevNote.isSustain)
 			{
 				prevNote.animation.play('${Receptor.getColorFromNum(noteData)}hold');
-				prevNote.updateHitbox();
-
-				prevNote.scale.y *= ((ScrollTest.Conductor.stepCrochet / 100) * 1.5);
 				prevNote.updateHitbox();
 			}
 		}

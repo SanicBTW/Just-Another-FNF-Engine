@@ -10,6 +10,7 @@ import flixel.system.FlxSplash;
 import flixel.util.FlxArrayUtil;
 import openfl.Assets;
 import openfl.filters.BitmapFilter;
+import window.Overlay;
 #if desktop
 import flash.events.FocusEvent;
 #end
@@ -223,6 +224,11 @@ class FlxGame extends Sprite
 	#end
 
 	/**
+	 * The Debug Overlay that shows stats in-game
+	 */
+	public var overlay:Overlay;
+
+	/**
 	 * Instantiate a new game object.
 	 *
 	 * @param GameWidth       The width of your game in game pixels, not necessarily final display pixels (see `Zoom`).
@@ -321,6 +327,9 @@ class FlxGame extends Sprite
 		addChild(_focusLostScreen);
 		#end
 		#end
+
+		overlay = new Overlay(10, 8);
+		addChild(overlay);
 
 		// Focus gained/lost monitoring
 		#if (desktop && openfl <= "4.0.0")
@@ -466,6 +475,9 @@ class FlxGame extends Sprite
 		for (postProcess in postProcesses)
 			postProcess.rebuild();
 		#end
+
+		if (overlay != null)
+			overlay.reposition(width, height);
 	}
 
 	/**

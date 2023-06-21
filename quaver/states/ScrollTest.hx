@@ -7,15 +7,26 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.addons.display.FlxTiledSprite;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
+import flixel.system.FlxSound;
 import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
+import flixel.util.FlxSort;
+import funkin.Song;
+import network.MultiCallback;
+import network.pocketbase.Collection;
+import network.pocketbase.PBRequest;
+import network.pocketbase.Record.FunkinRecord;
 import network.pocketbase.User;
 import openfl.display.BlendMode;
+import openfl.media.Sound;
 import quaver.Qua;
 import quaver.notes.Note;
 import quaver.notes.Receptor;
 import quaver.notes.StrumLine;
+
+using backend.Extensions;
 
 class ScrollTest extends FlxState
 {
@@ -32,14 +43,18 @@ class ScrollTest extends FlxState
 	var accum:Float = 0;
 	var gridBackground:FlxTiledSprite;
 
-	var strums:StrumLine;
+	var strums:FlxTypedGroup<StrumLine>;
+	var playerStrums:StrumLine;
+	var opponentStrums:StrumLine;
 	// Dedicated cam for the strums so scrolling actually works and shit i hate my life
 	var strumCam:FlxCamera;
 
 	// aye i will change the dumb password wen i finish them online servers and support shit
 	var qua:Qua = null;
+	var swagShit:SwagSong = null;
 
 	var shitNotes:Array<Note> = [];
+	var voices:FlxSound = new FlxSound();
 
 	override public function create()
 	{
@@ -64,9 +79,14 @@ class ScrollTest extends FlxState
 		camOther.bgColor.alpha = 0;
 		FlxG.cameras.add(camOther, false);
 
+		strums = new FlxTypedGroup<StrumLine>();
+		strums.cameras = [strumCam];
+		add(strums);
+
 		// Automatic update haha
 		// Gotta create it on create (haha i want to kms) because of some issue with them signals and events lol
 		Conductor = new Conductor();
+
 		add(Conductor);
 
 		backend.Controls.onActionPressed.add(onActionPressed);
@@ -74,6 +94,9 @@ class ScrollTest extends FlxState
 
 		generateChart();
 		generateBackground();
+
+		if (swagShit != null)
+			Conductor.active = false;
 
 		FlxG.camera.zoom = 1;
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -85,12 +108,22 @@ class ScrollTest extends FlxState
 	{
 		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
-		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= camera.scroll.y + camera.height)
+		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= strumCam.scroll.y + strumCam.height)
 		{
 			var nextNote:Note = shitNotes[0];
 			if (nextNote != null)
-				strums.pushNote(nextNote);
+			{
+				var strumLine:StrumLine = strums.members[nextNote.strumLine];
+				if (strumLine != null)
+					strumLine.pushNote(nextNote);
+				else
+				{
+					nextNote.mustPress = true;
+					playerStrums.pushNote(nextNote);
+				}
+			}
 
 			shitNotes.splice(shitNotes.indexOf(nextNote), 1);
 		}
@@ -98,6 +131,32 @@ class ScrollTest extends FlxState
 		holdNotes(elapsed);
 
 		super.update(elapsed);
+
+		if (swagShit != null)
+		{
+			if (FlxG.sound.music != null && FlxG.sound.music.playing)
+			{
+				if (Math.abs(FlxG.sound.music.time - Conductor.time) > Conductor.resyncThreshold
+					|| (swagShit.needsVoices && Math.abs(voices.time - Conductor.time) > Conductor.resyncThreshold))
+				{
+					trace('Resyncing song time ${FlxG.sound.music.time}, ${Conductor.time}');
+					if (swagShit.needsVoices)
+						voices.pause();
+
+					Conductor.time = FlxG.sound.music.time;
+
+					if (swagShit.needsVoices)
+					{
+						voices.time = Conductor.time;
+						voices.play();
+					}
+
+					trace('New song time ${FlxG.sound.music.time}, ${Conductor.time}');
+				}
+
+				Conductor.time += elapsed * 1000;
+			}
+		}
 
 		gridBackground.scrollX += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
 		var increaseUpTo:Float = gridBackground.height / 8;
@@ -144,50 +203,187 @@ class ScrollTest extends FlxState
 		funkyBack.alpha = 0.07;
 		add(funkyBack);
 
-		strums = new StrumLine((FlxG.width / 2));
-		strums.cameras = [strumCam];
-		add(strums);
+		opponentStrums = new StrumLine((FlxG.width / 2) - FlxG.width / 4);
+		opponentStrums.cameras = strums.cameras;
+		opponentStrums.botPlay = true;
+		strums.add(opponentStrums);
+
+		playerStrums = new StrumLine((FlxG.width / 2) + FlxG.width / 4);
+		playerStrums.cameras = strums.cameras;
+		strums.add(playerStrums);
 	}
 
 	function generateChart()
 	{
-		qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
-		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
-			1,
-			false);
-		FlxG.sound.music.stop();
-		Conductor.bpm = qua.TimingPoints[0].Bpm;
+		/*
+			qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
+			FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
+				1,
+				false);
+			FlxG.sound.music.stop();
+			Conductor.bpm = qua.TimingPoints[0].Bpm;
 
-		for (hitObject in qua.HitObjects)
-		{
-			var startTime:Float = (hitObject.StartTime / Conductor.stepCrochet);
-			var noteData:Int = hitObject.Lane - 1;
-			var endTime:Float = 0;
-
-			if (hitObject.EndTime > 0)
-				endTime = (hitObject.EndTime / Conductor.stepCrochet);
-
-			var oldNote:Note = null;
-			if (shitNotes.length > 0)
-				oldNote = shitNotes[shitNotes.length - 1];
-
-			var newNote:Note = new Note(startTime, noteData, oldNote);
-			var holdStep:Int = newNote.sustainLength = (endTime > 0) ? Math.round((endTime - startTime) / Conductor.stepCrochet) + 1 : 0;
-			shitNotes.push(newNote);
-
-			if (holdStep > 0)
+			for (hitObject in qua.HitObjects)
 			{
-				for (note in 0...holdStep)
-				{
-					var sustainNote:Note = new Note(startTime * note, noteData, shitNotes[shitNotes.length - 1], true);
-					sustainNote.head = newNote;
-					sustainNote.isSustainEnd = (note == holdStep - 1);
+				var startTime:Float = (hitObject.StartTime / Conductor.stepCrochet);
+				var noteData:Int = hitObject.Lane - 1;
+				var endTime:Float = 0;
 
-					newNote.tail.push(sustainNote);
-					shitNotes.push(sustainNote);
+				if (hitObject.EndTime > 0)
+					endTime = (hitObject.EndTime / Conductor.stepCrochet);
+
+				var oldNote:Note = null;
+				if (shitNotes.length > 0)
+					oldNote = shitNotes[shitNotes.length - 1];
+
+				var newNote:Note = new Note(startTime, noteData, oldNote);
+				newNote.strumLine = 1;
+				var holdStep:Int = newNote.sustainLength = (endTime > 0) ? Math.floor((endTime - startTime) / Conductor.stepCrochet) + 1 : 0;
+				shitNotes.push(newNote);
+
+				if (holdStep > 0)
+				{
+					for (note in 0...holdStep)
+					{
+						var sustainNote:Note = new Note(startTime + (Conductor.stepCrochet * note), noteData, shitNotes[shitNotes.length - 1], true);
+						sustainNote.strumLine = 1;
+						sustainNote.head = newNote;
+						sustainNote.isSustainEnd = (note == holdStep - 1);
+
+						newNote.tail.push(sustainNote);
+						shitNotes.push(sustainNote);
+					}
+				}
+		}*/
+
+		var endChart:String = '';
+		var endInst:Sound = new Sound();
+		var endVoices:Null<Sound> = null;
+
+		var netCb:MultiCallback = new MultiCallback(() ->
+		{
+			swagShit = Song.createFromRaw(endChart);
+
+			if (endVoices == null)
+				swagShit.needsVoices = false;
+
+			Conductor.changeBPM(swagShit.bpm);
+
+			FlxG.sound.music = new FlxSound();
+			FlxG.sound.music.loadEmbedded(endInst);
+
+			voices.loadEmbedded(endVoices);
+			FlxG.sound.list.add(voices);
+
+			for (section in swagShit.notes)
+			{
+				for (songNotes in section.sectionNotes)
+				{
+					switch (songNotes[1])
+					{
+						default:
+							var stepTime:Float = (songNotes[0] / Conductor.stepCrochet);
+							var sustainTime:Float = 0;
+							var noteData:Int = Std.int(songNotes[1] % 4);
+							var hitNote:Bool = section.mustHitSection;
+
+							if (songNotes[2] > 0)
+								sustainTime = (songNotes[2] / Conductor.stepCrochet);
+
+							if (songNotes[1] > 3)
+								hitNote = !section.mustHitSection;
+
+							var strumLine:Int = (hitNote ? 1 : 0);
+
+							var oldNote:Note = null;
+							if (shitNotes.length > 0)
+								oldNote = shitNotes[shitNotes.length - 1];
+
+							var newNote:Note = new Note(stepTime, noteData, oldNote, false);
+							newNote.mustPress = hitNote;
+							newNote.strumLine = strumLine;
+							var holdStep:Int = newNote.sustainLength = (sustainTime > 0) ? Math.round(sustainTime) + 1 : 0;
+							shitNotes.push(newNote);
+
+							if (holdStep > 0)
+							{
+								for (note in 0...holdStep)
+								{
+									var sustainNote:Note = new Note(stepTime * note, noteData, shitNotes[shitNotes.length - 1], true);
+									sustainNote.mustPress = hitNote;
+									sustainNote.strumLine = strumLine;
+									sustainNote.isSustainEnd = (note == holdStep - 1);
+
+									shitNotes.push(sustainNote);
+								}
+							}
+
+						case -1:
+							return;
+					}
 				}
 			}
-		}
+
+			shitNotes.sort((a, b) ->
+			{
+				return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime);
+			});
+		});
+
+		PBRequest.getRecords('funkin', (funky:Collection<FunkinRecord>) ->
+		{
+			var ghost:FunkinRecord = {
+				chart: 'ghost_hard_JEoWzLBa1G.json',
+				collectionId: '9id75c79c70m6yq',
+				collectionName: 'funkin',
+				created: Date.fromString("2023-05-23 02:10:06"),
+				id: 'penevsvaginaxdd',
+				inst: 'inst_2VIHB5dcGM.ogg',
+				song: 'ghost',
+				updated: Date.fromString("2023-05-23 02:10:06"),
+				voices: "voices_AH40sP1G4A.ogg"
+			};
+
+			var selected:FunkinRecord = funky.items.randomElementExcept(ghost, true);
+
+			var chartCb:() -> Void = netCb.add("chart:" + selected.id);
+			var instCb:() -> Void = netCb.add("inst:" + selected.id);
+			var voicesCb:() -> Void = netCb.add("voices:" + selected.id);
+
+			PBRequest.getFile(selected, 'chart', (chart:String) ->
+			{
+				endChart = chart;
+				trace('finished loading chart');
+				chartCb();
+
+				PBRequest.getFile(selected, 'inst', (inst:Sound) ->
+				{
+					endInst = inst;
+					trace('finished loading inst');
+					instCb();
+
+					if (selected.voices != '')
+					{
+						PBRequest.getFile(selected, 'voices', (voices:Sound) ->
+						{
+							endVoices = voices;
+							trace('finished loading voices');
+							voicesCb();
+						}, SOUND);
+					}
+					else
+						voicesCb();
+				}, SOUND);
+			}, RAW_STRING);
+		});
+
+		Conductor.onStepHit.add((curStep) ->
+		{
+			if (swagShit.notes[Std.int(curStep / 16)] != null && swagShit.notes[Std.int(curStep / 16)].changeBPM)
+			{
+				Conductor.changeBPM(swagShit.notes[Std.int(curStep / 16)].bpm);
+			}
+		});
 
 		Conductor.onBeatHit.add((curBeat) ->
 		{
@@ -195,10 +391,14 @@ class ScrollTest extends FlxState
 			{
 				FlxG.camera.zoom += 0.015;
 				camHUD.zoom += 0.03;
+				strumCam.zoom += 0.015;
 			}
 		});
 
-		FlxG.sound.music.play(true);
+		Conductor.onBPMChange.add((oldBPM, newBPM) ->
+		{
+			trace(oldBPM, newBPM);
+		});
 	}
 
 	private function holdNotes(elapsed:Float)
@@ -214,51 +414,14 @@ class ScrollTest extends FlxState
 		];
 
 		// Look into this
-		for (note in strums.holdMap.keys())
-		{
-			if (note.holdingTime < note.sustainLength && !note.tooLate && note.wasGoodHit)
+		/*
+			for (note in playerStrums.holdMap.keys())
 			{
 				var isHeld:Bool = holdArray[note.noteData];
-				var receptor:Receptor = strums.receptors.members[note.noteData];
+				var receptor:Receptor = playerStrums.receptors.members[note.noteData];
 				if (isHeld && receptor.animation.curAnim.name != "confirm")
 					receptor.playAnim("confirm", true);
-
-				note.holdingTime = Conductor.time - note.strumTime;
-				var regrabTime:Float = 0.2;
-
-				if (isHeld)
-					note.tripTimer = 1;
-				else
-					note.tripTimer -= elapsed / regrabTime; // maybe make the regrab timer an option
-
-				if (note.tripTimer <= 0)
-				{
-					note.tripTimer = 0;
-					trace("tripped hold / roll");
-					note.tooLate = true;
-					note.wasGoodHit = false;
-					for (tail in note.tail)
-					{
-						if (!tail.wasGoodHit)
-							tail.tooLate = true;
-					}
-				}
-				else
-				{
-					for (tail in note.tail)
-					{
-						if ((tail.strumTime - 25) <= Conductor.time && !tail.wasGoodHit && !tail.tooLate)
-							noteHit(tail);
-					}
-
-					if (note.holdingTime >= note.sustainLength)
-					{
-						trace("finished hold / roll successfully");
-						note.holdingTime = note.sustainLength;
-					}
-				}
-			}
-		}
+		}*/
 	}
 
 	function onActionPressed(action:ActionType)
@@ -272,13 +435,21 @@ class ScrollTest extends FlxState
 				if (FlxG.sound.music != null)
 				{
 					if (FlxG.sound.music.playing)
+					{
 						FlxG.sound.music.pause();
+						if (swagShit != null && swagShit.needsVoices)
+							voices.pause();
+					}
 					else
+					{
 						FlxG.sound.music.play();
+						if (swagShit != null && swagShit.needsVoices)
+							voices.play();
+					}
 				}
 
 			default:
-				for (receptor in strums.receptors)
+				for (receptor in playerStrums.receptors)
 				{
 					if (action == receptor.action)
 					{
@@ -290,7 +461,7 @@ class ScrollTest extends FlxState
 						var directionList:Array<Int> = [];
 						var dumbNotes:Array<Note> = [];
 
-						strums.noteGroup.forEachAlive(function(daNote:Note)
+						playerStrums.noteGroup.forEachAlive(function(daNote:Note)
 						{
 							if ((daNote.noteData == data) && daNote.canBeHit && !daNote.tooLate && !daNote.wasGoodHit && !daNote.isSustain)
 							{
@@ -321,7 +492,7 @@ class ScrollTest extends FlxState
 
 						for (note in dumbNotes)
 						{
-							strums.destroyNote(note);
+							playerStrums.destroyNote(note);
 						}
 
 						if (possibleNotes.length > 0)
@@ -350,7 +521,7 @@ class ScrollTest extends FlxState
 				return;
 
 			default:
-				for (receptor in strums.receptors)
+				for (receptor in playerStrums.receptors)
 				{
 					if (action == receptor.action)
 					{
@@ -364,12 +535,12 @@ class ScrollTest extends FlxState
 	{
 		if (!note.wasGoodHit)
 		{
-			var receptor:Receptor = strums.receptors.members[note.noteData];
+			var receptor:Receptor = playerStrums.receptors.members[note.noteData];
 			note.wasGoodHit = true;
 			receptor.playAnim('confirm', true);
 
 			if (!note.isSustain)
-				strums.destroyNote(note);
+				playerStrums.destroyNote(note);
 		}
 	}
 }

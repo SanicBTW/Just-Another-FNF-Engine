@@ -33,6 +33,12 @@ fix input (hitting too early will rate it as sick)
 
 im so lame with fucking defines (fix FLX_DEFAULT_ASSETS and beep shit)
 
+fix the amazing strumline on quaver source (there are random fucking graphics popping up bruh)
+
+add note clean up (when goes outside of camera bounds and limit, destroy it) - its broken lol
+
+fix quaver sustains on step time
+
 MOD MANAGER (C# WPF NET 7.0)
 WILL BE USED FOR DOWNLOADING MOD ASSETS INSTEAD OF BUNDLING THEM WITH THE ENGINE
 WILL BE ALSO USED TO DOWNLOAD ALL THE EVENT FILES AND SHIT
