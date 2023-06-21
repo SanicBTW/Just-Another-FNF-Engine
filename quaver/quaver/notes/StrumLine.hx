@@ -10,7 +10,6 @@ import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxRect;
-import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import states.ScrollTest;
 
@@ -18,11 +17,10 @@ typedef Section =
 {
 	var header:FlxSprite;
 	var body:Array<FlxSprite>;
-	var printed:Bool;
 	var exists:Bool;
 }
 
-typedef CharterNote =
+typedef SustainNote =
 {
 	var holdLength:Float;
 	var hold:FlxTiledSprite;
@@ -38,10 +36,11 @@ enum NoteGraphicType
 
 @:publicFields
 // NOTE: Apparently when parsing notes, making sustains isn't actually needed as this will create the FlxTiledSprite and scale it to match the sustain length when pushed
+// TODO: Events
 class StrumLine extends FlxSpriteGroup
 {
 	static final SEPARATION:Int = 160;
-	static final CELL_SIZE:Int = 80;
+	static final CELL_SIZE:Int = 90;
 	static final keyAmount:Int = 4;
 	static final swagWidth:Float = SEPARATION * (CELL_SIZE / SEPARATION);
 
@@ -50,21 +49,8 @@ class StrumLine extends FlxSpriteGroup
 	 */
 	static var CELL_OFFSET:Float = 3.75;
 
-	// Useful shit right here guys
-	var noteGraphics(default, null):Map<NoteGraphicType, Array<FlxGraphic>> = [TAIL_BODY => [], TAIL_END => []];
-
-	// shit receptors
-	var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
-	var noteGroup(default, null):FlxTypedSpriteGroup<Note>;
-	var holdGroup(default, null):FlxTypedSpriteGroup<FlxSprite>;
-
-	var holdMap(default, null):Map<Note, CharterNote> = [];
-
-	// SECTIONS LESGOO
-	var sectionGroup:FlxTypedSpriteGroup<FlxSprite>;
-	var sectionList:Array<Section> = [];
-
-	// Cache graphics and bg rendering
+	// Cache graphics, bg and camera
+	private var noteGraphics(default, null):Map<NoteGraphicType, Array<FlxGraphic>> = [TAIL_BODY => [], TAIL_END => []];
 	private var _checkerboard(default, null):FlxGraphic;
 	private var _line(default, null):FlxGraphic;
 	private var _sectionLine(default, null):FlxGraphic;
@@ -74,7 +60,20 @@ class StrumLine extends FlxSpriteGroup
 
 	private var _camFollow:FlxObject;
 
+	// Exposed variables
 	var botPlay:Bool = false;
+
+	// Note rendering
+	var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
+	var noteGroup(default, null):FlxTypedSpriteGroup<Note>;
+	var holdGroup(default, null):FlxTypedSpriteGroup<FlxSprite>;
+
+	// Stores sustains
+	var holdMap(default, null):Map<Note, SustainNote> = [];
+
+	// Section rendering
+	var sectionGroup(default, null):FlxTypedSpriteGroup<FlxSprite>;
+	var sectionList:Array<Section> = [];
 
 	function new(X:Float = 0)
 	{
@@ -144,8 +143,8 @@ class StrumLine extends FlxSpriteGroup
 			FlxColor.WHITE, FlxColor.BLACK), BITMAP, 'board$CELL_SIZE'));
 		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0));
 
-		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 30, 2, FlxColor.WHITE), GRAPHIC, 'sectionline');
-		_line = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 20, 1, FlxColor.WHITE), GRAPHIC, 'chartline');
+		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 30, 5, FlxColor.WHITE), GRAPHIC, 'sectionline');
+		_line = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 20, 2, FlxColor.WHITE), GRAPHIC, 'chartline');
 
 		for (i in 0...keyAmount)
 		{
@@ -176,14 +175,13 @@ class StrumLine extends FlxSpriteGroup
 		{
 			// Them header
 			var lineSprite:FlxSprite = new FlxSprite(0, 0, _sectionLine);
-			lineSprite.alpha = 0.45;
+			lineSprite.alpha = 0.5;
 			lineSprite.exists = false;
 			sectionGroup.add(lineSprite);
 
 			var curSection:Section = {
 				header: lineSprite,
 				body: [],
-				printed: false,
 				exists: lineSprite.exists
 			};
 
@@ -249,11 +247,6 @@ class StrumLine extends FlxSpriteGroup
 
 			if (getYFromStep(i * 16) <= camera.scroll.y + camera.height && !curSection.exists)
 			{
-				if (!curSection.printed)
-				{
-					trace('Showing section $i at ${ScrollTest.Conductor.step}');
-					curSection.printed = true;
-				}
 				curSection.exists = true;
 
 				curSection.header.exists = curSection.exists;
@@ -279,9 +272,9 @@ class StrumLine extends FlxSpriteGroup
 
 				for (j in 0...curSection.body.length)
 				{
-					var thinMf:FlxSprite = curSection.body[j];
-					if (thinMf.y <= camera.scroll.y - camera.height && thinMf.exists)
-						thinMf.exists = false;
+					var bodyLine:FlxSprite = curSection.body[j];
+					if (bodyLine.y <= camera.scroll.y - camera.height && bodyLine.exists)
+						bodyLine.exists = false;
 				}
 			}
 		}
@@ -325,6 +318,16 @@ class StrumLine extends FlxSpriteGroup
 			note.active = false;
 			note.x = _boardPattern.x + note.noteData * CELL_SIZE;
 			note.y = getYFromStep(note.stepTime);
+
+			if (botPlay)
+			{
+				if (_conductorCrochet.y >= note.y && _conductorCrochet.y <= note.y + note.height)
+				{
+					// cuz uhhhh botplay right
+					receptors.members[note.noteData].playAnim('confirm', true);
+					destroyNote(note);
+				}
+			}
 		}
 
 		for (note in holdMap.keys())
@@ -332,7 +335,7 @@ class StrumLine extends FlxSpriteGroup
 			if (note == null)
 				break;
 
-			var curHold:CharterNote = holdMap.get(note);
+			var curHold:SustainNote = holdMap.get(note);
 
 			if (getYFromStep(note.stepTime) <= camera.scroll.y + camera.height && !curHold.exists)
 				curHold.exists = true;
@@ -352,8 +355,8 @@ class StrumLine extends FlxSpriteGroup
 
 			if (botPlay)
 			{
-				var conductorPos:Float = _conductorCrochet.y;
-				if (conductorPos >= curHold.hold.y && conductorPos <= curHold.hold.y + curHold.hold.height + curHold.end.height)
+				if (_conductorCrochet.y >= curHold.hold.y
+					&& _conductorCrochet.y <= curHold.hold.y + curHold.hold.height + curHold.end.height)
 					receptors.members[note.noteData].playAnim('confirm', true);
 			}
 		}

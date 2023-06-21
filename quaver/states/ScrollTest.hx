@@ -437,6 +437,9 @@ class ScrollTest extends FlxState
 				}
 
 			default:
+				if (playerStrums.botPlay)
+					return;
+
 				for (receptor in playerStrums.receptors)
 				{
 					if (action == receptor.action)
