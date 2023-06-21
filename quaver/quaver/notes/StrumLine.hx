@@ -37,7 +37,7 @@ enum NoteGraphicType
 }
 
 @:publicFields
-// OK So instead of creating a camera in here and manipulate it and shit, use a dedicated camera (required to avoid any other bullshit issue) assigned on .cameras when creating it and using it somewhere else
+// NOTE: Apparently when parsing notes, making sustains isn't actually needed as this will create the FlxTiledSprite and scale it to match the sustain length when pushed
 class StrumLine extends FlxSpriteGroup
 {
 	static final SEPARATION:Int = 160;

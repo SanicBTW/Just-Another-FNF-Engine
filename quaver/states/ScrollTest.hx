@@ -86,17 +86,12 @@ class ScrollTest extends FlxState
 		// Automatic update haha
 		// Gotta create it on create (haha i want to kms) because of some issue with them signals and events lol
 		Conductor = new Conductor();
-
 		add(Conductor);
 
 		backend.Controls.onActionPressed.add(onActionPressed);
 		backend.Controls.onActionReleased.add(onActionReleased);
 
 		generateChart();
-		generateBackground();
-
-		if (swagShit != null)
-			Conductor.active = false;
 
 		FlxG.camera.zoom = 1;
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -158,10 +153,13 @@ class ScrollTest extends FlxState
 			}
 		}
 
-		gridBackground.scrollX += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
-		var increaseUpTo:Float = gridBackground.height / 8;
-		gridBackground.scrollY = Math.sin(accum / increaseUpTo) * increaseUpTo;
-		accum += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
+		if (gridBackground != null)
+		{
+			gridBackground.scrollX += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
+			var increaseUpTo:Float = gridBackground.height / 8;
+			gridBackground.scrollY = Math.sin(accum / increaseUpTo) * increaseUpTo;
+			accum += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
+		}
 	}
 
 	override function destroy()
@@ -302,21 +300,8 @@ class ScrollTest extends FlxState
 							var newNote:Note = new Note(stepTime, noteData, oldNote, false);
 							newNote.mustPress = hitNote;
 							newNote.strumLine = strumLine;
-							var holdStep:Int = newNote.sustainLength = (sustainTime > 0) ? Math.round(sustainTime) + 1 : 0;
+							newNote.sustainLength = (sustainTime > 0) ? Math.floor(sustainTime) + 1 : 0;
 							shitNotes.push(newNote);
-
-							if (holdStep > 0)
-							{
-								for (note in 0...holdStep)
-								{
-									var sustainNote:Note = new Note(stepTime * note, noteData, shitNotes[shitNotes.length - 1], true);
-									sustainNote.mustPress = hitNote;
-									sustainNote.strumLine = strumLine;
-									sustainNote.isSustainEnd = (note == holdStep - 1);
-
-									shitNotes.push(sustainNote);
-								}
-							}
 
 						case -1:
 							return;
@@ -328,6 +313,9 @@ class ScrollTest extends FlxState
 			{
 				return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime);
 			});
+
+			generateBackground();
+			Conductor.active = false;
 		});
 
 		PBRequest.getRecords('funkin', (funky:Collection<FunkinRecord>) ->
