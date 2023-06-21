@@ -103,7 +103,7 @@ class ScrollTest extends FlxState
 	{
 		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
-		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		strumCam.zoom = FlxMath.lerp(0.85, strumCam.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
 		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= strumCam.scroll.y + strumCam.height)
 		{
@@ -269,6 +269,11 @@ class ScrollTest extends FlxState
 
 			FlxG.sound.music = new FlxSound();
 			FlxG.sound.music.loadEmbedded(endInst);
+
+			FlxG.sound.music.onComplete = function()
+			{
+				FlxG.resetState();
+			}
 
 			voices.loadEmbedded(endVoices);
 			FlxG.sound.list.add(voices);

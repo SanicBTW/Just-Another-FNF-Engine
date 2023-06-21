@@ -29,11 +29,11 @@ make it that when a character changes change the reference on modules
 
 change player to boyfriend and opponent to dad on module vars
 
-fix input (hitting too early will rate it as sick)
-
 im so lame with fucking defines (fix FLX_DEFAULT_ASSETS and beep shit)
 
 fix quaver sustains on step time
+
+add note clipping on sustains, events
 
 MOD MANAGER (C# WPF NET 7.0)
 WILL BE USED FOR DOWNLOADING MOD ASSETS INSTEAD OF BUNDLING THEM WITH THE ENGINE
