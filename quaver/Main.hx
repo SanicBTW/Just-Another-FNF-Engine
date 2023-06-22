@@ -74,8 +74,8 @@ class Main extends Sprite
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
-		// cock = new VolumePanel();
-		// addChild(cock);
+		cock = new VolumePanel();
+		addChild(cock);
 
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 		FlxG.fixedTimestep = false;

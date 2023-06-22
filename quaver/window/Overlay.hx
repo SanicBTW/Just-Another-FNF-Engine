@@ -84,8 +84,8 @@ class Overlay extends ExSprite
 		lerpTrack(_bg, "height", _text.textHeight + padding[1], lerpVal);
 
 		// Move to target positions
-		lerpTrack(_bg, "x", targetX + offsets[0], lerpVal);
-		lerpTrack(_bg, "y", targetY + offsets[1], lerpVal);
+		lerpTrack(this, "x", targetX + offsets[0], lerpVal);
+		lerpTrack(this, "y", targetY + offsets[1], lerpVal);
 
 		// Reposition the text based off some shitty formula
 		lerpTrack(_text, "x", _bg.x + padding[0] / 4, lerpVal);

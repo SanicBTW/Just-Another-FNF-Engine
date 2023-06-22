@@ -35,6 +35,8 @@ fix quaver sustains on step time
 
 add note clipping on sustains, events
 
+fix memory leak?¿?¿?
+
 MOD MANAGER (C# WPF NET 7.0)
 WILL BE USED FOR DOWNLOADING MOD ASSETS INSTEAD OF BUNDLING THEM WITH THE ENGINE
 WILL BE ALSO USED TO DOWNLOAD ALL THE EVENT FILES AND SHIT

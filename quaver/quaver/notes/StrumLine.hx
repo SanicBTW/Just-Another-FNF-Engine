@@ -13,6 +13,8 @@ import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import states.ScrollTest;
 
+using backend.Extensions;
+
 typedef Section =
 {
 	var header:FlxSprite;
@@ -302,9 +304,12 @@ class StrumLine extends FlxSpriteGroup
 				note.canBeHit = false;
 				note.alpha = 0.3;
 
-				if (note.isSustain)
-					for (hold in note.tail)
-						hold.alpha = 0.3;
+				if (note.sustainLength > 0)
+				{
+					var curHold:SustainNote = holdMap.get(note);
+					curHold.hold.alpha = 0.3;
+					curHold.end.alpha = 0.3;
+				}
 			}
 			// Note is below the crochet
 			else
@@ -357,7 +362,7 @@ class StrumLine extends FlxSpriteGroup
 			{
 				if (_conductorCrochet.y >= curHold.hold.y
 					&& _conductorCrochet.y <= curHold.hold.y + curHold.hold.height + curHold.end.height)
-					receptors.members[note.noteData].playAnim('confirm', true);
+					receptors.members.unsafeGet(note.noteData).playAnim('confirm', true);
 			}
 		}
 
