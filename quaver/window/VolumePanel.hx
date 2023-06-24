@@ -26,7 +26,9 @@ class VolumePanel extends ExSprite
 	{
 		_outline = drawRound(0, 0, _width + _outlineSize, _height + _outlineSize, [15], FlxColor.BLACK, 0.25);
 		_bg = drawRound(_outlineSize * 0.5, _outlineSize * 0.5, _width, _height, [15], FlxColor.WHITE, 0.6);
-		_tracker = new Slider(_width, 5);
+
+		// 15 cuz corner radius, and uhhh the rest i hate myself
+		_tracker = new Slider(_width - (_outlineSize * 2) - 15, 7);
 		_tracker.x = (_bg.width - _tracker.width) * 0.5;
 		_tracker.y = (_bg.height - _tracker.height) * 0.5;
 
