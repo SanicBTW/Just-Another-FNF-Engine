@@ -1,6 +1,8 @@
 package window;
 
 import flixel.FlxG;
+import flixel.tweens.FlxTween;
+import flixel.tweens.misc.ColorTween;
 import flixel.util.FlxColor;
 import openfl.display.Shape;
 import window.components.Slider;
@@ -20,7 +22,9 @@ class VolumePanel extends ExSprite
 
 	private var _bg:Shape;
 	private var _outline:Shape;
+
 	private var _tracker:Slider;
+	private var _colorTween:ColorTween;
 
 	override public function create()
 	{
@@ -44,6 +48,41 @@ class VolumePanel extends ExSprite
 		{
 			reposition(w, h);
 		});
+
+		FlxG.sound.volumeHandler = (vol:Float) ->
+		{
+			if (_colorTween != null)
+				_colorTween.cancel();
+
+			if (vol == 0)
+			{
+				_colorTween = FlxTween.color(null, 0.4, _tracker.bgColor, FlxColor.RED, {
+					onUpdate: (_) ->
+					{
+						_tracker.bgColor = _colorTween.color;
+					},
+					onComplete: (_) ->
+					{
+						_colorTween = null;
+					}
+				});
+			}
+			else
+			{
+				_colorTween = FlxTween.color(null, 0.4, _tracker.bgColor, FlxColor.WHITE, {
+					onUpdate: (_) ->
+					{
+						_tracker.bgColor = _colorTween.color;
+					},
+					onComplete: (_) ->
+					{
+						_colorTween = null;
+					}
+				});
+			}
+
+			_tracker.progress = vol;
+		}
 	}
 
 	override function update(elapsed:Float, deltaTime:Float)
@@ -52,6 +91,9 @@ class VolumePanel extends ExSprite
 
 		lerpTrack(this, "x", targetX, lerpVal);
 		lerpTrack(this, "y", targetY, lerpVal);
+
+		// For some fucking reason it wont update automatically and i didnt do shit about the base code fr
+		_tracker.update(elapsed, deltaTime);
 	}
 
 	override function screenCenter()

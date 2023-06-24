@@ -11,8 +11,8 @@ import window.VolumePanel;
 
 class Main extends Sprite
 {
-	private var gameWidth:Int = 1280;
-	private var gameHeight:Int = 720;
+	private var gameWidth:Int = 1366;
+	private var gameHeight:Int = 768;
 	private var initialClass:Class<FlxState> = states.ScrollTest;
 	private var zoom:Float = -1;
 	private var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate;

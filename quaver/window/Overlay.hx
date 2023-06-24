@@ -192,23 +192,16 @@ class Overlay extends ExSprite
 	@:noCompletion
 	private function get_currentMem()
 	{
-		#if neko
-		// cannot really test this one
-		return neko.vm.Gc.stats().heap;
-		#elseif hl
-		// gets the hl vm gc ig
-		// current memory* -> offset -90mb (best option)
-		// total allocated -> keeps increasing overtime
-		// allocation count -> seems like its the times it has allocated memory)?, increases overtime
+		#if hl
 		return hl.Gc.stats().currentMemory;
 		#elseif cpp
-		// should i use cpp.vm.Gc.memInfo(3)
-		return untyped __global__.__hxcpp_gc_used_bytes();
+		// shits more innnacurate now!!!!1
+		return cpp.vm.Gc.memInfo64(3);
 		#elseif java
 		// not tested
 		return java.vm.Gc.stats().heap;
 		#elseif (js && html5)
-		// no other way on getting this one
+		// no other way on getting this one - add support for the rest of the browsers
 		return
 			untyped #if haxe4 js.Syntax.code #else __js__ #end ("(window.performance && window.performance.memory) ? window.performance.memory.usedJSHeapSize : 0");
 		#else

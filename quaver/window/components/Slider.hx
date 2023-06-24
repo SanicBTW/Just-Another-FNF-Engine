@@ -13,7 +13,7 @@ class Slider extends ExSprite
 	private var _width:Int = 0;
 	private var _height:Int = 0;
 
-	public var bgColor(default, set):FlxColor = FlxColor.GRAY;
+	public var bgColor(default, set):FlxColor = FlxColor.WHITE;
 
 	@:noCompletion
 	private function set_bgColor(newColor:FlxColor)
@@ -45,6 +45,8 @@ class Slider extends ExSprite
 		return fgColor = newColor;
 	}
 
+	public var progress:Float = 1;
+
 	override public function new(width:Int = 100, height:Int = 5)
 	{
 		_width = width;
@@ -72,7 +74,10 @@ class Slider extends ExSprite
 	{
 		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 7.315), 0, 1);
 
-		lerpTrack(_stepper, "x", (_fgBar.width - _stepper.width) + (_stepper.width * 0.5), lerpVal);
-		lerpTrack(_stepper, "y", (_fgBar.height - _stepper.height) * 0.5, lerpVal);
+		lerpTrack(_fgBar, "scaleX", progress, lerpVal);
+
+		// We want it to be instant snapping
+		_stepper.x = (_fgBar.width - _stepper.width) + (_stepper.width * 0.5);
+		_stepper.y = (_fgBar.height - _stepper.height) * 0.5;
 	}
 }
