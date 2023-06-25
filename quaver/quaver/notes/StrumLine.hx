@@ -166,7 +166,7 @@ class StrumLine extends FlxSpriteGroup
 		}
 	}
 
-	private function regenSections()
+	public function regenSections()
 	{
 		for (i in sectionGroup)
 			i.destroy();

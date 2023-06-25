@@ -51,6 +51,7 @@ class Slider extends ExSprite
 	{
 		_width = width;
 		_height = height;
+		active = false; // cuz we manually update it
 
 		super();
 	}

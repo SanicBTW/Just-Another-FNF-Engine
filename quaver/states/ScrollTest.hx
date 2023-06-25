@@ -1,6 +1,7 @@
 package states;
 
 import backend.*;
+import backend.Conductor.BPMChange;
 import backend.Controls.ActionType;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -278,20 +279,43 @@ class ScrollTest extends FlxState
 			voices.loadEmbedded(endVoices);
 			FlxG.sound.list.add(voices);
 
+			var curChange:BPMChange = {
+				stepTime: 0,
+				songTime: 0,
+				bpm: swagShit.bpm,
+				stepCrochet: Conductor.stepCrochet
+			};
+			var curBPM:Float = swagShit.bpm;
+			var totalSteps:Int = 0;
+			var totalPos:Float = 0;
+
 			for (section in swagShit.notes)
 			{
+				if (section.changeBPM && section.bpm != curBPM)
+				{
+					curBPM = section.bpm;
+					var bpmChange:BPMChange = {
+						stepTime: totalSteps,
+						songTime: totalPos,
+						bpm: curBPM,
+						stepCrochet: ((60 / curBPM) * 1000) / 4
+					};
+					Conductor.bpmChanges.push(bpmChange);
+					curChange = bpmChange;
+				}
+
 				for (songNotes in section.sectionNotes)
 				{
 					switch (songNotes[1])
 					{
 						default:
-							var stepTime:Float = (songNotes[0] / Conductor.stepCrochet);
+							var stepTime:Float = (songNotes[0] / curChange.stepCrochet);
 							var sustainTime:Float = 0;
 							var noteData:Int = Std.int(songNotes[1] % 4);
 							var hitNote:Bool = section.mustHitSection;
 
 							if (songNotes[2] > 0)
-								sustainTime = (songNotes[2] / Conductor.stepCrochet);
+								sustainTime = (songNotes[2] / curChange.stepCrochet);
 
 							if (songNotes[1] > 3)
 								hitNote = !section.mustHitSection;
@@ -320,6 +344,13 @@ class ScrollTest extends FlxState
 			});
 
 			generateBackground();
+			Conductor.onBPMChange.add((oldBPM, newBPM) ->
+			{
+				trace(oldBPM, newBPM);
+				playerStrums.regenSections();
+				opponentStrums.regenSections();
+			});
+
 			Conductor.active = false;
 		});
 
@@ -386,11 +417,6 @@ class ScrollTest extends FlxState
 				camHUD.zoom += 0.03;
 				strumCam.zoom += 0.015;
 			}
-		});
-
-		Conductor.onBPMChange.add((oldBPM, newBPM) ->
-		{
-			trace(oldBPM, newBPM);
 		});
 	}
 
