@@ -1,10 +1,10 @@
 package window;
 
 import flixel.FlxG;
-import flixel.tweens.FlxTween;
-import flixel.tweens.misc.ColorTween;
 import flixel.util.FlxColor;
 import openfl.display.Shape;
+import openfl.text.TextField;
+import openfl.text.TextFormat;
 import window.components.Slider;
 
 class VolumePanel extends ExSprite
@@ -13,8 +13,8 @@ class VolumePanel extends ExSprite
 
 	private var _visibleTime:Float = 0;
 
-	private var _width:Int = 240;
-	private var _height:Int = 100;
+	private var _width:Int = 210;
+	private var _height:Int = 48;
 	private var _outlineSize:Int = 5;
 
 	private var targetX:Float = 0.0;
@@ -24,17 +24,26 @@ class VolumePanel extends ExSprite
 	private var _outline:Shape;
 
 	private var _tracker:Slider;
-	private var _colorTween:ColorTween;
 
 	override public function create()
 	{
 		_outline = drawRound(0, 0, _width + _outlineSize, _height + _outlineSize, [15], FlxColor.BLACK, 0.25);
 		_bg = drawRound(_outlineSize * 0.5, _outlineSize * 0.5, _width, _height, [15], FlxColor.WHITE, 0.6);
 
+		var _text = new TextField();
+		_text.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, 10, 0xFFFFFF);
+		_text.width = _width;
+		_text.height = _height;
+		_text.selectable = false;
+		_text.embedFonts = true;
+		_text.x = _text.y = _outlineSize + 5;
+		_text.text = 'Volume';
+
 		// 15 cuz corner radius, and uhhh the rest i hate myself
-		_tracker = new Slider(_width - (_outlineSize * 2) - 15, 7);
-		_tracker.x = (_bg.width - _tracker.width) * 0.5;
-		_tracker.y = (_bg.height - _tracker.height) * 0.5;
+		_tracker = new Slider(_width - _outlineSize - 15, 7);
+		_tracker.x = _text.x;
+		@:privateAccess
+		_tracker.initialY = _tracker.targetY = _text.y - _tracker._stpText.textHeight - (_text.height - _tracker.height) * 0.5;
 
 		_width += _outlineSize;
 		_height += _outlineSize;
@@ -42,6 +51,7 @@ class VolumePanel extends ExSprite
 		screenCenter();
 		addChild(_outline);
 		addChild(_bg);
+		addChild(_text);
 		addChild(_tracker);
 
 		FlxG.signals.gameResized.add((w, h) ->
@@ -51,36 +61,6 @@ class VolumePanel extends ExSprite
 
 		FlxG.sound.volumeHandler = (vol:Float) ->
 		{
-			if (_colorTween != null)
-				_colorTween.cancel();
-
-			if (vol == 0)
-			{
-				_colorTween = FlxTween.color(null, 0.4, _tracker.bgColor, FlxColor.RED, {
-					onUpdate: (_) ->
-					{
-						_tracker.bgColor = _colorTween.color;
-					},
-					onComplete: (_) ->
-					{
-						_colorTween = null;
-					}
-				});
-			}
-			else
-			{
-				_colorTween = FlxTween.color(null, 0.4, _tracker.bgColor, FlxColor.WHITE, {
-					onUpdate: (_) ->
-					{
-						_tracker.bgColor = _colorTween.color;
-					},
-					onComplete: (_) ->
-					{
-						_colorTween = null;
-					}
-				});
-			}
-
 			_tracker.progress = vol;
 		}
 	}

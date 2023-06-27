@@ -3,12 +3,22 @@ package window.components;
 import flixel.util.FlxColor;
 import openfl.display.Shape;
 import openfl.geom.ColorTransform;
+import openfl.text.TextField;
+import openfl.text.TextFormat;
 
 class Slider extends ExSprite
 {
+	public var initialY:Float = 0;
+
+	private var targetY:Float = 0;
+	private var targetSY:Float = 0;
+	private var targetSAlpha:Float = 1;
+	private var accumTimer:Float = 0;
+
 	private var _bgBar:Shape;
 	private var _fgBar:Shape;
 	private var _stepper:Shape;
+	private var _stpText:TextField;
 
 	private var _width:Int = 0;
 	private var _height:Int = 0;
@@ -66,19 +76,55 @@ class Slider extends ExSprite
 		_stepper.x = (_fgBar.width - _stepper.width) + (_stepper.width * 0.5);
 		_stepper.y = (_fgBar.height - _stepper.height) * 0.5;
 
+		_stpText = new TextField();
+		_stpText.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, 8, 0xFFFFFF);
+		_stpText.defaultTextFormat.align = CENTER;
+		_stpText.selectable = false;
+		_stpText.embedFonts = true;
+		_stpText.text = '100%';
+		_stpText.x = _stepper.x - (_stepper.width * 0.5);
+		_stpText.y = _stepper.y - (_stepper.height - 15);
+
 		addChild(_bgBar);
 		addChild(_fgBar);
 		addChild(_stepper);
+		addChild(_stpText);
 	}
 
 	override function update(elapsed:Float, deltaTime:Float)
 	{
 		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 7.315), 0, 1);
 
+		lerpTrack(this, "y", targetY, lerpVal);
 		lerpTrack(_fgBar, "scaleX", progress, lerpVal);
+
+		lerpTrack(_stpText, "y", targetSY, lerpVal);
+		lerpTrack(_stpText, "alpha", targetSAlpha, lerpVal);
+		_stpText.text = '${Math.round(_fgBar.scaleX * 100)}%';
 
 		// We want it to be instant snapping
 		_stepper.x = (_fgBar.width - _stepper.width) + (_stepper.width * 0.5);
 		_stepper.y = (_fgBar.height - _stepper.height) * 0.5;
+
+		_stpText.x = _stepper.x + (_stepper.width - _stpText.textWidth) * 0.5;
+
+		if (!StringTools.contains(_stpText.text, "0"))
+		{
+			targetSAlpha = 1;
+			targetSY = _stepper.y + (_stepper.height - _stpText.textHeight) + 10;
+			targetY = initialY;
+			accumTimer = 0;
+		}
+		else
+		{
+			accumTimer += elapsed;
+
+			if (accumTimer >= 1.5)
+			{
+				targetSAlpha = 0;
+				targetSY = 0;
+				targetY = initialY + (_stpText.textHeight * 0.5);
+			}
+		}
 	}
 }
