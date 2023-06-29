@@ -6,6 +6,7 @@ import openfl.geom.ColorTransform;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 
+// TODO: Add proper scaling and max and min values (possible idea: getter and setter of progress which adjusts the targetScale using some hacky formula with % dunno)
 class Slider extends ExSprite
 {
 	public var initialY:Float = 0;

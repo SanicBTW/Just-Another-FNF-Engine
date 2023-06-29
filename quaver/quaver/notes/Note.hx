@@ -31,6 +31,7 @@ class Note extends FlxSprite
 	var isSustain:Bool = false;
 	var isSustainEnd:Bool = false;
 
+	var holdTime:Float = 0;
 	var holding:Bool = false;
 
 	var isVisible:Bool = false;

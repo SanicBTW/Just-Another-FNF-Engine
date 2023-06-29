@@ -10,6 +10,8 @@ import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxRect;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import states.ScrollTest;
 
@@ -20,6 +22,7 @@ typedef Section =
 	var header:FlxSprite;
 	var body:Array<FlxSprite>;
 	var exists:Bool;
+	var time:Float;
 }
 
 typedef SustainNote =
@@ -30,19 +33,13 @@ typedef SustainNote =
 	var exists:Bool;
 }
 
-enum NoteGraphicType
-{
-	TAIL_BODY;
-	TAIL_END;
-}
-
 @:publicFields
 // NOTE: Apparently when parsing notes, making sustains isn't actually needed as this will create the FlxTiledSprite and scale it to match the sustain length when pushed
 // TODO: Events
 class StrumLine extends FlxSpriteGroup
 {
 	static final SEPARATION:Int = 160;
-	static final CELL_SIZE:Int = 90;
+	static final CELL_SIZE:Int = 95;
 	static final keyAmount:Int = 4;
 	static final swagWidth:Float = SEPARATION * (CELL_SIZE / SEPARATION);
 
@@ -52,7 +49,6 @@ class StrumLine extends FlxSpriteGroup
 	static var CELL_OFFSET:Float = 3.75;
 
 	// Cache graphics, bg and camera
-	private var noteGraphics(default, null):Map<NoteGraphicType, Array<FlxGraphic>> = [TAIL_BODY => [], TAIL_END => []];
 	private var _checkerboard(default, null):FlxGraphic;
 	private var _line(default, null):FlxGraphic;
 	private var _sectionLine(default, null):FlxGraphic;
@@ -64,6 +60,29 @@ class StrumLine extends FlxSpriteGroup
 
 	// Exposed variables
 	var botPlay:Bool = false;
+
+	private var _speedTwn:FlxTween;
+	var scrollSpeed(default, set):Float = 1;
+
+	@:noCompletion
+	private function set_scrollSpeed(value:Float):Float
+	{
+		if (_speedTwn != null)
+			_speedTwn.cancel();
+
+		_speedTwn = FlxTween.num(scrollSpeed, value, 0.2, {
+			ease: FlxEase.linear,
+			onComplete: (_) ->
+			{
+				_speedTwn = null;
+			}
+		}, function(f:Float)
+		{
+			scrollSpeed = f;
+		});
+
+		return value;
+	}
 
 	// Note rendering
 	var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
@@ -128,12 +147,13 @@ class StrumLine extends FlxSpriteGroup
 
 	override function update(elapsed:Float)
 	{
-		_boardPattern.height = ((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) * CELL_SIZE);
-
 		super.update(elapsed);
 
+		_boardPattern.scale.y = scrollSpeed;
+		_boardPattern.height = ((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) * CELL_SIZE) * scrollSpeed;
+
 		updateCrochet();
-		updateSections();
+		// updateSections();
 		updateNotes();
 		updateCamFollow();
 	}
@@ -143,7 +163,7 @@ class StrumLine extends FlxSpriteGroup
 		@:privateAccess
 		_checkerboard = FlxGraphic.fromBitmapData(Cache.set(FlxGridOverlay.createGrid(CELL_SIZE, CELL_SIZE, CELL_SIZE * 2, CELL_SIZE * 2, true,
 			FlxColor.WHITE, FlxColor.BLACK), BITMAP, 'board$CELL_SIZE'));
-		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0));
+		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.5));
 
 		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 30, 5, FlxColor.WHITE), GRAPHIC, 'sectionline');
 		_line = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 20, 2, FlxColor.WHITE), GRAPHIC, 'chartline');
@@ -154,18 +174,17 @@ class StrumLine extends FlxSpriteGroup
 			var noteEnd:Note = new Note(0, i, noteHold, true);
 
 			var frameB:FlxFrame = noteHold.frames.framesHash.get(noteHold.animation.frameName);
-			var graphicB:FlxGraphic = FlxGraphic.fromFrame(frameB);
-			noteGraphics.get(TAIL_BODY).insert(i, graphicB);
+			Cache.set(FlxGraphic.fromFrame(frameB), GRAPHIC, 'tail$i-BODY');
 
 			var frameE:FlxFrame = noteEnd.frames.framesHash.get(noteEnd.animation.frameName);
-			var graphicE:FlxGraphic = FlxGraphic.fromFrame(frameE);
-			noteGraphics.get(TAIL_END).insert(i, graphicE);
+			Cache.set(FlxGraphic.fromFrame(frameE), GRAPHIC, 'tail$i-END');
 
 			noteEnd.destroy();
 			noteHold.destroy();
 		}
 	}
 
+	// TODO: Only use 5 generated sections for better optimization??
 	public function regenSections()
 	{
 		for (i in sectionGroup)
@@ -184,7 +203,8 @@ class StrumLine extends FlxSpriteGroup
 			var curSection:Section = {
 				header: lineSprite,
 				body: [],
-				exists: lineSprite.exists
+				exists: lineSprite.exists,
+				time: (i * 16)
 			};
 
 			// Section body lines
@@ -200,6 +220,8 @@ class StrumLine extends FlxSpriteGroup
 		}
 	}
 
+	public function recalculateSections() {}
+
 	function pushNote(note:Note)
 	{
 		note.setGraphicSize(CELL_SIZE, CELL_SIZE);
@@ -211,13 +233,13 @@ class StrumLine extends FlxSpriteGroup
 		{
 			var resize:Float = (CELL_SIZE / SEPARATION);
 
-			var hold:FlxTiledSprite = new FlxTiledSprite(noteGraphics.get(TAIL_BODY)[note.noteData], CELL_SIZE, CELL_SIZE * note.sustainLength);
+			var hold:FlxTiledSprite = new FlxTiledSprite(Cache.get('tail${note.noteData}-BODY', GRAPHIC), CELL_SIZE, CELL_SIZE * note.sustainLength);
 			hold.width = hold.graphic.width * resize;
 			hold.scale.set(resize, CELL_SIZE);
 			hold.exists = false;
 			holdGroup.add(hold);
 
-			var end:FlxTiledSprite = new FlxTiledSprite(noteGraphics.get(TAIL_END)[note.noteData], CELL_SIZE, CELL_SIZE);
+			var end:FlxTiledSprite = new FlxTiledSprite(Cache.get('tail${note.noteData}-END', GRAPHIC), CELL_SIZE, CELL_SIZE);
 			end.width = end.graphic.width * resize;
 			end.height = end.graphic.height * resize;
 			end.scale.set(resize, resize);
@@ -240,14 +262,14 @@ class StrumLine extends FlxSpriteGroup
 		receptors.y = _conductorCrochet.y;
 	}
 
-	// TODO: Proper space check and shit though I believe this is already optimized
 	private function updateSections()
 	{
 		for (i in 0...sectionList.length)
 		{
-			var curSection:Section = sectionList[i];
+			var curSection:Section = sectionList.unsafeGet(i);
+			var time:Float = curSection.time / scrollSpeed;
 
-			if (getYFromStep(i * 16) <= camera.scroll.y + camera.height && !curSection.exists)
+			if (getYFromStep(time) <= camera.scroll.y + camera.height && !curSection.exists)
 			{
 				curSection.exists = true;
 
@@ -255,19 +277,19 @@ class StrumLine extends FlxSpriteGroup
 				for (j in 0...curSection.body.length)
 					curSection.body[j].exists = curSection.exists;
 
-				var displacement:Float = getYFromStep(i * 16);
+				var displacement:Float = getYFromStep(time);
 				curSection.header.setPosition(_boardPattern.x + _boardPattern.width / 2 - curSection.header.width / 2, _boardPattern.y + displacement);
 				curSection.header.active = false;
 
 				for (j in 0...curSection.body.length)
 				{
 					var segment = curSection.body[j];
-					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(i * 16 + ((j + 1) * 4)));
+					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(time + ((j + 1) * 4)));
 					segment.active = false;
 				}
 			}
 
-			if (getYFromStep(i * 16) <= camera.scroll.y - camera.height && curSection.exists)
+			if (getYFromStep(time) <= camera.scroll.y - camera.height && curSection.exists)
 			{
 				if (curSection.header.y <= camera.scroll.y - camera.height && curSection.header.exists)
 					curSection.header.exists = false;
@@ -314,33 +336,33 @@ class StrumLine extends FlxSpriteGroup
 			// Note is below the crochet
 			else
 			{
-				if (note.strumTime > ScrollTest.Conductor.time - 166 && note.strumTime < ScrollTest.Conductor.time + 166)
+				if ((note.strumTime * scrollSpeed) > (ScrollTest.Conductor.time * scrollSpeed) - 166
+					&& (note.strumTime * scrollSpeed) < (ScrollTest.Conductor.time * scrollSpeed) + 166)
 					note.canBeHit = true;
-				// strumTime > ScrollTest.Conductor.time - 166 && strumTime < ScrollTest.Conductor.time + (166 * 0.5)
 			}
 
 			note.exists = note.isVisible;
 			note.active = false;
 			note.x = _boardPattern.x + note.noteData * CELL_SIZE;
-			note.y = getYFromStep(note.stepTime);
+			if (!note.holding)
+				note.y = getYFromStep(note.stepTime);
 
 			if (botPlay)
 			{
-				if (_conductorCrochet.y >= note.y && _conductorCrochet.y <= note.y + note.height)
+				// dont destroy if baddie is a sussy :flushed:
+				if ((_conductorCrochet.y >= note.y && _conductorCrochet.y <= note.y + note.height) && (note.sustainLength <= 0))
 				{
 					// cuz uhhhh botplay right
-					receptors.members[note.noteData].playAnim('confirm', true);
+					receptors.members.unsafeGet(note.noteData).playAnim('confirm', true);
 					destroyNote(note);
 				}
 			}
 		}
 
-		for (note in holdMap.keys())
+		for (note => curHold in holdMap)
 		{
 			if (note == null)
 				break;
-
-			var curHold:SustainNote = holdMap.get(note);
 
 			if (getYFromStep(note.stepTime) <= camera.scroll.y + camera.height && !curHold.exists)
 				curHold.exists = true;
@@ -353,16 +375,21 @@ class StrumLine extends FlxSpriteGroup
 
 			curHold.hold.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.hold.width / 2);
 			curHold.hold.y = getYFromStep(note.stepTime) + CELL_SIZE / 2;
-			curHold.hold.height = ((CELL_SIZE * curHold.holdLength) - CELL_SIZE);
+			curHold.hold.height = (((CELL_SIZE * curHold.holdLength) * scrollSpeed) - (CELL_SIZE * (1 - scrollSpeed)));
 
 			curHold.end.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.end.width / 2);
 			curHold.end.y = curHold.hold.y + curHold.hold.height;
 
 			if (botPlay)
 			{
+				if ((_conductorCrochet.y >= note.y && _conductorCrochet.y <= note.y + note.height))
+					note.holding = true;
+
 				if (_conductorCrochet.y >= curHold.hold.y
 					&& _conductorCrochet.y <= curHold.hold.y + curHold.hold.height + curHold.end.height)
+				{
 					receptors.members.unsafeGet(note.noteData).playAnim('confirm', true);
+				}
 			}
 		}
 
@@ -386,7 +413,7 @@ class StrumLine extends FlxSpriteGroup
 
 	// I failed to strum time :pensive:
 	private inline function getYFromStep(step:Float):Float
-		return step * CELL_SIZE;
+		return step * CELL_SIZE * scrollSpeed;
 
 	public function destroyNote(note:Note)
 	{

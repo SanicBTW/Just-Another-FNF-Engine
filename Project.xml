@@ -47,8 +47,11 @@
 
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
-	<haxelib name="SSIni" />
 	<haxelib name="format" />
+
+	<haxelib name="SSIni" /> <!-- them languages -->
+	<haxelib name="hxkv" /> <!-- New setting support??? -->
+	<haxelib name="hxWebSockets" /> <!-- haxelib git hxWebSockets https://github.com/ianharrigan/hxWebSockets -->
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 

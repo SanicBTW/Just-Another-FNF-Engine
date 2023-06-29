@@ -81,8 +81,7 @@ class Main extends Sprite
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
-		FlxG.mouse.visible = true;
-		FlxG.mouse.useSystemCursor = true;
+		FlxG.mouse.visible = false;
 		#end
 	}
 }
