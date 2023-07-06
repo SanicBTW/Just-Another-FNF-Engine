@@ -153,7 +153,7 @@ class StrumLine extends FlxSpriteGroup
 		_boardPattern.height = ((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) * CELL_SIZE) * scrollSpeed;
 
 		updateCrochet();
-		// updateSections();
+		updateSections();
 		updateNotes();
 		updateCamFollow();
 	}
@@ -163,7 +163,7 @@ class StrumLine extends FlxSpriteGroup
 		@:privateAccess
 		_checkerboard = FlxGraphic.fromBitmapData(Cache.set(FlxGridOverlay.createGrid(CELL_SIZE, CELL_SIZE, CELL_SIZE * 2, CELL_SIZE * 2, true,
 			FlxColor.WHITE, FlxColor.BLACK), BITMAP, 'board$CELL_SIZE'));
-		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.5));
+		_checkerboard.bitmap.colorTransform(new openfl.geom.Rectangle(0, 0, CELL_SIZE * 2, CELL_SIZE * 2), new openfl.geom.ColorTransform(1, 1, 1, 0.25));
 
 		_sectionLine = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 30, 5, FlxColor.WHITE), GRAPHIC, 'sectionline');
 		_line = Cache.set(FlxG.bitmap.create((CELL_SIZE * keyAmount) + 20, 2, FlxColor.WHITE), GRAPHIC, 'chartline');
@@ -267,7 +267,7 @@ class StrumLine extends FlxSpriteGroup
 		for (i in 0...sectionList.length)
 		{
 			var curSection:Section = sectionList.unsafeGet(i);
-			var time:Float = curSection.time / scrollSpeed;
+			var time:Float = curSection.time;
 
 			if (getYFromStep(time) <= camera.scroll.y + camera.height && !curSection.exists)
 			{
@@ -315,7 +315,11 @@ class StrumLine extends FlxSpriteGroup
 				note.isVisible = true;
 
 			if (getYFromStep(note.stepTime) <= camera.scroll.y - camera.height && note.isVisible)
+			{
 				note.isVisible = false;
+				if (!note.isSustain) // do not clean if baddie is a bussy (it will break the whole thing)
+					destroyNote(note);
+			}
 
 			// Input shit
 
@@ -326,7 +330,7 @@ class StrumLine extends FlxSpriteGroup
 				note.canBeHit = false;
 				note.alpha = 0.3;
 
-				if (note.sustainLength > 0)
+				if (note.isSustain)
 				{
 					var curHold:SustainNote = holdMap.get(note);
 					curHold.hold.alpha = 0.3;
@@ -344,8 +348,7 @@ class StrumLine extends FlxSpriteGroup
 			note.exists = note.isVisible;
 			note.active = false;
 			note.x = _boardPattern.x + note.noteData * CELL_SIZE;
-			if (!note.holding)
-				note.y = getYFromStep(note.stepTime);
+			note.y = getYFromStep(note.stepTime); // make it that when holding the sustain it stops moving or sets the y position to a fixed one which would be the strums y position
 
 			if (botPlay)
 			{
@@ -367,8 +370,12 @@ class StrumLine extends FlxSpriteGroup
 			if (getYFromStep(note.stepTime) <= camera.scroll.y + camera.height && !curHold.exists)
 				curHold.exists = true;
 
+			// manage lifetime manually on sustain updating
 			if (getYFromStep(note.stepTime + curHold.holdLength) <= camera.scroll.y - camera.height && curHold.exists)
+			{
 				curHold.exists = false;
+				destroyNote(note);
+			}
 
 			curHold.hold.exists = curHold.end.exists = curHold.exists;
 			curHold.hold.active = curHold.end.active = false;
@@ -380,11 +387,18 @@ class StrumLine extends FlxSpriteGroup
 			curHold.end.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.end.width / 2);
 			curHold.end.y = curHold.hold.y + curHold.hold.height;
 
+			/*
+				if (note.wasGoodHit && note.holding && curHold.hold.y <= (receptors.height / 2))
+				{
+					trace('clipping rekt');
+					var swagRect = new FlxRect(0, 0, curHold.hold.width, curHold.hold.height + curHold.end.height);
+					swagRect.y = ((receptors.height / 2) - curHold.hold.y) / curHold.hold.height + curHold.end.height;
+					swagRect.height -= swagRect.y;
+					curHold.hold.clipRect = curHold.end.clipRect = swagRect;
+			}*/
+
 			if (botPlay)
 			{
-				if ((_conductorCrochet.y >= note.y && _conductorCrochet.y <= note.y + note.height))
-					note.holding = true;
-
 				if (_conductorCrochet.y >= curHold.hold.y
 					&& _conductorCrochet.y <= curHold.hold.y + curHold.hold.height + curHold.end.height)
 				{
@@ -418,17 +432,25 @@ class StrumLine extends FlxSpriteGroup
 	public function destroyNote(note:Note)
 	{
 		note.exists = false;
-
 		note.kill();
 
-		(note.isSustain ? holdGroup.remove(note, true) : noteGroup.remove(note, true));
-
-		if (note.head != null)
+		noteGroup.remove(note, true);
+		if (note.isSustain)
 		{
-			if (note.head.tail.contains(note))
-				note.head.tail.remove(note);
-		}
+			var curHold:SustainNote = holdMap.get(note);
+			curHold.exists = false;
 
+			curHold.hold.kill();
+			curHold.end.kill();
+
+			holdGroup.remove(curHold.hold, true);
+			holdGroup.remove(curHold.end, true);
+
+			curHold.hold.destroy();
+			curHold.end.destroy();
+
+			holdMap.remove(note);
+		}
 		note.destroy();
 	}
 }

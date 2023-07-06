@@ -50,7 +50,6 @@
 	<haxelib name="format" />
 
 	<haxelib name="SSIni" /> <!-- them languages -->
-	<haxelib name="hxkv" /> <!-- New setting support??? -->
 	<haxelib name="hxWebSockets" /> <!-- haxelib git hxWebSockets https://github.com/ianharrigan/hxWebSockets -->
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
@@ -67,6 +66,7 @@
 
 	<section if="windows">
 		<haxedef name="HXCPP_GC_BIG_BLOCKS" />
+		<haxedef name="HXCPP_GC_GENERATIONAL" />
 		<haxedef name="HXCPP_CHECK_POINTER" />
 		<haxedef name="HXCPP_STACK_LINE" />
 	</section>

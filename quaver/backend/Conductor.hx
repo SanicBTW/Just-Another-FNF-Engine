@@ -6,10 +6,9 @@ import flixel.util.FlxSignal.FlxTypedSignal;
 
 typedef BPMChange =
 {
-	var stepTime:Int;
-	var songTime:Float;
-	var bpm:Float;
-	@:optional var stepCrochet:Float;
+	var time:Float;
+	var beat:Float;
+	var step:Float;
 }
 
 @:publicFields
@@ -80,7 +79,13 @@ class Conductor extends FlxBasic
 
 	var crochet(default, null):Float = 0;
 	var stepCrochet(default, null):Float = 0;
-	var bpmChanges:Array<BPMChange> = [];
+	var bpmChanges:Array<BPMChange> = [
+		{
+			step: 0,
+			beat: 0,
+			time: 0
+		}
+	];
 
 	// Resync
 	final resyncThreshold:Float = 30;
@@ -89,64 +94,19 @@ class Conductor extends FlxBasic
 
 	@:noCompletion
 	private function get_lastTime()
-	{
-		var lastChange:BPMChange = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: bpm,
-			stepCrochet: stepCrochet
-		};
-
-		for (change in bpmChanges)
-		{
-			if (time >= change.songTime)
-				lastChange = change;
-		}
-
-		return lastChange.songTime;
-	}
+		return lastTime = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].time;
 
 	var lastStep(get, null):Float = 0;
 
 	@:noCompletion
 	private function get_lastStep()
-	{
-		var lastChange:BPMChange = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: bpm,
-			stepCrochet: stepCrochet
-		};
-
-		for (change in bpmChanges)
-		{
-			if (time >= change.songTime)
-				lastChange = change;
-		}
-
-		return lastChange.stepTime;
-	}
+		return lastStep = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].step;
 
 	var lastBeat(get, null):Float = 0;
 
 	@:noCompletion
 	private function get_lastBeat()
-	{
-		var lastChange:BPMChange = {
-			stepTime: 0,
-			songTime: 0,
-			bpm: bpm,
-			stepCrochet: stepCrochet
-		};
-
-		for (change in bpmChanges)
-		{
-			if (time >= change.songTime)
-				lastChange = change;
-		}
-
-		return lastChange.stepTime * 4;
-	}
+		return lastBeat = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].beat;
 
 	@:noCompletion
 	var lastStepHit(default, null):Int = -1;
@@ -166,10 +126,20 @@ class Conductor extends FlxBasic
 		visible = false;
 	}
 
-	function changeBPM(newBPM:Float)
+	function changeBPM(newBPM:Float, dontResetBeat:Bool = true)
 	{
-		bpm = newBPM;
+		if (crochet != 0 && dontResetBeat)
+		{
+			bpmChanges.push({
+				beat: beat,
+				step: step,
+				time: time
+			});
+			bpmChanges.sort((a, b) -> Std.int(a.time - b.time));
+		}
+
 		onBPMChange.dispatch(bpm, newBPM);
+		bpm = newBPM;
 	}
 
 	override function update(elapsed:Float)
