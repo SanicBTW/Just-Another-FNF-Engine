@@ -3,6 +3,7 @@ package states;
 import backend.*;
 import backend.Conductor.BPMChange;
 import backend.Controls.ActionType;
+import engine.SBar;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -42,9 +43,6 @@ class ScrollTest extends FlxState
 	var camBG:FlxCamera;
 	var camOther:FlxCamera;
 
-	var accum:Float = 0;
-	var gridBackground:FlxTiledSprite;
-
 	var strums:FlxTypedGroup<StrumLine>;
 	var playerStrums:StrumLine;
 	var opponentStrums:StrumLine;
@@ -57,6 +55,8 @@ class ScrollTest extends FlxState
 
 	var shitNotes:Array<Note> = [];
 	var voices:FlxSound = new FlxSound();
+
+	var timeBar:SBar;
 
 	override public function create()
 	{
@@ -85,6 +85,13 @@ class ScrollTest extends FlxState
 		strums.cameras = [strumCam];
 		add(strums);
 
+		timeBar = new SBar(FlxG.width - 100, 0, 15, FlxG.height - 150, FlxColor.WHITE, FlxColor.GRAY);
+		timeBar.cameras = [camHUD];
+		timeBar.angle = 360;
+		timeBar.fillAxis = VERTICAL;
+		timeBar.screenCenter(Y);
+		add(timeBar);
+
 		// Automatic update haha
 		// Gotta create it on create (haha i want to kms) because of some issue with them signals and events lol
 		Conductor = new Conductor();
@@ -103,27 +110,14 @@ class ScrollTest extends FlxState
 
 	override function update(elapsed:Float)
 	{
-		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
-		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
-		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		var lerpVal:Float = FlxMath.bound(1 - (elapsed * 3.125), 0, 1);
 
-		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= strumCam.scroll.y + strumCam.height)
-		{
-			var nextNote:Note = shitNotes[0];
-			if (nextNote != null)
-			{
-				var strumLine:StrumLine = strums.members[nextNote.strumLine];
-				if (strumLine != null)
-					strumLine.pushNote(nextNote);
-				else
-				{
-					nextNote.mustPress = true;
-					playerStrums.pushNote(nextNote);
-				}
-			}
+		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, lerpVal);
+		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, lerpVal);
+		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, lerpVal);
+		timeBar.value = FlxMath.lerp(Conductor.time / FlxG.sound.music.length, timeBar.value, lerpVal);
 
-			shitNotes.splice(shitNotes.indexOf(nextNote), 1);
-		}
+		noteSpawn();
 
 		holdNotes(elapsed);
 
@@ -153,14 +147,6 @@ class ScrollTest extends FlxState
 
 				Conductor.time += elapsed * 1000;
 			}
-		}
-
-		if (gridBackground != null)
-		{
-			gridBackground.scrollX += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
-			var increaseUpTo:Float = gridBackground.height / 8;
-			gridBackground.scrollY = Math.sin(accum / increaseUpTo) * increaseUpTo;
-			accum += (elapsed / (1 / FlxG.drawFramerate)) * 0.5;
 		}
 
 		if (strums.length > 0)
@@ -205,25 +191,6 @@ class ScrollTest extends FlxState
 
 	function generateBackground()
 	{
-		gridBackground = new FlxTiledSprite(Paths.image('chart/gridPurple'), FlxG.width, FlxG.height);
-		gridBackground.cameras = [camBG];
-		add(gridBackground);
-
-		var background:FlxSprite = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height,
-			[FlxColor.fromRGB(167, 103, 225), FlxColor.fromRGB(137, 20, 181)]);
-		background.alpha = 0.6;
-		background.cameras = [camBG];
-		add(background);
-
-		// dark background
-		var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
-		darkBackground.setGraphicSize(Std.int(FlxG.width));
-		darkBackground.cameras = [camBG];
-		darkBackground.scrollFactor.set();
-		darkBackground.screenCenter();
-		darkBackground.alpha = 0.7;
-		add(darkBackground);
-
 		// dark background
 		var funkyBack:FlxSprite = new FlxSprite().loadGraphic(Paths.image('chart/bg'));
 		funkyBack.setGraphicSize(Std.int(FlxG.width));
@@ -307,48 +274,6 @@ class ScrollTest extends FlxState
 			voices.loadEmbedded(endVoices);
 			FlxG.sound.list.add(voices);
 
-			for (section in swagShit.notes)
-			{
-				for (songNotes in section.sectionNotes)
-				{
-					switch (songNotes[1])
-					{
-						default:
-							var stepTime:Float = (songNotes[0] / Conductor.stepCrochet);
-							var sustainTime:Float = 0;
-							var noteData:Int = Std.int(songNotes[1] % 4);
-							var hitNote:Bool = section.mustHitSection;
-
-							if (songNotes[2] > 0)
-								sustainTime = (songNotes[2] / Conductor.stepCrochet);
-
-							if (songNotes[1] > 3)
-								hitNote = !section.mustHitSection;
-
-							var strumLine:Int = (hitNote ? 1 : 0);
-
-							var oldNote:Note = null;
-							if (shitNotes.length > 0)
-								oldNote = shitNotes[shitNotes.length - 1];
-
-							var newNote:Note = new Note(stepTime, noteData, oldNote, false);
-							newNote.mustPress = hitNote;
-							newNote.strumLine = strumLine;
-							newNote.isSustain = (sustainTime > 0);
-							newNote.sustainLength = (sustainTime > 0) ? Math.floor(sustainTime) + 1 : 0;
-							shitNotes.push(newNote);
-
-						case -1:
-							return;
-					}
-				}
-			}
-
-			shitNotes.sort((a, b) ->
-			{
-				return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime);
-			});
-
 			generateBackground();
 			Conductor.active = false;
 		});
@@ -410,6 +335,72 @@ class ScrollTest extends FlxState
 		});
 	}
 
+	private function noteSpawn()
+	{
+		if (FlxG.sound.music == null || swagShit == null)
+			return;
+
+		var curSection:funkin.Song.SwagSection = swagShit.notes[Std.int(Conductor.roundStep / 16)];
+		if (curSection == null)
+			return;
+
+		var curNote:Dynamic = curSection.sectionNotes[0];
+		if (curNote == null)
+		{
+			curSection = swagShit.notes[Std.int(Conductor.roundStep / 16) + 1];
+			if (curSection == null)
+				return;
+
+			curNote = curSection.sectionNotes[0];
+			if (curNote == null)
+				return;
+		}
+
+		if (curNote[1] > -1)
+		{
+			var stepTime:Float = (curNote[0] / Conductor.stepCrochet);
+			var sustainTime:Float = 0;
+			var noteData:Int = Std.int(curNote[1] % 4);
+			var hitNote:Bool = (curNote[1] > 3) ? !curSection.mustHitSection : curSection.mustHitSection;
+
+			if (curNote[2] > 0)
+				sustainTime = (curNote[2] / Conductor.stepCrochet);
+
+			var strumLine:Int = (hitNote ? 1 : 0);
+
+			var oldNote:Note = null;
+			if (shitNotes.length > 0)
+				oldNote = shitNotes[shitNotes.length - 1];
+
+			var nextNote:Note = new Note(stepTime, noteData, oldNote, false);
+			nextNote.mustPress = hitNote;
+			nextNote.strumLine = strumLine;
+			nextNote.isSustain = (sustainTime > 0);
+			nextNote.sustainLength = (sustainTime > 0) ? Math.floor(sustainTime) + 1 : 0;
+			shitNotes.push(nextNote);
+
+			curSection.sectionNotes.splice(curSection.sectionNotes.indexOf(curNote), 1);
+		}
+
+		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= strumCam.scroll.y + strumCam.height)
+		{
+			var nextNote:Note = shitNotes[0];
+			if (nextNote != null)
+			{
+				var strumLine:StrumLine = strums.members[nextNote.strumLine];
+				if (strumLine != null)
+					strumLine.pushNote(nextNote);
+				else
+				{
+					nextNote.mustPress = true;
+					playerStrums.pushNote(nextNote);
+				}
+			}
+
+			shitNotes.splice(shitNotes.indexOf(nextNote), 1);
+		}
+	}
+
 	private function holdNotes(elapsed:Float)
 	{
 		if (strums == null || playerStrums == null || opponentStrums == null)
@@ -426,14 +417,27 @@ class ScrollTest extends FlxState
 		{
 			note.holding = holdArray.unsafeGet(note.noteData);
 			var receptor:Receptor = playerStrums.receptors.members.unsafeGet(note.noteData);
+			var curHold:SustainNote = playerStrums.holdMap.get(note);
+			if (!curHold.exists)
+				return;
 
-			if (note.wasGoodHit && note.canBeHit && !note.tooLate && note.holding)
+			@:privateAccess
+			var crochet:FlxSprite = playerStrums._conductorCrochet;
+			var hheight:Float = curHold.hold.y + curHold.hold.height + curHold.end.height;
+
+			if (note.wasGoodHit && note.holding && (crochet.y >= curHold.hold.y && hheight <= crochet.y))
 			{
-				// note.holdTime += elapsed * Conductor.stepCrochet;
+				receptor.playAnim("confirm", true);
+
+				if (note.holdTime >= note.sustainLength)
+				{
+					note.holdTime = note.sustainLength;
+					trace('finished');
+				}
+
+				note.holdTime += elapsed * Conductor.stepCrochet;
 				// trace(note.holdTime >= note.sustainLength);
 				// trace(note.holdTime);
-
-				receptor.playAnim("confirm", true);
 			}
 		}
 	}

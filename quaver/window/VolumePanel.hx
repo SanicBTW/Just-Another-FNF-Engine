@@ -17,6 +17,9 @@ class VolumePanel extends ExSprite
 	private var _height:Int = 48;
 	private var _outlineSize:Int = 5;
 
+	// cuz uh
+	private var margin:Float = 10; // (_outlineSize * 2);
+
 	private var targetX:Float = 0.0;
 	private var targetY:Float = 0.0;
 
@@ -27,6 +30,7 @@ class VolumePanel extends ExSprite
 
 	override public function create()
 	{
+		scaleX = scaleY = _defaultScale;
 		_outline = drawRound(0, 0, _width + _outlineSize, _height + _outlineSize, [15], FlxColor.BLACK, 0.25);
 		_bg = drawRound(_outlineSize * 0.5, _outlineSize * 0.5, _width, _height, [15], FlxColor.WHITE, 0.6);
 
@@ -48,7 +52,6 @@ class VolumePanel extends ExSprite
 		_width += _outlineSize;
 		_height += _outlineSize;
 
-		screenCenter();
 		addChild(_outline);
 		addChild(_bg);
 		addChild(_text);
@@ -61,19 +64,29 @@ class VolumePanel extends ExSprite
 
 		FlxG.sound.volumeHandler = (vol:Float) ->
 		{
-			_tracker.progress = vol;
+			_tracker.value = vol;
 		}
 	}
 
 	override function update(elapsed:Float, deltaTime:Float)
 	{
-		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 7.315), 0, 1);
+		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 9.5), 0, 1);
 
 		lerpTrack(this, "x", targetX, lerpVal);
 		lerpTrack(this, "y", targetY, lerpVal);
 
 		// For some fucking reason it wont update automatically and i didnt do shit about the base code fr
 		_tracker.update(elapsed, deltaTime);
+
+		/*
+			@:privateAccess
+			{
+				if (_tracker.accumTimer <= 1.65) // visible
+				{
+					targetX = (FlxG.game.width - (_width + _outline.width)) - margin;
+					targetY = (FlxG.game.height - (_height + _outline.height)) - margin;
+				}
+		}*/
 	}
 
 	override function screenCenter()
@@ -86,9 +99,15 @@ class VolumePanel extends ExSprite
 
 	function reposition(newWidth:Float, newHeight:Float)
 	{
-		// cuz uh
-		var margin:Float = (_outlineSize * 2);
-		targetX = (newWidth - (_width + _outline.width)) - margin;
-		targetY = (newHeight - (_height + _outline.height)) - margin;
+		if (!visible)
+		{
+			x = targetX = (newWidth + (_width + _outline.width)) + margin;
+			y = targetY = (newHeight - (_height + _outline.height)) - margin;
+		}
+		else
+		{
+			targetX = (newWidth - (_width + _outline.width)) - margin;
+			targetY = (newHeight - (_height + _outline.height)) - margin;
+		}
 	}
 }

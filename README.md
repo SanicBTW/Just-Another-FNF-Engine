@@ -1,5 +1,8 @@
 # Just Another FNF Engine - 0.2.10
 
+## Branch: Scrolling & Backend Rewrite
+- back from a long break due to a burnout and finally got tired of the new sustain system, i will only sync some testing stuff to stable
+
 A rewrite of Friday Night Funkin' mixing:
 - Forever Engine
 - - Legacy 

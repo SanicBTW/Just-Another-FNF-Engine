@@ -56,7 +56,7 @@ class Slider extends ExSprite
 		return fgColor = newColor;
 	}
 
-	public var progress:Float = 1;
+	public var value:Float = 1;
 
 	override public function new(width:Int = 100, height:Int = 5)
 	{
@@ -97,7 +97,7 @@ class Slider extends ExSprite
 		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 7.315), 0, 1);
 
 		lerpTrack(this, "y", targetY, lerpVal);
-		lerpTrack(_fgBar, "scaleX", progress, lerpVal);
+		lerpTrack(_fgBar, "scaleX", value, lerpVal);
 
 		lerpTrack(_stpText, "y", targetSY, lerpVal);
 		lerpTrack(_stpText, "alpha", targetSAlpha, lerpVal);

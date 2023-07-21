@@ -39,14 +39,14 @@ typedef SustainNote =
 class StrumLine extends FlxSpriteGroup
 {
 	static final SEPARATION:Int = 160;
-	static final CELL_SIZE:Int = 95;
+	static final CELL_SIZE:Int = 110;
 	static final keyAmount:Int = 4;
 	static final swagWidth:Float = SEPARATION * (CELL_SIZE / SEPARATION);
 
 	/**
 	 * How many tiles is the camera ahead of the crochet
 	 */
-	static var CELL_OFFSET:Float = 3.75;
+	static var CELL_OFFSET:Float = 2.75;
 
 	// Cache graphics, bg and camera
 	private var _checkerboard(default, null):FlxGraphic;
@@ -220,8 +220,6 @@ class StrumLine extends FlxSpriteGroup
 		}
 	}
 
-	public function recalculateSections() {}
-
 	function pushNote(note:Note)
 	{
 		note.setGraphicSize(CELL_SIZE, CELL_SIZE);
@@ -386,16 +384,6 @@ class StrumLine extends FlxSpriteGroup
 
 			curHold.end.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.end.width / 2);
 			curHold.end.y = curHold.hold.y + curHold.hold.height;
-
-			/*
-				if (note.wasGoodHit && note.holding && curHold.hold.y <= (receptors.height / 2))
-				{
-					trace('clipping rekt');
-					var swagRect = new FlxRect(0, 0, curHold.hold.width, curHold.hold.height + curHold.end.height);
-					swagRect.y = ((receptors.height / 2) - curHold.hold.y) / curHold.hold.height + curHold.end.height;
-					swagRect.height -= swagRect.y;
-					curHold.hold.clipRect = curHold.end.clipRect = swagRect;
-			}*/
 
 			if (botPlay)
 			{

@@ -50,7 +50,6 @@
 	<haxelib name="format" />
 
 	<haxelib name="SSIni" /> <!-- them languages -->
-	<haxelib name="hxWebSockets" /> <!-- haxelib git hxWebSockets https://github.com/ianharrigan/hxWebSockets -->
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
