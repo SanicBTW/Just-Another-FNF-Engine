@@ -102,7 +102,7 @@ class Character extends OffsettedSprite
 					charPath = charPath.substring(0, charPath.lastIndexOf("/"));
 
 					// ayo using this is actually really smart ngl
-					var isolatedPaths:ModulePaths = new ModulePaths(charPath, isFS);
+					var isolatedPaths:ModulePaths = new ModulePaths(charPath);
 					var json:CharacterFile = cast haxe.Json.parse(Cache.getText('$charPath/$curCharacter$extension'));
 
 					if (!isFS)

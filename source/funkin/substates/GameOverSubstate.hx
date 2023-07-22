@@ -171,8 +171,8 @@ class GameOverSubstate extends MusicBeatSubState
 		var currentState:MusicBeatState = cast(FlxG.state, MusicBeatState);
 		@:privateAccess
 		{
-			Controls.onActionPressed.remove(currentState.onActionPressed);
-			Controls.onActionReleased.remove(currentState.onActionReleased);
+			Controls.onActionEvent.removeEventCallback(currentState.onActionPressed, "onActionPressed");
+			Controls.onActionEvent.removeEventCallback(currentState.onActionReleased, "onActionReleased");
 			Conductor.onStepHit.remove(currentState.stepHit);
 			Conductor.onBeatHit.remove(currentState.beatHit);
 			Conductor.boundInst = null;

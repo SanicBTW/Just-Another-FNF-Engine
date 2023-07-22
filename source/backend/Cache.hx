@@ -39,11 +39,8 @@ class Cache
 
 	// Generic stuff hurts my brain, so imma try to do the least with it
 	// Dynamic set
-	public static function set<T>(asset:T, map:CacheMap, ?key:String):T
+	public static function set<T>(asset:T, map:CacheMap, key:String):T
 	{
-		if (key == null)
-			key = Random.uniqueId().split("-")[0];
-
 		trace('Setting new asset $key');
 		track(key);
 
@@ -120,6 +117,9 @@ class Cache
 		return #if FS_ACCESS (fromFS(path)) ? sys.io.File.getContent(path) : #end
 		Assets.getText(path);
 	}
+
+	public static inline function getFont(key:String)
+		return 'assets/fonts/$key';
 
 	public static function getTexture(id:String, bitmap:BitmapData):Texture
 	{

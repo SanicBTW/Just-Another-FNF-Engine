@@ -21,7 +21,6 @@ import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import funkin.*;
 import funkin.notes.*;
 import funkin.substates.GameOverSubstate;
-import haxe.Exception;
 import haxe.ds.StringMap;
 import haxe.io.Path;
 import hscript.*;
@@ -185,7 +184,7 @@ class ScriptHandler
 			#end
 
 			if (fallback == null)
-				throw new Exception('Failed to load module $file');
+				throw('Failed to load module $file');
 
 			// Ez replace
 			assetFolder = assetFolder.replace(file, fallback);
@@ -203,7 +202,7 @@ class ScriptHandler
 				}
 				else
 				#end
-				throw new Exception('Failed to load module $file and its fallback $fallback');
+				throw('Failed to load module $file and its fallback $fallback');
 			}
 		}
 
@@ -239,7 +238,7 @@ class ForeverModule implements IFlxDestroyable
 		}
 
 		// Define the current path (used within the script itself)
-		var modulePaths:ModulePaths = new ModulePaths(assetFolder, Cache.fromFS(assetFolder));
+		var modulePaths:ModulePaths = new ModulePaths(assetFolder);
 		interp.variables.set('Paths', modulePaths);
 
 		interp.execute(contents);
@@ -282,25 +281,25 @@ class ForeverModule implements IFlxDestroyable
 }
 
 // https://github.com/SanicBTW/Forever-Engine-Archive/blob/rewrite/source/Paths.hx#L17
+// Improved thanks to myself actually working on it outside of the classic Static Paths class
+// See IsolatedPaths.hx from pending folder
 class ModulePaths
 {
 	private var localPath:String;
-	private var isFS:Bool = false;
 
-	public function new(localPath:String, isFS:Bool = false)
+	public function new(localPath:String)
 	{
 		this.localPath = localPath;
-		this.isFS = isFS;
 	}
 
 	public function getPath(file:String):String
 	{
 		#if FS_ACCESS
-		if (isFS)
+		if (Cache.fromFS(localPath))
 		{
 			var path:String = Path.join([localPath, file]);
 			if (!sys.FileSystem.exists(path))
-				throw new Exception('Failed to get $file on $localPath');
+				throw('Failed to get $file on $localPath');
 
 			return path;
 		}

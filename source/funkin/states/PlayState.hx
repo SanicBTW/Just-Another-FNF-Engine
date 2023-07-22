@@ -91,9 +91,6 @@ class PlayState extends MusicBeatState
 	public var girlfriend:Character;
 	public var opponent:Character;
 
-	// Them input
-	private final actionList:Array<Action> = [Action.NOTE_LEFT, Action.NOTE_DOWN, Action.NOTE_UP, Action.NOTE_RIGHT];
-
 	// Pause handling
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
@@ -103,7 +100,6 @@ class PlayState extends MusicBeatState
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 			FlxG.sound.music.stop();
 
-		Controls.targetActions = NOTES;
 		GameOverSubstate.resetVariables();
 		Timings.call();
 		Events.obtainEvents();
@@ -323,7 +319,7 @@ class PlayState extends MusicBeatState
 				Timings.health = 0;
 
 			default:
-				if (!playerStrums.botPlay && startedCountdown && !player.stunned)
+				if (!playerStrums.botPlay && startedCountdown && !player.stunned && !paused)
 				{
 					for (receptor in playerStrums.receptors)
 					{
@@ -420,7 +416,12 @@ class PlayState extends MusicBeatState
 		if (playerStrums == null || paused)
 			return;
 
-		var holdArray:Array<Bool> = parseKeys();
+		var holdArray:Array<Bool> = [
+			controls.note_left.state == PRESSED,
+			controls.note_down.state == PRESSED,
+			controls.note_up.state == PRESSED,
+			controls.note_right.state == PRESSED
+		];
 
 		if (!playerStrums.botPlay)
 		{
@@ -441,22 +442,14 @@ class PlayState extends MusicBeatState
 		}
 
 		if (player != null
-			&& (player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000)
-				&& (!holdArray.contains(true) || playerStrums.botPlay)))
+			&& !holdArray.contains(true)
+			&& player.animation.curAnim != null
+			&& player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000)
+			&& player.animation.curAnim.name.startsWith("sing")
+			&& !player.animation.curAnim.name.endsWith("miss"))
 		{
-			if (player.animation.curAnim.name.startsWith("sing") && !player.animation.curAnim.name.endsWith("miss"))
-				player.dance();
+			player.dance();
 		}
-	}
-
-	private function parseKeys():Array<Bool>
-	{
-		var ret:Array<Bool> = [];
-		for (i in 0...actionList.length)
-		{
-			ret[i] = Controls.isActionPressed(actionList[i]);
-		}
-		return ret;
 	}
 
 	override function openSubState(SubState:FlxSubState)

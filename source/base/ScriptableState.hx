@@ -11,6 +11,7 @@ import transitions.FadeTransition;
 class ScriptableState extends FlxState implements ModuleManager
 {
 	private var moduleBatch:Array<ForeverModule> = [];
+	private var controls:Controls = new Controls();
 
 	override function create()
 	{
@@ -19,15 +20,16 @@ class ScriptableState extends FlxState implements ModuleManager
 
 		FadeTransition.skipTransOut = false;
 
-		Controls.onActionPressed.add(onActionPressed);
-		Controls.onActionReleased.add(onActionReleased);
+		Controls.onActionEvent.addCallbackTo(onActionPressed, "onActionPressed");
+		Controls.onActionEvent.addCallbackTo(onActionReleased, "onActionReleased");
 		super.create();
 	}
 
 	override function destroy()
 	{
-		Controls.onActionPressed.remove(onActionPressed);
-		Controls.onActionReleased.remove(onActionReleased);
+		Controls.onActionEvent.removeEventCallback(onActionPressed, "onActionPressed");
+		Controls.onActionEvent.removeEventCallback(onActionReleased, "onActionReleased");
+		controls = null;
 		callOnModules('onDestroy', null);
 
 		super.destroy();
@@ -108,17 +110,20 @@ class ScriptableState extends FlxState implements ModuleManager
 
 class ScriptableSubState extends FlxSubState
 {
+	private var controls:Controls = new Controls();
+
 	override function create()
 	{
-		Controls.onActionPressed.add(onActionPressed);
-		Controls.onActionReleased.add(onActionReleased);
+		Controls.onActionEvent.addCallbackTo(onActionPressed, "onActionPressed");
+		Controls.onActionEvent.addCallbackTo(onActionReleased, "onActionReleased");
 		super.create();
 	}
 
 	override function destroy()
 	{
-		Controls.onActionPressed.remove(onActionPressed);
-		Controls.onActionReleased.remove(onActionReleased);
+		Controls.onActionEvent.removeEventCallback(onActionPressed, "onActionPressed");
+		Controls.onActionEvent.removeEventCallback(onActionReleased, "onActionReleased");
+		controls = null;
 		callOnModules('destroy', null);
 
 		super.destroy();

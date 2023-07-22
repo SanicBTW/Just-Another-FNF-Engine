@@ -38,7 +38,12 @@ class IO
 		addFolder(SOUNDS);
 		addFolder(EVENTS);
 
+		// because my dumb ass cant do a proper check to create folders on parsing (old Qua.hx from scrolling&backend-rewrite branch)
+		addFolder(QUAVER);
+		addFolder(OSU);
+
 		// The idea of the mods folder is to manage its own assets and shit, basically like fof -> the engine asset tree / rolling again -> the engine asset tree but different assets etc
+		// yo new idea on the enum declaration fr fr fr shits fire
 		// addFolder(MODS);
 
 		for (name => path in appFolders)
@@ -164,6 +169,7 @@ class IO
 enum abstract AssetFolder(String) to String
 {
 	var PARENT = "parent";
+	// base file tree
 	var DATA = "data";
 	var SONGS = "songs";
 	var IMAGES = "images";
@@ -173,7 +179,11 @@ enum abstract AssetFolder(String) to String
 	var MUSIC = "music";
 	var SOUNDS = "sounds";
 	var EVENTS = "events";
+	// it will be hard to implement a good system for this but should be just like libraries (maybe I will add a .ini system that builds file references and it will be used for loading and shit??? sounds cool tho)
 	var MODS = "mods";
+	// Chart support and convert (will move .mp3 files into here)
+	var QUAVER = "quaver";
+	var OSU = "osu!";
 }
 
 enum SongFile

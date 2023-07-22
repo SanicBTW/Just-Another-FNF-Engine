@@ -172,8 +172,6 @@ class SongSelection extends ScriptableState
 
 	override function create()
 	{
-		Controls.targetActions = UI;
-
 		var bg:FlxSprite = new FlxSprite();
 		bg.loadGraphic(Paths.image('menuBG'));
 		bg.screenCenter();

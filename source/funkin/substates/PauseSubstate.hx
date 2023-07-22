@@ -24,7 +24,6 @@ class PauseSubstate extends ScriptableSubState
 	public function new()
 	{
 		super();
-		Controls.targetActions = UI;
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		bg.alpha = 0;
@@ -77,7 +76,6 @@ class PauseSubstate extends ScriptableSubState
 					switch (menuItems[curSelected])
 					{
 						case "Resume":
-							Controls.targetActions = NOTES;
 							close();
 						case 'Reset song':
 							ScriptableState.switchState(new PlayState());

@@ -130,7 +130,6 @@ class StrumLine extends FlxSpriteGroup
 				+ (Math.sin(FlxAngle.asRadians(receptor.direction)) * strumNote.offsetX);
 
 			strumNote.angle = -receptor.direction;
-			strumNote.alpha = receptor.alpha;
 
 			if (strumNote.isSustain)
 			{
