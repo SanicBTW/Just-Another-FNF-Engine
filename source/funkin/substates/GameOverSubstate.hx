@@ -4,7 +4,7 @@ import backend.Controls;
 import base.Conductor;
 import base.MusicBeatState.MusicBeatSubState;
 import base.MusicBeatState;
-import base.ScriptableState;
+import base.TransitionState;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.math.FlxMath;
@@ -132,13 +132,13 @@ class GameOverSubstate extends MusicBeatSubState
 				callOnModules('onGameOverConfirm', true);
 				finish(() ->
 				{
-					ScriptableState.switchState(new funkin.states.PlayState());
+					TransitionState.switchState(new funkin.states.PlayState());
 				});
 			case "back":
 				callOnModules('onGameOverConfirm', false);
 				finish(() ->
 				{
-					ScriptableState.switchState(new funkin.states.SongSelection());
+					TransitionState.switchState(new funkin.states.SongSelection());
 				});
 		}
 	}

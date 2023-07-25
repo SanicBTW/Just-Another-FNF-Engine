@@ -3,7 +3,6 @@ package;
 import backend.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
-import flixel.system.scaleModes.*;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
@@ -88,13 +87,26 @@ class Main extends Sprite
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
-		// FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
 		FlxG.mouse.visible = false;
 		FlxG.mouse.useSystemCursor = true;
 		#end
+
+		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(openfl.events.UncaughtErrorEvent.UNCAUGHT_ERROR, (ev) ->
+		{
+			trace('Uncaught error: ${Std.string(ev.error)}');
+			#if sys
+			new sys.io.Process('${haxe.io.Path.join([Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe'])}', Sys.args());
+			#end
+
+			#if html5
+			// cant test it lmao
+			js.Browser.location.hash = 'error=${Std.string(ev.error)}';
+			js.Browser.location.reload(true);
+			#end
+		});
 	}
 
 	public static function setFPS(newFPS:Int)

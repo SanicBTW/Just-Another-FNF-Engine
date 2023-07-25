@@ -1,9 +1,9 @@
 package base;
 
-import base.ScriptableState.ScriptableSubState;
+import flixel.FlxSubState;
 import funkin.SongTools.SongData;
 
-class MusicBeatState extends ScriptableState implements MusicHandler
+class MusicBeatState extends TransitionState implements MusicHandler
 {
 	public var updateTime:Bool = false;
 	@:isVar public var SONG(get, never):SongData;
@@ -55,7 +55,7 @@ class MusicBeatState extends ScriptableState implements MusicHandler
 	}
 }
 
-class MusicBeatSubState extends ScriptableSubState implements MusicHandler
+class MusicBeatSubState extends FlxSubState implements MusicHandler
 {
 	public var updateTime:Bool = false;
 	@:isVar public var SONG(get, never):SongData;

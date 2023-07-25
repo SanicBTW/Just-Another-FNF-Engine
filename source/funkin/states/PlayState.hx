@@ -7,7 +7,7 @@ import backend.DiscordPresence;
 import backend.ScriptHandler.ForeverModule;
 import base.Conductor;
 import base.MusicBeatState;
-import base.ScriptableState;
+import base.TransitionState;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -103,6 +103,7 @@ class PlayState extends MusicBeatState
 		GameOverSubstate.resetVariables();
 		Timings.call();
 		Events.obtainEvents();
+		Paths.music("tea-time");
 
 		// dumb
 		if (SongSelection.songSelected.isFS)
@@ -300,7 +301,7 @@ class PlayState extends MusicBeatState
 		callOnModules('onUpdatePost', elapsed);
 	}
 
-	override private function onActionPressed(action:String)
+	override public function onActionPressed(action:String)
 	{
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
@@ -388,7 +389,7 @@ class PlayState extends MusicBeatState
 		callOnModules('onKeyPress', action);
 	}
 
-	override private function onActionReleased(action:String)
+	override public function onActionReleased(action:String)
 	{
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
@@ -397,7 +398,7 @@ class PlayState extends MusicBeatState
 				return;
 
 			default:
-				if (!playerStrums.botPlay && startedCountdown)
+				if (!playerStrums.botPlay && startedCountdown && !player.stunned && !paused)
 				{
 					for (receptor in playerStrums.receptors)
 					{
@@ -442,7 +443,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (player != null
-			&& !holdArray.contains(true)
+			&& (!holdArray.contains(true) || playerStrums.botPlay)
 			&& player.animation.curAnim != null
 			&& player.holdTimer > Conductor.stepCrochet * (player.singDuration / 1000)
 			&& player.animation.curAnim.name.startsWith("sing")
@@ -862,7 +863,7 @@ class PlayState extends MusicBeatState
 		Conductor.boundInst.stop();
 		Conductor.boundVocals.stop();
 		callOnModules('onEndSong', null);
-		ScriptableState.switchState(new SongSelection());
+		TransitionState.switchState(new SongSelection());
 	}
 
 	private function characterSing(char:Character, anim:String)

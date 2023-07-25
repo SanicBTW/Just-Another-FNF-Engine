@@ -23,11 +23,11 @@ class Event<T>
 		return this;
 	}
 
-	function dispatch(args:Array<Dynamic>):Event<T>
+	function dispatch(args:T):Event<T>
 	{
 		for (callback in this.listeners)
 		{
-			Reflect.callMethod(this, callback, args);
+			Reflect.callMethod(this, callback, [args]);
 		}
 		return this;
 	}
@@ -65,7 +65,7 @@ class EventGroup<T>
 		return event.add(callback);
 	}
 
-	function triggerEvent(eventName:String, args:Array<Dynamic>):Null<Event<T>>
+	function triggerEvent(eventName:String, args:T):Null<Event<T>>
 	{
 		var event:Null<Event<T>> = eventMap.get(eventName);
 		if (event == null)

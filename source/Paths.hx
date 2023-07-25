@@ -41,10 +41,6 @@ class Paths
 				_library = newLibrary;
 				onFinish();
 			});
-			loadLib.onProgress((loaded:Int, total:Int) ->
-			{
-				trace('$loaded / $total (${loaded / total})');
-			});
 			loadLib.onError((err) ->
 			{
 				throw new Exception('Error while loading $newLibrary: $err');

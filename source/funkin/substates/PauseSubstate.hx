@@ -1,10 +1,9 @@
 package funkin.substates;
 
-import backend.Controls;
-import base.ScriptableState.ScriptableSubState;
-import base.ScriptableState;
+import base.TransitionState;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.FlxSubState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.system.FlxSound;
 import flixel.tweens.FlxEase;
@@ -14,7 +13,7 @@ import funkin.states.PlayState;
 import funkin.states.SongSelection;
 import funkin.text.Alphabet;
 
-class PauseSubstate extends ScriptableSubState
+class PauseSubstate extends FlxSubState
 {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 	var menuItems:Array<String> = ['Resume', 'Reset song', 'Exit'];
@@ -78,9 +77,9 @@ class PauseSubstate extends ScriptableSubState
 						case "Resume":
 							close();
 						case 'Reset song':
-							ScriptableState.switchState(new PlayState());
+							TransitionState.switchState(new PlayState());
 						case 'Exit':
-							ScriptableState.switchState(new SongSelection());
+							TransitionState.switchState(new SongSelection());
 					}
 				}
 		}

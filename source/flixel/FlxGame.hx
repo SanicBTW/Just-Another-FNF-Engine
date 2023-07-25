@@ -493,8 +493,8 @@ class FlxGame extends Sprite
 
 		// Re-assign the FlxG saved on the ScriptHandler static exposure and loaded modules, also execute onGameResized
 		backend.ScriptHandler.exp.set('FlxG', FlxG);
-		cast(_state, base.ScriptableState).setOnModules('FlxG', FlxG);
-		cast(_state, base.ScriptableState).callOnModules('onGameResized', [width, height]);
+		_state.setOnModules('FlxG', FlxG);
+		_state.callOnModules('onGameResized', [width, height]);
 	}
 
 	/**
@@ -628,6 +628,8 @@ class FlxGame extends Sprite
 			FlxG.signals.preGameStart.dispatch();
 
 		FlxG.signals.preStateCreate.dispatch(_state);
+
+		// preload function
 
 		_state.create();
 

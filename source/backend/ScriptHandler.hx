@@ -7,7 +7,6 @@ package backend;
  */
 import Paths.Libraries;
 import base.Conductor;
-import base.ScriptableState;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -113,7 +112,6 @@ class ScriptHandler
 		exp.set('Timings', Timings);
 		exp.set('Note', Note);
 		exp.set('StrumLine', StrumLine);
-		exp.set('ScriptableState', ScriptableState);
 		exp.set('GameOverSubstate', GameOverSubstate);
 		exp.set('parseCharType', SongTools.parseCharType);
 
@@ -163,7 +161,7 @@ class ScriptHandler
 				module = new ForeverModule(expr, parseFolder, extraParams);
 
 				@:privateAccess
-				cast(flixel.FlxG.state, ScriptableState).moduleBatch.push(module);
+				flixel.FlxG.state.modules.push(module);
 			}
 			catch (ex:Error)
 			{

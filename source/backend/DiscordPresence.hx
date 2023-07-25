@@ -1,10 +1,8 @@
 package backend;
 
 #if DISCORD_PRESENCE
-import Sys.sleep;
 import discord_rpc.DiscordRpc;
 import lime.app.Application;
-import sys.thread.Thread;
 
 using StringTools;
 
@@ -12,9 +10,12 @@ using StringTools;
 class DiscordPresence
 {
 	// I'm so fucking addicted to Kana Arima, I love her sm
-	private static final kanaFunky:Array<String> = ['kanadepre'];
+	private static final rpcImages:Array<String> = [
+		'kanadepre', 'kanasurprisedy', 'kanajafeedit', 'kanajafeedit2', 'kanapvpomiedo', 'kanathx4playing', 'kanashyblush', 'kanaripfc', 'akanelaugh',
+		'akanesmile-messi', 'akanegetratiod', 'akanewinkai'
+	];
 
-	public static var largeImageKey:String = kanaFunky[Std.int(Math.random() * kanaFunky.length)];
+	public static var largeImageKey:String = rpcImages[Std.int(Math.random() * rpcImages.length)];
 
 	public function new()
 	{
@@ -33,13 +34,11 @@ class DiscordPresence
 
 		trace("Discord Presence Started");
 
-		while (true)
+		// Its actually kind of dumb to create a thread if we only want to process callbacks, just process them while the app is updated, what is the need for sleeping the thread tho
+		Application.current.onUpdate.add((_) ->
 		{
 			DiscordRpc.process();
-			sleep(1);
-		}
-
-		DiscordRpc.shutdown();
+		});
 	}
 
 	private static function onReady()
@@ -54,10 +53,7 @@ class DiscordPresence
 
 	public static function Initialize()
 	{
-		Thread.create(() ->
-		{
-			new DiscordPresence();
-		});
+		new DiscordPresence();
 		Application.current.onExit.add((_) ->
 		{
 			shutdownPresence();
@@ -92,9 +88,9 @@ class DiscordPresence
 // In order to avoid having to fill the code with compiler conditionals everywhere the presence is in, I'll just write an empty class that contains all the functions the working class has
 class DiscordPresence
 {
-	private static final kanaFunky:Array<String> = ['kanadepre'];
+	private static final rpcImages:Array<String> = [];
 
-	public static var largeImageKey:String = kanaFunky[Std.int(Math.random() * kanaFunky.length)];
+	public static var largeImageKey:String = "";
 
 	public function new() {}
 

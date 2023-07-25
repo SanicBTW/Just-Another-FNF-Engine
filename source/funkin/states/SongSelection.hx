@@ -1,34 +1,29 @@
 package funkin.states;
 
-import Paths.Libraries;
 import backend.Cache;
-import backend.Controls;
 import backend.IO;
-import base.ScriptableState;
+import base.TransitionState;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
-import funkin.SongTools.SongData;
 import funkin.text.Alphabet;
 import haxe.io.Bytes;
-import haxe.io.Path;
 import network.MultiCallback;
+import network.Request;
 import network.pocketbase.Collection;
 import network.pocketbase.PBRequest;
 import network.pocketbase.Record.FunkinRecord;
 import openfl.media.Sound;
-import window.debug.Overlay.OverlayCorner;
 
 using StringTools;
 
-class SongSelection extends ScriptableState
+class SongSelection extends TransitionState
 {
 	private final pages:Array<String> = ["libraries", "funkin"];
-	private final libraries:Array<OverlayCorner> = [BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT];
 	private var curPage(default, set):Int = 0;
 	private var curSelected(default, set):Int = 0;
-	private var curLib(default, set):Int = 0;
 	private var curText(get, null):String;
 
 	private var grpOptions:FlxTypedGroup<Alphabet>;
@@ -50,7 +45,7 @@ class SongSelection extends ScriptableState
 
 	private var networkCb:MultiCallback = new MultiCallback(() ->
 	{
-		ScriptableState.switchState(new PlayState());
+		TransitionState.switchState(new PlayState());
 	});
 
 	@:noCompletion
@@ -74,15 +69,6 @@ class SongSelection extends ScriptableState
 
 			if (item.targetY == 0)
 				item.alpha = 1;
-		}
-
-		switch (pages[curPage])
-		{
-			case "funkin":
-				{
-					if (IO.existsOnFolder(SONGS, '$curText/Inst.ogg'))
-						FlxG.sound.playMusic(Cache.getSound(Path.join([IO.getFolderPath(SONGS), curText, 'Inst.ogg'])));
-				}
 		}
 
 		return curSelected;
@@ -130,7 +116,7 @@ class SongSelection extends ScriptableState
 				{
 					songStore.clear();
 
-					PBRequest.getRecords(pages[curPage], (funkShit:Collection<FunkinRecord>) ->
+					PBRequest.getRecords(pages[curPage]).add((funkShit:Collection<FunkinRecord>) ->
 					{
 						var regenArray:Array<String> = [];
 
@@ -138,8 +124,6 @@ class SongSelection extends ScriptableState
 						{
 							songStore.set(song.song, song);
 							regenArray.push(song.song);
-							if (IO.existsOnFolder(SONGS, '${song.song}/Inst.ogg'))
-								Cache.getSound(Path.join([IO.getFolderPath(SONGS), song.song, 'Inst.ogg']));
 						}
 						regenMenu(regenArray);
 					});
@@ -150,28 +134,23 @@ class SongSelection extends ScriptableState
 	}
 
 	@:noCompletion
-	private function set_curLib(value:Int):Int
-	{
-		curLib += value;
-
-		if (curLib < 0)
-			curLib = libraries.length - 1;
-		if (curLib >= libraries.length)
-			curLib = 0;
-
-		// curPage = 0;
-
-		FlxG.game.overlay._cornerPos = libraries[curLib];
-
-		return value;
-	}
-
-	@:noCompletion
 	private function get_curText():String
 		return (grpOptions.members[curSelected] != null ? grpOptions.members[curSelected].text : "");
 
+	var cockygf:FlxSprite;
+
 	override function create()
 	{
+		new Request<Sound>({
+			url: "https://storage.sancopublic.com/nexus_bf.ogg",
+			type: SOUND
+		}).add(function(cock)
+		{
+				FlxG.sound.music = new FlxSound();
+				FlxG.sound.music.loadEmbedded(cock, true);
+				FlxG.sound.music.play();
+		});
+
 		var bg:FlxSprite = new FlxSprite();
 		bg.loadGraphic(Paths.image('menuBG'));
 		bg.screenCenter();
@@ -223,7 +202,7 @@ class SongSelection extends ScriptableState
 								netVoices: null,
 								isFS: false
 							};
-							ScriptableState.switchState(new PlayState());
+							TransitionState.switchState(new PlayState());
 						}
 					case "funkin":
 						{
@@ -238,72 +217,66 @@ class SongSelection extends ScriptableState
 							}
 							#end
 
-							var curRec:FunkinRecord = songStore.get(curText);
+							// pending
+							/*
+								var curRec:FunkinRecord = songStore.get(curText);
 
-							var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
-							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
-							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
+								var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
+								var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
+								var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
 
-							#if FS_ACCESS
-							PBRequest.getFile(curRec, "chart", (chart:Bytes) ->
-							{
-								IO.saveSong(curRec.song, CHART, chart, 1);
-								songSelected.songName = curRec.song;
-								chartCb();
-
-								PBRequest.getFile(curRec, "inst", (inst:Bytes) ->
+								#if FS_ACCESS
+								PBRequest.getFile(curRec, "chart", BYTES).add((chart:Bytes) ->
 								{
-									IO.saveSong(curRec.song, INST, inst);
-									instCb();
+									IO.saveSong(curRec.song, CHART, chart, 1);
+									songSelected.songName = curRec.song;
+									chartCb();
 
-									if (curRec.voices != '')
+									PBRequest.getFile(curRec, "inst", (inst:Bytes) ->
 									{
-										PBRequest.getFile(curRec, "voices", (voices:Bytes) ->
-										{
-											IO.saveSong(curRec.song, VOICES, voices);
-											voicesCb();
-										}, BYTES);
-									}
-									else
-										voicesCb();
-								}, BYTES);
-							}, BYTES);
-							#else
-							songSelected.isFS = false;
-							PBRequest.getFile(curRec, "chart", (chart:String) ->
-							{
-								songSelected.netChart = chart;
-								chartCb();
+										IO.saveSong(curRec.song, INST, inst);
+										instCb();
 
-								PBRequest.getFile(curRec, "inst", (inst:Sound) ->
+										if (curRec.voices != '')
+										{
+											PBRequest.getFile(curRec, "voices", (voices:Bytes) ->
+											{
+												IO.saveSong(curRec.song, VOICES, voices);
+												voicesCb();
+											}, BYTES);
+										}
+										else
+											voicesCb();
+									}, BYTES);
+								});
+								#else
+								songSelected.isFS = false;
+								PBRequest.getFile(curRec, "chart", (chart:String) ->
 								{
-									songSelected.netInst = inst;
-									instCb();
+									songSelected.netChart = chart;
+									chartCb();
 
-									if (curRec.voices != '')
+									PBRequest.getFile(curRec, "inst", (inst:Sound) ->
 									{
-										PBRequest.getFile(curRec, "voices", (voices:Sound) ->
+										songSelected.netInst = inst;
+										instCb();
+
+										if (curRec.voices != '')
 										{
-											songSelected.netVoices = voices;
+											PBRequest.getFile(curRec, "voices", (voices:Sound) ->
+											{
+												songSelected.netVoices = voices;
+												voicesCb();
+											}, SOUND);
+										}
+										else
 											voicesCb();
-										}, SOUND);
-									}
-									else
-										voicesCb();
-								}, SOUND);
-							}, RAW_STRING);
-							#end
+									}, SOUND);
+								}, RAW_STRING);
+								#end */
 						}
 				}
 		}
-	}
-
-	override function update(elapsed:Float)
-	{
-		if (FlxG.keys.justPressed.TAB)
-			curLib = 1;
-
-		super.update(elapsed);
 	}
 
 	private function regenMenu(array:Array<String>)

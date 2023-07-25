@@ -258,7 +258,7 @@ class Controls
 			{
 				// Instead of creating a new object that contains keys and state and shit, just dispatch the action name
 				if (keys.contains(evt.keyCode))
-					onActionEvent.triggerEvent("onActionPressed", [name]);
+					onActionEvent.triggerEvent("onActionPressed", name);
 			}
 		}
 	}
@@ -274,7 +274,7 @@ class Controls
 			{
 				// Instead of creating a new object that contains keys and state and shit, just dispatch the action name
 				if (keys.contains(evt.keyCode))
-					onActionEvent.triggerEvent("onActionReleased", [name]);
+					onActionEvent.triggerEvent("onActionReleased", name);
 			}
 		}
 	}

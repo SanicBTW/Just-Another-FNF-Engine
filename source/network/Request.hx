@@ -1,118 +1,162 @@
 package network;
 
+import backend.BackgroundThread;
 import backend.Cache;
+import backend.Event;
 import flixel.graphics.FlxGraphic;
 import haxe.Http;
 import haxe.io.Bytes;
 import lime.graphics.Image;
 import openfl.display.BitmapData;
-import openfl.media.Sound;
-#if native
 import openfl.display3D.textures.Texture;
-#end
+import openfl.media.Sound;
 
-// Rewrite soon again
-class Request<T>
+typedef RequestOptions =
 {
-	public static final userAgent:String = 'JAFE 0.2.10'; // See README.md Versioning
+	var url:String;
+	var type:RequestType;
 
-	public function new(url:String, callback:T->Void, type:RequestType)
-	{
-		var req:Http = new Http(url);
+	// headerss
+	var ?headers:Array<RequestHeader>;
+	// post shit
+	var ?post:Bool;
+	var ?postData:Null<String>;
+	var ?postBytes:Null<Bytes>;
+}
 
-		// Refused to set unsafe header "User-Agent"
-		#if !html5 req.addHeader('User-Agent', userAgent); #end
-
-		req.onError = (error:String) ->
-		{
-			throw('Failed to fetch $url ($error)');
-		}
-
-		switch (type)
-		{
-			// I'm dumb
-			case RAW_STRING:
-				req.onData = (data:String) ->
-				{
-					callback(cast data);
-				}
-			case STRING:
-				req.onData = (data:String) ->
-				{
-					// Because most of the responses on HTTP are JSON so will be using generics to give it form and shit
-					callback(cast haxe.Json.parse(data));
-				}
-			case BYTES:
-				req.onBytes = (bytes:Bytes) ->
-				{
-					callback(cast bytes);
-				}
-			case SOUND:
-				if (Cache.isCached(url, SOUND))
-				{
-					callback(cast Cache.get(url, SOUND));
-					return;
-				}
-
-				// Cuz native is actually gay and won't work with Futures
-				#if html5
-				Sound.loadFromFile(url).onComplete((sound:Sound) ->
-				{
-					callback(cast Cache.set(sound, SOUND, url));
-				});
-				#else
-				// Look for another way of loading sounds on native
-				req.onBytes = (bytes:Bytes) ->
-				{
-					var sound:Sound = new Sound();
-					sound.loadCompressedDataFromByteArray(bytes, bytes.length);
-					callback(cast Cache.set(sound, SOUND, url));
-				}
-				#end
-			case IMAGE:
-				#if html5
-				Image.loadFromFile(url).onComplete((image:Image) ->
-				{
-					var bitData:BitmapData = BitmapData.fromImage(image);
-					var newGraphic:FlxGraphic = FlxGraphic.fromBitmapData(bitData);
-					callback(cast newGraphic);
-				});
-				#else
-				// Found out it's probably the easiest way to do it (I guess)
-				req.onBytes = (bytes:Bytes) ->
-				{
-					var limeImg:Image = Image.fromBytes(bytes);
-					var bitData:BitmapData = BitmapData.fromImage(limeImg);
-					var newGraphic:FlxGraphic;
-
-					if (Cache.gpuRender)
-					{
-						var texture:Texture = Cache.getTexture(url, bitData);
-						newGraphic = FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture));
-					}
-					else
-						newGraphic = FlxGraphic.fromBitmapData(bitData);
-
-					callback(cast newGraphic);
-				}
-				#end
-		}
-
-		#if html5
-		// Because native is actually really cool and HTTP Requests with bytes actually work
-		if (type != SOUND || type != IMAGE)
-			req.request();
-		#else
-		req.request();
-		#end
-	}
+// Dumbfr
+typedef RequestHeader =
+{
+	var name:String;
+	var value:String;
 }
 
 enum RequestType
 {
 	STRING;
+	OBJECT;
 	BYTES;
 	SOUND;
 	IMAGE;
-	RAW_STRING;
+}
+
+// Rewritten again
+// Extends Event for instant event listening
+class Request<T> extends Event<T>
+{
+	public static var userAgent:String = 'JAFE 0.2.10'; // See README.md Versioning
+
+	override public function new(opt:RequestOptions)
+	{
+		super('NetRequest:${opt.url}');
+
+		var http:Http = new Http(opt.url);
+
+		if (opt.headers != null)
+		{
+			for (header in opt.headers)
+			{
+				http.addHeader(header.name, header.value);
+			}
+		}
+
+		// Refused to set unsafe header "User-Agent"
+		#if !html5 http.addHeader('User-Agent', userAgent); #end
+
+		http.onError = (msg) ->
+		{
+			var error = http.responseData == null ? msg : http.responseData;
+			dispatch(cast error);
+			return;
+		}
+
+		switch (opt.type)
+		{
+			case STRING:
+				http.onData = (data:String) ->
+				{
+					dispatch(cast data);
+				}
+
+			case OBJECT:
+				http.onData = (data:String) ->
+				{
+					dispatch(cast haxe.Json.parse(data));
+				}
+
+			case BYTES:
+				http.onBytes = (bytes:Bytes) ->
+				{
+					dispatch(cast bytes);
+				}
+
+			case SOUND:
+				#if html5
+				Sound.loadFromFile(opt.url).onComplete((sound:Sound) ->
+				{
+					dispatch(cast Cache.set(sound, SOUND, opt.url));
+				});
+				#else
+				http.onBytes = (bytes:Bytes) ->
+				{
+					var sound:Sound = new Sound();
+					sound.loadCompressedDataFromByteArray(bytes, bytes.length);
+					dispatch(cast Cache.set(sound, SOUND, opt.url));
+				}
+				#end
+
+			case IMAGE:
+				#if html5
+				Image.loadFromFile(opt.url).onComplete((limeImg:Image) ->
+				{
+					var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
+					var newGraphic:FlxGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
+
+					dispatch(cast newGraphic);
+				});
+				#else
+				http.onBytes = (bytes:Bytes) ->
+				{
+					var limeImg:Image = Image.fromBytes(bytes);
+					var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
+					var newGraphic:FlxGraphic;
+
+					if (Cache.gpuRender)
+					{
+						var texture:Texture = Cache.getTexture(opt.url, bitData);
+						newGraphic = Cache.set(FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture)), GRAPHIC, opt.url);
+					}
+					else
+						newGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
+
+					dispatch(cast newGraphic);
+				}
+				#end
+		}
+
+		if (opt.post != null && opt.post)
+		{
+			if (opt.postData != null)
+				http.setPostData(opt.postData);
+			if (opt.postBytes != null)
+				http.setPostBytes(opt.postBytes);
+		}
+
+		#if html5
+		if (opt.type != SOUND || opt.type != IMAGE)
+			http.request(opt.post);
+		#else
+		BackgroundThread.execute(() ->
+		{
+			try
+			{
+				http.request(opt.post);
+			}
+			catch (ex)
+			{
+				trace(ex);
+			}
+		});
+		#end
+	}
 }

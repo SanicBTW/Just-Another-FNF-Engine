@@ -5,7 +5,6 @@ import haxe.io.Bytes;
 import haxe.io.Path;
 import openfl.media.Sound;
 #if FS_ACCESS
-import lime.app.Application;
 import lime.system.System;
 import sys.FileSystem;
 import sys.io.File;
@@ -48,7 +47,7 @@ class IO
 
 		for (name => path in appFolders)
 		{
-			trace('Checking if $name at $path exists');
+			trace('Checking if $name folder exists at $path');
 			if (!FileSystem.exists(path))
 				FileSystem.createDirectory(path);
 		}
