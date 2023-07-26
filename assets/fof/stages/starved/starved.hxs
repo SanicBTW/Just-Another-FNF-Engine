@@ -24,6 +24,7 @@ var fearBBorder;
 var fearBBG;
 var fearBar;
 
+// Game over thingy not working anymore
 function onCreate()
 {
     stage.defaultCamZoom = 0.85;
@@ -79,14 +80,12 @@ function onCreate()
     fearBBG.scale.set(0.60, 1);
     fearBBG.updateHitbox();
 
-    fearBar = new FlxBar(fearBBG.x + 12, fearBBG.y + 16, FlxBarFillDirection.BOTTOM_TO_TOP, Math.round(fearBBG.width), Math.round(fearBBG.height), null,
-	    '', 0, 100);
-	fearBar.angle = 0;
+    fearBar = new SBar(fearBBG.x + 12, fearBBG.y + 16, toInt32(fearBBG.width), toInt32(fearBBG.height), transparentColor, redColor);
+	fearBar.angle = 180;
 	fearBar.scrollFactor.set();
-	fearBar.createFilledBar(transparentColor, redColor);
-	fearBar.numDivisions = 800;
 	fearBar.scale.set(0.56, 0.90);
 	fearBar.updateHitbox();
+    fearBar.fillAxis = SBarFillAxis.VERTICAL;
 
     conductorOGState = Conductor.speedBasedBPM;
     Conductor.speedBasedBPM = false;
@@ -171,9 +170,19 @@ function onCreatePost()
 	}
 }
 
-function onNoteMiss()
+function goodNoteHit()
 {
-    fear += 0.6;
+    fear -= 0.001;
+}
+
+function noteMiss()
+{
+    fear += 0.005;
+}
+
+function opponentNoteHit()
+{
+    fear += 0.0015;
 }
 
 function onCountdownStarted()
@@ -198,7 +207,7 @@ function onMoveCamera(who)
     {
         case 'dad':
         {
-            stage.defaultCamZoom = 1;
+            stage.defaultCamZoom = 1.15;
         }
         case 'boyfriend':
         {
@@ -215,19 +224,20 @@ function onGameOverConfirm(isRestart)
 
 function onUpdate(elapsed)
 {
+    var lerpVal = FlxMath.bound(1 - (elapsed * 3.125), 0, 1);
+
     zoomshit = camGame.zoom / 0.75;
     PlayState.player.scale.set(zoomshit, zoomshit);
     PlayState.player.x = bfx * zoomshit;
     PlayState.player.y = bfy * zoomshit;
+    fearBar.value = FlxMath.lerp(fear, fearBar.value, lerpVal);
 
     if (PlayState.updateTime)
     {
-        fear += 0.475 * elapsed;
-        fearBar.value = fear;
+        // ok so this dumb bitch would return 1 UPON STATE CREATION LIKE WHAT THE ACTUAL FUCK BRO (my bad actually i set the fg width on bar creation to match the given width)
+        if (fearBar.percent >= 1)
+            Timings.health = 0;
     }
-
-    if (fear >= 100)
-        Timings.health = 0;
 }
 
 function onStepHit()

@@ -1,8 +1,7 @@
-package engine;
+package base.sprites;
 
 import backend.Cache;
 import flixel.FlxSprite;
-import flixel.graphics.FlxGraphic;
 import flixel.util.FlxColor;
 import openfl.display.BitmapData;
 import openfl.geom.ColorTransform;
@@ -61,13 +60,14 @@ class SBar extends FlxSprite
 	private var barWidth(default, null):Int;
 	private var barHeight(default, null):Int;
 
-	public var fillAxis:FillAxis = HORIZONTAL;
+	public var fillAxis:SBarFillAxis = HORIZONTAL;
 	public var value:Float = 0;
 	public var percent(get, null):Float = 0;
 
 	@:noCompletion
 	// Tested on the time bar, it was songPosition / length so it would give actual percentage
 	// To get a good percentage, the value should be set as targetValue / max so it works
+	// Ok it was actually the current width/height of the fg rect which represents the current bar progress divided by the full width/height of the sprite
 	private function get_percent():Float
 	{
 		var max:Int = switch (fillAxis)
@@ -76,7 +76,13 @@ class SBar extends FlxSprite
 			case VERTICAL: barHeight;
 		};
 
-		return Math.floor(value / max);
+		var progress:Float = switch (fillAxis)
+		{
+			case HORIZONTAL: _fgRect.width;
+			case VERTICAL: _fgRect.height;
+		}
+
+		return (progress / max);
 	}
 
 	public function new(X:Float = 0, Y:Float = 0, Width:Int = 100, Height:Int = 10, bgColor:FlxColor, fgColor:FlxColor)
@@ -130,7 +136,7 @@ class SBar extends FlxSprite
 	}
 }
 
-enum FillAxis
+enum SBarFillAxis
 {
 	HORIZONTAL;
 	VERTICAL;

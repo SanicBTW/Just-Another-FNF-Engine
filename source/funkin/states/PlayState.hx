@@ -636,7 +636,7 @@ class PlayState extends MusicBeatState
 		if (SONG.notes[Std.int(curStep / 16)] != null && Conductor.boundInst.playing)
 			moveCameraSection(Std.int(curStep / 16));
 
-		if (FlxG.camera.zoom < 1.35 && curBeat % 4 == 0)
+		if (curBeat % 4 == 0)
 		{
 			FlxG.camera.zoom += 0.015;
 			camHUD.zoom += 0.03;

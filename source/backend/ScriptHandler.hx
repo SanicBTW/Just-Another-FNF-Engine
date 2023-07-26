@@ -7,6 +7,7 @@ package backend;
  */
 import Paths.Libraries;
 import base.Conductor;
+import base.sprites.SBar;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -28,10 +29,6 @@ import openfl.media.Sound;
 import openfl.utils.Assets;
 
 using StringTools;
-
-#if FS_ACCESS
-import sys.io.File;
-#end
 
 // FlxColor but class
 class Colors
@@ -56,6 +53,8 @@ class Colors
 	public static function fromRGB(Red:Int, Green:Int, Blue:Int, Alpha:Int = 255):FlxColor
 		return FlxColor.fromRGB(Red, Green, Blue, Alpha);
 }
+
+// Idea: scan for scripts on a dedicated folder and load them globally for extra functionality
 
 /**
  * Handles the Backend and Script interfaces of the engine, as well as exceptions and crashes.
@@ -114,6 +113,8 @@ class ScriptHandler
 		exp.set('StrumLine', StrumLine);
 		exp.set('GameOverSubstate', GameOverSubstate);
 		exp.set('parseCharType', SongTools.parseCharType);
+		exp.set('SBar', SBar); // Sanco Bar, my own FlxBar implementation
+		exp.set('SBarFillAxis', SBarFillAxis);
 
 		parser.allowTypes = true;
 		parser.allowJSON = true;
