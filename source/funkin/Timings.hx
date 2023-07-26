@@ -184,13 +184,14 @@ class Timings
 
 				notesAccuracy += judgement.weight;
 				score += judgement.score;
-				health += judgement.health;
 
 				if (health >= 2)
 					health = 2;
 
 				if (health <= 0)
 					health = 0;
+
+				health += judgement.health;
 
 				// Set the max combo
 				if (combo > maxCombo)

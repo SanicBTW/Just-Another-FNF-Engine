@@ -197,7 +197,7 @@ class ChartLoader
 			};
 			trace(subEvent);
 
-			if (Events.eventList.contains(subEvent.event))
+			if (subEvent.event.length > 0 && Events.eventList.contains(subEvent.event))
 			{
 				var mySelectedEvent:String = Events.eventList[Events.eventList.indexOf(subEvent.event)];
 				if (mySelectedEvent != null)

@@ -8,23 +8,21 @@ import network.pocketbase.Record;
 
 using StringTools;
 
-class PBRequest<R:Record, C:Collection<R>> extends Request<C>
+// Just noticed extending Request is kind of dumb, just return a Request lol
+class PBRequest<R:Record, C:Collection<R>>
 {
 	private static final base:String = "https://pb.sancopublic.com/api/";
 	private static final recordsExt:String = "collections/:col/records";
 	private static final filesExt:String = "files/:col/:id/:file";
 
-	override public function new(url:String, type:RequestType)
-	{
-		super({url: url, type: type});
-	}
+	public static function getRecords<R:Record, C:Collection<R>>(collection:String):Request<C>
+		return new Request<C>({url: base + recordsExt.replace(":col", collection), type: OBJECT});
 
-	public static function getRecords<R:Record, C:Collection<R>>(collection:String):PBRequest<R, C>
-		return new PBRequest(base + recordsExt.replace(":col", collection), OBJECT);
-
-	public static function getFile<R:Record, C:Collection<R>>(record:R, file:String, type:RequestType):PBRequest<R, C>
-		return new PBRequest(base + filesExt.replace(":col", record.collectionName).replace(":id", record.id).replace(":file", Reflect.field(record, file)),
-			type);
+	public static function getFile<T, R:Record>(record:R, file:String, type:RequestType):Request<T>
+		return new Request<T>({
+			url: base + filesExt.replace(":col", record.collectionName).replace(":id", record.id).replace(":file", Reflect.field(record, file)),
+			type: type
+		});
 }
 
 // Error typedef because its related to request error lol

@@ -3,7 +3,6 @@ package funkin;
 import base.Conductor;
 import base.sprites.DepthSprite;
 import flixel.FlxG;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;

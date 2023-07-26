@@ -43,13 +43,19 @@
 	<!-- Enable Discord Rich Presence -->
 	<define name="DISCORD_PRESENCE" if="windows" />
 
+	<!-- Enable the Engine Crash Handler -->
+	<define name="CRASH_HANDLER" if="windows" />
+
+	<!-- Enables caching flx text graphics and bitmaps -->
+	<define name="CACHE_FLXTEXT" />
+
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
 	<haxelib name="format" />
 
-	<haxelib name="SSIni" /> <!-- them languages -->
+	<haxelib name="SSIni" />
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
@@ -72,8 +78,8 @@
 
 	<haxedef name="hscriptPos" />
 
-	<!-- this enables error handling on debug mode -->
-	<undefine name="openfl-disable-handle-error" />
+	<!-- Enables Crash Handler on Debug -->
+	<undefine name="openfl-disable-handle-error" if="CRASH_HANDLER" />
 
 	<!-- _________________________________ Icons ________________________________ -->
 

@@ -237,7 +237,7 @@ class PlayState extends MusicBeatState
 		super.update(elapsed);
 
 		if (!paused)
-			DiscordPresence.changePresence('Playing ${SONG.song}', null, null, true, Conductor.boundInst.length - Conductor.songPosition);
+			DiscordPresence.changePresence('Playing ${SONG.song}', ui.scoreText.text, null, true, Conductor.boundInst.length - Conductor.songPosition);
 
 		if (startedCountdown && startingSong && !paused)
 		{

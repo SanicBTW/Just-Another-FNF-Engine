@@ -1,6 +1,6 @@
 package funkin.states;
 
-import backend.Cache;
+import backend.DiscordPresence;
 import backend.IO;
 import base.TransitionState;
 import flixel.FlxG;
@@ -8,6 +8,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
+import flixel.util.FlxColor;
 import funkin.text.Alphabet;
 import haxe.io.Bytes;
 import network.MultiCallback;
@@ -151,10 +152,18 @@ class SongSelection extends TransitionState
 				FlxG.sound.music.play();
 		});
 
+		var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
+		darkBackground.setGraphicSize(Std.int(FlxG.width));
+		darkBackground.screenCenter();
+		darkBackground.alpha = 0.7;
+		add(darkBackground);
+
 		var bg:FlxSprite = new FlxSprite();
-		bg.loadGraphic(Paths.image('menuBG'));
+		bg.loadGraphic(Paths.image('smenuBG'));
+		bg.setGraphicSize(FlxG.width);
 		bg.screenCenter();
-		bg.setGraphicSize(FlxG.width, FlxG.height);
+		bg.blend = openfl.display.BlendMode.DIFFERENCE;
+		bg.alpha = 0.07;
 		add(bg);
 
 		grpOptions = new FlxTypedGroup<Alphabet>();
@@ -167,6 +176,9 @@ class SongSelection extends TransitionState
 		add(libIndicator);
 
 		curPage = 0;
+
+		// It was time to fix it lol
+		DiscordPresence.changePresence("Scrolling through the menus");
 
 		super.create();
 	}
@@ -217,63 +229,61 @@ class SongSelection extends TransitionState
 							}
 							#end
 
-							// pending
-							/*
-								var curRec:FunkinRecord = songStore.get(curText);
+							var curRec:FunkinRecord = songStore.get(curText);
 
-								var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
-								var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
-								var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
+							var chartCb:() -> Void = networkCb.add("chart:" + curRec.id);
+							var instCb:() -> Void = networkCb.add("inst:" + curRec.id);
+							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
 
-								#if FS_ACCESS
-								PBRequest.getFile(curRec, "chart", BYTES).add((chart:Bytes) ->
+							#if FS_ACCESS
+							PBRequest.getFile(curRec, 'chart', STRING).add((chart:String) ->
+							{
+								IO.saveSong(curRec.song, CHART, chart, 1);
+								songSelected.songName = curRec.song;
+								chartCb();
+
+								PBRequest.getFile(curRec, "inst", BYTES).add((inst:Bytes) ->
 								{
-									IO.saveSong(curRec.song, CHART, chart, 1);
-									songSelected.songName = curRec.song;
-									chartCb();
+									IO.saveSong(curRec.song, INST, inst);
+									instCb();
 
-									PBRequest.getFile(curRec, "inst", (inst:Bytes) ->
+									if (curRec.voices != '')
 									{
-										IO.saveSong(curRec.song, INST, inst);
-										instCb();
-
-										if (curRec.voices != '')
+										PBRequest.getFile(curRec, "voices", BYTES).add((voices:Bytes) ->
 										{
-											PBRequest.getFile(curRec, "voices", (voices:Bytes) ->
-											{
-												IO.saveSong(curRec.song, VOICES, voices);
-												voicesCb();
-											}, BYTES);
-										}
-										else
+											IO.saveSong(curRec.song, VOICES, voices);
 											voicesCb();
-									}, BYTES);
+										});
+									}
+									else
+										voicesCb();
 								});
-								#else
-								songSelected.isFS = false;
-								PBRequest.getFile(curRec, "chart", (chart:String) ->
+							});
+							#else
+							songSelected.isFS = false;
+							PBRequest.getFile(curRec, 'chart', STRING).add((chart:String) ->
+							{
+								songSelected.netChart = chart;
+								chartCb();
+
+								PBRequest.getFile(curRec, "inst", SOUND).add((inst:Sound) ->
 								{
-									songSelected.netChart = chart;
-									chartCb();
+									songSelected.netInst = inst;
+									instCb();
 
-									PBRequest.getFile(curRec, "inst", (inst:Sound) ->
+									if (curRec.voices != '')
 									{
-										songSelected.netInst = inst;
-										instCb();
-
-										if (curRec.voices != '')
+										PBRequest.getFile(curRec, "voices", SOUND).add((voices:Sound) ->
 										{
-											PBRequest.getFile(curRec, "voices", (voices:Sound) ->
-											{
-												songSelected.netVoices = voices;
-												voicesCb();
-											}, SOUND);
-										}
-										else
+											songSelected.netVoices = voices;
 											voicesCb();
-									}, SOUND);
-								}, RAW_STRING);
-								#end */
+										});
+									}
+									else
+										voicesCb();
+								});
+							});
+							#end
 						}
 				}
 		}

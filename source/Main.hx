@@ -42,11 +42,16 @@ class Main extends Sprite
 		hl.Gc.enable(true);
 		#end
 
-		Save.Initialize();
-		Controls.Initialize();
-		IO.Initialize();
-		DiscordPresence.Initialize();
-		ScriptHandler.Initialize();
+		// Dynamic init omg
+		Type.getClassName(Save); // I need to do this to avoid crashing, dunno why maybe the class isn't loaded into the global scope
+		for (classInit in ["Save", "Controls", "IO", "DiscordPresence", "ScriptHandler"])
+		{
+			trace('Initializing $classInit');
+			var targetClass = Type.resolveClass('backend.$classInit');
+			trace('$classInit fields ${Type.getClassFields(targetClass)}');
+			Reflect.callMethod(targetClass, Reflect.field(targetClass, "Initialize"), []);
+		}
+
 		setupGame();
 
 		FlxG.signals.preStateCreate.add((_) ->
@@ -67,7 +72,6 @@ class Main extends Sprite
 				setFPS(Std.parseInt(arg.split(":")[1]));
 		}
 		#end
-		FlxG.console.registerFunction('setFPS', setFPS);
 	}
 
 	private function setupGame()
@@ -94,19 +98,17 @@ class Main extends Sprite
 		FlxG.mouse.useSystemCursor = true;
 		#end
 
-		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(openfl.events.UncaughtErrorEvent.UNCAUGHT_ERROR, (ev) ->
+		#if CRASH_HANDLER
+		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(openfl.events.UncaughtErrorEvent.UNCAUGHT_ERROR, (ev) ->
 		{
 			trace('Uncaught error: ${Std.string(ev.error)}');
 			#if sys
-			new sys.io.Process('${haxe.io.Path.join([Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe'])}', Sys.args());
-			#end
-
-			#if html5
-			// cant test it lmao
-			js.Browser.location.hash = 'error=${Std.string(ev.error)}';
-			js.Browser.location.reload(true);
+			var args:Array<String> = Sys.args();
+			args.push('-crash:${Std.string(ev.error)}');
+			new sys.io.Process('${haxe.io.Path.join([Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe'])}', args);
 			#end
 		});
+		#end
 	}
 
 	public static function setFPS(newFPS:Int)

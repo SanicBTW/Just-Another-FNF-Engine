@@ -851,11 +851,17 @@ class FlxText extends FlxSprite
 			var intWidth:Int = Std.int(newWidth);
 			var intHeight:Int = Std.int(newHeight);
 
+			#if CACHE_FLXTEXT
+			var newName:String = 'text:${intWidth}x${intHeight}';
+			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT, false), GRAPHIC, newName));
+			#else
 			var key:String = FlxG.bitmap.getUniqueKey("text");
 			_lastKey = key;
 
 			_bitmap = new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT);
 			makeGraphic(intWidth, intHeight, FlxColor.TRANSPARENT, false, key);
+			#end
 
 			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			if (_hasBorderAlpha)
@@ -870,7 +876,14 @@ class FlxText extends FlxSprite
 			if (_hasBorderAlpha)
 			{
 				if (_borderPixels == null)
+				{
+					#if CACHE_FLXTEXT
+					var newName:String = 'textbp:${frameWidth}x${frameHeight}';
+					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+					#else
 					_borderPixels = new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT);
+					#end
+				}
 				else
 					_borderPixels.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			}
