@@ -66,7 +66,9 @@ class Overlay extends OFLSprite
 		_text.selectable = false;
 		_text.sharpness = 400;
 		_text.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, fontSize, 0xFFFFFF);
+		#if (openfl > "9.2.0")
 		_text.autoSize = LEFT;
+		#end
 
 		_bg = drawRound(x, y, _text.textWidth + padding[0], _text.textHeight + padding[1], [10], FlxColor.BLACK, 0.5);
 
@@ -89,6 +91,12 @@ class Overlay extends OFLSprite
 		// Reposition the text based off some shitty formula
 		lerpTrack(_text, "x", _bg.x + padding[0] / 4, lerpVal);
 		lerpTrack(_text, "y", _bg.y + padding[1] / 4, lerpVal);
+
+		// Workaround for OpenFL versions where auto size doesn't work properly
+		#if (openfl < "9.2.0")
+		lerpTrack(_text, "width", _bg.width, lerpVal);
+		lerpTrack(_text, "height", _bg.height, lerpVal);
+		#end
 
 		// Update needed variables
 		updateFPS();
