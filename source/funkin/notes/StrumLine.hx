@@ -114,11 +114,10 @@ class StrumLine extends FlxSpriteGroup
 			}
 
 			var receptor:Receptor = receptors.members[Math.floor(strumNote.noteData)];
-			var noteSize:Float = (strumNote.receptorData.separation * strumNote.receptorData.size);
-			var center:Float = receptor.y + (noteSize / 2);
+			var center:Float = receptor.y + (receptor.swagWidth / 2);
 
 			// math shit lmao
-			var receptorY:Float = receptor.y + (noteSize / 4);
+			var receptorY:Float = receptor.y + (receptor.swagWidth / 4);
 			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
 
 			strumNote.x = receptor.x
@@ -133,7 +132,10 @@ class StrumLine extends FlxSpriteGroup
 
 			if (strumNote.isSustain)
 			{
-				strumNote.y -= ((strumNote.height / 2) * downscrollMultiplier);
+				strumNote.y -= ((receptor.swagWidth / 2) * downscrollMultiplier);
+
+				if (strumNote.isSustainEnd && strumNote.prevNote != null && strumNote.prevNote.isSustain)
+					strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3;
 
 				if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
 					&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center

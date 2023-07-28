@@ -144,23 +144,20 @@ class ChartLoader
 
 						var newNote:Note = new Note(strumTime, noteData, songNotes[3], strumLine, oldNote);
 						newNote.mustPress = hitNote;
-						newNote.sustainLength = Math.round(songNotes[2] / curChange.stepCrochet) * curChange.stepCrochet;
+						var holdStep:Float = newNote.sustainLength = songNotes[2] / curChange.stepCrochet;
 						noteQueue.push(newNote);
 
-						var holdLength:Float = newNote.sustainLength;
-						holdLength = holdLength / curChange.stepCrochet;
-
-						if (Math.round(holdLength) > 0)
+						if (holdStep > 0)
 						{
-							for (note in 0...Math.round(holdLength) + 1)
+							var floorStep:Int = Std.int(holdStep + 1);
+							for (note in 0...floorStep)
 							{
-								var time:Float = strumTime + (curChange.stepCrochet * note) + curChange.stepCrochet;
-
-								var sustainNote:Note = new Note(time, noteData, newNote.noteType, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
+								var sustainNote:Note = new Note(strumTime + (curChange.stepCrochet * (note + 1)), noteData, newNote.noteType, strumLine,
+									noteQueue[Std.int(noteQueue.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 
 								sustainNote.parent = newNote;
-								sustainNote.isSustainEnd = (note == Math.round(holdLength) - 1);
+								sustainNote.isSustainEnd = (note == floorStep);
 
 								newNote.tail.push(sustainNote);
 								newNote.unhitTail.push(sustainNote);

@@ -3,6 +3,7 @@ package funkin.notes;
 import backend.ScriptHandler;
 import base.Conductor;
 import flixel.FlxSprite;
+import flixel.math.FlxRect;
 import funkin.notes.Receptor.ReceptorData;
 import haxe.Json;
 import openfl.Assets;
@@ -193,5 +194,16 @@ class Note extends FlxSprite
 		}
 
 		super.update(elapsed);
+	}
+
+	@:noCompletion
+	override function set_clipRect(rect:FlxRect):FlxRect
+	{
+		clipRect = rect;
+
+		if (frames != null)
+			frame = frames.frames[animation.frameIndex];
+
+		return rect;
 	}
 }
