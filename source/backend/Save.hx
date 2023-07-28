@@ -1,48 +1,38 @@
 package backend;
 
 import lime.app.Application;
-#if html5
-import js.Browser;
-import js.html.idb.*;
-#end
 
 class Save
 {
-	#if html5
-	// I don't fucking now how does this work lol
-	// https://developer.mozilla.org/es/docs/Web/API/IDBObjectStore
-	private static var _dbRequest:OpenDBRequest;
-	private static var _db:Database;
+	private static var _db:SqliteKeyValue;
 
 	public static function Initialize()
 	{
-		_dbRequest = Browser.window.indexedDB.open("funkin", Std.parseInt(Application.current.meta.get("version").split(".")[1]));
-
-		_dbRequest.addEventListener('error', () ->
+		var version:Int = Std.parseInt(Application.current.meta.get("version").split(".")[1]);
+		#if html5
+		new SqliteKeyValue("JAFE:DB", "testing", 1).onConnect = (cock) ->
 		{
-			trace('Error loading database (${_dbRequest.error})');
-		});
+			cock.set("niggers", "fr");
+			cock.set("niggers2", "fr");
+			cock.set("niggers3", "fr");
+			cock.set("niggers4", "fr");
 
-		_dbRequest.addEventListener('success', () ->
-		{
-			_db = _dbRequest.result;
-		});
-
-		_dbRequest.addEventListener('upgradeended', (ev) ->
-		{
-			_db = ev.target.result;
-			_db.addEventListener('error', (ev) ->
+			cock.remove("niggers");
+			cock.get("niggers2").then((res) ->
 			{
-				trace('Error loading database (${ev})');
+				trace(res);
 			});
-
-			var objectStore:ObjectStore = _db.createObjectStore("settings", {keyPath: 'option'});
-			objectStore.createIndex("value", "value", {unique: false});
-
-			trace('Created object store');
-		});
+			cock.get("niggers3").then((res) ->
+			{
+				trace(res);
+			});
+			cock.get("niggers4").then((res) ->
+			{
+				trace(res);
+			});
+		};
+		#else
+		_db = new SqliteKeyValue(haxe.io.Path.join([IO.getFolderPath(PARENT), "JAFE.db"]), "settings");
+		#end
 	}
-	#else
-	public static function Initialize() {}
-	#end
 }

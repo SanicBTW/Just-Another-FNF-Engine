@@ -44,11 +44,10 @@ class Main extends Sprite
 
 		// Dynamic init omg
 		Type.getClassName(Save); // I need to do this to avoid crashing, dunno why maybe the class isn't loaded into the global scope
-		for (classInit in ["Save", "Controls", "IO", "DiscordPresence", "ScriptHandler"])
+		for (classInit in ["IO", "Save", "Controls", "DiscordPresence", "ScriptHandler"])
 		{
 			trace('Initializing $classInit');
 			var targetClass = Type.resolveClass('backend.$classInit');
-			trace('$classInit fields ${Type.getClassFields(targetClass)}');
 			Reflect.callMethod(targetClass, Reflect.field(targetClass, "Initialize"), []);
 		}
 
