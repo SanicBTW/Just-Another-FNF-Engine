@@ -25,9 +25,10 @@ class UI extends FlxSpriteGroup
 	{
 		super();
 
-		scoreText = new FlxText(30, (FlxG.height / 2) + (FlxG.height / 4), FlxG.width, '', 32);
+		scoreText = new FlxText(30, (FlxG.height / 2) + (FlxG.height / 4), FlxG.width, formatText(), 32);
 		scoreText.font = Paths.font('vcr.ttf');
 		scoreText.alignment = LEFT;
+		scoreText.autoSize = false;
 		scoreText.setBorderStyle(OUTLINE, FlxColor.BLACK, 1.25);
 		scoreText.y -= 50;
 		add(scoreText);
@@ -38,14 +39,19 @@ class UI extends FlxSpriteGroup
 		add(comboGroup);
 
 		displayJudgement('sick', false, true);
-
-		updateText();
 	}
 
-	public function updateText()
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		scoreText.text = formatText();
+	}
+
+	public function formatText():String
 	{
 		var fcDisplay:String = (Timings.ratingFC != null ? ' | [${Timings.ratingFC}]' : '');
-		scoreText.text = textFormat.replace("$score", '${Timings.score}')
+		return textFormat.replace("$score", '${Timings.score}')
 			.replace("$accuracy", '${Timings.getAccuracy()}')
 			.replace("$rank", Timings.ratingName)
 			.replace("$fc", fcDisplay)

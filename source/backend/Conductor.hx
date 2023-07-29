@@ -1,6 +1,5 @@
 package backend;
 
-// Will make it into stable once I find a way to actually have the beat synced (haha funny reference) though this has a bunch of delay soo probably because of the update time
 import flixel.FlxBasic;
 import flixel.FlxG;
 import flixel.util.FlxSignal.FlxTypedSignal;

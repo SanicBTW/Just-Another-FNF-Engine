@@ -41,7 +41,6 @@ class Cache
 	// Dynamic set
 	public static function set<T>(asset:T, map:CacheMap, key:String):T
 	{
-		trace('Setting new asset $key');
 		track(key);
 
 		if (isCached(key, map) || asset == null)

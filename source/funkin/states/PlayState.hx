@@ -694,8 +694,6 @@ class PlayState extends MusicBeatState
 
 			if (!note.isSustain)
 				playerStrums.destroyNote(note);
-
-			ui.updateText();
 		}
 	}
 
@@ -716,7 +714,6 @@ class PlayState extends MusicBeatState
 			note.noteType,
 			note.isSustain
 		]);
-		ui.updateText();
 	}
 
 	private function botHit(note:Note)
@@ -734,6 +731,9 @@ class PlayState extends MusicBeatState
 			var time:Float = 0.15;
 			if (note.isSustain && !note.isSustainEnd)
 				time += 0.15;
+
+			if (note.isSustain && note.isSustainEnd)
+				time = 0.05;
 
 			receptor.playAnim('confirm', true);
 			receptor.holdTimer = time;

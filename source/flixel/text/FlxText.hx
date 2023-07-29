@@ -843,8 +843,12 @@ class FlxText extends FlxSprite
 		if (textField.textHeight == 0)
 			newHeight = oldHeight;
 
-		// Modified with custom drawing to reuse bitmaps and shit (better memory management)
-		if (oldWidth != newWidth || oldHeight != newHeight)
+		// Modified with custom drawing to reuse bitmaps and shit (better memory management ig)
+		/* This if block runs only when:
+			- old sizes dont match with new ones and auto size is enabled (for some reason even when the fieldwidth is set it keeps updating some shit and allocates memory)
+			- the bitmap and graphic is null to avoid errors
+		 */
+		if ((oldWidth != newWidth || oldHeight != newHeight) && (autoSize || _bitmap == null))
 		{
 			// Need to generate a new buffer to store the text graphic
 			height = newHeight;
@@ -854,7 +858,7 @@ class FlxText extends FlxSprite
 			#if CACHE_FLXTEXT
 			var newName:String = 'text:${intWidth}x${intHeight}';
 			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
-			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT, false), GRAPHIC, newName));
+			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT), GRAPHIC, newName));
 			#else
 			var key:String = FlxG.bitmap.getUniqueKey("text");
 			_lastKey = key;

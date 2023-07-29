@@ -17,6 +17,8 @@ https://lime.openfl.org/api/lime/utils/Preloader.html
 
 # old experimental shit
 
+use new conductor
+
 add Vanilla Paths filesystem support
 
 https://haxe.org/manual/std-Lambda.html

@@ -154,7 +154,6 @@ function onCreatePost()
     UI.scoreText.y = (FlxG.height - 45) - 5;
     UI.scoreText.alignment = "center";
     UI.scoreText.size = 20;
-    UI.updateText();
 
     var i = 0;
     opponentStrums.visible = false;

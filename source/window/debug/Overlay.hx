@@ -206,8 +206,9 @@ class Overlay extends OFLSprite
 		// allocation count -> seems like its the times it has allocated memory)?, increases overtime
 		return hl.Gc.stats().currentMemory;
 		#elseif cpp
-		// should i use cpp.vm.Gc.memInfo(3)
-		return untyped __global__.__hxcpp_gc_used_bytes();
+		// should i use cpp.vm.Gc.memInfo(3) - nah thats more innacurate lmao
+		// untyped __global__.__hxcpp_gc_used_bytes()
+		return cpp.vm.Gc.memInfo64(3);
 		#elseif java
 		// not tested
 		return java.vm.Gc.stats().heap;
