@@ -22,11 +22,14 @@ and more!
 
 - [Latest release](https://funkin.sancopublic.com/)
 - [v0.2.7.1 (a118fe4)](https://onlinefunky.pages.dev/)
+- [v0.2.7.1 with Touch Controls (android-0.2.7.1 branch)](https://touch.funkye.pages.dev/)
 - [V0.2.8 (221672c)](https://funkye.pages.dev/)
 - [V0.2.10 LStable (c419c03)](https://hxstest.funkye.pages.dev/)
-- [v0.2.x LTiles (6719594)](https://tiless.funkye.pages.dev/)
-- [v0.2.x LQuaver (c78d499)](https://quaverr.funkye.pages.dev/)
 - Experimental HUB will be back soon
+
+# Pages that will drop support soon
+- [v0.2.x LTiles (6719594)](https://tiless.funkye.pages.dev/) (Because some of the changes were merged to mainstream and I still need to find a way to clip the sustain properly because no reaction to it it's kind of weird, but this will get merged someday too)
+- [v0.2.x LQuaver (c78d499)](https://quaverr.funkye.pages.dev/) (Because the support was already added into stable)
 
 # Versioning
 
