@@ -66,7 +66,7 @@ class Overlay extends OFLSprite
 		_text.selectable = false;
 		_text.sharpness = 400;
 		_text.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, fontSize, 0xFFFFFF);
-		#if (openfl > "9.2.0")
+		#if (openfl >= "9.2.0")
 		_text.autoSize = LEFT;
 		#end
 

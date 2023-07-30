@@ -53,6 +53,8 @@ class FlxSubState extends FlxState
 		if (FlxG.renderTile)
 			_bgSprite = new FlxBGSprite();
 		bgColor = BGColor;
+		// wacky fix, cur state modules werent being inherited by the sub state automatically so it would cause errors at the end
+		this.modules = FlxG.state.modules;
 	}
 
 	override public function draw():Void

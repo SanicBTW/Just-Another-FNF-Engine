@@ -8,11 +8,9 @@ import funkin.notes.Receptor.ReceptorData;
 import haxe.Json;
 import openfl.Assets;
 
-// Rewrite soon
+// Find a better way to load the modules and data
 class Note extends FlxSprite
 {
-	public static var swagWidth:Float = 160 * 0.7;
-
 	// If not found it will try to get this one
 	private static final DEFAULT:String = "default";
 
@@ -27,35 +25,22 @@ class Note extends FlxSprite
 	public var isSustainEnd:Bool = false;
 	public var sustainLength:Float = 0;
 	public var prevNote:Note;
+	public var ignoreNote:Bool = false; // Psych
+	public var strumLine:Int = 0; // FE:R
+	public var doubleNote:Bool = false; // JAFE
 
-	// Psych
-	public var ignoreNote:Bool = false;
-
-	// FE:R
-	public var strumLine:Int = 0;
-
-	// JAFE
-	public var doubleNote:Bool = false;
-
-	// Sustains (Andromeda:L - HOLDS V2)
-	public var parent:Note;
+	// Sustains KE 1.6.2
+	public var parent:Note = null;
+	public var spotHold:Int = 0;
+	public var holdActive:Bool = true;
 	public var tail:Array<Note> = [];
-	public var unhitTail:Array<Note> = [];
-	public var tripTimer:Float = 1;
-	public var holdingTime:Float = 0;
-
-	// Andromeda:L
-	public var hitbox:Float = 166;
+	public var endHoldOffset:Float = Math.NEGATIVE_INFINITY; // FE:L
 
 	// Psych
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
-	// Psych
 	public var noteType(default, set):String = null;
-
-	// FE:L
-	public var endHoldOffset:Float = Math.NEGATIVE_INFINITY;
 
 	// FE:R
 	public static var scriptCache:Map<String, ForeverModule> = [];
@@ -129,7 +114,7 @@ class Note extends FlxSprite
 			{
 				if (prevNote.isSustain)
 				{
-					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (2.38 / prevNote.receptorData.size)) * Conductor.songSpeed;
+					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (2.375 / prevNote.receptorData.size)) * Conductor.songSpeed;
 					prevNote.updateHitbox();
 					offsetX = prevNote.offsetX;
 				}
@@ -179,12 +164,14 @@ class Note extends FlxSprite
 	{
 		if (mustPress)
 		{
-			var diff:Float = Math.abs(strumTime - Conductor.songPosition);
+			var diff:Float = strumTime - Conductor.songPosition;
 
 			if (isSustain)
-				canBeHit = (diff <= ((hitbox * Conductor.timeScale) * .5) && diff >= (-hitbox * Conductor.timeScale) * .5);
+				canBeHit = (diff <= ((166 * Conductor.timeScale) * .5) && diff >= (-166 * Conductor.timeScale));
 			else
-				canBeHit = (diff <= ((hitbox * Conductor.timeScale)) && diff >= (-hitbox * Conductor.timeScale));
+				canBeHit = (diff <= ((166 * Conductor.timeScale)) && diff >= (-166 * Conductor.timeScale));
+
+			tooLate = (diff < -166 && !wasGoodHit);
 		}
 
 		if (tooLate || (parent != null && parent.tooLate))

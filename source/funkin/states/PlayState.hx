@@ -373,8 +373,7 @@ class PlayState extends MusicBeatState
 							{
 								for (coolNote in possibleNotes)
 								{
-									if (coolNote.canBeHit && !coolNote.tooLate)
-										noteHit(coolNote);
+									noteHit(coolNote);
 								}
 							}
 
@@ -434,7 +433,8 @@ class PlayState extends MusicBeatState
 						&& coolNote.canBeHit
 						&& !coolNote.tooLate
 						&& !coolNote.wasGoodHit
-						&& coolNote.isSustain)
+						&& coolNote.isSustain
+						&& coolNote.holdActive)
 					{
 						noteHit(coolNote);
 					}
@@ -676,7 +676,7 @@ class PlayState extends MusicBeatState
 
 			if (!note.isSustain)
 			{
-				var rating:String = Timings.judge(-(note.strumTime - Conductor.songPosition));
+				var rating:String = Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
 				ui.displayJudgement(rating, (note.strumTime < Conductor.songPosition));
 			}
 
@@ -761,7 +761,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	// camera movements are mostly from my scarlet melopoeia port lol
+	// camera movements are mostly from my scarlet melopoeia port lol, i will improve it soon
 
 	function moveCameraSection(?id:Int = 0):Void
 	{

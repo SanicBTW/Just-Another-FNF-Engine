@@ -223,17 +223,15 @@ function onGameOverConfirm(isRestart)
 
 function onUpdate(elapsed)
 {
-    var lerpVal = FlxMath.bound(1 - (elapsed * 3.125), 0, 1);
-
     zoomshit = camGame.zoom / 0.75;
     PlayState.player.scale.set(zoomshit, zoomshit);
     PlayState.player.x = bfx * zoomshit;
     PlayState.player.y = bfy * zoomshit;
-    fearBar.value = FlxMath.lerp(fear, fearBar.value, lerpVal);
+    fearBar.value = fear;
 
     if (PlayState.updateTime)
     {
-        // ok so this dumb bitch would return 1 UPON STATE CREATION LIKE WHAT THE ACTUAL FUCK BRO (my bad actually i set the fg width on bar creation to match the given width)
+        // ok so this dumb bitch would return 1 UPON STATE CREATION LIKE WHAT THE ACTUAL FUCK BRO
         if (fearBar.percent >= 1)
             Timings.health = 0;
     }

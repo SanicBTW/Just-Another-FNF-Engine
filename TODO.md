@@ -32,5 +32,6 @@ change player to boyfriend and opponent to dad on module vars
 # saving
 
 finish implementing indexed db getter (i fucking hate async bullshit)
+- maybe make a first run get and save it into a map then when exiting flush it into the idb?
 
 make settings

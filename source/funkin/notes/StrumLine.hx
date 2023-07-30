@@ -88,9 +88,6 @@ class StrumLine extends FlxSpriteGroup
 		{
 			if (note.parent.tail.contains(note))
 				note.parent.tail.remove(note);
-
-			if (note.parent.unhitTail.contains(note))
-				note.parent.unhitTail.remove(note);
 		}
 
 		note.destroy();
@@ -148,28 +145,34 @@ class StrumLine extends FlxSpriteGroup
 				}
 			}
 
-			if (!strumNote.tooLate
-				&& strumNote.mustPress
-				&& strumNote.strumTime - Conductor.songPosition < -strumNote.hitbox
-				&& !strumNote.wasGoodHit)
+			if (strumNote.tooLate && strumNote.mustPress && strumNote.strumTime - Conductor.songPosition < -166 && !strumNote.wasGoodHit)
 			{
-				// If it is a single note or is the head of the sustain
-				if (!strumNote.isSustain || strumNote.parent == null)
-				{
-					strumNote.tooLate = true;
+				// If it is a single note
+				if (!strumNote.isSustain)
 					onMiss.dispatch(strumNote);
-				}
-				else if (strumNote.isSustain && strumNote.parent != null)
-				{
-					// bro this shit is so fucking strict omg (sustain end)
-					var parent:Note = strumNote.parent;
-					parent.tooLate = true;
-					for (child in parent.tail)
-					{
-						child.tooLate = true;
-					}
 
-					onMiss.dispatch(parent);
+				// If the hold parent is the prev note (lil hack cuz the first part of the hold is sustain but the head isnt)
+				if (strumNote.isSustain && strumNote.parent == strumNote.prevNote)
+				{
+					for (note in strumNote.parent.tail)
+					{
+						note.holdActive = false;
+						onMiss.dispatch(note);
+					}
+				}
+				else
+				{
+					if (!strumNote.wasGoodHit
+						&& strumNote.isSustain
+						&& strumNote.holdActive
+						&& strumNote.spotHold != strumNote.parent.tail.length)
+					{
+						for (note in strumNote.parent.tail)
+						{
+							note.holdActive = false;
+							onMiss.dispatch(note);
+						}
+					}
 				}
 			}
 

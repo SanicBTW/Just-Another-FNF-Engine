@@ -158,9 +158,9 @@ class ChartLoader
 
 								sustainNote.parent = newNote;
 								sustainNote.isSustainEnd = (note == floorStep);
+								sustainNote.spotHold = note;
 
 								newNote.tail.push(sustainNote);
-								newNote.unhitTail.push(sustainNote);
 
 								noteQueue.push(sustainNote);
 							}
