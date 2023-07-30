@@ -3,6 +3,7 @@ package;
 import backend.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
+import lime.system.Display;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
@@ -15,7 +16,7 @@ class Main extends Sprite
 	private var gameHeight:Int = 720;
 	private var initialClass:Class<FlxState> = funkin.states.SongSelection;
 	private var zoom:Float = -1;
-	private var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate; // VSync :troll:
+	private var framerate:Int = getDisplay().currentMode.refreshRate; // VSync :troll: - maybe not now
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -46,7 +47,6 @@ class Main extends Sprite
 		Type.getClassName(Save); // I need to do this to avoid crashing, dunno why maybe the class isn't loaded into the global scope
 		for (classInit in ["IO", "Save", "Controls", "DiscordPresence", "ScriptHandler"])
 		{
-			trace('Initializing $classInit');
 			var targetClass = Type.resolveClass('backend.$classInit');
 			Reflect.callMethod(targetClass, Reflect.field(targetClass, "Initialize"), []);
 		}
@@ -101,13 +101,31 @@ class Main extends Sprite
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(openfl.events.UncaughtErrorEvent.UNCAUGHT_ERROR, (ev) ->
 		{
 			trace('Uncaught error: ${Std.string(ev.error)}');
-			#if sys
 			var args:Array<String> = Sys.args();
 			args.push('-crash:${Std.string(ev.error)}');
+			#if windows
 			new sys.io.Process('${haxe.io.Path.join([Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe'])}', args);
 			#end
 		});
 		#end
+	}
+
+	// Workaround because my Linux is giving up 0hz on the main display but hdmi is connected
+	public static function getDisplay():Display
+	{
+		var defDisplay:Display = lime.system.System.getDisplay(0);
+		for (i in 0...lime.system.System.numDisplays)
+		{
+			var display:Display = lime.system.System.getDisplay(i);
+			if (display.currentMode.refreshRate <= 0)
+			{
+				@:privateAccess
+				display.currentMode.refreshRate = 60;
+				defDisplay = display;
+			}
+		}
+
+		return defDisplay;
 	}
 
 	public static function setFPS(newFPS:Int)

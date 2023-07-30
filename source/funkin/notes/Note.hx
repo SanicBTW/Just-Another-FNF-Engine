@@ -162,6 +162,20 @@ class Note extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
+		/* read Timings.hx on judgements metadata
+					if (mustPress)
+			{
+				if (isSustain)
+					canBeHit = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * .5)
+						&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
+				else
+					canBeHit = (strumTime > (Conductor.songPosition - Conductor.safeZoneOffset)
+						&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
+
+				tooLate = (strumTime < (Conductor.songPosition - Conductor.safeZoneOffset) && !wasGoodHit);
+			}
+		 */
+
 		if (mustPress)
 		{
 			var diff:Float = strumTime - Conductor.songPosition;

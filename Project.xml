@@ -38,13 +38,13 @@
 	<!-- _________________________________ Defines ______________________________ -->
 
 	<!-- Allow the engine to access the FileSystem -->
-	<define name="FS_ACCESS" if="windows" />
+	<define name="FS_ACCESS" if="windows || linux" />
 
 	<!-- Enable Discord Rich Presence -->
-	<define name="DISCORD_PRESENCE" if="windows" />
+	<define name="DISCORD_PRESENCE" if="windows || linux" />
 
 	<!-- Enable the Engine Crash Handler -->
-	<define name="CRASH_HANDLER" if="windows" />
+	<define name="CRASH_HANDLER" if="windows || linux" />
 
 	<!-- Enables caching flx text graphics and bitmaps -->
 	<define name="CACHE_FLXTEXT" />
@@ -53,13 +53,11 @@
 
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
-	<haxelib name="format" />
-
 	<haxelib name="SSIni" />
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
-	<assets path="ffmpeg.exe" if="FS_ACCESS" /> 
+	<assets path="ffmpeg.exe" if="FS_ACCESS" unless="linux || android" /> 
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 

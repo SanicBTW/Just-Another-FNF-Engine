@@ -48,7 +48,8 @@ class Timings
 	{
 		// might do an option to change accuracy calculation
 		// notesAccuracy / totalHits
-		return Math.min(100, Math.max(0, score / ((totalHits + misses) * judgements[0].score)) * 100);
+		// score / ((totalHits + misses) * judgements[0].score)) * 100
+		return Math.min(100, Math.max(0, notesAccuracy / totalHits));
 	}
 
 	// HUD
@@ -57,10 +58,14 @@ class Timings
 
 	// Judgements metadata
 	// All health values are half the prev (beginning 0.07)
+	// Quaver judgements with the fixed diffs is kind of mean actually, really cool
+	// DO AN OPTION TO CHANGE MS RATING STYLES
+	// Kade MS Rating is based on timeScale, which is more mean and accurate most of the times
+	// Pshcy MS Rating is based on the Conductor safeZoneOffset which is safeFrames (default:10) / 60 * 1000, its more permissive and maybe accurate
 	public static final judgements:Array<Judgement> = [
 		{
 			name: 'sick',
-			timing: 43,
+			timing: 45,
 			weight: 100,
 			fcStatus: 'SFC',
 			health: 0.035,
@@ -71,7 +76,7 @@ class Timings
 		},
 		{
 			name: 'good',
-			timing: 76,
+			timing: 90,
 			weight: 75,
 			fcStatus: 'GFC',
 			health: 0.0175,
@@ -82,7 +87,7 @@ class Timings
 		},
 		{
 			name: 'bad',
-			timing: 106,
+			timing: 135,
 			weight: 50,
 			fcStatus: 'FC',
 			health: -0.00875,
@@ -93,7 +98,7 @@ class Timings
 		},
 		{
 			name: 'shit',
-			timing: 127,
+			timing: 166,
 			weight: 25,
 			fcStatus: null,
 			health: -0.2,
@@ -104,7 +109,7 @@ class Timings
 		},
 		{
 			name: 'miss',
-			timing: 164,
+			timing: 180,
 			weight: -100,
 			fcStatus: null,
 			health: -0.0475,
