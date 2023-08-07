@@ -167,7 +167,6 @@ class ChartLoader
 						}
 
 					case -1:
-						trace('event');
 						pushEvent(songNotes);
 				}
 			}

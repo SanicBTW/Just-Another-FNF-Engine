@@ -1,11 +1,11 @@
 package backend;
 
+#if FS_ACCESS
 import funkin.ChartLoader;
 import haxe.io.Bytes;
 import haxe.io.Path;
-import openfl.media.Sound;
-#if FS_ACCESS
 import lime.system.System;
+import openfl.media.Sound;
 import sys.FileSystem;
 import sys.io.File;
 

@@ -1,18 +1,18 @@
 package backend;
 
-// Add encryption options
-// The only difference between the system and html implementations are only the constructor and getters
-// Planning on doing a base class that contains operations and that shit, extending it to add different implementations
+// TODO: Base classes for different management, for example, Table management has its own class and that shit, it would be easier to format and rewrite
+// PENDING: add new tables support on IDB and extend current one on system, apply removal of encryption and usage of serialization on IDB
+// Should I do it promise based?
+// Idk if I should encrypt and decrypt serialized data, maybe in a future ill add it back again as an option?
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import haxe.crypto.Base64;
-import haxe.io.Bytes;
+import haxe.Serializer;
+import haxe.Unserializer;
 #if sys
 import haxe.io.Path;
 import sys.FileSystem;
 import sys.db.Connection;
 import sys.db.ResultSet;
 import sys.db.Sqlite;
-import sys.io.File;
 import sys.thread.Mutex;
 import sys.thread.Tls;
 
@@ -26,8 +26,6 @@ class SqliteKeyValue implements IFlxDestroyable
 	private static final APPEND_ENTRIES_LIMIT:Int = 128;
 
 	private var path:String;
-	private var table:String;
-	private var escapedTable:String;
 	private var connections:Array<Connection>;
 	private var tlsConnection:Tls<Connection>;
 
@@ -55,25 +53,21 @@ class SqliteKeyValue implements IFlxDestroyable
 		mutex.release();
 
 		this.path = path;
-		this.table = table;
-		this.escapedTable = escape(table);
 
 		if (!FileSystem.exists(Path.directory(path)))
 			FileSystem.createDirectory(Path.directory(path));
 
-		if (!FileSystem.exists(path))
-			createDB();
+		createTable(table);
 	}
 
-	public function set(key:String, value:String):Bool
+	public function set(table:String = 'KeyValue', key:String, value:Any):Bool
 	{
 		if (value == null)
-			return throw("Cannot set a NULL value");
+			return remove(table, key);
 
+		var escapedTable:String = escape(table);
 		var escapedKey:String = escape(key);
-
-		var valueBytes:Bytes = Bytes.ofString(value, UTF8);
-		var escapedValue:String = "'" + Base64.encode(valueBytes) + "'";
+		var escapedValue:String = "'" + Serializer.run(value) + "'";
 
 		if (!mutexAcquiredInParent)
 			mutex.acquire();
@@ -87,7 +81,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		}
 		catch (exc:Dynamic)
 		{
-			trace('Failed to set value for key $key: $exc');
+			trace('Failed to set value in $table for key $key: $exc');
 			if (!mutexAcquiredInParent)
 				mutex.release();
 			return false;
@@ -99,8 +93,9 @@ class SqliteKeyValue implements IFlxDestroyable
 		return true;
 	}
 
-	public function remove(key:String):Bool
+	public function remove(table:String = 'KeyValue', key:String):Bool
 	{
+		var escapedTable:String = escape(table);
 		var escapedKey:String = escape(key);
 
 		if (!mutexAcquiredInParent)
@@ -113,7 +108,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		}
 		catch (exc:Dynamic)
 		{
-			trace('Failed to remove value for key $key: $exc');
+			trace('Failed to remove value in $table for key $key: $exc');
 			if (!mutexAcquiredInParent)
 				mutex.release();
 			return false;
@@ -125,13 +120,14 @@ class SqliteKeyValue implements IFlxDestroyable
 		return true;
 	}
 
-	public function get(key:String):Null<String>
+	public function get(table:String = 'KeyValue', key:String):Null<Any>
 	{
+		var escapedTable:String = escape(table);
 		var escapedKey:String = escape(key);
 
 		mutex.acquire();
 
-		var value:StringBuf = null;
+		var res:Null<Any> = null;
 		var numEntries:Int = 0;
 
 		try
@@ -141,18 +137,14 @@ class SqliteKeyValue implements IFlxDestroyable
 
 			for (entry in result)
 			{
-				if (value == null)
-					value = new StringBuf();
-
 				var rawValue:String = entry.value;
-				var rawBytes:Bytes = Base64.decode(rawValue);
-				value.add(rawBytes.toString());
+				res = Unserializer.run(rawValue);
 				numEntries++;
 			}
 		}
 		catch (exc:Dynamic)
 		{
-			trace('Failed to get value for key $key: $exc');
+			trace('Failed to get value in $table for key $key: $exc');
 			mutex.release();
 			return null;
 		}
@@ -160,12 +152,47 @@ class SqliteKeyValue implements IFlxDestroyable
 		if (numEntries > APPEND_ENTRIES_LIMIT)
 		{
 			mutexAcquiredInParent = true;
-			set(key, value.toString());
+			set(table, key, res);
 			mutexAcquiredInParent = false;
 		}
 
 		mutex.release();
-		return value != null ? value.toString() : null;
+		return res;
+	}
+
+	public function createTable(table:String = 'KeyValue'):Bool
+	{
+		var escapedTable:String = escape(table);
+		mutex.acquire();
+
+		try
+		{
+			var connection:Connection = getConnection();
+			connection.request('BEGIN TRANSACTION');
+			connection.request('PRAGMA encoding = "UTF-8"');
+			connection.request('
+				CREATE TABLE IF NOT EXISTS $escapedTable (
+					id INTEGER PRIMARY KEY,
+					key TEXT NOT NULL,
+					value TEXT NOT NULL
+				)
+			');
+
+			if (!FileSystem.exists(path))
+				connection.request('CREATE INDEX key_idx ON $escapedTable(key)');
+
+			connection.request('COMMIT');
+			trace('Created $table at $path');
+		}
+		catch (exc:Dynamic)
+		{
+			trace('Failed to create $table at $path: $exc');
+			mutex.release();
+			return false;
+		}
+
+		mutex.release();
+		return true;
 	}
 
 	public function destroy():Void
@@ -182,27 +209,6 @@ class SqliteKeyValue implements IFlxDestroyable
 
 	private static inline function escape(token:String):String
 		return "'" + StringTools.replace(token, "'", "''") + "'";
-
-	private function createDB():Void
-	{
-		mutex.acquire();
-
-		var connection:Connection = getConnection();
-		connection.request('BEGIN TRANSACTION');
-		connection.request('PRAGMA encoding = "UTF-8"');
-		connection.request('
-            CREATE TABLE $escapedTable (
-                id INTEGER PRIMARY KEY,
-                key TEXT NOT NULL,
-                value TEXT NOT NULL
-            )
-        ');
-		connection.request('CREATE INDEX key_idx ON $escapedTable(key)');
-		connection.request('COMMIT');
-		trace("Created DB");
-
-		mutex.release();
-	}
 }
 #elseif html5
 import js.Browser;
@@ -290,7 +296,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		if (connection == null)
 			return null;
 
-		var res:Request = connection.transaction(table, READWRITE).objectStore(table).get(key);
+		var res:Request = connection.transaction(table, READONLY).objectStore(table).get(key);
 
 		var promise:Promise<String> = new Promise<String>((resolve, reject) ->
 		{

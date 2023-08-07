@@ -61,7 +61,7 @@ class FlxSprite extends FlxObject
 	/**
 	 * Controls whether the object is smoothed when rotated, affects performance.
 	 */
-	public var antialiasing(default, set):Bool = true; // get from save
+	public var antialiasing(default, set):Bool = Settings.antialiasing;
 
 	/**
 	 * Set this flag to true to force the sprite to update during the `draw()` call.
