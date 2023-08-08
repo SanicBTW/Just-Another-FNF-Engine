@@ -1,8 +1,5 @@
 package backend;
 
-// TODO: Base classes for different management, for example, Table management has its own class and that shit, it would be easier to format and rewrite, extend current table support on system
-// Should I do it promise based?
-// Idk if I should encrypt and decrypt serialized data, maybe in a future ill add it back again as an option?
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import haxe.Serializer;
 import haxe.Unserializer;
@@ -43,7 +40,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		return connection;
 	}
 
-	public function new(path:String, table:String = 'KeyValue')
+	public function new(path:String, tables:Array<String>)
 	{
 		mutex = new Mutex();
 		mutex.acquire();
@@ -56,7 +53,10 @@ class SqliteKeyValue implements IFlxDestroyable
 		if (!FileSystem.exists(Path.directory(path)))
 			FileSystem.createDirectory(Path.directory(path));
 
-		createTable(table);
+		for (table in tables)
+		{
+			createTable(table);
+		}
 	}
 
 	public function set(table:String = 'KeyValue', key:String, value:Any):Bool
@@ -159,7 +159,8 @@ class SqliteKeyValue implements IFlxDestroyable
 		return res;
 	}
 
-	public function createTable(table:String = 'KeyValue'):Bool
+	@:noCompletion
+	private function createTable(table:String = 'KeyValue'):Bool
 	{
 		var escapedTable:String = escape(table);
 		mutex.acquire();
@@ -181,7 +182,7 @@ class SqliteKeyValue implements IFlxDestroyable
 				connection.request('CREATE INDEX key_idx ON $escapedTable(key)');
 
 			connection.request('COMMIT');
-			trace('Created $table at $path');
+			trace('Created $table at ${Path.withoutDirectory(path)}');
 		}
 		catch (exc:Dynamic)
 		{

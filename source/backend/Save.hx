@@ -17,8 +17,7 @@ class Save
 				loadSettings();
 			};
 		#else
-		_db = new SqliteKeyValue(haxe.io.Path.join([IO.getFolderPath(PARENT), "JAFE.db"]), "settings");
-		_db.createTable("highscores");
+		_db = new SqliteKeyValue(haxe.io.Path.join([IO.getFolderPath(PARENT), "JAFE.db"]), ["settings", "highscores"]);
 
 		loadSettings();
 		#end
