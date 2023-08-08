@@ -1,7 +1,6 @@
 package backend;
 
-// TODO: Base classes for different management, for example, Table management has its own class and that shit, it would be easier to format and rewrite
-// PENDING: add new tables support on IDB and extend current one on system, apply removal of encryption and usage of serialization on IDB
+// TODO: Base classes for different management, for example, Table management has its own class and that shit, it would be easier to format and rewrite, extend current table support on system
 // Should I do it promise based?
 // Idk if I should encrypt and decrypt serialized data, maybe in a future ill add it back again as an option?
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
@@ -211,6 +210,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		return "'" + StringTools.replace(token, "'", "''") + "'";
 }
 #elseif html5
+import haxe.exceptions.NotImplementedException;
 import js.Browser;
 import js.html.idb.*;
 import js.lib.Promise;
@@ -226,15 +226,13 @@ class SqliteKeyValue implements IFlxDestroyable
 	private var connection:Database;
 
 	private var name:String;
-	private var table:String;
 	private var version:Int;
 
 	public var onConnect:SqliteKeyValue->Void;
 
-	public function new(name:String, table:String = 'KeyValue', version:Int = 1)
+	public function new(name:String, tables:Array<String>, version:Int = 1)
 	{
 		this.name = name;
-		this.table = table;
 		this.version = version;
 
 		request = Browser.window.indexedDB.open(name, version);
@@ -247,12 +245,12 @@ class SqliteKeyValue implements IFlxDestroyable
 		request.addEventListener('upgradeneeded', (ev) ->
 		{
 			var db:Database = ev.target.result;
-			trace('$name database needs an update');
 
-			if (!db.objectStoreNames.contains(table))
-				db.createObjectStore(table);
-
-			trace('finished updating $name');
+			for (table in tables)
+			{
+				if (!db.objectStoreNames.contains(table))
+					db.createObjectStore(table);
+			}
 		});
 
 		request.addEventListener('success', () ->
@@ -263,12 +261,15 @@ class SqliteKeyValue implements IFlxDestroyable
 		});
 	}
 
-	public function set(key:String, value:String):Bool
+	public function set(table:String = 'KeyValue', key:String, value:Any):Bool
 	{
 		if (connection == null)
 			return false;
 
-		var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(Base64.encode(Bytes.ofString(value, UTF8)), key);
+		if (value == null)
+			return remove(table, key);
+
+		var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(Serializer.run(value), key);
 		res.addEventListener('error', () ->
 		{
 			throw res.error;
@@ -277,7 +278,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		return true;
 	}
 
-	public function remove(key:String):Bool
+	public function remove(table:String = 'KeyValue', key:String):Bool
 	{
 		if (connection == null)
 			return false;
@@ -291,18 +292,21 @@ class SqliteKeyValue implements IFlxDestroyable
 		return true;
 	}
 
-	public function get(key:String):Promise<String>
+	public function get(table:String = 'KeyValue', key:String):Promise<Any>
 	{
 		if (connection == null)
 			return null;
 
-		var res:Request = connection.transaction(table, READONLY).objectStore(table).get(key);
+		var res:Request = connection.transaction(table, READWRITE).objectStore(table).get(key);
 
 		var promise:Promise<String> = new Promise<String>((resolve, reject) ->
 		{
 			res.addEventListener('success', () ->
 			{
-				resolve(Base64.decode(res.result).toString());
+				if (res.result != null)
+					resolve(Unserializer.run(res.result));
+				else
+					resolve(null);
 			});
 
 			res.addEventListener('error', () ->
@@ -313,6 +317,11 @@ class SqliteKeyValue implements IFlxDestroyable
 		});
 
 		return promise;
+	}
+
+	public function createTable(table:String = 'KeyValue'):Bool
+	{
+		throw new NotImplementedException();
 	}
 
 	public function destroy():Void

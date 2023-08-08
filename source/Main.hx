@@ -45,6 +45,7 @@ class Main extends Sprite
 
 		// Dynamic init omg
 		Type.getClassName(Save); // I need to do this to avoid crashing, dunno why maybe the class isn't loaded into the global scope
+		// IO and Save should be initialized pre openfl stage addition
 		for (classInit in ["IO", "Save", "Controls", "DiscordPresence", "ScriptHandler"])
 		{
 			var targetClass = Type.resolveClass('backend.$classInit');
@@ -63,14 +64,20 @@ class Main extends Sprite
 
 		#if sys
 		for (arg in Sys.args())
+		#end
+		#if html5
+		var args:Array<String> = js.Browser.location.search.substring(js.Browser.location.search.indexOf("?") + 1).split("&");
+		for (arg in args)
+		#end
 		{
+			arg = arg.toLowerCase();
+
 			if (arg.contains("-enable_gpu_rendering"))
 				Cache.gpuRender = true;
 
 			if (arg.contains("-fps"))
 				setFPS(Std.parseInt(arg.split(":")[1]));
 		}
-		#end
 	}
 
 	private function setupGame()

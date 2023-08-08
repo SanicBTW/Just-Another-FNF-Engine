@@ -6,24 +6,46 @@ class Save
 
 	public static function Initialize()
 	{
-		var settings:Array<String> = Type.getClassFields(Settings);
-		trace(settings);
-
 		#if html5
 		// Re-assign though it won't be really useful
 
-		new SqliteKeyValue("JAFE:Settings", "settings", Std.parseInt(lime.app.Application.current.meta.get("version").split(".")[1])).onConnect = (res) ->
-		{
-			_db = res;
-			trace('Connected to JAFE:Settings');
-		};
+		new SqliteKeyValue("JAFE:DB", ["settings", "highscores"],
+			Std.parseInt(lime.app.Application.current.meta.get("version").split(".")[1])).onConnect = (res) ->
+			{
+				_db = res;
+
+				loadSettings();
+			};
 		#else
 		_db = new SqliteKeyValue(haxe.io.Path.join([IO.getFolderPath(PARENT), "JAFE.db"]), "settings");
 		_db.createTable("highscores");
 
-		// Loads the settings
+		loadSettings();
+		#end
+	}
+
+	@:noCompletion
+	private static function loadSettings()
+	{
+		var settings:Array<String> = Type.getClassFields(Settings);
+		trace(settings);
+
+		// because promises exist (i fucking hate them so much ong), once i make sys sql promise based it will be the same for all targets hopefully
 		for (field in settings)
 		{
+			#if html5
+			var defaultValue:Any = Reflect.field(Settings, field);
+			_db.get("settings", field).then((save:Any) ->
+			{
+				if (save == null)
+				{
+					_db.set("settings", field, defaultValue);
+					save = defaultValue;
+				}
+
+				Reflect.setField(Settings, field, save);
+			});
+			#else
 			var defaultValue:Any = Reflect.field(Settings, field);
 			var save:Any = _db.get("settings", field);
 			if (save == null)
@@ -33,7 +55,7 @@ class Save
 			}
 
 			Reflect.setField(Settings, field, save);
+			#end
 		}
-		#end
 	}
 }
