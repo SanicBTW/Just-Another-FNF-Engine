@@ -185,7 +185,6 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControls
 		Controls.onActionEvent.removeEventCallback(onActionPressed, "onActionPressed");
 		Controls.onActionEvent.removeEventCallback(onActionReleased, "onActionReleased");
 		controls = null;
-		callOnModules('onDestroy', null);
 
 		FlxDestroyUtil.destroy(_subStateOpened);
 		FlxDestroyUtil.destroy(_subStateClosed);

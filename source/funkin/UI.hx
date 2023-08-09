@@ -79,9 +79,10 @@ class UI extends FlxSpriteGroup
 		curJudgement.alpha = (preload) ? 0 : 1;
 
 		curJudgement.z = -Conductor.songPosition;
-		curJudgement.animation.play(judgement + (late ? '-late' : '-early'));
 		if (perfect)
 			curJudgement.animation.play('sick-perfect');
+		else
+			curJudgement.animation.play(judgement + (late ? '-late' : '-early'));
 
 		curJudgement.setGraphicSize(Std.int(curJudgement.frameWidth * 0.7));
 

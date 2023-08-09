@@ -1,17 +1,18 @@
 package funkin.notes;
 
 import base.Conductor;
+import base.sprites.DepthSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
 import flixel.math.FlxRect;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
 import flixel.util.FlxSignal.FlxTypedSignal;
 import funkin.notes.Receptor.ReceptorData;
 
 class StrumLine extends FlxSpriteGroup
 {
 	public var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
+	public var noteSplashes(default, null):FlxTypedSpriteGroup<DepthSprite>;
+
 	public var notesGroup(default, null):FlxTypedSpriteGroup<Note>;
 	public var holdGroup(default, null):FlxTypedSpriteGroup<Note>;
 	public var allNotes(default, null):FlxTypedSpriteGroup<Note>;
@@ -29,6 +30,7 @@ class StrumLine extends FlxSpriteGroup
 		super();
 
 		receptors = new FlxTypedSpriteGroup<Receptor>();
+
 		notesGroup = new FlxTypedSpriteGroup<Note>();
 		holdGroup = new FlxTypedSpriteGroup<Note>();
 		allNotes = new FlxTypedSpriteGroup<Note>();
@@ -66,6 +68,12 @@ class StrumLine extends FlxSpriteGroup
 		add(holdGroup);
 		add(receptors);
 		add(notesGroup);
+
+		if (Settings.showNoteSplashes)
+		{
+			noteSplashes = new FlxTypedSpriteGroup<DepthSprite>();
+			add(noteSplashes);
+		}
 	}
 
 	public function push(newNote:Note)
@@ -91,6 +99,38 @@ class StrumLine extends FlxSpriteGroup
 		}
 
 		note.destroy();
+	}
+
+	public function generateSplash(noteType:String, noteData:Int)
+	{
+		var module:backend.ScriptHandler.ForeverModule = Note.returnNoteScript(noteType);
+		if (Settings.showNoteSplashes && module.exists("generateSplash"))
+		{
+			var splashNote:DepthSprite = noteSplashes.recycle(DepthSprite, function()
+			{
+				var splashNote:DepthSprite = new DepthSprite();
+				return splashNote;
+			});
+
+			splashNote.alpha = 1;
+			splashNote.visible = true;
+			splashNote.scale.set(1, 1);
+			splashNote.x = receptors.members[noteData].x;
+			splashNote.y = receptors.members[noteData].y;
+
+			module.get("generateSplash")(splashNote, noteData);
+
+			if (splashNote.animation != null)
+			{
+				splashNote.animation.finishCallback = function(name:String)
+				{
+					splashNote.kill();
+				}
+			}
+
+			splashNote.z = -Conductor.songPosition;
+			noteSplashes.sort(DepthSprite.depthSorting, flixel.util.FlxSort.DESCENDING);
+		}
 	}
 
 	override public function update(elapsed:Float)
@@ -176,8 +216,20 @@ class StrumLine extends FlxSpriteGroup
 				}
 			}
 
-			if (botPlay && !strumNote.tooLate && strumNote.strumTime <= Conductor.songPosition)
-				onBotHit.dispatch(strumNote);
+			// Dunno if I should handle the botplay timing here
+			if (botPlay && !strumNote.tooLate)
+			{
+				switch (Settings.ratingStyle)
+				{
+					case KADE:
+						if (strumNote.strumTime <= Conductor.songPosition)
+							onBotHit.dispatch(strumNote);
+					case PSYCH:
+						if (strumNote.strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5))
+							if ((strumNote.isSustain && strumNote.prevNote.wasGoodHit) || strumNote.strumTime <= Conductor.songPosition)
+								onBotHit.dispatch(strumNote);
+				}
+			}
 
 			if ((strumNote.y < -strumNote.height) && (strumNote.tooLate || strumNote.wasGoodHit))
 			{

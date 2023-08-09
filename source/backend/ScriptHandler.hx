@@ -7,7 +7,8 @@ package backend;
  */
 import Paths.Libraries;
 import base.Conductor;
-import base.sprites.SBar;
+import base.sprites.*;
+import base.sprites.SBar.SBarFillAxis;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -112,7 +113,10 @@ class ScriptHandler
 		exp.set('Note', Note);
 		exp.set('StrumLine', StrumLine);
 		exp.set('GameOverSubstate', GameOverSubstate);
-		exp.set('parseCharType', SongTools.parseCharType);
+		exp.set('parseCharType', SongTools.parseCharType); // gotta make it a global script soon
+		exp.set('AttachedSprite', AttachedSprite);
+		exp.set('OffsettedSprite', OffsettedSprite);
+		exp.set('DepthSprite', DepthSprite);
 		exp.set('SBar', SBar); // Sanco Bar, my own FlxBar implementation
 		exp.set('SBarFillAxis', SBarFillAxis);
 

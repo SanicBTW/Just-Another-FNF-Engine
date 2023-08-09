@@ -678,6 +678,7 @@ class PlayState extends MusicBeatState
 			{
 				var rating:String = Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
 				ui.displayJudgement(rating, (note.strumTime < Conductor.songPosition));
+				playerStrums.generateSplash(note.noteType, note.noteData);
 			}
 
 			characterSing(player, 'sing${receptor.getNoteDirection().toUpperCase()}');
@@ -732,11 +733,11 @@ class PlayState extends MusicBeatState
 			if (note.isSustain && !note.isSustainEnd)
 				time += 0.15;
 
-			if (note.isSustain && note.isSustainEnd)
-				time = 0.05;
-
 			receptor.playAnim('confirm', true);
 			receptor.holdTimer = time;
+
+			if (!note.isSustain)
+				curStrums.generateSplash(note.noteType, note.noteData);
 
 			characterSing(curChar, 'sing${receptor.getNoteDirection().toUpperCase()}');
 

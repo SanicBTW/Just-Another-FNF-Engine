@@ -19,6 +19,18 @@ typedef Judgement =
 	var track:String; // The "this" variable to track
 }
 
+enum RatingStyle
+{
+	PSYCH;
+	KADE;
+}
+
+enum AccuracyStyle
+{
+	SCORE;
+	MS;
+}
+
 class Timings
 {
 	// Judgements
@@ -46,10 +58,12 @@ class Timings
 	@:noCompletion
 	private static function get_accuracy():Float
 	{
-		// might do an option to change accuracy calculation
-		// notesAccuracy / totalHits
-		// score / ((totalHits + misses) * judgements[0].score)) * 100
-		return Math.min(100, Math.max(0, notesAccuracy / totalHits));
+		var acc:Float = switch (Settings.accuracyStyle)
+		{
+			case MS: (notesAccuracy / totalHits);
+			case SCORE: (score / ((totalHits + misses) * judgements[0].score)) * 100;
+		}
+		return Math.min(100, Math.max(0, acc));
 	}
 
 	// HUD
@@ -65,7 +79,7 @@ class Timings
 	public static final judgements:Array<Judgement> = [
 		{
 			name: 'sick',
-			timing: 45,
+			timing: Settings.sickTiming,
 			weight: 100,
 			fcStatus: 'SFC',
 			health: 0.035,
@@ -76,7 +90,7 @@ class Timings
 		},
 		{
 			name: 'good',
-			timing: 90,
+			timing: Settings.goodTiming,
 			weight: 75,
 			fcStatus: 'GFC',
 			health: 0.0175,
@@ -87,7 +101,7 @@ class Timings
 		},
 		{
 			name: 'bad',
-			timing: 135,
+			timing: Settings.badTiming,
 			weight: 50,
 			fcStatus: 'FC',
 			health: -0.00875,
@@ -98,7 +112,7 @@ class Timings
 		},
 		{
 			name: 'shit',
-			timing: 166,
+			timing: Settings.shitTiming,
 			weight: 25,
 			fcStatus: null,
 			health: -0.2,
@@ -109,7 +123,7 @@ class Timings
 		},
 		{
 			name: 'miss',
-			timing: 180,
+			timing: Settings.missTiming,
 			weight: -100,
 			fcStatus: null,
 			health: -0.0475,

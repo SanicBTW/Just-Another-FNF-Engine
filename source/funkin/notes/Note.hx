@@ -90,13 +90,12 @@ class Note extends FlxSprite
 
 		noteModule.active = false;
 
-		noteModule.interp.variables.set('note', this);
-		noteModule.interp.variables.set('getNoteDirection', getNoteDirection);
-		noteModule.interp.variables.set('getNoteColor', getNoteColor);
+		noteModule.set('getNoteDirection', getNoteDirection);
+		noteModule.set('getNoteColor', getNoteColor);
 
 		var generationScript:String = isSustain ? 'generateSustain' : 'generateNote';
 		if (noteModule.exists(generationScript))
-			noteModule.get(generationScript)();
+			noteModule.get(generationScript)(this);
 
 		antialiasing = receptorData.antialiasing;
 		setGraphicSize(Std.int(frameWidth * receptorData.size));
@@ -162,30 +161,30 @@ class Note extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
-		/* read Timings.hx on judgements metadata
-					if (mustPress)
-			{
-				if (isSustain)
-					canBeHit = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * .5)
-						&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
-				else
-					canBeHit = (strumTime > (Conductor.songPosition - Conductor.safeZoneOffset)
-						&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
-
-				tooLate = (strumTime < (Conductor.songPosition - Conductor.safeZoneOffset) && !wasGoodHit);
-			}
-		 */
-
 		if (mustPress)
 		{
-			var diff:Float = strumTime - Conductor.songPosition;
+			switch (Settings.ratingStyle)
+			{
+				case KADE:
+					var diff:Float = strumTime - Conductor.songPosition;
 
-			if (isSustain)
-				canBeHit = (diff <= ((166 * Conductor.timeScale) * .5) && diff >= (-166 * Conductor.timeScale));
-			else
-				canBeHit = (diff <= ((166 * Conductor.timeScale)) && diff >= (-166 * Conductor.timeScale));
+					if (isSustain)
+						canBeHit = (diff <= ((166 * Conductor.timeScale) * .5) && diff >= (-166 * Conductor.timeScale));
+					else
+						canBeHit = (diff <= ((166 * Conductor.timeScale)) && diff >= (-166 * Conductor.timeScale));
 
-			tooLate = (diff < -166 && !wasGoodHit);
+					tooLate = (diff < -166 && !wasGoodHit);
+
+				case PSYCH:
+					if (isSustain)
+						canBeHit = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * .5)
+							&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
+					else
+						canBeHit = (strumTime > (Conductor.songPosition - Conductor.safeZoneOffset)
+							&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
+
+					tooLate = (strumTime < (Conductor.songPosition - Conductor.safeZoneOffset) && !wasGoodHit);
+			}
 		}
 
 		if (tooLate || (parent != null && parent.tooLate))

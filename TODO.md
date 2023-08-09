@@ -54,6 +54,10 @@ encryption options, i gotta use Haxe serializers as a base and then encrypt the 
 THE CODE COMPATIBILITY HAS GONE TO ANOTHER PATH FROM WHAT I HAD PLANNED SO I WILL TRY TO RECOVER IT
 - make it promise based on both ends *
 
+# splashes
+
+fix splashes (null function pointer bruh, dunno what its causing it)
+
 # states
 
 settings states *

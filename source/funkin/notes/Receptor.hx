@@ -1,9 +1,7 @@
 package funkin.notes;
 
 import backend.ScriptHandler;
-import base.Conductor;
 import flixel.FlxSprite;
-import haxe.ds.IntMap;
 
 typedef ReceptorData =
 {
@@ -43,10 +41,9 @@ class Receptor extends FlxSprite
 		this.noteType = noteType;
 
 		noteModule = Note.returnNoteScript(noteType);
-		noteModule.interp.variables.set('receptor', this);
-		noteModule.interp.variables.set('getNoteDirection', getNoteDirection);
-		noteModule.interp.variables.set('getNoteColor', getNoteColor);
-		noteModule.get('generateReceptor')();
+		noteModule.set('getNoteDirection', getNoteDirection);
+		noteModule.set('getNoteColor', getNoteColor);
+		noteModule.get('generateReceptor')(this);
 	}
 
 	override function update(elapsed:Float)
