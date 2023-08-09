@@ -25,7 +25,9 @@ class UI extends FlxSpriteGroup
 	{
 		super();
 
-		scoreText = new FlxText(30, (FlxG.height / 2) + (FlxG.height / 4), FlxG.width, formatText(), 32);
+		var separation:Float = (FlxG.height / 4);
+
+		scoreText = new FlxText(30, (Settings.downScroll ? (FlxG.height / 2) - separation : (FlxG.height / 2) + separation), FlxG.width, formatText(), 32);
 		scoreText.font = Paths.font('vcr.ttf');
 		scoreText.alignment = LEFT;
 		scoreText.autoSize = false;

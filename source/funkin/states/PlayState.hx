@@ -129,14 +129,15 @@ class PlayState extends MusicBeatState
 		strumLines = new FlxTypedGroup<StrumLine>();
 		strumLines.cameras = [camHUD];
 
-		var separation:Float = FlxG.width / 4;
+		var separationX:Float = (FlxG.width / 4);
+		var yPos:Float = (Settings.downScroll ? FlxG.height - (FlxG.height / 8) : (FlxG.height / 8));
 
-		opponentStrums = new StrumLine((FlxG.width / 2) - separation, FlxG.height / 8);
+		opponentStrums = new StrumLine((FlxG.width / 2) - separationX, yPos);
 		opponentStrums.botPlay = true;
 		opponentStrums.onBotHit.add(botHit);
 		strumLines.add(opponentStrums);
 
-		playerStrums = new StrumLine((FlxG.width / 2) + separation, FlxG.height / 8);
+		playerStrums = new StrumLine((FlxG.width / 2) + separationX, yPos);
 		playerStrums.onMiss.add(noteMiss);
 		strumLines.add(playerStrums);
 

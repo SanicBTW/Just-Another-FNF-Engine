@@ -105,6 +105,7 @@ class ScriptHandler
 		exp.set('FlxSound', FlxSound);
 
 		// Classes (Engine / Forever)
+		exp.set('Settings', Settings);
 		exp.set('VPaths', Paths); // Vanilla Paths, basically access the whole engine Paths
 		exp.set("Conductor", Conductor);
 		exp.set("Character", Character);
@@ -231,18 +232,18 @@ class ForeverModule implements IFlxDestroyable
 
 		// Variable functionality
 		for (i in ScriptHandler.exp.keys())
-			interp.variables.set(i, ScriptHandler.exp.get(i));
+			set(i, ScriptHandler.exp.get(i));
 
 		// Local Variable functionality
 		if (extraParams != null)
 		{
 			for (i in extraParams.keys())
-				interp.variables.set(i, extraParams.get(i));
+				set(i, extraParams.get(i));
 		}
 
 		// Define the current path (used within the script itself)
 		var modulePaths:ModulePaths = new ModulePaths(assetFolder);
-		interp.variables.set('Paths', modulePaths);
+		set('Paths', modulePaths);
 
 		interp.execute(contents);
 	}

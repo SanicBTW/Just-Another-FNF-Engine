@@ -27,7 +27,7 @@ class Conductor
 	public static var songRate:Float = 0.45;
 	private static var speedTwn:FlxTween;
 	// easy enough
-	public static var speedBasedBPM:Bool = false;
+	public static var speedBasedBPM:Bool = true;
 
 	// Steps and beats
 	public static var stepPosition:Int = 0;
@@ -133,7 +133,7 @@ class Conductor
 	@:noCompletion
 	private static function set_songSpeed(value:Float):Float
 	{
-		if (ChartLoader.noteQueue.length <= 0 || ChartLoader.noteQueue[0] == null)
+		if (ChartLoader.noteQueue.length <= 0 || ChartLoader.noteQueue[0] == null || speedBasedBPM == false)
 			return songSpeed = value;
 
 		if (speedTwn != null)
@@ -182,7 +182,10 @@ class Conductor
 			songSpeed = baseSpeed * (bps / noteDiff);
 		}
 		else
-			songSpeed = baseSpeed;
+		{
+			if (songSpeed != baseSpeed)
+				songSpeed = baseSpeed;
+		}
 	}
 
 	public static function resyncTime()

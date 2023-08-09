@@ -5,13 +5,15 @@ class Settings
 	// Graphics
 	public static var antialiasing:Bool = true;
 
+	// Gameplay
+	public static var downScroll:Bool = true;
+
 	// Optimizations
-	public static var showNoteSplashes:Bool = false;
-	public static var comboStacking:Bool = true;
+	public static var showNoteSplashes:Bool = true;
 
 	// Timings & Accuracy styles
-	public static var ratingStyle:funkin.Timings.RatingStyle = PSYCH;
-	public static var accuracyStyle:funkin.Timings.AccuracyStyle = SCORE;
+	public static var ratingStyle:funkin.Timings.RatingStyle = KADE;
+	public static var accuracyStyle:funkin.Timings.AccuracyStyle = MS;
 
 	// Timing Windows
 	public static var sickTiming:Float = 45;

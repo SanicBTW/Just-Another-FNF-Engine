@@ -14,13 +14,8 @@ function generateReceptor(receptor:Receptor)
 
 function generateSplash(splash:DepthSprite, noteData:Int)
 {
-    trace('cock');
-
     splash.loadGraphic(Cache.getGraphic(Paths.getPath('noteSplashes.png')), true, 210, 210);
 
-    trace('cock finish');
-
-    trace('cock anim');
     splash.animation.add('anim1', [
 		(noteData * 2 + 1),
 		8 + (noteData * 2 + 1),
@@ -36,9 +31,8 @@ function generateSplash(splash:DepthSprite, noteData:Int)
 		24 + (noteData * 2),
 		32 + (noteData * 2)
 	], 24, false);
-    trace('cock anim finish');
 
-    splash.playAnim('anim1');
+    splash.animation.play('anim' + FlxG.random.int(1, 2));
 	splash.alpha = 0.6;
 
     splash.x -= splash.width / 4;

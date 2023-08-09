@@ -11,7 +11,7 @@ import funkin.notes.Receptor.ReceptorData;
 class StrumLine extends FlxSpriteGroup
 {
 	public var receptors(default, null):FlxTypedSpriteGroup<Receptor>;
-	public var noteSplashes(default, null):FlxTypedSpriteGroup<DepthSprite>;
+	public var splashes(default, null):FlxTypedSpriteGroup<DepthSprite>;
 
 	public var notesGroup(default, null):FlxTypedSpriteGroup<Note>;
 	public var holdGroup(default, null):FlxTypedSpriteGroup<Note>;
@@ -30,6 +30,8 @@ class StrumLine extends FlxSpriteGroup
 		super();
 
 		receptors = new FlxTypedSpriteGroup<Receptor>();
+		if (Settings.showNoteSplashes)
+			splashes = new FlxTypedSpriteGroup<DepthSprite>();
 
 		notesGroup = new FlxTypedSpriteGroup<Note>();
 		holdGroup = new FlxTypedSpriteGroup<Note>();
@@ -63,6 +65,11 @@ class StrumLine extends FlxSpriteGroup
 			receptor.initialX = Math.floor(receptor.x);
 			receptor.initialY = Math.floor(receptor.y);
 			receptor.playAnim('static');
+
+			if (Settings.showNoteSplashes)
+			{
+				generateSplash(receptor.noteType, receptor.noteData, true);
+			}
 		}
 
 		add(holdGroup);
@@ -70,10 +77,7 @@ class StrumLine extends FlxSpriteGroup
 		add(notesGroup);
 
 		if (Settings.showNoteSplashes)
-		{
-			noteSplashes = new FlxTypedSpriteGroup<DepthSprite>();
-			add(noteSplashes);
-		}
+			add(splashes);
 	}
 
 	public function push(newNote:Note)
@@ -101,19 +105,19 @@ class StrumLine extends FlxSpriteGroup
 		note.destroy();
 	}
 
-	public function generateSplash(noteType:String, noteData:Int)
+	public function generateSplash(noteType:String, noteData:Int, preload:Bool = false)
 	{
 		var module:backend.ScriptHandler.ForeverModule = Note.returnNoteScript(noteType);
 		if (Settings.showNoteSplashes && module.exists("generateSplash"))
 		{
-			var splashNote:DepthSprite = noteSplashes.recycle(DepthSprite, function()
+			var splashNote:DepthSprite = splashes.recycle(DepthSprite, function()
 			{
 				var splashNote:DepthSprite = new DepthSprite();
 				return splashNote;
 			});
 
 			splashNote.alpha = 1;
-			splashNote.visible = true;
+			splashNote.visible = !preload;
 			splashNote.scale.set(1, 1);
 			splashNote.x = receptors.members[noteData].x;
 			splashNote.y = receptors.members[noteData].y;
@@ -129,13 +133,13 @@ class StrumLine extends FlxSpriteGroup
 			}
 
 			splashNote.z = -Conductor.songPosition;
-			noteSplashes.sort(DepthSprite.depthSorting, flixel.util.FlxSort.DESCENDING);
+			splashes.sort(DepthSprite.depthSorting, flixel.util.FlxSort.DESCENDING);
 		}
 	}
 
 	override public function update(elapsed:Float)
 	{
-		var downscrollMultiplier:Int = 1;
+		var downscrollMultiplier:Int = (!Settings.downScroll ? 1 : -1) * flixel.math.FlxMath.signOf(Conductor.songSpeed);
 
 		allNotes.forEachAlive(function(strumNote:Note)
 		{
@@ -151,37 +155,55 @@ class StrumLine extends FlxSpriteGroup
 			}
 
 			var receptor:Receptor = receptors.members[Math.floor(strumNote.noteData)];
-			var center:Float = receptor.y + (receptor.swagWidth / 2);
 
-			// math shit lmao
+			var receptorX:Float = receptor.x;
 			var receptorY:Float = receptor.y + (receptor.swagWidth / 4);
+
+			var pseudoX:Float = strumNote.offsetX;
 			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
 
-			strumNote.x = receptor.x
-				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * strumNote.offsetX)
+			strumNote.x = receptorX
+				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * pseudoX)
 				+ (Math.sin(FlxAngle.asRadians(receptor.direction)) * pseudoY);
 
 			strumNote.y = receptorY
 				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * pseudoY)
-				+ (Math.sin(FlxAngle.asRadians(receptor.direction)) * strumNote.offsetX);
+				+ (Math.sin(FlxAngle.asRadians(receptor.direction)) * pseudoX);
 
 			strumNote.angle = -receptor.direction;
 
+			var center:Float = receptor.y + (receptor.swagWidth / 2);
 			if (strumNote.isSustain)
 			{
 				strumNote.y -= ((receptor.swagWidth / 2) * downscrollMultiplier);
 
 				if (strumNote.isSustainEnd && strumNote.prevNote != null && strumNote.prevNote.isSustain)
-					strumNote.y += Math.ceil(strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3;
+					strumNote.y += Math.ceil((strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3) * downscrollMultiplier;
 
-				if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
-					&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
-					&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))
+				if (Settings.downScroll)
 				{
-					var swagRect = new FlxRect(0, 0, strumNote.width / strumNote.scale.x, strumNote.height / strumNote.scale.y);
-					swagRect.y = (center - strumNote.y) / strumNote.scale.y;
-					swagRect.height -= swagRect.y;
-					strumNote.clipRect = swagRect;
+					strumNote.flipY = true;
+					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
+						&& strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
+						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))
+					{
+						var swagRect = new FlxRect(0, 0, strumNote.frameWidth, strumNote.frameHeight);
+						swagRect.height = (center - strumNote.y) / strumNote.scale.y;
+						swagRect.y = strumNote.frameHeight - swagRect.height;
+						strumNote.clipRect = swagRect;
+					}
+				}
+				else
+				{
+					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
+						&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
+						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))
+					{
+						var swagRect = new FlxRect(0, 0, strumNote.width / strumNote.scale.x, strumNote.height / strumNote.scale.y);
+						swagRect.y = (center - strumNote.y) / strumNote.scale.y;
+						swagRect.height -= swagRect.y;
+						strumNote.clipRect = swagRect;
+					}
 				}
 			}
 
@@ -231,7 +253,11 @@ class StrumLine extends FlxSpriteGroup
 				}
 			}
 
-			if ((strumNote.y < -strumNote.height) && (strumNote.tooLate || strumNote.wasGoodHit))
+			if ((!Settings.downScroll
+				&& (strumNote.y < -strumNote.height)
+				|| Settings.downScroll
+				&& (strumNote.y > (flixel.FlxG.height + strumNote.height)))
+				&& (strumNote.tooLate || strumNote.wasGoodHit))
 			{
 				destroyNote(strumNote);
 			}
