@@ -22,7 +22,7 @@ using StringTools;
 
 class SongSelection extends TransitionState
 {
-	private final pages:Array<String> = ["libraries", "funkin"];
+	private final pages:Array<String> = ["libraries", "funkin", "quaver"];
 	private var curPage(default, set):Int = 0;
 	private var curSelected(default, set):Int = 0;
 	private var curText(get, null):String;
@@ -117,7 +117,7 @@ class SongSelection extends TransitionState
 				{
 					songStore.clear();
 
-					PBRequest.getRecords(pages[curPage]).add((funkShit:Collection<FunkinRecord>) ->
+					PBRequest.getRecords(pages[curPage]).future.onComplete((funkShit:Collection<FunkinRecord>) ->
 					{
 						var regenArray:Array<String> = [];
 
@@ -128,6 +128,11 @@ class SongSelection extends TransitionState
 						}
 						regenMenu(regenArray);
 					});
+				}
+
+			case "quaver":
+				{
+					regenMenu(["107408"]);
 				}
 		}
 
@@ -145,7 +150,7 @@ class SongSelection extends TransitionState
 		new Request<Sound>({
 			url: "https://storage.sancopublic.com/nexus_bf.ogg",
 			type: SOUND
-		}).add(function(cock)
+		}).future.onComplete(function(cock)
 		{
 				FlxG.sound.music = new FlxSound();
 				FlxG.sound.music.loadEmbedded(cock, true);
@@ -216,6 +221,7 @@ class SongSelection extends TransitionState
 							};
 							TransitionState.switchState(new PlayState());
 						}
+
 					case "funkin":
 						{
 							#if FS_ACCESS
@@ -236,20 +242,20 @@ class SongSelection extends TransitionState
 							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
 
 							#if FS_ACCESS
-							PBRequest.getFile(curRec, 'chart', STRING).add((chart:String) ->
+							PBRequest.getFile(curRec, 'chart', STRING).future.onComplete((chart:String) ->
 							{
 								IO.saveSong(curRec.song, CHART, chart, 1);
 								songSelected.songName = curRec.song;
 								chartCb();
 
-								PBRequest.getFile(curRec, "inst", BYTES).add((inst:Bytes) ->
+								PBRequest.getFile(curRec, "inst", BYTES).future.onComplete((inst:Bytes) ->
 								{
 									IO.saveSong(curRec.song, INST, inst);
 									instCb();
 
 									if (curRec.voices != '')
 									{
-										PBRequest.getFile(curRec, "voices", BYTES).add((voices:Bytes) ->
+										PBRequest.getFile(curRec, "voices", BYTES).future.onComplete((voices:Bytes) ->
 										{
 											IO.saveSong(curRec.song, VOICES, voices);
 											voicesCb();
@@ -261,19 +267,19 @@ class SongSelection extends TransitionState
 							});
 							#else
 							songSelected.isFS = false;
-							PBRequest.getFile(curRec, 'chart', STRING).add((chart:String) ->
+							PBRequest.getFile(curRec, 'chart', STRING).future.onComplete((chart:String) ->
 							{
 								songSelected.netChart = chart;
 								chartCb();
 
-								PBRequest.getFile(curRec, "inst", SOUND).add((inst:Sound) ->
+								PBRequest.getFile(curRec, "inst", SOUND).future.onComplete((inst:Sound) ->
 								{
 									songSelected.netInst = inst;
 									instCb();
 
 									if (curRec.voices != '')
 									{
-										PBRequest.getFile(curRec, "voices", SOUND).add((voices:Sound) ->
+										PBRequest.getFile(curRec, "voices", SOUND).future.onComplete((voices:Sound) ->
 										{
 											songSelected.netVoices = voices;
 											voicesCb();
@@ -284,6 +290,11 @@ class SongSelection extends TransitionState
 								});
 							});
 							#end
+						}
+
+					case "quaver":
+						{
+							TransitionState.switchState(new QuaverGameplay(curText));
 						}
 				}
 		}

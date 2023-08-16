@@ -1,7 +1,7 @@
 package funkin;
 
-import backend.IO;
 import backend.ScriptHandler;
+import haxe.io.Path;
 
 typedef EventNote =
 {
@@ -11,32 +11,27 @@ typedef EventNote =
 	value2:String
 }
 
-/*So my old implementation on psych was based off Lullaby's system https://github.com/SanicBTW/FNF-PsychEngine-0.3.2h/blob/hxs-forever/source/hxs/Events.hx
-	I will be mixing it with the Hybrid method https://github.com/SanicBTW/Forever-Engine-Archive/blob/hybrid/source/base/Events.hx 
-	Get files filtering folder (Paths.getLibraryFile(TEXT, 'events'))
- */
 class Events
 {
-	public static var eventList:Array<String> = [];
+	private static var eventList:Array<String> = [];
 	public static var loadedModules:Map<String, ForeverModule> = [];
 
-	public static function obtainEvents()
+	public static function addEvent(event:String):Bool
 	{
-		loadedModules.clear();
-		eventList = IO.getFolderFiles(EVENTS);
-		if (eventList == null)
-			eventList = [];
+		if (eventList.length < 0)
+			return false;
 
-		if (eventList.length > 0)
+		for (eventPath in eventList)
 		{
-			for (i in 0...eventList.length)
+			if (StringTools.contains(eventPath, event))
 			{
-				eventList[i] = eventList[i].substring(0, eventList[i].indexOf('.', 0));
-				loadedModules.set(eventList[i], ScriptHandler.loadModule(eventList[i], 'events'));
+				loadedModules.set(event, ScriptHandler.loadModule(Path.withoutExtension(eventPath), 'events'));
+				return true;
 			}
-			eventList.sort(function(a, b) return Reflect.compare(a.toLowerCase(), b.toLowerCase()));
 		}
-		eventList.insert(0, '');
+
+		eventList.sort(function(a, b) return Reflect.compare(a.toLowerCase(), b.toLowerCase()));
+		return false;
 	}
 
 	public static function returnDescription(event:String):String

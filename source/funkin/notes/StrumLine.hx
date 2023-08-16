@@ -67,9 +67,7 @@ class StrumLine extends FlxSpriteGroup
 			receptor.playAnim('static');
 
 			if (Settings.showNoteSplashes)
-			{
-				generateSplash(receptor.noteType, receptor.noteData, true);
-			}
+				generateSplash(receptor, true);
 		}
 
 		add(holdGroup);
@@ -105,9 +103,9 @@ class StrumLine extends FlxSpriteGroup
 		note.destroy();
 	}
 
-	public function generateSplash(noteType:String, noteData:Int, preload:Bool = false)
+	public function generateSplash(receptor:Receptor, preload:Bool = false)
 	{
-		var module:backend.ScriptHandler.ForeverModule = Note.returnNoteScript(noteType);
+		var module:backend.ScriptHandler.ForeverModule = Note.returnNoteScript(receptor.noteType);
 		if (Settings.showNoteSplashes && module.exists("generateSplash"))
 		{
 			var splashNote:DepthSprite = splashes.recycle(DepthSprite, function()
@@ -119,10 +117,12 @@ class StrumLine extends FlxSpriteGroup
 			splashNote.alpha = 1;
 			splashNote.visible = !preload;
 			splashNote.scale.set(1, 1);
-			splashNote.x = receptors.members[noteData].x;
-			splashNote.y = receptors.members[noteData].y;
+			splashNote.updateHitbox();
 
-			module.get("generateSplash")(splashNote, noteData);
+			splashNote.x = receptors.members[receptor.noteData].x;
+			splashNote.y = receptors.members[receptor.noteData].y;
+
+			module.get("generateSplash")(splashNote, receptor.noteData);
 
 			if (splashNote.animation != null)
 			{
@@ -177,9 +177,6 @@ class StrumLine extends FlxSpriteGroup
 			{
 				strumNote.y -= ((receptor.swagWidth / 2) * downscrollMultiplier);
 
-				if (strumNote.isSustainEnd && strumNote.prevNote != null && strumNote.prevNote.isSustain)
-					strumNote.y += Math.ceil((strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3) * downscrollMultiplier;
-
 				if (Settings.downScroll)
 				{
 					strumNote.flipY = true;
@@ -195,6 +192,9 @@ class StrumLine extends FlxSpriteGroup
 				}
 				else
 				{
+					if (strumNote.isSustainEnd && strumNote.prevNote != null && strumNote.prevNote.isSustain)
+						strumNote.y += Math.ceil((strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3) * downscrollMultiplier;
+
 					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
 						&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
 						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))

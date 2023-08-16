@@ -1,7 +1,7 @@
 package funkin;
 
-import backend.IO;
-import backend.ScriptHandler;
+import backend.*;
+import backend.ScriptHandler.ForeverModule;
 import base.Conductor;
 import flixel.util.FlxSort;
 import funkin.Events.EventNote;
@@ -10,6 +10,7 @@ import funkin.notes.Note;
 import haxe.io.Path;
 import openfl.media.Sound;
 import openfl.utils.Assets;
+import quaver.Qua;
 
 using StringTools;
 
@@ -27,9 +28,6 @@ class ChartLoader
 	public static var eventQueue:Array<EventNote> = [];
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
-
-	// Dumb queue/fix to init events post PlayState creation to avoid error
-	private static var initQueue:Array<EventInit> = [];
 
 	public static function loadFSChart(songName:String):SongData
 	{
@@ -86,6 +84,76 @@ class ChartLoader
 		Conductor.bindSong(swagSong, Paths.inst(songName), Paths.voices(songName));
 
 		parseNotes(swagSong);
+
+		var endTime:Float = haxe.Timer.stamp();
+		trace('end chart parse time ${endTime - startTime}');
+
+		return swagSong;
+	}
+
+	// osu support soon
+	public static function loadBeatmap(mapID:String):SongData
+	{
+		resetQueues();
+		var startTime:Float = haxe.Timer.stamp();
+
+		var qua:Qua = new Qua(Cache.getText(Paths.file('quaver/$mapID/$mapID.qua')));
+
+		var swagSong:SongData = {
+			song: '${qua.Artist} - ${qua.Title} (${qua.DifficultyName})',
+			validScore: true,
+			arrowSkin: "default",
+			stage: "quaver",
+			player1: "",
+			player2: "",
+			player3: "",
+			gfVersion: "",
+			needsVoices: false,
+			bpm: qua.TimingPoints[0].Bpm,
+			speed: 2.7,
+			notes: [],
+			events: []
+		};
+		var audioFile:Sound = Cache.getSound(#if FS_ACCESS Path.join([IO.getFolderPath(QUAVER), '$mapID', '${qua.AudioFile}']) #else Paths.file('quaver/$mapID/${qua.AudioFile}') #end);
+
+		Conductor.bindSong(swagSong, audioFile);
+
+		for (hitObject in qua.HitObjects)
+		{
+			var strumTime:Float = hitObject.StartTime;
+			var noteData:Int = hitObject.Lane - 1;
+			var endTime:Float = hitObject.EndTime;
+
+			var oldNote:Note = null;
+			if (noteQueue.length > 0)
+				oldNote = noteQueue[Std.int(noteQueue.length - 1)];
+
+			var newNote:Note = new Note(strumTime, noteData, "default", 0, oldNote);
+			newNote.mustPress = true;
+			var holdStep:Float = newNote.sustainLength = (endTime > 0) ? (endTime - strumTime) / Conductor.stepCrochet : 0;
+			noteQueue.push(newNote);
+
+			if (holdStep > 0)
+			{
+				var floorStep:Int = Std.int(holdStep + 1);
+				for (note in 0...floorStep)
+				{
+					var time:Float = strumTime + (Conductor.stepCrochet * (note + 1));
+					var sustainNote:Note = new Note(time, noteData, newNote.noteType, 0, noteQueue[Std.int(noteQueue.length - 1)], true);
+
+					sustainNote.mustPress = newNote.mustPress;
+					sustainNote.parent = newNote;
+					sustainNote.isSustainEnd = (note == floorStep);
+					sustainNote.spotHold = note;
+
+					newNote.tail.push(sustainNote);
+
+					noteQueue.push(sustainNote);
+				}
+			}
+		}
+
+		noteQueue.sort(sortByShit);
 
 		var endTime:Float = haxe.Timer.stamp();
 		trace('end chart parse time ${endTime - startTime}');
@@ -184,34 +252,22 @@ class ChartLoader
 				value1: newEventNote[2],
 				value2: newEventNote[3]
 			};
-			trace(subEvent);
 
-			if (subEvent.event.length > 0 && Events.eventList.contains(subEvent.event))
+			if (subEvent.event.length > 0 && Events.addEvent(subEvent.event))
 			{
-				var mySelectedEvent:String = Events.eventList[Events.eventList.indexOf(subEvent.event)];
-				if (mySelectedEvent != null)
-				{
-					var module:ForeverModule = Events.loadedModules.get(subEvent.event);
-					var delay:Float = 0;
-					if (module.exists("returnDelay"))
-						delay = module.get("returnDelay")();
+				var module:ForeverModule = Events.loadedModules.get(subEvent.event);
 
-					subEvent.strumTime -= delay;
+				if (module == null)
+					return;
 
-					initQueue.push({module: module, value1: subEvent.value1, value2: subEvent.value2});
-					eventQueue.push(subEvent);
-				}
+				var delay:Float = 0;
+				if (module.exists("returnDelay"))
+					delay = module.get("returnDelay")();
+
+				subEvent.strumTime -= delay;
+
+				eventQueue.push(subEvent);
 			}
-		}
-	}
-
-	// dumb fix sorry
-	public static function initEvents()
-	{
-		for (event in initQueue)
-		{
-			if (event.module.exists('initFunction'))
-				event.module.get('initFunction')(event.value1, event.value2);
 		}
 	}
 
@@ -222,9 +278,13 @@ class ChartLoader
 
 	private static function resetQueues()
 	{
+		Events.loadedModules.clear();
+		@:privateAccess
+		Events.eventList = IO.getFolderFiles(EVENTS);
+
 		Conductor.bpmChanges = [];
+
 		noteQueue = [];
 		eventQueue = [];
-		initQueue = [];
 	}
 }

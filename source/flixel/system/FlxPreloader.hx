@@ -53,7 +53,7 @@ class FlxPreloader extends FlxBasePreloader
 		addChild(_buffer);
 		_width = Std.int(Lib.current.stage.stageWidth / _buffer.scaleX);
 		_height = Std.int(Lib.current.stage.stageHeight / _buffer.scaleY);
-		_buffer.addChild(new Bitmap(new BitmapData(_width, _height, false, 0x00345e)));
+		_buffer.addChild(new Bitmap(new BitmapData(_width, _height, false, 0x005e2a)));
 
 		var logoLight = createBitmap(GraphicLogoLight, function(logoLight:Bitmap)
 		{
@@ -62,13 +62,13 @@ class FlxPreloader extends FlxBasePreloader
 		});
 		logoLight.smoothing = true;
 		_buffer.addChild(logoLight);
-		_bmpBar = new Bitmap(new BitmapData(1, 7, false, 0x5f6aff));
+		_bmpBar = new Bitmap(new BitmapData(1, 7, false, 0x5fffa7));
 		_bmpBar.x = 4;
 		_bmpBar.y = _height - 11;
 		_buffer.addChild(_bmpBar);
 
 		_text = new TextField();
-		_text.defaultTextFormat = new TextFormat('VCR OSD Mono', 12, 0x5f6aff);
+		_text.defaultTextFormat = new TextFormat('VCR OSD Mono', 12, 0x5fffa7);
 		_text.embedFonts = true;
 		_text.selectable = false;
 		_text.multiline = false;

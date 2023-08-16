@@ -151,8 +151,6 @@ class ScriptHandler
 		if (fallback != null)
 			fallback = Path.withoutExtension(fallback);
 
-		trace('Loading module $file, fallback given $fallback');
-
 		// Goofy path parsing lol
 		var modulePath:String = Paths.file('$assetFolder/$file.hxs');
 

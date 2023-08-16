@@ -6,7 +6,7 @@ import flixel.group.FlxGroup;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxSignal.FlxTypedSignal;
-import transitions.FadeTransition;
+import haxe.Rest;
 
 /*
 	Sanco here, I decided to add important stuff to the FlxState instead of doing 2 classes that extend each other soo
@@ -238,14 +238,14 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControls
 	 * @param 	func	 The function to execute
 	 * @param 	args	 Arguments to pass to the function on execution
 	 */
-	public function callOnModules(func:String, args:Dynamic)
+	public function callOnModules(func:String, args:Rest<Dynamic>)
 	{
 		try
 		{
 			for (module in modules)
 			{
 				if (module.active && module.exists(func))
-					module.get(func)(args);
+					Reflect.callMethod(module.interp.variables, module.get(func), args.toArray()); // WTF IT WORKS LMFAOOO
 			}
 		}
 		catch (ex)
@@ -359,6 +359,6 @@ interface IModuleAPI
 	private var modules:Array<ForeverModule>;
 
 	// Will only execute the active modules
-	public function callOnModules(event:String, args:Dynamic):Void;
+	public function callOnModules(event:String, args:Rest<Dynamic>):Void;
 	public function setOnModules(variable:String, arg:Dynamic):Void;
 }

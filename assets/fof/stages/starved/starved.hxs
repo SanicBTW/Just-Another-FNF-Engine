@@ -226,9 +226,9 @@ function onGameOverConfirm(isRestart)
 function onUpdate(elapsed)
 {
     zoomshit = camGame.zoom / 0.75;
-    PlayState.player.scale.set(zoomshit, zoomshit);
-    PlayState.player.x = bfx * zoomshit;
-    PlayState.player.y = bfy * zoomshit;
+    PlayState.boyfriend.scale.set(zoomshit, zoomshit);
+    PlayState.boyfriend.x = bfx * zoomshit;
+    PlayState.boyfriend.y = bfy * zoomshit;
     fearBar.value = fear;
 
     if (PlayState.updateTime)
@@ -253,8 +253,8 @@ function onStepHit()
         if (PlayState.SONG.song == "Lucha or funa")
             return;
 
-		PlayState.player.colorTween = FlxTween.color(PlayState.player, tweenTime, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
-			PlayState.player.colorTween = null;
+		PlayState.boyfriend.colorTween = FlxTween.color(PlayState.boyfriend, tweenTime, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
+			PlayState.boyfriend.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
     else if (curStep == 1437 || curStep == 1982)
@@ -269,8 +269,8 @@ function onStepHit()
         if (PlayState.SONG.song == "Lucha or funa")
             return;
 
-        PlayState.player.colorTween = FlxTween.color(PlayState.player, tweenTime, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
-			PlayState.player.colorTween = null;
+        PlayState.boyfriend.colorTween = FlxTween.color(PlayState.boyfriend, tweenTime, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
+			PlayState.boyfriend.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
 }

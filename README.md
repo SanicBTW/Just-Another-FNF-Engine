@@ -18,27 +18,8 @@ A rewrite of Friday Night Funkin' mixing:
 
 and more!
 
-# Pages
+# NOTION PUBLISHED!!!
 
-- [Latest release](https://funkin.sancopublic.com/)
-- [v0.2.7.1 (a118fe4)](https://onlinefunky.pages.dev/)
-- [v0.2.7.1 with Touch Controls (android-0.2.7.1 branch)](https://touch.funkye.pages.dev/)
-- [V0.2.8 (221672c)](https://funkye.pages.dev/)
-- [V0.2.10 LStable (c419c03)](https://hxstest.funkye.pages.dev/)
-- Experimental HUB will be back soon
+It will be used for important stuff like versions, pages, workroads, progress, etc
 
-# Pages that will drop support soon
-- [v0.2.x LTiles (6719594)](https://tiless.funkye.pages.dev/) (Because some of the changes were merged to mainstream and I still need to find a way to clip the sustain properly because no reaction to it it's kind of weird, but this will get merged someday too)
-- [v0.2.x LQuaver (c78d499)](https://quaverr.funkye.pages.dev/) (Because the support was already added into stable)
-
-# Versioning
-
-### A Launcher is being developed to be available to download previews and more (see TODO.md ModManager)
-
-V0.2.7.1: Last Preview to contain online services (1v1), it was going to be rewritten someday but eventually gave up.
-
-V0.2.8: Latest Preview before the Rewrite, only available on HTML5.
-
-V0.2.10: Latest Preview of the Rewrite, only available on HTML5 and being updated frequently.
-
-V0.2.x: Versions that are meant to get feedback as well as getting updates to improve the code and user experience.
+[Notion here](https://sancobtw.notion.site/sancobtw/Just-Another-FNF-Engine-c4076e2b1ea34032a4f9e9faa754537c)

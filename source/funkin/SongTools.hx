@@ -23,7 +23,6 @@ typedef SongData =
 	var events:Array<Dynamic>;
 	var bpm:Float;
 	var speed:Float;
-	var sections:Null<Int>;
 	var needsVoices:Bool;
 	var player1:String;
 	var player2:String;
@@ -66,16 +65,6 @@ class SongTools
 					else
 						i++;
 				}
-			}
-		}
-
-		if (songJson.sections == null)
-		{
-			songJson.sections = 0;
-
-			for (sect in songJson.notes)
-			{
-				songJson.sections++;
 			}
 		}
 	}

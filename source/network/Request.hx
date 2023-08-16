@@ -2,10 +2,10 @@ package network;
 
 import backend.BackgroundThread;
 import backend.Cache;
-import backend.Event;
 import flixel.graphics.FlxGraphic;
 import haxe.Http;
 import haxe.io.Bytes;
+import lime.app.Promise;
 import lime.graphics.Image;
 import openfl.display.BitmapData;
 import openfl.display3D.textures.Texture;
@@ -24,7 +24,7 @@ typedef RequestOptions =
 	var ?postBytes:Null<Bytes>;
 }
 
-// Dumbfr
+// Dumb fr
 typedef RequestHeader =
 {
 	var name:String;
@@ -42,13 +42,13 @@ enum RequestType
 
 // Rewritten again
 // Extends Event for instant event listening
-class Request<T> extends Event<T>
+class Request<T> extends Promise<T>
 {
 	public static var userAgent:String = 'JAFE 0.2.10'; // See README.md Versioning
 
 	override public function new(opt:RequestOptions)
 	{
-		super('NetRequest:${opt.url}');
+		super();
 
 		var http:Http = new Http(opt.url);
 
@@ -66,7 +66,7 @@ class Request<T> extends Event<T>
 		http.onError = (msg) ->
 		{
 			var error = http.responseData == null ? msg : http.responseData;
-			dispatch(cast error);
+			this.error(cast error);
 			return;
 		}
 
@@ -75,33 +75,33 @@ class Request<T> extends Event<T>
 			case STRING:
 				http.onData = (data:String) ->
 				{
-					dispatch(cast data);
+					this.complete(cast data);
 				}
 
 			case OBJECT:
 				http.onData = (data:String) ->
 				{
-					dispatch(cast haxe.Json.parse(data));
+					this.complete(cast haxe.Json.parse(data));
 				}
 
 			case BYTES:
 				http.onBytes = (bytes:Bytes) ->
 				{
-					dispatch(cast bytes);
+					this.complete(cast bytes);
 				}
 
 			case SOUND:
 				#if html5
 				Sound.loadFromFile(opt.url).onComplete((sound:Sound) ->
 				{
-					dispatch(cast Cache.set(sound, SOUND, opt.url));
+					this.complete(cast Cache.set(sound, SOUND, opt.url));
 				});
 				#else
 				http.onBytes = (bytes:Bytes) ->
 				{
 					var sound:Sound = new Sound();
 					sound.loadCompressedDataFromByteArray(bytes, bytes.length);
-					dispatch(cast Cache.set(sound, SOUND, opt.url));
+					this.complete(cast Cache.set(sound, SOUND, opt.url));
 				}
 				#end
 
@@ -112,7 +112,7 @@ class Request<T> extends Event<T>
 					var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
 					var newGraphic:FlxGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
 
-					dispatch(cast newGraphic);
+					this.complete(cast newGraphic);
 				});
 				#else
 				http.onBytes = (bytes:Bytes) ->
@@ -129,7 +129,7 @@ class Request<T> extends Event<T>
 					else
 						newGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
 
-					dispatch(cast newGraphic);
+					this.complete(cast newGraphic);
 				}
 				#end
 		}

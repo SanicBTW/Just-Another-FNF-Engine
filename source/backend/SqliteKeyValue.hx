@@ -3,6 +3,7 @@ package backend;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import haxe.Serializer;
 import haxe.Unserializer;
+import haxe.crypto.*;
 #if sys
 import haxe.io.Path;
 import sys.FileSystem;
@@ -331,3 +332,14 @@ class SqliteKeyValue implements IFlxDestroyable
 	}
 }
 #end
+
+enum EncryptionType
+{
+	NONE;
+	ADLER32;
+	BASE64;
+	MD5;
+	SHA1;
+	SHA224;
+	SHA256;
+}
