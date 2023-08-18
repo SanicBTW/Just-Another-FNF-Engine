@@ -1,13 +1,13 @@
 package funkin;
 
 import backend.*;
-import backend.ScriptHandler.ForeverModule;
+import backend.io.Path;
+import backend.scripting.ForeverModule;
 import base.Conductor;
 import flixel.util.FlxSort;
 import funkin.Events.EventNote;
 import funkin.SongTools;
 import funkin.notes.Note;
-import haxe.io.Path;
 import openfl.media.Sound;
 import openfl.utils.Assets;
 import quaver.Qua;
@@ -114,7 +114,8 @@ class ChartLoader
 			notes: [],
 			events: []
 		};
-		var audioFile:Sound = Cache.getSound(#if FS_ACCESS Path.join([IO.getFolderPath(QUAVER), '$mapID', '${qua.AudioFile}']) #else Paths.file('quaver/$mapID/${qua.AudioFile}') #end);
+		var audioFile:Sound = Cache.getSound(#if FS_ACCESS Path.join(IO.getFolderPath(QUAVER), '$mapID',
+			'${qua.AudioFile}') #else Paths.file('quaver/$mapID/${qua.AudioFile}') #end);
 
 		Conductor.bindSong(swagSong, audioFile);
 

@@ -1,9 +1,9 @@
 package backend;
 
 #if FS_ACCESS
+import backend.io.Path;
 import funkin.ChartLoader;
 import haxe.io.Bytes;
-import haxe.io.Path;
 import lime.system.System;
 import openfl.media.Sound;
 import sys.FileSystem;
@@ -25,7 +25,7 @@ class IO
 	public static function Initialize()
 	{
 		// Set the parent folder, in future versions it will be changeable
-		appFolders.set(PARENT, Path.join([System.documentsDirectory, 'just_another_fnf_engine']));
+		appFolders.set(PARENT, Path.join(System.documentsDirectory, 'just_another_fnf_engine'));
 
 		addFolder(DATA);
 		addFolder(SONGS);
@@ -57,7 +57,7 @@ class IO
 
 	public static function getSong(song:String, file:SongFile, diff:Int = 1):Dynamic
 	{
-		var parentPath:String = Path.join([getFolderPath(SONGS), Paths.formatString(song)]);
+		var parentPath:String = Path.join(getFolderPath(SONGS), Paths.formatString(song));
 		if (!exists(parentPath))
 			FileSystem.createDirectory(parentPath);
 
@@ -65,7 +65,7 @@ class IO
 		{
 			case CHART:
 				var diffString:String = ChartLoader.strDiffMap.get(diff);
-				var chartPath:String = Path.join([parentPath, '${song}${diffString}.json']);
+				var chartPath:String = Path.join(parentPath, '${song}${diffString}.json');
 				if (!exists(chartPath))
 					return null;
 
@@ -73,13 +73,13 @@ class IO
 			// will read directory soon and get the best match for it (if it has like inst2410421.ogg or shit like that lol)
 
 			case INST:
-				var instPath:String = Path.join([parentPath, 'Inst.ogg']);
+				var instPath:String = Path.join(parentPath, 'Inst.ogg');
 				if (!exists(instPath))
 					return null;
 
 				return Sound.fromFile(instPath);
 			case VOICES:
-				var voicesPath:String = Path.join([parentPath, 'Voices.ogg']);
+				var voicesPath:String = Path.join(parentPath, 'Voices.ogg');
 				if (!exists(voicesPath))
 					return null;
 
@@ -91,7 +91,7 @@ class IO
 
 	public static function saveSong(song:String, file:SongFile, content:Dynamic, diff:Int = 1):String
 	{
-		var parentPath:String = Path.join([getFolderPath(SONGS), Paths.formatString(song)]);
+		var parentPath:String = Path.join(getFolderPath(SONGS), Paths.formatString(song));
 		if (!exists(parentPath))
 			FileSystem.createDirectory(parentPath);
 
@@ -99,7 +99,7 @@ class IO
 		{
 			case CHART:
 				var diffString:String = ChartLoader.strDiffMap.get(diff);
-				var chartPath:String = Path.join([parentPath, '${song}${diffString}.json']);
+				var chartPath:String = Path.join(parentPath, '${song}${diffString}.json');
 				if (content is Bytes)
 					File.saveBytes(chartPath, content);
 				else
@@ -107,12 +107,12 @@ class IO
 				return chartPath;
 
 			case INST:
-				var outPath:String = Path.join([parentPath, 'Inst.ogg']);
+				var outPath:String = Path.join(parentPath, 'Inst.ogg');
 				File.saveBytes(outPath, content); // most likely to be bytes
 				return outPath;
 
 			case VOICES:
-				var outPath:String = Path.join([parentPath, 'Voices.ogg']);
+				var outPath:String = Path.join(parentPath, 'Voices.ogg');
 				File.saveBytes(outPath, content); // most likely to be bytes
 				return outPath;
 		}
@@ -122,13 +122,13 @@ class IO
 
 	// Helper functions
 	private static function addFolder(name:AssetFolder, parent:AssetFolder = PARENT)
-		appFolders.set(name, Path.join([appFolders.get(parent), name]));
+		appFolders.set(name, Path.join(appFolders.get(parent), name));
 
 	public static inline function exists(file:String):Bool
 		return FileSystem.exists(file);
 
 	public static inline function existsOnFolder(folder:AssetFolder = PARENT, file:String):Bool
-		return FileSystem.exists(Path.join([appFolders.get(folder), file]));
+		return FileSystem.exists(Path.join(appFolders.get(folder), file));
 
 	public static inline function getFolderPath(folder:AssetFolder = PARENT):String
 		return appFolders.get(folder);

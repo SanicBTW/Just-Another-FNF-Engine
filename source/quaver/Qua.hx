@@ -5,7 +5,7 @@ using backend.Extensions;
 
 #if FS_ACCESS
 import backend.IO;
-import haxe.io.Path;
+import backend.io.Path;
 #end
 
 typedef TimingPoint =
@@ -175,19 +175,19 @@ class Qua
 	#if FS_ACCESS
 	private function convertAudio()
 	{
-		var path = Path.join([IO.getFolderPath(QUAVER), '$MapId']);
+		var path = Path.join(IO.getFolderPath(QUAVER), '$MapId');
 		if (!IO.existsOnFolder(QUAVER, '$MapId'))
 			sys.FileSystem.createDirectory(path);
 
 		// uhhhhhh
-		var audioPath:String = Path.join([Sys.getCwd(), "assets", "funkin", "quaver", '$MapId', AudioFile]);
+		var audioPath:String = Path.join(Sys.getCwd(), "assets", "funkin", "quaver", '$MapId', AudioFile);
 		AudioFile = AudioFile.replace("mp3", "ogg");
 
-		var output:String = Path.join([path, AudioFile]);
+		var output:String = Path.join(path, AudioFile);
 		if (sys.FileSystem.exists(output))
 			return;
 
-		var ffmpeg:String = Path.join([Sys.getCwd(), "ffmpeg.exe"]);
+		var ffmpeg:String = Path.join(Sys.getCwd(), "utils", "ffmpeg.exe");
 		if (Sys.command('$ffmpeg -i "$audioPath" -c:a libvorbis -q:a 4 "$output" -y') == 0)
 			trace('Finished converting audio file');
 	}

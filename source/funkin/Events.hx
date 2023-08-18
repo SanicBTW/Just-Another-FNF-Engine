@@ -1,7 +1,7 @@
 package funkin;
 
-import backend.ScriptHandler;
-import haxe.io.Path;
+import backend.io.Path;
+import backend.scripting.*;
 
 typedef EventNote =
 {

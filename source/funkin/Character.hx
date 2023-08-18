@@ -2,15 +2,14 @@ package funkin;
 
 import backend.Cache;
 import backend.IO;
-import backend.ScriptHandler.ForeverModule;
-import backend.ScriptHandler;
+import backend.io.Path;
+import backend.scripting.*;
 import base.Conductor;
 import base.sprites.OffsettedSprite;
 import flixel.math.FlxPoint;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import haxe.ds.StringMap;
-import haxe.io.Path;
 import openfl.utils.Assets;
 
 using StringTools;
@@ -102,7 +101,7 @@ class Character extends OffsettedSprite
 					charPath = charPath.substring(0, charPath.lastIndexOf("/"));
 
 					// ayo using this is actually really smart ngl
-					var isolatedPaths:ModulePaths = new ModulePaths(charPath);
+					var isolatedPaths:IsolatedPaths = new IsolatedPaths(charPath);
 					var json:CharacterFile = cast haxe.Json.parse(Cache.getText('$charPath/$curCharacter$extension'));
 
 					if (!isFS)
@@ -276,7 +275,7 @@ class Character extends OffsettedSprite
 		}
 		else
 		{
-			retPath = Path.join([IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.hxs']);
+			retPath = Path.join(IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.hxs');
 			if (IO.exists(retPath))
 			{
 				extension = '.hxs';
@@ -292,7 +291,7 @@ class Character extends OffsettedSprite
 		}
 		else
 		{
-			retPath = Path.join([IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.json']);
+			retPath = Path.join(IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.json');
 			if (IO.exists(retPath))
 			{
 				extension = '.json';

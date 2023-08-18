@@ -46,7 +46,7 @@ class Main extends Sprite
 		// Dynamic init omg
 		Type.getClassName(Save); // I need to do this to avoid crashing, dunno why maybe the class isn't loaded into the global scope
 		// IO and Save should be initialized pre openfl stage addition
-		for (classInit in ["IO", "Save", "Controls", "DiscordPresence", "ScriptHandler"])
+		for (classInit in ["IO", "Save", "Controls", "DiscordPresence", "scripting.ScriptHandler"])
 		{
 			var targetClass = Type.resolveClass('backend.$classInit');
 			Reflect.callMethod(targetClass, Reflect.field(targetClass, "Initialize"), []);
@@ -111,7 +111,7 @@ class Main extends Sprite
 			var args:Array<String> = Sys.args();
 			args.push('-crash:${Std.string(ev.error)}');
 			#if windows
-			new sys.io.Process('${haxe.io.Path.join([Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe'])}', args);
+			new sys.io.Process('${backend.io.Path.join(Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe')}', args);
 			#end
 		});
 		#end
