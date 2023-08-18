@@ -3,8 +3,6 @@ package backend;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import haxe.Serializer;
 import haxe.Unserializer;
-import haxe.crypto.*;
-import haxe.io.Bytes;
 import lime.app.Promise;
 #if sys
 import backend.io.Path;
@@ -72,7 +70,7 @@ class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 
 		var escapedTable:String = escape(table);
 		var escapedKey:String = escape(key);
-		var escapedValue:String = "'" + Crypto.encode(value) + "'";
+		var escapedValue:String = "'" + Serializer.run(value) + "'";
 
 		if (!mutexAcquiredInParent)
 			mutex.acquire();
@@ -143,7 +141,7 @@ class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 
 			for (entry in result)
 			{
-				res = Crypto.decode(entry.value);
+				res = Unserializer.run(entry.value);
 				numEntries++;
 			}
 		}
@@ -275,7 +273,7 @@ class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 		if (value == null)
 			return remove(table, key);
 
-		var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(Crypto.encode(value), key);
+		var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(Serializer.run(value), key);
 		res.addEventListener('error', () ->
 		{
 			throw res.error;
@@ -310,7 +308,7 @@ class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 			res.addEventListener('success', () ->
 			{
 				if (res.result != null)
-					resolve(Crypto.decode(res.result));
+					resolve(Unserializer.run(res.result));
 				else
 					resolve(null);
 			});
@@ -342,15 +340,4 @@ typedef DBInitParams =
 	var path:String;
 	var tables:Array<String>;
 	var ?version:Int;
-}
-
-enum EncryptionType
-{
-	NONE;
-	ADLER32;
-	BASE64;
-	MD5;
-	SHA1;
-	SHA224;
-	SHA256;
 }

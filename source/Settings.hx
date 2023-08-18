@@ -2,9 +2,6 @@ package;
 
 class Settings
 {
-	// Saving (yo wtf saving options in a save omg jit trippin)
-	public static var saveEncryption:backend.SqliteKeyValue.EncryptionType = NONE;
-
 	// Graphics
 	public static var antialiasing:Bool = true;
 
