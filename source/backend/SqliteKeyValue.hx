@@ -4,8 +4,10 @@ import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import haxe.Serializer;
 import haxe.Unserializer;
 import haxe.crypto.*;
+import haxe.io.Bytes;
+import lime.app.Promise;
 #if sys
-import haxe.io.Path;
+import backend.io.Path;
 import sys.FileSystem;
 import sys.db.Connection;
 import sys.db.ResultSet;
@@ -18,7 +20,7 @@ import sys.thread.Tls;
  * This is expected to be thread safe.
  * @author Ceramic
  */
-class SqliteKeyValue implements IFlxDestroyable
+class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 {
 	private static final APPEND_ENTRIES_LIMIT:Int = 128;
 
@@ -41,23 +43,26 @@ class SqliteKeyValue implements IFlxDestroyable
 		return connection;
 	}
 
-	public function new(path:String, tables:Array<String>)
+	public function new(params:DBInitParams)
 	{
+		super();
+
 		mutex = new Mutex();
 		mutex.acquire();
 		connections = [];
 		tlsConnection = new Tls();
 		mutex.release();
 
-		this.path = path;
+		this.path = params.path;
+		if (!FileSystem.exists(Path.directory(params.path)))
+			FileSystem.createDirectory(Path.directory(params.path));
 
-		if (!FileSystem.exists(Path.directory(path)))
-			FileSystem.createDirectory(Path.directory(path));
-
-		for (table in tables)
+		for (table in params.tables)
 		{
-			createTable(table);
+			this.createTable(table);
 		}
+
+		this.complete(this);
 	}
 
 	public function set(table:String = 'KeyValue', key:String, value:Any):Bool
@@ -67,7 +72,7 @@ class SqliteKeyValue implements IFlxDestroyable
 
 		var escapedTable:String = escape(table);
 		var escapedKey:String = escape(key);
-		var escapedValue:String = "'" + Serializer.run(value) + "'";
+		var escapedValue:String = "'" + Crypto.encode(value) + "'";
 
 		if (!mutexAcquiredInParent)
 			mutex.acquire();
@@ -120,6 +125,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		return true;
 	}
 
+	// TODO: Make promise
 	public function get(table:String = 'KeyValue', key:String):Null<Any>
 	{
 		var escapedTable:String = escape(table);
@@ -137,8 +143,7 @@ class SqliteKeyValue implements IFlxDestroyable
 
 			for (entry in result)
 			{
-				var rawValue:String = entry.value;
-				res = Unserializer.run(rawValue);
+				res = Crypto.decode(entry.value);
 				numEntries++;
 			}
 		}
@@ -222,7 +227,7 @@ import js.lib.Promise;
  * This is expected to be thread safe.
  * @author Ceramic (SQLite Implemenation), sanco (IndexedDB implementation)
  */
-class SqliteKeyValue implements IFlxDestroyable
+class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 {
 	private var request:OpenDBRequest;
 	private var connection:Database;
@@ -230,12 +235,12 @@ class SqliteKeyValue implements IFlxDestroyable
 	private var name:String;
 	private var version:Int;
 
-	public var onConnect:SqliteKeyValue->Void;
-
-	public function new(name:String, tables:Array<String>, version:Int = 1)
+	public function new(params:DBInitParams)
 	{
-		this.name = name;
-		this.version = version;
+		super();
+
+		this.name = params.path;
+		this.version = params.version;
 
 		request = Browser.window.indexedDB.open(name, version);
 
@@ -248,7 +253,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		{
 			var db:Database = ev.target.result;
 
-			for (table in tables)
+			for (table in params.tables)
 			{
 				if (!db.objectStoreNames.contains(table))
 					db.createObjectStore(table);
@@ -258,8 +263,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		request.addEventListener('success', () ->
 		{
 			connection = request.result;
-			trace('connected to $name');
-			onConnect(this);
+			this.complete(this);
 		});
 	}
 
@@ -271,7 +275,7 @@ class SqliteKeyValue implements IFlxDestroyable
 		if (value == null)
 			return remove(table, key);
 
-		var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(Serializer.run(value), key);
+		var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(Crypto.encode(value), key);
 		res.addEventListener('error', () ->
 		{
 			throw res.error;
@@ -306,7 +310,7 @@ class SqliteKeyValue implements IFlxDestroyable
 			res.addEventListener('success', () ->
 			{
 				if (res.result != null)
-					resolve(Unserializer.run(res.result));
+					resolve(Crypto.decode(res.result));
 				else
 					resolve(null);
 			});
@@ -332,6 +336,13 @@ class SqliteKeyValue implements IFlxDestroyable
 	}
 }
 #end
+
+typedef DBInitParams =
+{
+	var path:String;
+	var tables:Array<String>;
+	var ?version:Int;
+}
 
 enum EncryptionType
 {

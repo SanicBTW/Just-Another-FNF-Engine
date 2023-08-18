@@ -6,21 +6,16 @@ class Save
 
 	public static function Initialize()
 	{
-		#if html5
-		// Re-assign though it won't be really useful
-
-		new SqliteKeyValue("JAFE:DB", ["settings", "highscores"],
-			Std.parseInt(lime.app.Application.current.meta.get("version").split(".")[1])).onConnect = (res) ->
+		new SqliteKeyValue({
+			path: #if html5 "JAFE:DB" #else backend.io.Path.join(IO.getFolderPath(PARENT), "JAFE.db") #end,
+			tables: ["settings", "keybinds", "highscores"],
+			version: Std.parseInt(lime.app.Application.current.meta.get("version")
+				.split(".")[1]) // Because this param isn't used on sys, it uses the html5 one instead
+		}).future.onComplete((newDB) ->
 			{
-				_db = res;
-
+				_db = newDB;
 				loadSettings();
-			};
-		#else
-		_db = new SqliteKeyValue(haxe.io.Path.join([IO.getFolderPath(PARENT), "JAFE.db"]), ["settings", "highscores"]);
-
-		loadSettings();
-		#end
+			});
 	}
 
 	@:noCompletion
