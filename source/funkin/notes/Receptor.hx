@@ -1,6 +1,6 @@
 package funkin.notes;
 
-import backend.ScriptHandler;
+import backend.scripting.ForeverModule;
 import flixel.FlxSprite;
 
 typedef ReceptorData =

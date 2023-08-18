@@ -1,7 +1,7 @@
 package funkin.states;
 
 import backend.DiscordPresence;
-import backend.ScriptHandler.ForeverModule;
+import backend.scripting.ForeverModule;
 import base.Conductor;
 import base.MusicBeatState;
 import base.TransitionState;

@@ -1,6 +1,6 @@
 package funkin.notes;
 
-import backend.ScriptHandler;
+import backend.scripting.*;
 import base.Conductor;
 import flixel.FlxSprite;
 import flixel.math.FlxRect;

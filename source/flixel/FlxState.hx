@@ -1,7 +1,7 @@
 package flixel;
 
 import backend.Controls;
-import backend.ScriptHandler.ForeverModule;
+import backend.scripting.*;
 import flixel.group.FlxGroup;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;

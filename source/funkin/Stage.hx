@@ -1,6 +1,6 @@
 package funkin;
 
-import backend.ScriptHandler;
+import backend.scripting.*;
 import flixel.FlxBasic;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import haxe.ds.StringMap;

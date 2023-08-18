@@ -492,7 +492,7 @@ class FlxGame extends Sprite
 			overlay.reposition(width, height);
 
 		// Re-assign the FlxG saved on the ScriptHandler static exposure and loaded modules, also execute onGameResized
-		backend.ScriptHandler.exp.set('FlxG', FlxG);
+		backend.scripting.ScriptHandler.exp.set('FlxG', FlxG);
 		_state.setOnModules('FlxG', FlxG);
 		_state.callOnModules('onGameResized', [width, height]);
 	}

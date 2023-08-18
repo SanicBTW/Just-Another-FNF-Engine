@@ -105,7 +105,7 @@ class StrumLine extends FlxSpriteGroup
 
 	public function generateSplash(receptor:Receptor, preload:Bool = false)
 	{
-		var module:backend.ScriptHandler.ForeverModule = Note.returnNoteScript(receptor.noteType);
+		var module:backend.scripting.ForeverModule = Note.returnNoteScript(receptor.noteType);
 		if (Settings.showNoteSplashes && module.exists("generateSplash"))
 		{
 			var splashNote:DepthSprite = splashes.recycle(DepthSprite, function()
