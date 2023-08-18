@@ -9,7 +9,7 @@ import openfl.text.TextFormat;
 // Joins both counters into one place to improve performance )?
 
 @:allow(flixel.FlxGame)
-class Overlay extends OFLSprite
+class Overlay extends ExSprite
 {
 	// Framerate
 	public var currentFPS(default, null):Float;
@@ -76,7 +76,7 @@ class Overlay extends OFLSprite
 		addChild(_text);
 	}
 
-	override public function update(elapsed:Float)
+	override public function update(elapsed:Float, _)
 	{
 		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 

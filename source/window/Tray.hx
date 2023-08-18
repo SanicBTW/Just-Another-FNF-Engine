@@ -4,7 +4,7 @@ import flixel.FlxG;
 import openfl.Lib;
 
 // Made so I can update code automatically across files that extend this class
-class Tray extends OFLSprite
+class Tray extends ExSprite
 {
 	// Default scale for the tray, each tray class will have its own width and height
 	private var _defaultScale:Float = 2.0;

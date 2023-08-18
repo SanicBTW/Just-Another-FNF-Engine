@@ -64,7 +64,7 @@ class VolumeTray extends Tray
 		addChild(_volBar);
 	}
 
-	override public function update(elapsed:Float)
+	override public function update(elapsed:Float, _)
 	{
 		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 

@@ -1,5 +1,6 @@
 package window;
 
+import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import openfl.Lib;
@@ -10,14 +11,11 @@ import openfl.text.Font;
 import openfl.utils.Assets;
 
 // Custom sprites and shit implementation
-// Most of the code comes from the old Tray code
-class OFLSprite extends Sprite
+// Extended sprite (ExSprite lol)
+class ExSprite extends Sprite
 {
 	// Update only when its active
 	public var active:Bool = true;
-
-	// Look for another way to pass raw delta time (openfl)
-	public var rawElapsed:Float = 0;
 
 	public function new()
 	{
@@ -26,12 +24,9 @@ class OFLSprite extends Sprite
 		create();
 	}
 
-	// Fired after setting up some essentials on constructor
-
 	private function create() {}
 
-	// Triggers the update function passing elapsed-a-like from FlxG
-	// Instead of getting it from a getter and improving update calls)?
+	// Triggers the update function passing elapsed-a-like from FlxG and raw elapsed from OpenFL
 
 	@:noCompletion
 	private override function __enterFrame(deltaTime:Float):Void
@@ -39,17 +34,17 @@ class OFLSprite extends Sprite
 		if (!active || !visible)
 			return;
 
-		rawElapsed = deltaTime;
-		update(deltaTime / 1000);
+		update(deltaTime / 1000, deltaTime);
 	}
 
-	private function update(elapsed:Float) {}
+	private function update(elapsed:Float, deltaTime:Float) {}
 
 	public function destroy() {}
 
 	public function screenCenter()
 	{
 		x = (0.5 * (Lib.current.stage.stageWidth - width));
+		y = (0.5 * (Lib.current.stage.stageHeight - height));
 	}
 
 	// Long ass function arguments and stupid function name
@@ -71,7 +66,7 @@ class OFLSprite extends Sprite
 	}
 
 	private inline function getFont(font:String):Font
-		return Assets.getFont(Paths.font(font));
+		return Assets.getFont(backend.Cache.getFont(font));
 
 	private inline function boundTo(value:Float, min:Float, max:Float):Float
 		return Math.max(min, Math.min(max, value));
