@@ -1,8 +1,8 @@
 package funkin.states;
 
+import backend.Conductor;
 import backend.DiscordPresence;
 import backend.scripting.*;
-import base.Conductor;
 import base.MusicBeatState;
 import base.TransitionState;
 import flixel.FlxCamera;
@@ -19,6 +19,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
 import funkin.ChartLoader;
+import funkin.Events.EventNote;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
@@ -173,7 +174,7 @@ class PlayState extends MusicBeatState
 				gf.visible = false;
 		}
 
-		Conductor.songPosition = -5000;
+		Conductor.time = -5000;
 
 		camFollow = new FlxObject(camPos.x, camPos.y, 1, 1);
 		camFollowPos = new FlxObject(camPos.x, camPos.y, 1, 1);
@@ -228,20 +229,20 @@ class PlayState extends MusicBeatState
 		super.update(elapsed);
 
 		if (!paused)
-			DiscordPresence.changePresence('Playing ${SONG.song}', ui.scoreText.text, null, true, Conductor.boundInst.length - Conductor.songPosition);
+			DiscordPresence.changePresence('Playing ${SONG.song}', ui.scoreText.text, null, true, Conductor.boundInst.length - Conductor.time);
 
 		if (startedCountdown && startingSong && !paused)
 		{
 			// do not toggle update time as it will resync
-			Conductor.songPosition += elapsed * 1000;
+			Conductor.time += elapsed * 1000;
 		}
 
 		if (startingSong && !paused)
 		{
-			if (startedCountdown && Conductor.songPosition >= 0)
+			if (startedCountdown && Conductor.time >= 0)
 				startSong();
 			else if (!startedCountdown)
-				Conductor.songPosition = -Conductor.crochet * 5;
+				Conductor.time = -Conductor.crochet * 5;
 		}
 
 		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.defaultCamZoom : 1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
@@ -260,7 +261,7 @@ class PlayState extends MusicBeatState
 			openSubState(new GameOverSubstate(boyfriend.x, boyfriend.y));
 		}
 
-		while ((ChartLoader.noteQueue[0] != null) && (ChartLoader.noteQueue[0].strumTime - Conductor.songPosition) < 3500)
+		while ((ChartLoader.noteQueue[0] != null) && (ChartLoader.noteQueue[0].strumTime - Conductor.time) < 3500)
 		{
 			var nextNote:Note = ChartLoader.noteQueue[0];
 			if (nextNote != null)
@@ -318,8 +319,8 @@ class PlayState extends MusicBeatState
 						if (action == receptor.action)
 						{
 							var data:Int = receptor.noteData;
-							var lastTime:Float = Conductor.songPosition;
-							Conductor.songPosition = Conductor.boundInst.time;
+							var lastTime:Float = Conductor.time;
+							Conductor.time = Conductor.boundInst.time;
 
 							var possibleNotes:Array<Note> = [];
 							var directionList:Array<Int> = [];
@@ -368,7 +369,7 @@ class PlayState extends MusicBeatState
 								}
 							}
 
-							Conductor.songPosition = lastTime;
+							Conductor.time = lastTime;
 
 							if (receptor.animation.curAnim.name != "confirm")
 								receptor.playAnim('pressed');
@@ -472,7 +473,7 @@ class PlayState extends MusicBeatState
 		if (paused)
 		{
 			if (!startingSong)
-				Conductor.resyncTime();
+				Conductor.resyncFNF();
 
 			if (startTimer != null && !startTimer.finished)
 				startTimer.active = true;
@@ -512,8 +513,8 @@ class PlayState extends MusicBeatState
 		callOnModules('onStartCountdown', null);
 
 		startedCountdown = true;
-		Conductor.songPosition = 0;
-		Conductor.songPosition -= Conductor.crochet * 5;
+		Conductor.time = 0;
+		Conductor.time -= Conductor.crochet * 5;
 
 		for (strumline in strumLines)
 		{
@@ -614,15 +615,15 @@ class PlayState extends MusicBeatState
 		callOnModules('onSongStart', null);
 	}
 
-	override public function stepHit()
+	override public function stepHit(step:Int)
 	{
-		setOnModules('curStep', curStep);
-		callOnModules('onStepHit', []);
+		setOnModules('curStep', step);
+		callOnModules('onStepHit', step);
 	}
 
-	override public function beatHit()
+	override public function beatHit(beat:Int)
 	{
-		super.beatHit();
+		super.beatHit(beat);
 
 		if (SONG.notes[Std.int(curStep / 16)] != null && Conductor.boundInst.playing)
 			moveCameraSection(Std.int(curStep / 16));
@@ -651,8 +652,8 @@ class PlayState extends MusicBeatState
 			&& !dad.stunned)
 			dad.dance();
 
-		setOnModules('curBeat', curBeat);
-		callOnModules('onBeatHit', []);
+		setOnModules('curBeat', beat);
+		callOnModules('onBeatHit', beat);
 	}
 
 	private function noteHit(note:Note)
@@ -665,9 +666,11 @@ class PlayState extends MusicBeatState
 
 			if (!note.isSustain)
 			{
-				var rating:String = Timings.judge(Math.abs(note.strumTime - Conductor.songPosition));
-				ui.displayJudgement(rating, (note.strumTime < Conductor.songPosition));
-				playerStrums.generateSplash(receptor);
+				var rating:String = Timings.judge(Math.abs(note.strumTime - Conductor.time));
+				ui.displayJudgement(rating, (note.strumTime < Conductor.time));
+
+				if (rating == "sick")
+					playerStrums.generateSplash(receptor);
 			}
 
 			characterSing(boyfriend, 'sing${receptor.getNoteDirection().toUpperCase()}');
@@ -870,19 +873,20 @@ class PlayState extends MusicBeatState
 	{
 		while (ChartLoader.eventQueue.length > 0)
 		{
-			var leStrumTime:Float = ChartLoader.eventQueue[0].strumTime;
-			if (Conductor.songPosition < leStrumTime)
+			var event:EventNote = ChartLoader.eventQueue[0];
+			var leStrumTime:Float = event.strumTime;
+			if (Conductor.time < leStrumTime)
 				break;
 
-			var module:ForeverModule = Events.loadedModules.get(ChartLoader.eventQueue[0].event);
+			var module:ForeverModule = Events.loadedModules.get(event.event);
 
 			var value1:String = "";
-			if (ChartLoader.eventQueue[0].value1 != null)
-				value1 = ChartLoader.eventQueue[0].value1;
+			if (event.value1 != null)
+				value1 = event.value1;
 
 			var value2:String = "";
-			if (ChartLoader.eventQueue[0].value2 != null)
-				value2 = ChartLoader.eventQueue[0].value2;
+			if (event.value2 != null)
+				value2 = event.value2;
 
 			try
 			{
@@ -893,6 +897,8 @@ class PlayState extends MusicBeatState
 			{
 				trace('Failed to execute event ($ex)');
 			}
+
+			callOnModules('onEventHit', event.event, value1, value2);
 			ChartLoader.eventQueue.shift();
 		}
 	}

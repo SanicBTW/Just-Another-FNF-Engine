@@ -1,6 +1,6 @@
 package funkin.notes;
 
-import base.Conductor;
+import backend.Conductor;
 import base.sprites.DepthSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
@@ -132,14 +132,14 @@ class StrumLine extends FlxSpriteGroup
 				}
 			}
 
-			splashNote.z = -Conductor.songPosition;
+			splashNote.z = -Conductor.time;
 			splashes.sort(DepthSprite.depthSorting, flixel.util.FlxSort.DESCENDING);
 		}
 	}
 
 	override public function update(elapsed:Float)
 	{
-		var downscrollMultiplier:Int = (!Settings.downScroll ? 1 : -1) * flixel.math.FlxMath.signOf(Conductor.songSpeed);
+		var downscrollMultiplier:Int = (!Settings.downScroll ? 1 : -1) * flixel.math.FlxMath.signOf(Conductor.speed);
 
 		allNotes.forEachAlive(function(strumNote:Note)
 		{
@@ -160,7 +160,7 @@ class StrumLine extends FlxSpriteGroup
 			var receptorY:Float = receptor.y + (receptor.swagWidth / 4);
 
 			var pseudoX:Float = strumNote.offsetX;
-			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.songPosition - strumNote.strumTime) * Conductor.songSpeed));
+			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.time - strumNote.strumTime) * Conductor.speed));
 
 			strumNote.x = receptorX
 				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * pseudoX)
@@ -207,7 +207,7 @@ class StrumLine extends FlxSpriteGroup
 				}
 			}
 
-			if (strumNote.tooLate && strumNote.mustPress && strumNote.strumTime - Conductor.songPosition < -166 && !strumNote.wasGoodHit)
+			if (strumNote.tooLate && strumNote.mustPress && strumNote.strumTime - Conductor.time < -166 && !strumNote.wasGoodHit)
 			{
 				// If it is a single note
 				if (!strumNote.isSustain)
@@ -244,11 +244,11 @@ class StrumLine extends FlxSpriteGroup
 				switch (Settings.ratingStyle)
 				{
 					case KADE:
-						if (strumNote.strumTime <= Conductor.songPosition)
+						if (strumNote.strumTime <= Conductor.time)
 							onBotHit.dispatch(strumNote);
 					case PSYCH:
-						if (strumNote.strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5))
-							if ((strumNote.isSustain && strumNote.prevNote.wasGoodHit) || strumNote.strumTime <= Conductor.songPosition)
+						if (strumNote.strumTime < Conductor.time + (Conductor.safeZoneOffset * .5))
+							if ((strumNote.isSustain && strumNote.prevNote.wasGoodHit) || strumNote.strumTime <= Conductor.time)
 								onBotHit.dispatch(strumNote);
 				}
 			}

@@ -1,26 +1,39 @@
 package base;
 
+import backend.Conductor;
 import flixel.FlxSubState;
 import funkin.SongTools.SongData;
 
+// Move these to FlxState
 class MusicBeatState extends TransitionState implements MusicHandler
 {
-	public var updateTime:Bool = false;
+	@:isVar public var updateTime(get, set):Bool;
+
+	@:noCompletion
+	private function get_updateTime():Bool
+		return Conductor.active;
+
+	@:noCompletion
+	private function set_updateTime(state:Bool):Bool
+		return updateTime = Conductor.active = state;
+
 	@:isVar public var SONG(get, never):SongData;
-	@:isVar public var curStep(get, never):Int = 0;
-	@:isVar public var curBeat(get, never):Int = 0;
-
-	@:noCompletion
-	private function get_curStep():Int
-		return Conductor.stepPosition;
-
-	@:noCompletion
-	private function get_curBeat():Int
-		return Conductor.beatPosition;
 
 	@:noCompletion
 	private function get_SONG():SongData
 		return Conductor.SONG;
+
+	@:isVar public var curStep(get, never):Int = 0;
+
+	@:noCompletion
+	private function get_curStep():Int
+		return Conductor.roundStep;
+
+	@:isVar public var curBeat(get, never):Int = 0;
+
+	@:noCompletion
+	private function get_curBeat():Int
+		return Conductor.roundBeat;
 
 	override public function create()
 	{
@@ -32,9 +45,7 @@ class MusicBeatState extends TransitionState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		if (updateTime)
-			Conductor.updateTime(elapsed);
-
+		Conductor.update(elapsed);
 		super.update(elapsed);
 	}
 
@@ -46,9 +57,9 @@ class MusicBeatState extends TransitionState implements MusicHandler
 		super.destroy();
 	}
 
-	public function stepHit() {}
+	public function stepHit(step:Int):Void {}
 
-	public function beatHit()
+	public function beatHit(beat:Int)
 	{
 		if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
 			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
@@ -57,22 +68,33 @@ class MusicBeatState extends TransitionState implements MusicHandler
 
 class MusicBeatSubState extends FlxSubState implements MusicHandler
 {
-	public var updateTime:Bool = false;
+	@:isVar public var updateTime(get, set):Bool;
+
+	@:noCompletion
+	private function get_updateTime():Bool
+		return Conductor.active;
+
+	@:noCompletion
+	private function set_updateTime(state:Bool):Bool
+		return updateTime = Conductor.active = state;
+
 	@:isVar public var SONG(get, never):SongData;
-	@:isVar public var curStep(get, never):Int = 0;
-	@:isVar public var curBeat(get, never):Int = 0;
-
-	@:noCompletion
-	private function get_curStep():Int
-		return Conductor.stepPosition;
-
-	@:noCompletion
-	private function get_curBeat():Int
-		return Conductor.beatPosition;
 
 	@:noCompletion
 	private function get_SONG():SongData
 		return Conductor.SONG;
+
+	@:isVar public var curStep(get, never):Int = 0;
+
+	@:noCompletion
+	private function get_curStep():Int
+		return Conductor.roundStep;
+
+	@:isVar public var curBeat(get, never):Int = 0;
+
+	@:noCompletion
+	private function get_curBeat():Int
+		return Conductor.roundBeat;
 
 	override public function create()
 	{
@@ -84,9 +106,7 @@ class MusicBeatSubState extends FlxSubState implements MusicHandler
 
 	override public function update(elapsed:Float)
 	{
-		if (updateTime)
-			Conductor.updateTime(elapsed);
-
+		Conductor.update(elapsed);
 		super.update(elapsed);
 	}
 
@@ -98,23 +118,23 @@ class MusicBeatSubState extends FlxSubState implements MusicHandler
 		super.destroy();
 	}
 
-	public function stepHit() {}
+	public function stepHit(step:Int) {}
 
-	public function beatHit() {}
+	public function beatHit(beat:Int) {}
 }
 
 interface MusicHandler
 {
-	public var updateTime:Bool;
+	public var updateTime(get, set):Bool;
 
 	public var SONG(get, never):SongData;
 	private function get_SONG():SongData;
 
 	public var curStep(get, never):Int;
 	private function get_curStep():Int;
-	public function stepHit():Void;
+	public function stepHit(step:Int):Void;
 
 	public var curBeat(get, never):Int;
 	private function get_curBeat():Int;
-	public function beatHit():Void;
+	public function beatHit(beat:Int):Void;
 }

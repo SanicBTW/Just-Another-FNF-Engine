@@ -1,6 +1,6 @@
 package funkin.substates;
 
-import base.Conductor;
+import backend.Conductor;
 import base.MusicBeatState;
 import base.TransitionState;
 import flixel.FlxG;
@@ -55,7 +55,7 @@ class GameOverSubstate extends MusicBeatSubState
 
 		callOnModules('inGameOver', null);
 
-		Conductor.songPosition = 0;
+		Conductor.time = 0;
 		updateTime = false;
 
 		playerDead = new Character(X, Y, true, characterName);
@@ -141,9 +141,9 @@ class GameOverSubstate extends MusicBeatSubState
 		}
 	}
 
-	override public function beatHit()
+	override public function beatHit(beat:Int)
 	{
-		super.beatHit();
+		super.beatHit(beat);
 
 		if (bop && !isEnding)
 			playerDead.playAnim('deathLoop', true);

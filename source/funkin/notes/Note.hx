@@ -1,7 +1,7 @@
 package funkin.notes;
 
+import backend.Conductor;
 import backend.scripting.*;
-import base.Conductor;
 import flixel.FlxSprite;
 import flixel.math.FlxRect;
 import funkin.notes.Receptor.ReceptorData;
@@ -113,7 +113,7 @@ class Note extends FlxSprite
 			{
 				if (prevNote.isSustain)
 				{
-					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (2.375 / prevNote.receptorData.size)) * Conductor.songSpeed;
+					prevNote.scale.y = (prevNote.width / prevNote.frameWidth) * ((Conductor.stepCrochet / 100) * (2.375 / prevNote.receptorData.size)) * Conductor.speed;
 					prevNote.updateHitbox();
 					offsetX = prevNote.offsetX;
 				}
@@ -166,7 +166,7 @@ class Note extends FlxSprite
 			switch (Settings.ratingStyle)
 			{
 				case KADE:
-					var diff:Float = strumTime - Conductor.songPosition;
+					var diff:Float = strumTime - Conductor.time;
 
 					if (isSustain)
 						canBeHit = (diff <= ((166 * Conductor.timeScale) * .5) && diff >= (-166 * Conductor.timeScale));
@@ -177,13 +177,13 @@ class Note extends FlxSprite
 
 				case PSYCH:
 					if (isSustain)
-						canBeHit = (strumTime > Conductor.songPosition - (Conductor.safeZoneOffset * .5)
-							&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
+						canBeHit = (strumTime > Conductor.time - (Conductor.safeZoneOffset * .5)
+							&& strumTime < Conductor.time + (Conductor.safeZoneOffset * .5));
 					else
-						canBeHit = (strumTime > (Conductor.songPosition - Conductor.safeZoneOffset)
-							&& strumTime < Conductor.songPosition + (Conductor.safeZoneOffset * .5));
+						canBeHit = (strumTime > (Conductor.time - Conductor.safeZoneOffset)
+							&& strumTime < Conductor.time + (Conductor.safeZoneOffset * .5));
 
-					tooLate = (strumTime < (Conductor.songPosition - Conductor.safeZoneOffset) && !wasGoodHit);
+					tooLate = (strumTime < (Conductor.time - Conductor.safeZoneOffset) && !wasGoodHit);
 			}
 		}
 

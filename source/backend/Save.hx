@@ -22,7 +22,6 @@ class Save
 	private static function loadSettings()
 	{
 		var settings:Array<String> = Type.getClassFields(Settings);
-		trace(settings);
 
 		// because promises exist (i fucking hate them so much ong), once i make sys sql promise based it will be the same for all targets hopefully
 		for (field in settings)

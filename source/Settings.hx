@@ -8,6 +8,7 @@ class Settings
 	// Gameplay
 	public static var downScroll:Bool = false;
 	public static var middleScroll:Bool = true;
+	public static var beatDivisor:backend.Conductor.BeatDivisor = FOURTHS; // What are beats based off, 4 (FNF Base), or crochet
 
 	// Optimizations
 	public static var simplifyOverlay:Bool = false; // Simplifies the Debug Overlay with some basic TextFields

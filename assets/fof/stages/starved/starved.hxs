@@ -11,7 +11,6 @@ var transparentColor = 0x00000000;
 var blackColor = 0xFF000000;
 var whiteColor = 0xFFFFFFFF;
 var redColor = 0xFFFF0000;
-var conductorOGState;
 var tweenTime = 1;
 
 var blackFuck;
@@ -86,9 +85,6 @@ function onCreate()
 	fearBar.scale.set(0.56, 0.90);
 	fearBar.updateHitbox();
     fearBar.fillAxis = SBarFillAxis.VERTICAL;
-
-    conductorOGState = Conductor.speedBasedBPM;
-    Conductor.speedBasedBPM = false;
 }
 
 function onStartCountdown()

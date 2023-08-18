@@ -1,6 +1,6 @@
 package funkin;
 
-import base.Conductor;
+import backend.Conductor;
 import flixel.util.FlxColor;
 
 // I don't really know how to rewrite this one so I'm just gonna copy the old code lol

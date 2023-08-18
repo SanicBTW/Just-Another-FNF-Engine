@@ -1,10 +1,10 @@
 package funkin;
 
 import backend.Cache;
+import backend.Conductor;
 import backend.IO;
 import backend.io.Path;
 import backend.scripting.*;
-import base.Conductor;
 import base.sprites.OffsettedSprite;
 import flixel.math.FlxPoint;
 import flixel.tweens.FlxTween;

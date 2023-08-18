@@ -1,9 +1,9 @@
 package funkin;
 
 import backend.*;
+import backend.Conductor;
 import backend.io.Path;
 import backend.scripting.ForeverModule;
-import base.Conductor;
 import flixel.util.FlxSort;
 import funkin.Events.EventNote;
 import funkin.SongTools;
@@ -164,28 +164,8 @@ class ChartLoader
 
 	private static function parseNotes(swagSong:SongData)
 	{
-		var curBPM:Float = swagSong.bpm;
-		var totalSteps:Int = 0;
-		var totalPos:Float = 0;
-
 		for (section in swagSong.notes)
 		{
-			if (section.changeBPM && section.bpm != curBPM)
-			{
-				curBPM = section.bpm;
-				var bpmChange:BPMChangeEvent = {
-					stepTime: totalSteps,
-					songTime: totalPos,
-					bpm: curBPM,
-					stepCrochet: (Conductor.calculateCrochet(curBPM) / 4)
-				};
-				Conductor.bpmChanges.push(bpmChange);
-			}
-
-			var deltaSteps:Int = (section.sectionBeats != null ? Math.round(section.sectionBeats) * 4 : section.lengthInSteps);
-			totalSteps += deltaSteps;
-			totalPos += (Conductor.calculateCrochet(curBPM) / 4) * deltaSteps;
-
 			for (songNotes in section.sectionNotes)
 			{
 				switch (songNotes[1])

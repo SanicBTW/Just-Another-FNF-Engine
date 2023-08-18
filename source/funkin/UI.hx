@@ -1,6 +1,6 @@
 package funkin;
 
-import base.Conductor;
+import backend.Conductor;
 import base.sprites.DepthSprite;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
@@ -80,7 +80,7 @@ class UI extends FlxSpriteGroup
 
 		curJudgement.alpha = (preload) ? 0 : 1;
 
-		curJudgement.z = -Conductor.songPosition;
+		curJudgement.z = -Conductor.time;
 		if (perfect)
 			curJudgement.animation.play('sick-perfect');
 		else
@@ -130,7 +130,7 @@ class UI extends FlxSpriteGroup
 
 			combo.alpha = (preload) ? 0 : 1;
 
-			combo.z = -Conductor.songPosition;
+			combo.z = -Conductor.time;
 			combo.animation.play(stringArray[i]);
 			if (perfect)
 				combo.animation.play(stringArray[i] + "-perfect");
