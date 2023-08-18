@@ -57,7 +57,7 @@
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
-	<assets path="ffmpeg.exe" if="FS_ACCESS" unless="linux || android" /> 
+	<assets path="utils" if="FS_ACCESS" unless="linux || android" /> 
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
