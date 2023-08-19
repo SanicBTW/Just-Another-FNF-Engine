@@ -1,5 +1,11 @@
 var centerMark:FlxText;
 
+var healthBar:SBar;
+var lerpHealth:Float;
+
+var timeBar:SBar;
+var lerpTime:Float;
+
 function onCreate()
 {
     var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, 0xFF000000);
@@ -22,9 +28,39 @@ function onCreate()
     centerMark.antialiasing = Settings.antialiasing;
     centerMark.y = FlxG.height / 24;
     centerMark.screenCenter(FlxAxes.X);
+
+    healthBar = new SBar(0, 0, 15, FlxG.height - 200, 0xFFFF0000, 0xFF00FF00);
+    healthBar.angle = 180;
+    healthBar.fillAxis = SBarFillAxis.VERTICAL;
+
+    timeBar = new SBar(0, 0, 15, FlxG.height - 200, 0xFFFFFFFF, 0xFF0084FF);
+    timeBar.angle = 180;
+    timeBar.fillAxis = SBarFillAxis.VERTICAL;
 }
 
 function onCreatePost()
 {
+    Timings.health = 2;
     UI.add(centerMark);
+
+    var lastReceptor:Receptor = playerStrums.receptors.members[playerStrums.receptors.members.length - 1];
+    healthBar.x = (lastReceptor.x + lastReceptor.width) + healthBar.width;
+    healthBar.screenCenter(FlxAxes.Y);
+    healthBar.y += 100;
+    UI.add(healthBar);
+
+    var firstReceptor:Receptor = playerStrums.receptors.members[0];
+    timeBar.x = (firstReceptor.x - timeBar.width) - timeBar.width;
+    timeBar.screenCenter(FlxAxes.Y);
+    timeBar.y += 100;
+    UI.add(timeBar);
+}
+
+function onUpdate(elapsed)
+{
+    lerpHealth = FlxMath.lerp(Timings.health / 2, lerpHealth, FlxMath.bound(1 - elapsed * 5));
+    healthBar.value = lerpHealth;
+
+    lerpTime = FlxMath.lerp(Conductor.time / FlxG.sound.music.length, lerpTime, FlxMath.bound(1 - elapsed * 5));
+    timeBar.value = lerpTime;
 }

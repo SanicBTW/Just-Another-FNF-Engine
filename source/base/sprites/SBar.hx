@@ -95,10 +95,12 @@ class SBar extends FlxSprite
 		_bgRect = _fgRect = new Rectangle(0, 0, barWidth, barHeight);
 		_bgPoint = _fgPoint = new Point();
 
-		_bgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true), BITMAP, 'SBAR_BG:${barWidth}x${barHeight}');
-		_fgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true), BITMAP, 'SBAR_FG:${barWidth}x${barHeight}');
+		// Better naming to avoid reusing other bitmaps
+		_bgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true), BITMAP, 'SBAR_BG:${barWidth}x${barHeight}(${bgColor.toWebString()})');
+		_fgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true), BITMAP, 'SBAR_FG:${barWidth}x${barHeight}(${fgColor.toWebString()})');
 
-		makeGraphic(barWidth, barHeight, FlxColor.TRANSPARENT, false);
+		// Setting it to false would cause the sprite to reuse another graphic with the same properties
+		makeGraphic(barWidth, barHeight, FlxColor.TRANSPARENT, true);
 
 		this.bgColor = bgColor;
 		this.fgColor = fgColor;
@@ -106,8 +108,8 @@ class SBar extends FlxSprite
 
 	override function destroy()
 	{
-		Cache.removeBitmapData('SBAR_BG:${barWidth}x${barHeight}');
-		Cache.removeBitmapData('SBAR_FG:${barWidth}x${barHeight}');
+		Cache.removeBitmapData('SBAR_BG:${barWidth}x${barHeight}(${bgColor.toWebString()})');
+		Cache.removeBitmapData('SBAR_FG:${barWidth}x${barHeight}(${fgColor.toWebString()})');
 
 		_bgRect = _fgRect = null;
 		_bgPoint = _fgPoint = null;
