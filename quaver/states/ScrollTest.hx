@@ -115,7 +115,9 @@ class ScrollTest extends FlxState
 		FlxG.camera.zoom = FlxMath.lerp(1, FlxG.camera.zoom, lerpVal);
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, lerpVal);
 		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, lerpVal);
-		timeBar.value = FlxMath.lerp(Conductor.time / FlxG.sound.music.length, timeBar.value, lerpVal);
+
+		if (FlxG.sound.music != null)
+			timeBar.value = FlxMath.lerp(Conductor.time / FlxG.sound.music.length, timeBar.value, lerpVal);
 
 		noteSpawn();
 
