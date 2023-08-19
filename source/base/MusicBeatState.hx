@@ -15,7 +15,7 @@ class MusicBeatState extends TransitionState implements MusicHandler
 
 	@:noCompletion
 	private function set_updateTime(state:Bool):Bool
-		return updateTime = Conductor.active = state;
+		return Conductor.active = state;
 
 	@:isVar public var SONG(get, never):SongData;
 
@@ -83,7 +83,7 @@ class MusicBeatSubState extends FlxSubState implements MusicHandler
 
 	@:noCompletion
 	private function set_updateTime(state:Bool):Bool
-		return updateTime = Conductor.active = state;
+		return Conductor.active = state;
 
 	@:isVar public var SONG(get, never):SongData;
 

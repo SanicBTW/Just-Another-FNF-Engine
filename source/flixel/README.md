@@ -9,6 +9,7 @@
 - Automatically change stored FlxG on HScript exposure and Modules
 - Moved engine state essentials to FlxState and FlxSubState
 - FlxText actually reusing graphics and using a custom drawing method
+- FlxGraphicsShader added screen vec2 and elapsed float
 
 # Discarded or fix pending
 - ~~Added soloud~~
