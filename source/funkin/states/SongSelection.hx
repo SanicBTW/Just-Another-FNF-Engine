@@ -294,7 +294,8 @@ class SongSelection extends TransitionState
 
 					case "quaver":
 						{
-							TransitionState.switchState(new QuaverGameplay(curText));
+							songSelected.songName = curText;
+							TransitionState.switchState(new QuaverGameplay());
 						}
 				}
 		}

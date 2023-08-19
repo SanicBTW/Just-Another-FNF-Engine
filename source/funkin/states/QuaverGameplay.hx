@@ -50,16 +50,6 @@ class QuaverGameplay extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
-	// Cock
-	private var mapID:String;
-
-	override public function new(mapID:String)
-	{
-		super();
-
-		this.mapID = mapID;
-	}
-
 	override public function create()
 	{
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
@@ -68,7 +58,7 @@ class QuaverGameplay extends MusicBeatState
 		GameOverSubstate.resetVariables();
 		Timings.call();
 		Paths.music("tea-time");
-		ChartLoader.loadBeatmap(mapID);
+		ChartLoader.loadBeatmap(SongSelection.songSelected.songName);
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -89,10 +79,10 @@ class QuaverGameplay extends MusicBeatState
 		strums.onMiss.add(noteMiss);
 		strums.onBotHit.add(botHit);
 		strums.cameras = [camHUD];
-		add(strums);
 
 		stageBuild = new Stage(SONG.stage);
 		add(stageBuild);
+		add(strums);
 
 		ui = new UI();
 		ui.cameras = [camHUD];
@@ -132,7 +122,7 @@ class QuaverGameplay extends MusicBeatState
 		super.update(elapsed);
 
 		if (!paused)
-			DiscordPresence.changePresence('Playing ${SONG.song}', ui.scoreText.text, null, true, Conductor.boundInst.length - Conductor.time);
+			DiscordPresence.changePresence('Playing ${SONG.song}', ui.scoreText.text, null, true, FlxG.sound.music.length - Conductor.time);
 
 		if (startedCountdown && startingSong && !paused)
 		{
@@ -156,9 +146,9 @@ class QuaverGameplay extends MusicBeatState
 			callOnModules('onGameOver', null);
 			updateTime = persistentDraw = persistentUpdate = false;
 
-			Conductor.boundInst.stop();
+			FlxG.sound.music.stop();
 			DiscordPresence.changePresence("Game Over");
-			TransitionState.switchState(new QuaverGameplay(mapID));
+			TransitionState.switchState(new QuaverGameplay());
 		}
 
 		while ((ChartLoader.noteQueue[0] != null) && (ChartLoader.noteQueue[0].strumTime - Conductor.time) < 3500)
@@ -177,6 +167,9 @@ class QuaverGameplay extends MusicBeatState
 			}
 			ChartLoader.noteQueue.splice(ChartLoader.noteQueue.indexOf(nextNote), 1);
 		}
+
+		if (FlxG.keys.justPressed.ONE)
+			strums.botPlay = !strums.botPlay;
 
 		holdNotes(elapsed);
 		checkEventNote();
@@ -211,7 +204,7 @@ class QuaverGameplay extends MusicBeatState
 						{
 							var data:Int = receptor.noteData;
 							var lastTime:Float = Conductor.time;
-							Conductor.time = Conductor.boundInst.time;
+							Conductor.time = FlxG.sound.music.time;
 
 							var possibleNotes:Array<Note> = [];
 							var directionList:Array<Int> = [];
@@ -330,8 +323,8 @@ class QuaverGameplay extends MusicBeatState
 	{
 		if (!paused)
 		{
-			if (Conductor.boundInst != null)
-				Conductor.boundInst.pause();
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.pause();
 
 			if (startTimer != null && !startTimer.finished)
 				startTimer.active = false;
@@ -350,7 +343,7 @@ class QuaverGameplay extends MusicBeatState
 		if (paused)
 		{
 			if (!startingSong)
-				Conductor.resyncFNF();
+				Conductor.resyncMusic();
 
 			if (startTimer != null && !startTimer.finished)
 				startTimer.active = true;
@@ -450,12 +443,12 @@ class QuaverGameplay extends MusicBeatState
 	{
 		startingSong = false;
 
-		Conductor.boundInst.play();
-		Conductor.boundInst.onComplete = endSong.bind();
+		FlxG.sound.music.play();
+		FlxG.sound.music.onComplete = endSong.bind();
 
 		updateTime = true;
 
-		setOnModules('songLength', Conductor.boundInst.length);
+		setOnModules('songLength', FlxG.sound.music.length);
 		callOnModules('onSongStart', null);
 	}
 
@@ -553,7 +546,7 @@ class QuaverGameplay extends MusicBeatState
 	private function endSong():Void
 	{
 		updateTime = false;
-		Conductor.boundInst.stop();
+		FlxG.sound.music.stop();
 		callOnModules('onEndSong', null);
 		TransitionState.switchState(new SongSelection());
 	}

@@ -188,14 +188,7 @@ class Conductor
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 		{
 			if (Math.abs(FlxG.sound.music.time - time) > resyncThreshold)
-			{
-				trace('Resyncing song time ${FlxG.sound.music.time}, $time');
-
-				FlxG.sound.music.play();
-				time = FlxG.sound.music.time;
-
-				trace('New song time ${FlxG.sound.music.time}, $time');
-			}
+				resyncMusic();
 
 			time += elapsed * 1000;
 		}
@@ -208,6 +201,17 @@ class Conductor
 
 			time += elapsed * 1000;
 		}
+	}
+
+	// Force Flixel BGMusic Resync
+	static function resyncMusic()
+	{
+		trace('Resyncing song time ${FlxG.sound.music.time}, $time');
+
+		FlxG.sound.music.play();
+		time = FlxG.sound.music.time;
+
+		trace('New song time ${FlxG.sound.music.time}, $time');
 	}
 
 	// Force FNF Song Resync

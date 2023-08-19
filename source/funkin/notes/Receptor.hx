@@ -66,15 +66,35 @@ class Receptor extends FlxSprite
 
 	public function playAnim(AnimName:String, Force:Bool = false)
 	{
-		if (AnimName == "confirm")
+		// Fallback to basic animations if not found on animation controller (NOT TESTED)
+		if (animation.exists(AnimName))
 		{
-			alpha = 1;
-			centerOrigin();
+			if (AnimName == "confirm")
+			{
+				alpha = 1;
+				centerOrigin();
+			}
+			else
+				alpha = setAlpha;
+
+			animation.play(AnimName, Force);
 		}
 		else
-			alpha = setAlpha;
+		{
+			switch (AnimName)
+			{
+				case "static":
+					alpha = setAlpha;
+					scale.set(1, 1);
+				case "pressed":
+					alpha = setAlpha;
+					scale.set(0.95, 0.95);
+				case "confirm":
+					alpha = 1;
+					scale.set(0.9, 0.9);
+			}
+		}
 
-		animation.play(AnimName, Force);
 		centerOffsets();
 		centerOrigin();
 	}

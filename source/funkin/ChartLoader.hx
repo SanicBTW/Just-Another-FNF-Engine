@@ -97,7 +97,7 @@ class ChartLoader
 		resetQueues();
 		var startTime:Float = haxe.Timer.stamp();
 
-		var qua:Qua = new Qua(Cache.getText(Paths.file('quaver/$mapID/$mapID.qua')));
+		var qua:Qua = new Qua(Cache.getText(Paths.file('quaver/24184/$mapID.qua')));
 
 		var swagSong:SongData = {
 			song: '${qua.Artist} - ${qua.Title} (${qua.DifficultyName})',
@@ -114,22 +114,26 @@ class ChartLoader
 			notes: [],
 			events: []
 		};
-		var audioFile:Sound = Cache.getSound(#if FS_ACCESS Path.join(IO.getFolderPath(QUAVER), '$mapID',
-			'${qua.AudioFile}') #else Paths.file('quaver/$mapID/${qua.AudioFile}') #end);
+		var audioFile:Sound = Cache.getSound(#if FS_ACCESS Path.join(IO.getFolderPath(QUAVER), '${qua.MapSetId}',
+			qua.AudioFile) #else Paths.file('quaver/${qua.MapSetId}/${qua.AudioFile}') #end);
 
-		Conductor.bindSong(swagSong, audioFile);
+		flixel.FlxG.sound.playMusic(audioFile, 1, false);
+		flixel.FlxG.sound.music.stop();
+		Conductor.changeBPM(qua.TimingPoints[0].Bpm);
+		Conductor.speed = 2.7;
+		Conductor.SONG = swagSong;
 
 		for (hitObject in qua.HitObjects)
 		{
 			var strumTime:Float = hitObject.StartTime;
-			var noteData:Int = hitObject.Lane - 1;
+			var noteData:Int = Std.int(hitObject.Lane % 4);
 			var endTime:Float = hitObject.EndTime;
 
 			var oldNote:Note = null;
 			if (noteQueue.length > 0)
 				oldNote = noteQueue[Std.int(noteQueue.length - 1)];
 
-			var newNote:Note = new Note(strumTime, noteData, "default", 0, oldNote);
+			var newNote:Note = new Note(strumTime, noteData, "default", 1, oldNote);
 			newNote.mustPress = true;
 			var holdStep:Float = newNote.sustainLength = (endTime > 0) ? (endTime - strumTime) / Conductor.stepCrochet : 0;
 			noteQueue.push(newNote);
@@ -140,7 +144,7 @@ class ChartLoader
 				for (note in 0...floorStep)
 				{
 					var time:Float = strumTime + (Conductor.stepCrochet * (note + 1));
-					var sustainNote:Note = new Note(time, noteData, newNote.noteType, 0, noteQueue[Std.int(noteQueue.length - 1)], true);
+					var sustainNote:Note = new Note(time, noteData, newNote.noteType, 1, noteQueue[Std.int(noteQueue.length - 1)], true);
 
 					sustainNote.mustPress = newNote.mustPress;
 					sustainNote.parent = newNote;

@@ -154,7 +154,7 @@ class StrumLine extends FlxSpriteGroup
 				strumNote.active = true;
 			}
 
-			var receptor:Receptor = receptors.members[Math.floor(strumNote.noteData)];
+			var receptor:Receptor = receptors.members[strumNote.noteData];
 
 			var receptorX:Float = receptor.x;
 			var receptorY:Float = receptor.y + (receptor.swagWidth / 4);

@@ -1,0 +1,32 @@
+var centerMark:FlxText;
+
+function onCreate()
+{
+    var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, 0xFF000000);
+	darkBackground.setGraphicSize(toInt32(FlxG.width));
+	darkBackground.screenCenter();
+	darkBackground.alpha = 0.7;
+	add(darkBackground);
+
+    var bg:FlxSprite = new FlxSprite();
+    bg.loadGraphic(Cache.getGraphic(VPaths.getPath("quaver/24184/maxresdefault_auto_x2_2.jpg")));
+    bg.setGraphicSize(toInt32(FlxG.width));
+    bg.screenCenter();
+    bg.alpha = 0.09;
+    bg.blend = 3;
+    add(bg);
+
+    centerMark = new FlxText(0, 0, 0, Conductor.SONG.song);
+    centerMark.setFormat(Cache.getFont("vcr.ttf"), 24, 0xFFFFFFFF);
+    centerMark.setBorderStyle(FlxTextBorderStyle.OUTLINE, 0xFF000000, 3);
+    centerMark.antialiasing = Settings.antialiasing;
+    centerMark.y = FlxG.height / 24;
+    centerMark.screenCenter(FlxAxes.X);
+}
+
+function onCreatePost()
+{
+    UI.add(centerMark);
+
+    playerStrums.y -= centerMark.height + 15;
+}

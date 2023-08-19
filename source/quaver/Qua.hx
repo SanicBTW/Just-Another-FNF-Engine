@@ -175,12 +175,12 @@ class Qua
 	#if FS_ACCESS
 	private function convertAudio()
 	{
-		var path = Path.join(IO.getFolderPath(QUAVER), '$MapId');
-		if (!IO.existsOnFolder(QUAVER, '$MapId'))
+		var path = Path.join(IO.getFolderPath(QUAVER), '$MapSetId');
+		if (!IO.existsOnFolder(QUAVER, '$MapSetId'))
 			sys.FileSystem.createDirectory(path);
 
 		// uhhhhhh
-		var audioPath:String = Path.join(Sys.getCwd(), "assets", "funkin", "quaver", '$MapId', AudioFile);
+		var audioPath:String = Path.join(Sys.getCwd(), "assets", "funkin", "quaver", '$MapSetId', AudioFile);
 		AudioFile = AudioFile.replace("mp3", "ogg");
 
 		var output:String = Path.join(path, AudioFile);

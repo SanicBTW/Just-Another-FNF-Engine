@@ -92,7 +92,9 @@ class ScriptHandler
 		exp.set('FlxBar', FlxBar);
 		exp.set('FlxBarFillDirection', FlxBarFillDirection);
 		exp.set('FlxText', FlxText);
+		exp.set('FlxTextBorderStyle', FlxTextBorderStyle);
 		exp.set('FlxSound', FlxSound);
+		exp.set('FlxAxes', FlxAxes);
 
 		// Classes (Engine / Forever)
 		exp.set('Settings', Settings);
