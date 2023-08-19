@@ -1,14 +1,5 @@
 # Just Another FNF Engine - 0.2.10
 
-## Slow development
-Sup, development is going kind of slow since I'm trying to improve some parts of the engine and add more features, but I've been only thinking on ideas and actually implement those ideas is going to take much longer.
-
-I'm also having trouble with high temperatures and my current computer, also I took too much time working on improving sustains and adding section lines, just to be discarded temporarily because I can't get a good clip rect for it or its just not working, for now I'm trying to sync branches which will take some time to stabilize changes.
-
-Hopefully I recover my speed but for now that's all I have to say, see ya soon
-
-
-
 A rewrite of Friday Night Funkin' mixing:
 - Forever Engine
 - - Legacy 

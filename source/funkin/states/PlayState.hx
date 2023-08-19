@@ -615,12 +615,6 @@ class PlayState extends MusicBeatState
 		callOnModules('onSongStart', null);
 	}
 
-	override public function stepHit(step:Int)
-	{
-		setOnModules('curStep', step);
-		callOnModules('onStepHit', step);
-	}
-
 	override public function beatHit(beat:Int)
 	{
 		super.beatHit(beat);
@@ -651,9 +645,6 @@ class PlayState extends MusicBeatState
 			&& !dad.animation.curAnim.name.startsWith('sing')
 			&& !dad.stunned)
 			dad.dance();
-
-		setOnModules('curBeat', beat);
-		callOnModules('onBeatHit', beat);
 	}
 
 	private function noteHit(note:Note)

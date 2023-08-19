@@ -458,12 +458,6 @@ class QuaverGameplay extends MusicBeatState
 		callOnModules('onSongStart', null);
 	}
 
-	override public function stepHit(step:Int)
-	{
-		setOnModules('curStep', step);
-		callOnModules('onStepHit', step);
-	}
-
 	override public function beatHit(beat:Int)
 	{
 		super.beatHit(beat);
@@ -473,9 +467,6 @@ class QuaverGameplay extends MusicBeatState
 			FlxG.camera.zoom += 0.015;
 			camHUD.zoom += 0.03;
 		}
-
-		setOnModules('curBeat', beat);
-		callOnModules('onBeatHit', beat);
 	}
 
 	private function noteHit(note:Note)

@@ -57,12 +57,19 @@ class MusicBeatState extends TransitionState implements MusicHandler
 		super.destroy();
 	}
 
-	public function stepHit(step:Int):Void {}
+	public function stepHit(step:Int):Void
+	{
+		setOnModules('curStep', step);
+		callOnModules('onStepHit', step);
+	}
 
 	public function beatHit(beat:Int)
 	{
 		if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
 			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
+
+		setOnModules('curBeat', beat);
+		callOnModules('onBeatHit', beat);
 	}
 }
 
@@ -118,9 +125,17 @@ class MusicBeatSubState extends FlxSubState implements MusicHandler
 		super.destroy();
 	}
 
-	public function stepHit(step:Int) {}
+	public function stepHit(step:Int)
+	{
+		setOnModules('curStep', step);
+		callOnModules('onStepHit', step);
+	}
 
-	public function beatHit(beat:Int) {}
+	public function beatHit(beat:Int)
+	{
+		setOnModules('curBeat', beat);
+		callOnModules('onBeatHit', beat);
+	}
 }
 
 interface MusicHandler
