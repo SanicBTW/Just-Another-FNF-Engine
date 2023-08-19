@@ -30,6 +30,7 @@ class VolumePanel extends ExSprite
 
 	override public function create()
 	{
+		visible = true;
 		scaleX = scaleY = _defaultScale;
 		_outline = drawRound(0, 0, _width + _outlineSize, _height + _outlineSize, [15], FlxColor.BLACK, 0.25);
 		_bg = drawRound(_outlineSize * 0.5, _outlineSize * 0.5, _width, _height, [15], FlxColor.WHITE, 0.6);
