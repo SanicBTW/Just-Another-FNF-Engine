@@ -10,6 +10,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
 import flixel.graphics.FlxGraphic;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -34,6 +35,8 @@ class QuaverGameplay extends MusicBeatState
 	public var camOther:FlxCamera;
 
 	// Strum handling
+	private var strumLines:FlxTypedGroup<StrumLine>;
+
 	public var strums:StrumLine;
 
 	// Countdown
@@ -73,16 +76,19 @@ class QuaverGameplay extends MusicBeatState
 		camOther.bgColor.alpha = 0;
 		FlxG.cameras.add(camOther, false);
 
-		var yPos:Float = (Settings.downScroll ? FlxG.height - (FlxG.height / 8) : (FlxG.height / 8));
+		strumLines = new FlxTypedGroup<StrumLine>();
+		strumLines.cameras = [camHUD];
+
+		var yPos:Float = (Settings.downScroll ? FlxG.height - (FlxG.height / 6) : (FlxG.height / 6));
 
 		strums = new StrumLine((FlxG.width / 2), yPos);
 		strums.onMiss.add(noteMiss);
 		strums.onBotHit.add(botHit);
-		strums.cameras = [camHUD];
+		strumLines.add(strums);
+		add(strumLines);
 
 		stageBuild = new Stage(SONG.stage);
 		add(stageBuild);
-		add(strums);
 
 		ui = new UI();
 		ui.cameras = [camHUD];

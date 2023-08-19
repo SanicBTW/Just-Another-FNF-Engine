@@ -193,11 +193,6 @@ function onSongStart()
     FlxTween.tween(UI, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
 }
 
-function onEndSong()
-{
-    Conductor.speedBasedBPM = conductorOGState;
-}
-
 function onMoveCamera(who)
 {
     switch(who)

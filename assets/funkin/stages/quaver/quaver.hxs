@@ -5,14 +5,14 @@ function onCreate()
     var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, 0xFF000000);
 	darkBackground.setGraphicSize(toInt32(FlxG.width));
 	darkBackground.screenCenter();
-	darkBackground.alpha = 0.7;
+	darkBackground.alpha = 0.6;
 	add(darkBackground);
 
     var bg:FlxSprite = new FlxSprite();
     bg.loadGraphic(Cache.getGraphic(VPaths.getPath("quaver/24184/maxresdefault_auto_x2_2.jpg")));
     bg.setGraphicSize(toInt32(FlxG.width));
     bg.screenCenter();
-    bg.alpha = 0.09;
+    bg.alpha = 0.5;
     bg.blend = 3;
     add(bg);
 
@@ -27,6 +27,4 @@ function onCreate()
 function onCreatePost()
 {
     UI.add(centerMark);
-
-    playerStrums.y -= centerMark.height + 15;
 }

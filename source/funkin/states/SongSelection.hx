@@ -132,7 +132,7 @@ class SongSelection extends TransitionState
 
 			case "quaver":
 				{
-					regenMenu(["107408"]);
+					regenMenu(["107408", "107739", "109360"]);
 				}
 		}
 
