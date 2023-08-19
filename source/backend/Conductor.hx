@@ -65,13 +65,7 @@ class Conductor
 
 	@:noCompletion
 	private static function get_beat()
-	{
-		return beat = switch (Settings.beatDivisor)
-		{
-			case FOURTHS: step / 4;
-			case CROCHET: lastBeat + ((time - lastTime) / crochet);
-		}
-	}
+		return beat = lastBeat + ((time - lastTime) / crochet);
 
 	static var roundBeat(get, null):Int = 0;
 
