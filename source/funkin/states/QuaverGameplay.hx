@@ -1,5 +1,6 @@
 package funkin.states;
 
+import backend.Cache;
 import backend.Conductor;
 import backend.DiscordPresence;
 import backend.scripting.ForeverModule;
@@ -16,12 +17,14 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
 import funkin.ChartLoader;
+import funkin.Events.EventNote;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
 import funkin.notes.StrumLine;
 import funkin.substates.GameOverSubstate;
 import funkin.substates.PauseSubstate;
 import openfl.media.Sound;
+import quaver.Qua;
 import transitions.FadeTransition;
 
 using StringTools;
@@ -53,6 +56,9 @@ class QuaverGameplay extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
+	// Cock
+	private var qua:Qua;
+
 	override public function create()
 	{
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
@@ -61,7 +67,7 @@ class QuaverGameplay extends MusicBeatState
 		GameOverSubstate.resetVariables();
 		Timings.call();
 		Paths.music("tea-time");
-		ChartLoader.loadBeatmap(SongSelection.songSelected.songName);
+		qua = ChartLoader.loadBeatmap(QuaverSelection.mapID);
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -98,6 +104,7 @@ class QuaverGameplay extends MusicBeatState
 		FlxG.camera.zoom = 1;
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
+		setOnModules("qua", qua);
 		setOnModules('camGame', camGame);
 		setOnModules('camHUD', camHUD);
 		setOnModules('playerStrums', strums);
@@ -473,9 +480,11 @@ class QuaverGameplay extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
+			var hitObj:HitObject = getHitObjectByTime(note.strumTime);
 			var receptor:Receptor = getReceptor(strums, note.noteData);
 			note.wasGoodHit = true;
 			receptor.playAnim('confirm', true);
+			playHitObjectSound(hitObj);
 
 			if (!note.isSustain)
 			{
@@ -515,6 +524,7 @@ class QuaverGameplay extends MusicBeatState
 	{
 		if (!note.wasGoodHit)
 		{
+			var hitObj:HitObject = getHitObjectByTime(note.strumTime);
 			var receptor:Receptor = getReceptor(strums, note.noteData);
 			note.wasGoodHit = true;
 
@@ -524,6 +534,7 @@ class QuaverGameplay extends MusicBeatState
 
 			receptor.playAnim('confirm', true);
 			receptor.holdTimer = time;
+			playHitObjectSound(hitObj);
 
 			if (!note.isSustain)
 				strums.generateSplash(receptor);
@@ -552,19 +563,20 @@ class QuaverGameplay extends MusicBeatState
 	{
 		while (ChartLoader.eventQueue.length > 0)
 		{
-			var leStrumTime:Float = ChartLoader.eventQueue[0].strumTime;
+			var event:EventNote = ChartLoader.eventQueue[0];
+			var leStrumTime:Float = event.strumTime;
 			if (Conductor.time < leStrumTime)
 				break;
 
-			var module:ForeverModule = Events.loadedModules.get(ChartLoader.eventQueue[0].event);
+			var module:ForeverModule = Events.loadedModules.get(event.event);
 
 			var value1:String = "";
-			if (ChartLoader.eventQueue[0].value1 != null)
-				value1 = ChartLoader.eventQueue[0].value1;
+			if (event.value1 != null)
+				value1 = event.value1;
 
 			var value2:String = "";
-			if (ChartLoader.eventQueue[0].value2 != null)
-				value2 = ChartLoader.eventQueue[0].value2;
+			if (event.value2 != null)
+				value2 = event.value2;
 
 			try
 			{
@@ -576,10 +588,49 @@ class QuaverGameplay extends MusicBeatState
 				trace('Failed to execute event ($ex)');
 			}
 
+			callOnModules('onEventHit', event.event, value1, value2);
 			ChartLoader.eventQueue.shift();
 		}
 	}
 
+	// Helper bs
+
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor
 		return strumLine.receptors.members[noteData];
+
+	private function getHitObjectByTime(time:Float)
+	{
+		var retHitObj:HitObject = {
+			StartTime: 0,
+			Lane: 0,
+			HitSound: null,
+			EndTime: 0,
+			KeySounds: null
+		};
+
+		for (i in 0...qua.HitObjects.length)
+		{
+			if (time >= qua.HitObjects[i].StartTime)
+				retHitObj = qua.HitObjects[i];
+		}
+
+		return retHitObj;
+	}
+
+	// Having to add storage support is gonna be wild af
+	private function playHitObjectSound(hitObject:HitObject)
+	{
+		if (hitObject.HitSound != null)
+		{
+			var targetSound:String = 'soft-hit${hitObject.HitSound.toLowerCase()}.wav';
+			var targetPath:String = Paths.file('quaver/${qua.MapSetId}/$targetSound');
+			FlxG.sound.play(Cache.getSound(targetPath), 0.4);
+		}
+
+		if (hitObject.KeySounds != null)
+		{
+			var targetPath:String = qua.CustomAudioSamples[hitObject.KeySounds.Sample - 1];
+			FlxG.sound.play(Cache.getSound(targetPath), hitObject.KeySounds.Volume);
+		}
+	}
 }

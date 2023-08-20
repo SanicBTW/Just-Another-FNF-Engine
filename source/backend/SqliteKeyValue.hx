@@ -70,7 +70,7 @@ class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 
 		var escapedTable:String = escape(table);
 		var escapedKey:String = escape(key);
-		var escapedValue:String = "'" + Serializer.run(value) + "'";
+		var escapedValue:String = "\"" + Serializer.run(value) + "\"";
 
 		if (!mutexAcquiredInParent)
 			mutex.acquire();
@@ -225,7 +225,7 @@ import js.lib.Promise;
  * This is expected to be thread safe.
  * @author Ceramic (SQLite Implemenation), sanco (IndexedDB implementation)
  */
-class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
+class SqliteKeyValue implements IFlxDestroyable extends lime.app.Promise<SqliteKeyValue>
 {
 	private var request:OpenDBRequest;
 	private var connection:Database;

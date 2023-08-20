@@ -132,7 +132,7 @@ class SongSelection extends TransitionState
 
 			case "quaver":
 				{
-					regenMenu(["107408", "107739", "109360"]);
+					TransitionState.switchState(new QuaverSelection());
 				}
 		}
 
@@ -143,8 +143,6 @@ class SongSelection extends TransitionState
 	private function get_curText():String
 		return (grpOptions.members[curSelected] != null ? grpOptions.members[curSelected].text : "");
 
-	var cockygf:FlxSprite;
-
 	override function create()
 	{
 		new Request<Sound>({
@@ -152,9 +150,7 @@ class SongSelection extends TransitionState
 			type: SOUND
 		}).future.onComplete(function(cock)
 		{
-				FlxG.sound.music = new FlxSound();
-				FlxG.sound.music.loadEmbedded(cock, true);
-				FlxG.sound.music.play();
+				FlxG.sound.playMusic(cock);
 		});
 
 		var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
@@ -290,12 +286,6 @@ class SongSelection extends TransitionState
 								});
 							});
 							#end
-						}
-
-					case "quaver":
-						{
-							songSelected.songName = curText;
-							TransitionState.switchState(new QuaverGameplay());
 						}
 				}
 		}

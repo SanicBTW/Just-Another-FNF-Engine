@@ -238,6 +238,13 @@ class Conductor
 		roundStep = 0;
 		beat = 0;
 		roundBeat = 0;
+		bpmChanges = [
+			{
+				step: 0,
+				beat: 0,
+				time: 0
+			}
+		];
 		lastTime = 0;
 		lastStep = 0;
 		lastBeat = 0;

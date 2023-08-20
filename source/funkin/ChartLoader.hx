@@ -2,7 +2,6 @@ package funkin;
 
 import backend.*;
 import backend.Conductor;
-import backend.io.Path;
 import backend.scripting.ForeverModule;
 import flixel.util.FlxSort;
 import funkin.Events.EventNote;
@@ -10,7 +9,7 @@ import funkin.SongTools;
 import funkin.notes.Note;
 import openfl.media.Sound;
 import openfl.utils.Assets;
-import quaver.Qua;
+import quaver.*;
 
 using StringTools;
 
@@ -92,12 +91,19 @@ class ChartLoader
 	}
 
 	// osu support soon
-	public static function loadBeatmap(mapID:String):SongData
+	public static function loadBeatmap(mapID:String):Qua
 	{
 		resetQueues();
 		var startTime:Float = haxe.Timer.stamp();
 
-		var qua:Qua = new Qua(Cache.getText(Paths.file('quaver/24184/$mapID.qua')));
+		var qua:Qua = QuaverDB.loadedMaps.get(mapID);
+		@:privateAccess
+		qua.parseObjects();
+
+		for (samplePath in qua.CustomAudioSamples)
+		{
+			Cache.getSound(samplePath);
+		}
 
 		var swagSong:SongData = {
 			song: '${qua.Artist} - ${qua.Title} (${qua.DifficultyName})',
@@ -110,17 +116,17 @@ class ChartLoader
 			gfVersion: "",
 			needsVoices: false,
 			bpm: qua.TimingPoints[0].Bpm,
-			speed: 2.7,
+			speed: 3.2, // Soon Quaver will use user speed
 			notes: [],
 			events: []
 		};
-		var audioFile:Sound = Cache.getSound(#if FS_ACCESS Path.join(IO.getFolderPath(QUAVER), '${qua.MapSetId}',
+		var audioFile:Sound = Cache.getSound(#if FS_ACCESS backend.io.Path.join(IO.getFolderPath(QUAVER), '${qua.MapSetId}',
 			qua.AudioFile) #else Paths.file('quaver/${qua.MapSetId}/${qua.AudioFile}') #end);
 
 		flixel.FlxG.sound.playMusic(audioFile, 1, false);
 		flixel.FlxG.sound.music.stop();
-		Conductor.changeBPM(qua.TimingPoints[0].Bpm);
-		Conductor.speed = 2.7;
+		Conductor.bpm = qua.TimingPoints[0].Bpm;
+		Conductor.speed = swagSong.speed;
 		Conductor.SONG = swagSong;
 
 		for (hitObject in qua.HitObjects)
@@ -163,7 +169,7 @@ class ChartLoader
 		var endTime:Float = haxe.Timer.stamp();
 		trace('end chart parse time ${endTime - startTime}');
 
-		return swagSong;
+		return qua;
 	}
 
 	private static function parseNotes(swagSong:SongData)
@@ -267,7 +273,7 @@ class ChartLoader
 		@:privateAccess
 		Events.eventList = IO.getFolderFiles(EVENTS);
 
-		Conductor.bpmChanges = [];
+		Conductor.reset();
 
 		noteQueue = [];
 		eventQueue = [];

@@ -1,3 +1,5 @@
+var bg:FlxSprite;
+
 var centerMark:FlxText;
 
 var healthBar:SBar;
@@ -14,10 +16,7 @@ function onCreate()
 	darkBackground.alpha = 0.6;
 	add(darkBackground);
 
-    var bg:FlxSprite = new FlxSprite();
-    bg.loadGraphic(Cache.getGraphic(VPaths.getPath("quaver/24184/maxresdefault_auto_x2_2.jpg")));
-    bg.setGraphicSize(toInt32(FlxG.width));
-    bg.screenCenter();
+    bg = new FlxSprite();
     bg.alpha = 0.5;
     bg.blend = 3;
     add(bg);
@@ -40,6 +39,15 @@ function onCreate()
 
 function onCreatePost()
 {
+    UI.textFormat = "Score $score\nAccuracy $accuracy\nRank $rank$fc\nMisses $misses";
+    UI.scoreText.x = 10;
+    UI.scoreText.size = 28;
+    UI.scoreText.y += 25;
+
+    bg.loadGraphic(Cache.getGraphic(VPaths.getPath("quaver/" + qua.MapSetId + "/" + qua.BackgroundFile)));
+    bg.setGraphicSize(toInt32(FlxG.width));
+    bg.screenCenter();
+
     Timings.health = 2;
     UI.add(centerMark);
 
@@ -54,6 +62,8 @@ function onCreatePost()
     timeBar.screenCenter(FlxAxes.Y);
     timeBar.y += 100;
     UI.add(timeBar);
+
+    UI.judgementOffset[0] = timeBar.x + 105;
 }
 
 function onUpdate(elapsed)

@@ -15,6 +15,7 @@ using StringTools;
 class UI extends FlxSpriteGroup
 {
 	var textFormat:String = "Score $score\nAccuracy $accuracy\nRank $rank$fc";
+	var judgementOffset:Array<Float> = [0, 0]; // Soon will be moved to Settings
 
 	var scoreText:FlxText;
 
@@ -93,8 +94,8 @@ class UI extends FlxSpriteGroup
 		curJudgement.velocity.y = -FlxG.random.int(140, 175);
 
 		curJudgement.screenCenter();
-		curJudgement.x = (FlxG.width * 0.35) - 40;
-		curJudgement.y -= 60;
+		curJudgement.x = ((FlxG.width * 0.35) - 40) - judgementOffset[0];
+		curJudgement.y -= 60 + judgementOffset[1];
 
 		judgementGroup.add(curJudgement);
 
