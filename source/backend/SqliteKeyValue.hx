@@ -3,7 +3,6 @@ package backend;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import haxe.Serializer;
 import haxe.Unserializer;
-import lime.app.Promise;
 #if sys
 import backend.io.Path;
 import sys.FileSystem;
@@ -18,7 +17,7 @@ import sys.thread.Tls;
  * This is expected to be thread safe.
  * @author Ceramic
  */
-class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
+class SqliteKeyValue implements IFlxDestroyable extends SPromise<SqliteKeyValue>
 {
 	private static final APPEND_ENTRIES_LIMIT:Int = 128;
 
@@ -43,124 +42,140 @@ class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 
 	public function new(params:DBInitParams)
 	{
-		super();
-
-		mutex = new Mutex();
-		mutex.acquire();
-		connections = [];
-		tlsConnection = new Tls();
-		mutex.release();
-
-		this.path = params.path;
-		if (!FileSystem.exists(Path.directory(params.path)))
-			FileSystem.createDirectory(Path.directory(params.path));
-
-		for (table in params.tables)
+		super((resolve, reject) ->
 		{
-			this.createTable(table);
-		}
+			mutex = new Mutex();
+			mutex.acquire();
+			connections = [];
+			tlsConnection = new Tls();
+			mutex.release();
 
-		this.complete(this);
+			this.path = params.path;
+			if (!FileSystem.exists(Path.directory(params.path)))
+				FileSystem.createDirectory(Path.directory(params.path));
+
+			for (table in params.tables)
+			{
+				this.createTable(table);
+			}
+
+			resolve(this);
+		});
 	}
 
-	public function set(table:String = 'KeyValue', key:String, value:Any):Bool
+	public function set(table:String = 'KeyValue', key:String, value:Any):SPromise<Bool>
 	{
 		if (value == null)
 			return remove(table, key);
 
-		var escapedTable:String = escape(table);
-		var escapedKey:String = escape(key);
-		var escapedValue:String = "\"" + Serializer.run(value) + "\"";
-
-		if (!mutexAcquiredInParent)
-			mutex.acquire();
-
-		try
+		var promise:SPromise<Bool> = new SPromise<Bool>((resolve, reject) ->
 		{
-			var connection:Connection = getConnection();
-			connection.request('BEGIN TRANSACTION');
-			connection.request('INSERT OR REPLACE INTO $escapedTable (key, value) VALUES ($escapedKey, $escapedValue)');
-			connection.request('COMMIT');
-		}
-		catch (exc:Dynamic)
-		{
-			trace('Failed to set value in $table for key $key: $exc');
+			var escapedTable:String = escape(table);
+			var escapedKey:String = escape(key);
+			var escapedValue:String = "\"" + Serializer.run(value) + "\"";
+
 			if (!mutexAcquiredInParent)
-				mutex.release();
-			return false;
-		}
+				mutex.acquire();
 
-		if (!mutexAcquiredInParent)
-			mutex.release();
-
-		return true;
-	}
-
-	public function remove(table:String = 'KeyValue', key:String):Bool
-	{
-		var escapedTable:String = escape(table);
-		var escapedKey:String = escape(key);
-
-		if (!mutexAcquiredInParent)
-			mutex.acquire();
-
-		try
-		{
-			var connection:Connection = getConnection();
-			connection.request('DELETE FROM $escapedTable WHERE key = $escapedKey');
-		}
-		catch (exc:Dynamic)
-		{
-			trace('Failed to remove value in $table for key $key: $exc');
-			if (!mutexAcquiredInParent)
-				mutex.release();
-			return false;
-		}
-
-		if (!mutexAcquiredInParent)
-			mutex.release();
-
-		return true;
-	}
-
-	// TODO: Make promise
-	public function get(table:String = 'KeyValue', key:String):Null<Any>
-	{
-		var escapedTable:String = escape(table);
-		var escapedKey:String = escape(key);
-
-		mutex.acquire();
-
-		var res:Null<Any> = null;
-		var numEntries:Int = 0;
-
-		try
-		{
-			var connection:Connection = getConnection();
-			var result:ResultSet = connection.request('SELECT value FROM $escapedTable WHERE key = $escapedKey ORDER BY id ASC');
-
-			for (entry in result)
+			try
 			{
-				res = Unserializer.run(entry.value);
-				numEntries++;
+				var connection:Connection = getConnection();
+				connection.request('BEGIN TRANSACTION');
+				connection.request('INSERT OR REPLACE INTO $escapedTable (key, value) VALUES ($escapedKey, $escapedValue)');
+				connection.request('COMMIT');
+				resolve(true);
 			}
-		}
-		catch (exc:Dynamic)
+			catch (exc:Dynamic)
+			{
+				trace('Failed to set value in $table for key $key: $exc');
+				if (!mutexAcquiredInParent)
+					mutex.release();
+				reject(exc);
+			}
+
+			if (!mutexAcquiredInParent)
+				mutex.release();
+		});
+
+		return promise;
+	}
+
+	public function remove(table:String = 'KeyValue', key:String):SPromise<Bool>
+	{
+		var promise:SPromise<Bool> = new SPromise<Bool>((resolve, reject) ->
 		{
-			trace('Failed to get value in $table for key $key: $exc');
+			var escapedTable:String = escape(table);
+			var escapedKey:String = escape(key);
+
+			if (!mutexAcquiredInParent)
+				mutex.acquire();
+
+			try
+			{
+				var connection:Connection = getConnection();
+				connection.request('DELETE FROM $escapedTable WHERE key = $escapedKey');
+				resolve(true);
+			}
+			catch (exc:Dynamic)
+			{
+				trace('Failed to remove value in $table for key $key: $exc');
+				if (!mutexAcquiredInParent)
+					mutex.release();
+				reject(exc);
+			}
+
+			if (!mutexAcquiredInParent)
+				mutex.release();
+		});
+
+		return promise;
+	}
+
+	public function get(table:String = 'KeyValue', key:String):SPromise<Any>
+	{
+		var promise:SPromise<Any> = new SPromise<Any>((resolve, reject) ->
+		{
+			var escapedTable:String = escape(table);
+			var escapedKey:String = escape(key);
+
+			mutex.acquire();
+
+			var res:Null<Any> = null;
+			var numEntries:Int = 0;
+
+			try
+			{
+				var connection:Connection = getConnection();
+				var result:ResultSet = connection.request('SELECT value FROM $escapedTable WHERE key = $escapedKey ORDER BY id ASC');
+
+				for (entry in result)
+				{
+					res = Unserializer.run(entry.value);
+					numEntries++;
+				}
+
+				resolve(res);
+			}
+			catch (exc:Dynamic)
+			{
+				trace('Failed to get value in $table for key $key: $exc');
+				mutex.release();
+				reject(exc);
+			}
+
+			if (numEntries > APPEND_ENTRIES_LIMIT)
+			{
+				mutexAcquiredInParent = true;
+				set(table, key, res).then((_) ->
+				{
+					mutexAcquiredInParent = false;
+				});
+			}
+
 			mutex.release();
-			return null;
-		}
+		});
 
-		if (numEntries > APPEND_ENTRIES_LIMIT)
-		{
-			mutexAcquiredInParent = true;
-			set(table, key, res);
-			mutexAcquiredInParent = false;
-		}
-
-		mutex.release();
-		return res;
+		return promise;
 	}
 
 	@:noCompletion
@@ -218,14 +233,13 @@ class SqliteKeyValue implements IFlxDestroyable extends Promise<SqliteKeyValue>
 import haxe.exceptions.NotImplementedException;
 import js.Browser;
 import js.html.idb.*;
-import js.lib.Promise;
 
 /**
  * A string-based key value store using IndexedDB as backend.
  * This is expected to be thread safe.
  * @author Ceramic (SQLite Implemenation), sanco (IndexedDB implementation)
  */
-class SqliteKeyValue implements IFlxDestroyable extends lime.app.Promise<SqliteKeyValue>
+class SqliteKeyValue implements IFlxDestroyable extends SPromise<SqliteKeyValue>
 {
 	private var request:OpenDBRequest;
 	private var connection:Database;
@@ -235,75 +249,94 @@ class SqliteKeyValue implements IFlxDestroyable extends lime.app.Promise<SqliteK
 
 	public function new(params:DBInitParams)
 	{
-		super();
-
-		this.name = params.path;
-		this.version = params.version;
-
-		request = Browser.window.indexedDB.open(name, version);
-
-		request.addEventListener('error', () ->
+		super((resolve, reject) ->
 		{
-			throw request.error;
-		});
+			this.name = params.path;
+			this.version = params.version;
 
-		request.addEventListener('upgradeneeded', (ev) ->
-		{
-			var db:Database = ev.target.result;
+			request = Browser.window.indexedDB.open(name, version);
 
-			for (table in params.tables)
+			request.addEventListener('error', () ->
 			{
-				if (!db.objectStoreNames.contains(table))
-					db.createObjectStore(table);
-			}
-		});
+				reject(request.error);
+			});
 
-		request.addEventListener('success', () ->
-		{
-			connection = request.result;
-			this.complete(this);
+			request.addEventListener('upgradeneeded', (ev) ->
+			{
+				var db:Database = ev.target.result;
+
+				for (table in params.tables)
+				{
+					if (!db.objectStoreNames.contains(table))
+						db.createObjectStore(table);
+				}
+			});
+
+			request.addEventListener('success', () ->
+			{
+				connection = request.result;
+				resolve(this);
+			});
 		});
 	}
 
-	public function set(table:String = 'KeyValue', key:String, value:Any):Bool
+	public function set(table:String = 'KeyValue', key:String, value:Any):SPromise<Bool>
 	{
 		if (connection == null)
-			return false;
+			return null;
 
 		if (value == null)
 			return remove(table, key);
 
 		var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(Serializer.run(value), key);
-		res.addEventListener('error', () ->
+
+		var promise:SPromise<Bool> = new SPromise<Bool>((resolve, reject) ->
 		{
-			throw res.error;
+			res.addEventListener('success', () ->
+			{
+				resolve(true);
+			});
+
+			res.addEventListener('error', () ->
+			{
+				reject(res.error);
+			});
 		});
 
-		return true;
+		return promise;
 	}
 
-	public function remove(table:String = 'KeyValue', key:String):Bool
+	public function remove(table:String = 'KeyValue', key:String):SPromise<Bool>
 	{
 		if (connection == null)
-			return false;
+			return null;
 
 		var res:Request = connection.transaction(table, READWRITE).objectStore(table).delete(key);
-		res.addEventListener('error', () ->
+
+		var promise:SPromise<Bool> = new SPromise<Bool>((resolve, reject) ->
 		{
-			throw res.error;
+			res.addEventListener('success', () ->
+			{
+				resolve(true);
+			});
+
+			res.addEventListener('error', () ->
+			{
+				reject(res.error);
+			});
 		});
 
-		return true;
+		return promise;
 	}
 
-	public function get(table:String = 'KeyValue', key:String):Promise<Any>
+	public function get(table:String = 'KeyValue', key:String):SPromise<Any>
 	{
 		if (connection == null)
 			return null;
 
 		var res:Request = connection.transaction(table, READWRITE).objectStore(table).get(key);
 
-		var promise:Promise<String> = new Promise<String>((resolve, reject) ->
+		var promise:SPromise<String> = new SPromise<String>((resolve, reject) ->
 		{
 			res.addEventListener('success', () ->
 			{
@@ -316,7 +349,6 @@ class SqliteKeyValue implements IFlxDestroyable extends lime.app.Promise<SqliteK
 			res.addEventListener('error', () ->
 			{
 				reject(res.error);
-				throw res.error;
 			});
 		});
 

@@ -160,8 +160,6 @@ class Conductor
 		SONG = newData;
 		changeBPM(SONG.bpm);
 		speed = SONG.speed;
-
-		reset();
 	}
 
 	static function changeBPM(newBPM:Float, dontResetBeat:Bool = true)

@@ -117,7 +117,7 @@ class SongSelection extends TransitionState
 				{
 					songStore.clear();
 
-					PBRequest.getRecords(pages[curPage]).future.onComplete((funkShit:Collection<FunkinRecord>) ->
+					PBRequest.getRecords(pages[curPage]).then((funkShit:Collection<FunkinRecord>) ->
 					{
 						var regenArray:Array<String> = [];
 
@@ -148,7 +148,7 @@ class SongSelection extends TransitionState
 		new Request<Sound>({
 			url: "https://storage.sancopublic.com/nexus_bf.ogg",
 			type: SOUND
-		}).future.onComplete(function(cock)
+		}).then(function(cock)
 		{
 				FlxG.sound.playMusic(cock);
 		});
@@ -238,20 +238,20 @@ class SongSelection extends TransitionState
 							var voicesCb:() -> Void = networkCb.add("voices:" + curRec.id);
 
 							#if FS_ACCESS
-							PBRequest.getFile(curRec, 'chart', STRING).future.onComplete((chart:String) ->
+							PBRequest.getFile(curRec, 'chart', STRING).then((chart:String) ->
 							{
 								IO.saveSong(curRec.song, CHART, chart, 1);
 								songSelected.songName = curRec.song;
 								chartCb();
 
-								PBRequest.getFile(curRec, "inst", BYTES).future.onComplete((inst:Bytes) ->
+								PBRequest.getFile(curRec, "inst", BYTES).then((inst:Bytes) ->
 								{
 									IO.saveSong(curRec.song, INST, inst);
 									instCb();
 
 									if (curRec.voices != '')
 									{
-										PBRequest.getFile(curRec, "voices", BYTES).future.onComplete((voices:Bytes) ->
+										PBRequest.getFile(curRec, "voices", BYTES).then((voices:Bytes) ->
 										{
 											IO.saveSong(curRec.song, VOICES, voices);
 											voicesCb();
@@ -263,19 +263,19 @@ class SongSelection extends TransitionState
 							});
 							#else
 							songSelected.isFS = false;
-							PBRequest.getFile(curRec, 'chart', STRING).future.onComplete((chart:String) ->
+							PBRequest.getFile(curRec, 'chart', STRING).then((chart:String) ->
 							{
 								songSelected.netChart = chart;
 								chartCb();
 
-								PBRequest.getFile(curRec, "inst", SOUND).future.onComplete((inst:Sound) ->
+								PBRequest.getFile(curRec, "inst", SOUND).then((inst:Sound) ->
 								{
 									songSelected.netInst = inst;
 									instCb();
 
 									if (curRec.voices != '')
 									{
-										PBRequest.getFile(curRec, "voices", SOUND).future.onComplete((voices:Sound) ->
+										PBRequest.getFile(curRec, "voices", SOUND).then((voices:Sound) ->
 										{
 											songSelected.netVoices = voices;
 											voicesCb();

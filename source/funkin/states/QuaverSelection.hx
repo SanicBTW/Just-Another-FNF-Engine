@@ -82,13 +82,23 @@ class QuaverSelection extends MusicBeatState
 		DiscordPresence.changePresence("Selecting Quaver Beatmap");
 
 		var maps:Array<String> = [];
-		for (MapSetId in QuaverDB.availableMaps.keys())
+		// ??? It gives me nulls now, probably because of the async shit i made
+		try
 		{
-			var firstID:String = QuaverDB.availableMaps.get(MapSetId)[0];
-			var qua:Qua = QuaverDB.loadedMaps.get(firstID);
-			store.set(qua.Title, MapSetId);
-			maps.push(qua.Title);
+			for (MapSetId in QuaverDB.availableMaps.keys())
+			{
+				var firstID:String = QuaverDB.availableMaps.get(MapSetId)[0];
+				var qua:Qua = QuaverDB.loadedMaps.get(firstID);
+				store.set(qua.Title, MapSetId);
+				maps.push(qua.Title);
+			}
 		}
+		catch (ex)
+		{
+			maps.push("Failed to load beatmaps");
+			trace(ex);
+		}
+
 		regenMenu(maps);
 
 		super.create();

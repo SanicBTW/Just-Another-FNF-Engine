@@ -125,7 +125,7 @@ class ChartLoader
 
 		flixel.FlxG.sound.playMusic(audioFile, 1, false);
 		flixel.FlxG.sound.music.stop();
-		Conductor.bpm = qua.TimingPoints[0].Bpm;
+		Conductor.changeBPM(qua.TimingPoints[0].Bpm);
 		Conductor.speed = swagSong.speed;
 		Conductor.SONG = swagSong;
 
