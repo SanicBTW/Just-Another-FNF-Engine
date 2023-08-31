@@ -81,7 +81,7 @@ class Overlay extends ExSprite<Overlay>
 		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 
 		// Resize to fit the text sizes
-		_bg.smoothSetSize(_text.textWidth + padding[0], _text.textHeight + padding[1], lerpVal);
+		_bg.setSize(_text.textWidth + padding[0], _text.textHeight + padding[1], lerpVal);
 
 		// Move to target positions
 		lerpTrack(_bg, "x", targetX + offsets[0], lerpVal);

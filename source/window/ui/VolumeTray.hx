@@ -32,7 +32,7 @@ class VolumeTray extends Tray
 
 	@:noCompletion
 	private function get_volume():Float
-		return FlxG.sound != null ? FlxG.sound.volume : 1;
+		return FlxG.sound != null ? (FlxG.sound.muted ? 0 : FlxG.sound.volume) : 1;
 
 	override public function create()
 	{
@@ -70,18 +70,12 @@ class VolumeTray extends Tray
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
 
-		_volBar.smoothSetSize((FlxG.sound.muted ? 0 : (_width - 10) * volume), _volBar.height, lerpVal);
-
-		// because it isnt based off scaleX anymore and i have some issues with width, basically when its supposed to be 0 it goes to 5% as its min, its probably due to round stuff, will check it soon
-		var prog:Float = (_volBar.width / (_width - 10)) * 100;
-		if (Math.round(prog) <= 5)
-			prog = 0;
-
-		_volTracker.text = '${Math.round(prog)}%';
+		_volBar.setSize(volume * (_width - 10), _volBar.height, lerpVal);
+		_volTracker.text = '${Math.round((_volBar.RealSizes.x / (_width - 10)) * 100)}%';
 
 		// Only update it when it contains a 0 (lerp ended), make it an option or something lol
-		// if (_volTracker.text.contains("0"))
-		_volTracker.x = FlxMath.lerp((_width - _volTracker.textWidth) - 10, _volTracker.x, lerpVal);
+		if (_volTracker.text.contains("0"))
+			_volTracker.x = FlxMath.lerp((_width - _volTracker.textWidth) - 10, _volTracker.x, lerpVal);
 
 		// Properly stop updating after the targetY is below the game height (kind of stupid!!!!! need to get another check!!!)
 		if (_visibleTime > 0)
