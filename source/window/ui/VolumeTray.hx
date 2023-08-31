@@ -4,9 +4,9 @@ import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import openfl.Lib;
-import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+import window.components.RoundedSprite;
 
 using StringTools;
 
@@ -25,7 +25,7 @@ class VolumeTray extends Tray
 
 	// Sprites
 	private var _volTracker:TextField; // temp and the vol tracker?
-	private var _volBar:Shape;
+	private var _volBar:RoundedSprite;
 
 	// Volume
 	private var volume(get, null):Float;
@@ -38,7 +38,7 @@ class VolumeTray extends Tray
 	{
 		y = -Lib.current.stage.stageHeight;
 
-		var bg:Shape = drawRound(0, 0, _width, _height, [0, 0, 5, 5], FlxColor.BLACK, 0.6);
+		var bg:RoundedSprite = new RoundedSprite(0, 0, _width, _height, [0, 0, 10, 10], FlxColor.BLACK, 0.6);
 		screenCenter();
 		addChild(bg);
 
@@ -58,7 +58,7 @@ class VolumeTray extends Tray
 		_volTracker.x = (_width - _volTracker.textWidth) - 10;
 		addChild(_volTracker);
 
-		_volBar = drawRound(0, 0, _width - 10, 5, [5]);
+		_volBar = new RoundedSprite(0, 0, _width - 10, 5, [5]);
 		_volBar.x = 5;
 		_volBar.y = (_height - _volBar.height) - 5;
 		addChild(_volBar);
@@ -70,11 +70,14 @@ class VolumeTray extends Tray
 
 		y = FlxMath.lerp(targetY, y, lerpVal);
 
-		// Ok apparently it does the same shit as scale bru
-		// _volBar.width = FlxMath.lerp((FlxG.sound.muted ? 0 : (_width - 10) * volume), _volBar.width, lerpVal);
-		_volBar.scaleX = FlxMath.lerp((FlxG.sound.muted ? 0 : volume), _volBar.scaleX, lerpVal);
+		_volBar.smoothSetSize((FlxG.sound.muted ? 0 : (_width - 10) * volume), _volBar.height, lerpVal);
 
-		_volTracker.text = '${Math.round(_volBar.scaleX * 100)}%';
+		// because it isnt based off scaleX anymore and i have some issues with width, basically when its supposed to be 0 it goes to 5% as its min, its probably due to round stuff, will check it soon
+		var prog:Float = (_volBar.width / (_width - 10)) * 100;
+		if (Math.round(prog) <= 5)
+			prog = 0;
+
+		_volTracker.text = '${Math.round(prog)}%';
 
 		// Only update it when it contains a 0 (lerp ended), make it an option or something lol
 		// if (_volTracker.text.contains("0"))

@@ -2,14 +2,14 @@ package window.debug;
 
 import flixel.FlxG;
 import flixel.util.FlxColor;
-import openfl.display.Shape;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+import window.components.RoundedSprite;
 
 // Joins both counters into one place to improve performance )?
 
 @:allow(flixel.FlxGame)
-class Overlay extends ExSprite
+class Overlay extends ExSprite<Overlay>
 {
 	// Framerate
 	public var currentFPS(default, null):Float;
@@ -24,7 +24,7 @@ class Overlay extends ExSprite
 	public var memoryPeak(default, null):Float;
 
 	// Design
-	private var _bg:Shape;
+	private var _bg:RoundedSprite;
 	private var _text:TextField;
 
 	// The corner where the overlay is situated
@@ -70,7 +70,7 @@ class Overlay extends ExSprite
 		_text.autoSize = LEFT;
 		#end
 
-		_bg = drawRound(x, y, _text.textWidth + padding[0], _text.textHeight + padding[1], [10], FlxColor.BLACK, 0.5);
+		_bg = new RoundedSprite(x, y, _text.textWidth + padding[0], _text.textHeight + padding[1], [15], FlxColor.BLACK, 0.5);
 
 		addChild(_bg);
 		addChild(_text);
@@ -81,8 +81,7 @@ class Overlay extends ExSprite
 		var lerpVal:Float = boundTo(1 - (elapsed * 8.6), 0, 1);
 
 		// Resize to fit the text sizes
-		lerpTrack(_bg, "width", _text.textWidth + padding[0], lerpVal);
-		lerpTrack(_bg, "height", _text.textHeight + padding[1], lerpVal);
+		_bg.smoothSetSize(_text.textWidth + padding[0], _text.textHeight + padding[1], lerpVal);
 
 		// Move to target positions
 		lerpTrack(_bg, "x", targetX + offsets[0], lerpVal);
