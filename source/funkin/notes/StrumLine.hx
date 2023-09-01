@@ -175,8 +175,6 @@ class StrumLine extends FlxSpriteGroup
 			var center:Float = receptor.y + (receptor.swagWidth / 2);
 			if (strumNote.isSustain)
 			{
-				strumNote.y -= ((receptor.swagWidth / 2) * downscrollMultiplier);
-
 				if (Settings.downScroll)
 				{
 					strumNote.flipY = true;
@@ -192,8 +190,15 @@ class StrumLine extends FlxSpriteGroup
 				}
 				else
 				{
+					// apparently this breaks downscroll entirely soo yeah
+					var gap:Float = (center + strumNote.height);
+					strumNote.y -= (gap * downscrollMultiplier);
+
+					// i want to kms so fucking badly, i bet there is a better way bruh :sob: - check for a dynamic value for the 12
 					if (strumNote.isSustainEnd && strumNote.prevNote != null && strumNote.prevNote.isSustain)
-						strumNote.y += Math.ceil((strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3) * downscrollMultiplier;
+						strumNote.y += Math.ceil((strumNote.prevNote.y - (strumNote.y + strumNote.height))
+							+ (gap + strumNote.height)
+							+ 12) * downscrollMultiplier;
 
 					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
 						&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center

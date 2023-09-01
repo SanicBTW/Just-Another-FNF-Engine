@@ -149,12 +149,12 @@ class ChartLoader
 				var floorStep:Int = Std.int(holdStep + 1);
 				for (note in 0...floorStep)
 				{
-					var time:Float = strumTime + (Conductor.stepCrochet * (note + 1));
+					var time:Float = strumTime + (Conductor.stepCrochet * (note + 1)) + Conductor.stepCrochet;
 					var sustainNote:Note = new Note(time, noteData, newNote.noteType, 1, noteQueue[Std.int(noteQueue.length - 1)], true);
 
 					sustainNote.mustPress = newNote.mustPress;
 					sustainNote.parent = newNote;
-					sustainNote.isSustainEnd = (note == floorStep);
+					sustainNote.isSustainEnd = (note == floorStep - 1);
 					sustainNote.spotHold = note;
 
 					newNote.tail.push(sustainNote);
@@ -204,12 +204,12 @@ class ChartLoader
 							var floorStep:Int = Std.int(holdStep + 1);
 							for (note in 0...floorStep)
 							{
-								var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * (note + 1)), noteData, newNote.noteType, strumLine,
-									noteQueue[Std.int(noteQueue.length - 1)], true);
+								var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * (note + 1)) + Conductor.stepCrochet, noteData,
+									newNote.noteType, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
 								sustainNote.mustPress = hitNote;
 
 								sustainNote.parent = newNote;
-								sustainNote.isSustainEnd = (note == floorStep);
+								sustainNote.isSustainEnd = (note == floorStep - 1);
 								sustainNote.spotHold = note;
 
 								newNote.tail.push(sustainNote);
