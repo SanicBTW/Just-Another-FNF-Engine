@@ -60,7 +60,7 @@ class FlxGame extends Sprite
 	/**
 	 * The sound tray display container.
 	 */
-	public var soundTray(default, null):window.ui.VolumeTray;
+	public var soundTray(default, null):window.packages.VolumeTray;
 
 	#if FLX_DEBUG
 	/**
@@ -328,7 +328,7 @@ class FlxGame extends Sprite
 		// No need for overlays on mobile.
 		#if !mobile
 		// Volume display tab
-		soundTray = new window.ui.VolumeTray();
+		soundTray = new window.packages.VolumeTray();
 		addChild(soundTray);
 
 		#if FLX_FOCUS_LOST_SCREEN
