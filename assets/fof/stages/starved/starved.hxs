@@ -93,7 +93,7 @@ function onStartCountdown()
     UI.add(fearBBG);
 	UI.add(fearBar);
 
-    PlayState.camMov = 15;
+    PlayState.camDisp = 15;
 
     add(blackFuck);
 
@@ -143,7 +143,6 @@ function onCreatePost()
 
     // apparently fixes camera position
     beatHit();
-    moveCamera();
 
     UI.textFormat = "Sacrifices: $misses | Accuracy: $accuracy";
     UI.scoreText.x = 0;

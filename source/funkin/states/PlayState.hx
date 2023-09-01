@@ -46,7 +46,7 @@ class PlayState extends MusicBeatState
 	private var lastSection:Int = 0;
 	private var camDisplaceX:Float = 0;
 	private var camDisplaceY:Float = 0;
-	private var camMov:Float = 8;
+	private var camDisp:Float = 18;
 
 	private var bfTurn:Bool = false;
 
@@ -201,8 +201,9 @@ class PlayState extends MusicBeatState
 		setOnModules('UI', ui);
 		setOnModules('stepHit', stepHit);
 		setOnModules('beatHit', beatHit);
-		setOnModules('moveCamera', moveCamera);
-		setOnModules('moveCameraSection', moveCameraSection);
+		// TODO: find a way to add these in the new camera movement style
+		// setOnModules('moveCamera', moveCamera);
+		// setOnModules('moveCameraSection', moveCameraSection);
 
 		startingSong = true;
 
@@ -247,6 +248,9 @@ class PlayState extends MusicBeatState
 
 		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.defaultCamZoom : 1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+
+		if (SONG.notes[Std.int(curStep / 16)] != null)
+			updateCamTarget(elapsed);
 
 		if (Timings.health <= 0)
 		{
@@ -619,9 +623,6 @@ class PlayState extends MusicBeatState
 	{
 		super.beatHit(beat);
 
-		if (SONG.notes[Std.int(curStep / 16)] != null && Conductor.boundInst.playing)
-			moveCameraSection(Std.int(curStep / 16));
-
 		if (curBeat % 4 == 0)
 		{
 			FlxG.camera.zoom += 0.015;
@@ -745,99 +746,93 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	// camera movements are mostly from my scarlet melopoeia port lol, i will improve it soon
+	// Had to change to Update Camera Style because Beats are delayed
+	// Modified to add offsets and gf sections
 
-	function moveCameraSection(?id:Int = 0):Void
+	private function updateCamTarget(elapsed:Float)
 	{
-		if (SONG.notes[id] == null || SONG.notes[lastSection] == null)
-			return;
-
-		if (id != lastSection)
+		var curSection = Std.int(curStep / 16);
+		if (curSection != lastSection)
 		{
-			if (SONG.notes[id].mustHitSection != SONG.notes[lastSection].mustHitSection)
+			if (SONG.notes[lastSection] != null && (SONG.notes[curSection].mustHitSection != SONG.notes[lastSection].mustHitSection))
 			{
 				camDisplaceX = 0;
 				camDisplaceY = 0;
-				lastSection = id;
+				lastSection = Std.int(curStep / 16);
 			}
 		}
 
-		if (!stageBuild.hide_girlfriend && SONG.notes[id].gfSection)
-		{
-			camFollow.setPosition(gf.getMidpoint().x, gf.getMidpoint().y);
-			camFollow.x += gf.cameraPosition.x + stageBuild.camera_girlfriend[0];
-			camFollow.y += gf.cameraPosition.y + stageBuild.camera_girlfriend[1];
-
-			camDisplaceX = camFollow.x;
-			camDisplaceY = camFollow.y;
-			bfTurn = false;
-			callOnModules('onMoveCamera', 'gf');
-			return;
-		}
-
-		if (!SONG.notes[id].mustHitSection)
-		{
-			moveCamera(true);
-			camDisplaceX = camFollow.x;
-			camDisplaceY = camFollow.y;
-			bfTurn = false;
-			callOnModules('onMoveCamera', 'dad');
-		}
-		else
-		{
-			moveCamera(false);
-			camDisplaceX = camFollow.x;
-			camDisplaceY = camFollow.y;
-			bfTurn = true;
-			callOnModules('onMoveCamera', 'boyfriend');
-		}
+		updateCamFollow(elapsed);
+		cameraDisplacement(boyfriend, true);
+		cameraDisplacement(dad, false);
+		if (SONG.notes[curSection].gfSection)
+			cameraDisplacement(gf, SONG.notes[curSection].mustHitSection); // maybe a gf section is a must hit section???
 	}
 
-	public function moveCamera(isDad:Bool)
+	private function updateCamFollow(?elapsed:Float)
 	{
-		if (isDad)
-		{
-			camFollow.setPosition(dad.getMidpoint().x + 150, dad.getMidpoint().y - 100);
-			camFollow.x += dad.cameraPosition.x + stageBuild.camera_opponent[0];
-			camFollow.y += dad.cameraPosition.y + stageBuild.camera_opponent[1];
-		}
+		if (elapsed == null)
+			elapsed = FlxG.elapsed;
+
+		var curSection = SONG.notes[Std.int(curStep / 16)];
+		var mustHit:Bool = curSection.mustHitSection;
+
+		var char:Character = (mustHit ? boyfriend : dad);
+		if (curSection.gfSection)
+			char = gf;
+
+		var charCenterX:Float = char.getMidpoint().x;
+		var charCenterY:Float = char.getMidpoint().y;
+
+		var offsetX:Float = (mustHit ? stageBuild.camera_boyfriend[0] : stageBuild.camera_opponent[0]);
+		if (curSection.gfSection)
+			offsetX = stageBuild.camera_girlfriend[0];
+
+		var offsetY:Float = (mustHit ? stageBuild.camera_boyfriend[1] : stageBuild.camera_opponent[1]);
+		if (curSection.gfSection)
+			offsetY = stageBuild.camera_girlfriend[1];
+
+		var centerX = (mustHit ? charCenterX - 100 : charCenterX + 150);
+		var centerY = (mustHit ? charCenterY - 100 : charCenterY - 100);
+		var newX:Float = (mustHit ? (camDisplaceX - char.cameraPosition.x) - offsetX : (camDisplaceX + char.cameraPosition.x) + offsetX);
+		var newY:Float = (camDisplaceY + char.cameraPosition.y) + offsetY;
+
+		if (curSection.gfSection)
+			camFollow.setPosition(charCenterX, charCenterY);
 		else
-		{
-			camFollow.setPosition(boyfriend.getMidpoint().x - 100, boyfriend.getMidpoint().y - 100);
-			camFollow.x -= boyfriend.cameraPosition.x - stageBuild.camera_boyfriend[0];
-			camFollow.y += boyfriend.cameraPosition.y + stageBuild.camera_boyfriend[1];
-		}
+			camFollow.setPosition(centerX, centerY);
+
+		camFollow.x += newX;
+		camFollow.y += newY;
+
+		callOnModules('onMoveCamera', (curSection.gfSection ? 'gf' : (mustHit ? 'boyfriend' : 'dad')));
 	}
 
-	// what the fuck is this
-	function cameraMovement(animToPlay, isDad)
+	private function cameraDisplacement(character:Character, mustHit:Bool)
 	{
-		switch (animToPlay)
+		if (SONG.notes[Std.int(curStep / 16)] != null)
 		{
-			case 'singLEFT':
-				if ((!bfTurn && isDad) || (bfTurn && !isDad))
+			if (SONG.notes[Std.int(curStep / 16)].mustHitSection
+				&& mustHit
+				|| (!SONG.notes[Std.int(curStep / 16)].mustHitSection && !mustHit))
+			{
+				if (character.animation.curAnim != null)
 				{
-					camFollow.x = camDisplaceX - camMov;
-					camFollow.y = camDisplaceY;
+					camDisplaceX = 0;
+					camDisplaceY = 0;
+					switch (character.animation.curAnim.name)
+					{
+						case 'singUP':
+							camDisplaceY -= camDisp;
+						case 'singDOWN':
+							camDisplaceY += camDisp;
+						case 'singLEFT':
+							camDisplaceX -= camDisp;
+						case 'singRIGHT':
+							camDisplaceX += camDisp;
+					}
 				}
-			case "singDOWN":
-				if (((!bfTurn && isDad) || (bfTurn && !isDad)))
-				{
-					camFollow.x = camDisplaceX;
-					camFollow.y = camDisplaceY + camMov;
-				}
-			case "singUP":
-				if (((!bfTurn && isDad) || (bfTurn && !isDad)))
-				{
-					camFollow.x = camDisplaceX;
-					camFollow.y = camDisplaceY - camMov;
-				}
-			case "singRIGHT":
-				if (((!bfTurn && isDad) || (bfTurn && !isDad)))
-				{
-					camFollow.x = camDisplaceX + camMov;
-					camFollow.y = camDisplaceY;
-				}
+			}
 		}
 	}
 
@@ -855,7 +850,6 @@ class PlayState extends MusicBeatState
 		if (char == null)
 			return;
 
-		cameraMovement(anim, char == dad);
 		char.playAnim(anim, true);
 		char.holdTimer = 0;
 	}
