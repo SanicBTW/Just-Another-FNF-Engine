@@ -85,7 +85,7 @@ class QuaverGameplay extends MusicBeatState
 		strumLines = new FlxTypedGroup<StrumLine>();
 		strumLines.cameras = [camHUD];
 
-		var yPos:Float = (Settings.downScroll ? FlxG.height - (FlxG.height / 6) : (FlxG.height / 6));
+		var yPos:Float = (Settings.downScroll ? FlxG.height - (FlxG.height / 8) : (FlxG.height / 6));
 
 		strums = new StrumLine((FlxG.width / 2), yPos);
 		strums.onMiss.add(noteMiss);

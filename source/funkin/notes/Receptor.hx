@@ -30,7 +30,7 @@ class Receptor extends FlxSprite
 	public var setAlpha:Float = 0.8;
 
 	public var holdTimer:Float = 0;
-	public var direction:Float = 0;
+	public var direction:Float = 90;
 
 	public function new(receptorData:ReceptorData, ?noteData:Int = 0, ?noteType:String = 'default')
 	{

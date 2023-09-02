@@ -140,6 +140,7 @@ class StrumLine extends FlxSpriteGroup
 	override public function update(elapsed:Float)
 	{
 		var downscrollMultiplier:Int = (!Settings.downScroll ? 1 : -1) * flixel.math.FlxMath.signOf(Conductor.speed);
+		var realSpeed:Float = (Conductor.speed / Conductor.rate);
 
 		allNotes.forEachAlive(function(strumNote:Note)
 		{
@@ -156,27 +157,36 @@ class StrumLine extends FlxSpriteGroup
 
 			var receptor:Receptor = receptors.members[strumNote.noteData];
 
-			var receptorX:Float = receptor.x;
-			var receptorY:Float = receptor.y + (receptor.swagWidth / 6);
+			var receptorX:Float = receptor.x + strumNote.offsetX;
+			var receptorY:Float = receptor.y + strumNote.offsetY;
+			var receptorA:Float = receptor.angle;
+			var receptorD:Float = receptor.direction;
 
-			var pseudoX:Float = strumNote.offsetX;
-			var pseudoY:Float = strumNote.offsetY + (downscrollMultiplier * -((Conductor.time - strumNote.strumTime) * Conductor.speed));
+			var angleDir:Float = receptorD * (Math.PI / 180);
+			var dist:Float = ((Conductor.rate * downscrollMultiplier) * -(Conductor.time - strumNote.strumTime) * realSpeed);
 
-			strumNote.x = receptorX
-				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * pseudoX)
-				+ (Math.sin(FlxAngle.asRadians(receptor.direction)) * pseudoY);
+			strumNote.angle = receptorD - 90 + receptorA;
 
-			strumNote.y = receptorY
-				+ (Math.cos(FlxAngle.asRadians(receptor.direction)) * pseudoY)
-				+ (Math.sin(FlxAngle.asRadians(receptor.direction)) * pseudoX);
-
-			strumNote.angle = -receptor.direction;
+			strumNote.x = receptorX + Math.cos(angleDir) * dist;
+			strumNote.y = receptorY + Math.sin(angleDir) * dist;
 
 			var center:Float = receptor.y + (receptor.swagWidth / 2);
 			if (strumNote.isSustain)
 			{
+				strumNote.y -= ((receptor.swagWidth / 2) * downscrollMultiplier);
+
 				if (Settings.downScroll)
 				{
+					if (strumNote.isSustainEnd)
+					{
+						strumNote.y += (receptor.swagWidth / 2);
+
+						if (strumNote.endHoldOffset == Math.NEGATIVE_INFINITY)
+							strumNote.endHoldOffset = Math.ceil((strumNote.prevNote.y - (strumNote.y + strumNote.height)) + 3);
+						else
+							strumNote.y += strumNote.endHoldOffset;
+					}
+
 					strumNote.flipY = true;
 					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
 						&& strumNote.y - strumNote.offset.y * strumNote.scale.y + strumNote.height >= center
@@ -190,16 +200,6 @@ class StrumLine extends FlxSpriteGroup
 				}
 				else
 				{
-					// apparently this breaks downscroll entirely soo yeah
-					var gap:Float = (center + strumNote.height);
-					strumNote.y -= (gap * downscrollMultiplier);
-
-					// i want to kms so fucking badly, i bet there is a better way bruh :sob: - check for a dynamic value for the 12
-					if (strumNote.isSustainEnd && strumNote.prevNote != null && strumNote.prevNote.isSustain)
-						strumNote.y += Math.ceil((strumNote.prevNote.y - (strumNote.y + strumNote.height))
-							+ (gap + strumNote.height)
-							+ 12) * downscrollMultiplier;
-
 					if ((strumNote.parent != null && strumNote.parent.wasGoodHit)
 						&& strumNote.y + strumNote.offset.y * strumNote.scale.y <= center
 						&& (botPlay || (strumNote.wasGoodHit || (strumNote.prevNote.wasGoodHit && !strumNote.canBeHit))))

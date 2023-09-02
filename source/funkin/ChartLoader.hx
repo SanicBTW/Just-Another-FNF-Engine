@@ -146,21 +146,24 @@ class ChartLoader
 
 			if (holdStep > 0)
 			{
-				var floorStep:Int = Std.int(holdStep + 1);
-				for (note in 0...floorStep)
+				var floorStep:Int = Math.floor(holdStep);
+				for (note in 0...floorStep + 2)
 				{
-					var time:Float = strumTime + (Conductor.stepCrochet * (note + 1)) + Conductor.stepCrochet;
+					var time:Float = strumTime + (Conductor.stepCrochet * note) + (Conductor.stepCrochet / Conductor.speed);
 					var sustainNote:Note = new Note(time, noteData, newNote.noteType, 1, noteQueue[Std.int(noteQueue.length - 1)], true);
 
 					sustainNote.mustPress = newNote.mustPress;
 					sustainNote.parent = newNote;
-					sustainNote.isSustainEnd = (note == floorStep - 1);
 					sustainNote.spotHold = note;
 
 					newNote.tail.push(sustainNote);
 
 					noteQueue.push(sustainNote);
 				}
+
+				// Instead of depending on floorStep, just set the last pushed note from the note parent as sustain end
+				if (newNote.tail[newNote.tail.length - 1] != null)
+					newNote.tail[newNote.tail.length - 1].isSustainEnd = true;
 			}
 		}
 
@@ -201,21 +204,24 @@ class ChartLoader
 
 						if (holdStep > 0)
 						{
-							var floorStep:Int = Std.int(holdStep + 1);
-							for (note in 0...floorStep)
+							var floorStep:Int = Math.floor(holdStep);
+							for (note in 0...floorStep + 2)
 							{
-								var sustainNote:Note = new Note(strumTime + (Conductor.stepCrochet * (note + 1)) + Conductor.stepCrochet, noteData,
-									newNote.noteType, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
-								sustainNote.mustPress = hitNote;
+								var time:Float = strumTime + (Conductor.stepCrochet * note) + (Conductor.stepCrochet / Conductor.speed);
+								var sustainNote:Note = new Note(time, noteData, newNote.noteType, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
 
+								sustainNote.mustPress = hitNote;
 								sustainNote.parent = newNote;
-								sustainNote.isSustainEnd = (note == floorStep - 1);
 								sustainNote.spotHold = note;
 
 								newNote.tail.push(sustainNote);
 
 								noteQueue.push(sustainNote);
 							}
+
+							// Instead of depending on floorStep, just set the last pushed note from the note parent as sustain end
+							if (newNote.tail[newNote.tail.length - 1] != null)
+								newNote.tail[newNote.tail.length - 1].isSustainEnd = true;
 						}
 
 					case -1:
