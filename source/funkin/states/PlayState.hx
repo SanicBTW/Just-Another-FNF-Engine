@@ -93,12 +93,15 @@ class PlayState extends MusicBeatState
 		Paths.music("tea-time");
 
 		// dumb
-		if (SongSelection.songSelected.isFS)
-			ChartLoader.loadFSChart(SongSelection.songSelected.songName);
-		else if (SongSelection.songSelected.netChart != null)
-			ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
-		else
-			ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
+		if (SONG == null)
+		{
+			if (SongSelection.songSelected.isFS)
+				ChartLoader.loadFSChart(SongSelection.songSelected.songName);
+			else if (SongSelection.songSelected.netChart != null)
+				ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
+			else
+				ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
+		}
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);

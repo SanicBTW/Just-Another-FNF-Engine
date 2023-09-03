@@ -231,6 +231,7 @@ class Conductor
 
 	static function reset()
 	{
+		SONG = null;
 		time = 0;
 		step = 0;
 		roundStep = 0;

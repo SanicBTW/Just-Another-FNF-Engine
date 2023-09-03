@@ -1,15 +1,17 @@
-package window.debug;
+package window.packages;
 
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+import window.Overlay.FPStruct;
+import window.Overlay.MemStruct;
 import window.components.RoundedSprite;
 
 // Joins both counters into one place to improve performance )?
 
 @:allow(flixel.FlxGame)
-class Overlay extends ExSprite<Overlay>
+class MCounter extends ExSprite<FPStruct & MemStruct>
 {
 	// Framerate
 	public var currentFPS(default, null):Float;

@@ -1,5 +1,8 @@
 package window;
 
+import window.components.*;
+import window.packages.*;
+
 // Sorry
 enum DesignUpdate
 {
@@ -25,6 +28,13 @@ typedef MemStruct =
 	@:noCompletion function get_currentMem():Float;
 }
 
+typedef VolStruct =
+{
+	var volume(get, null):Float;
+	@:noCompletion function get_volume():Float;
+	public function show():Void;
+}
+
 // Manages what type of UI Elements, updating and more
 
 @:allow(flixel.FlxGame)
@@ -34,7 +44,7 @@ class Overlay extends ExSprite<Overlay>
 	private var fps:ExSprite<FPStruct>;
 	private var memory:ExSprite<MemStruct>;
 	// This is not bounded to anything
-	private var volume:ExSprite<Tray>; // gotta look into this
+	private var volume:ExSprite<VolStruct>;
 
 	// X, Y Positions not needed as some stuff is automatically positioned by the overlay
 	public function new()
@@ -45,6 +55,16 @@ class Overlay extends ExSprite<Overlay>
 	// Fired when 'Settings.designUpdate' is changed
 	private function reloadDesign()
 	{
-		switch (Settings.designUpdate) {}
+		switch (Settings.designUpdate)
+		{
+			case UPDATE_1:
+			case UPDATE_2:
+				var jCounter:MCounter = new MCounter(10, 8);
+				fps = jCounter;
+				memory = jCounter;
+				addChild(fps);
+
+			case UPDATE_3:
+		}
 	}
 }

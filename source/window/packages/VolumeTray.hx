@@ -7,6 +7,7 @@ import openfl.Lib;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import window.components.RoundedSprite;
+import window.components.Tray;
 
 using StringTools;
 
