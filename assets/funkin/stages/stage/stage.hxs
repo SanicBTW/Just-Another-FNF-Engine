@@ -6,7 +6,7 @@ var stageLightR;
 
 function onCreate()
 {
-    stage.defaultCamZoom = 0.9;
+	stage.camera_settings.defaultZoom = 0.9;
 
     bg = new FlxSprite(-600, -200).loadGraphic(Paths.image('stageback'));
     bg.scrollFactor.set(0.9, 0.9);

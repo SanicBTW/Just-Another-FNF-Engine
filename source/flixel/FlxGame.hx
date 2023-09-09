@@ -10,7 +10,7 @@ import flixel.system.FlxSplash;
 import flixel.util.FlxArrayUtil;
 import openfl.Assets;
 import openfl.filters.BitmapFilter;
-import window.Overlay;
+import window.packages.MCounter;
 #if desktop
 import flash.events.FocusEvent;
 #end
@@ -231,7 +231,7 @@ class FlxGame extends Sprite
 	/**
 	 * The Debug Overlay that contains stats in-game
 	 */
-	public var overlay:Overlay;
+	public var overlay:MCounter;
 
 	/**
 	 * Instantiate a new game object.
@@ -337,7 +337,7 @@ class FlxGame extends Sprite
 		#end
 		#end
 
-		overlay = new Overlay();
+		overlay = new MCounter(10, 8);
 		addChild(overlay);
 
 		// Focus gained/lost monitoring
@@ -489,17 +489,12 @@ class FlxGame extends Sprite
 		#end
 
 		if (overlay != null)
-		{
-			if (Settings.designUpdate == UPDATE_2)
-			{
-				cast(overlay.fps, window.packages.MCounter).reposition(width, height);
-			}
-		}
+			overlay.reposition(width, height);
 
 		// Re-assign the FlxG saved on the ScriptHandler static exposure and loaded modules, also execute onGameResized
 		backend.scripting.ScriptHandler.exp.set('FlxG', FlxG);
 		_state.setOnModules('FlxG', FlxG);
-		_state.callOnModules('onGameResized', [width, height]);
+		_state.callOnModules('onGameResized', width, height);
 	}
 
 	/**

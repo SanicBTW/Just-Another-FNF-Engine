@@ -21,30 +21,6 @@ import openfl.utils.Assets;
 
 using StringTools;
 
-// FlxColor but class
-class Colors
-{
-	public static inline var TRANSPARENT:FlxColor = 0x00000000;
-	public static inline var WHITE:FlxColor = 0xFFFFFFFF;
-	public static inline var GRAY:FlxColor = 0xFF808080;
-	public static inline var BLACK:FlxColor = 0xFF000000;
-
-	public static inline var GREEN:FlxColor = 0xFF008000;
-	public static inline var LIME:FlxColor = 0xFF00FF00;
-	public static inline var YELLOW:FlxColor = 0xFFFFFF00;
-	public static inline var ORANGE:FlxColor = 0xFFFFA500;
-	public static inline var RED:FlxColor = 0xFFFF0000;
-	public static inline var PURPLE:FlxColor = 0xFF800080;
-	public static inline var BLUE:FlxColor = 0xFF0000FF;
-	public static inline var BROWN:FlxColor = 0xFF8B4513;
-	public static inline var PINK:FlxColor = 0xFFFFC0CB;
-	public static inline var MAGENTA:FlxColor = 0xFFFF00FF;
-	public static inline var CYAN:FlxColor = 0xFF00FFFF;
-
-	public static function fromRGB(Red:Int, Green:Int, Blue:Int, Alpha:Int = 255):FlxColor
-		return FlxColor.fromRGB(Red, Green, Blue, Alpha);
-}
-
 // Idea: scan for scripts on a dedicated folder and load them globally for extra functionality
 
 /**
@@ -57,7 +33,67 @@ class ScriptHandler
 	 * Shorthand for exposure, specifically public exposure. 
 	 * All scripts will be able to access these variables globally.
 	 */
-	public static var exp:StringMap<Dynamic>;
+	public static var exp:StringMap<Dynamic> = [
+		// Haxe
+		"toString" => Std.string,
+		"toInt" => Std.parseInt,
+		"toInt32" => Std.int,
+		"toFloat" => Std.parseFloat,
+		#if sys "Sys" => Sys, #end
+		"Date" => Date,
+		"Lambda" => Lambda,
+		"Math" => Math,
+		"Std" => Std,
+		"StringTools" => StringTools,
+		// Flixel
+		"FlxG" => FlxG,
+		"FlxSprite" => FlxSprite,
+		"FlxMath" => FlxMath,
+		"FlxPoint" => FlxPoint,
+		"FlxRect" => FlxRect,
+		"FlxTween" => FlxTween,
+		"FlxTimer" => FlxTimer,
+		"FlxEase" => FlxEase,
+		"FlxColor" => {
+			TRANSPARENT: flixel.util.FlxColor.TRANSPARENT,
+			WHITE: flixel.util.FlxColor.WHITE,
+			GRAY: flixel.util.FlxColor.GRAY,
+			BLACK: flixel.util.FlxColor.BLACK,
+			GREEN: flixel.util.FlxColor.GREEN,
+			LIME: flixel.util.FlxColor.LIME,
+			YELLOW: flixel.util.FlxColor.YELLOW,
+			ORANGE: flixel.util.FlxColor.ORANGE,
+			RED: flixel.util.FlxColor.RED,
+			PURPLE: flixel.util.FlxColor.PURPLE,
+			BLUE: flixel.util.FlxColor.BLUE,
+			BROWN: flixel.util.FlxColor.BROWN,
+			PINK: flixel.util.FlxColor.PINK,
+			MAGENTA: flixel.util.FlxColor.MAGENTA,
+			CYAN: flixel.util.FlxColor.CYAN
+		},
+		'FlxBar' => FlxBar,
+		'FlxBarFillDirection' => FlxBarFillDirection,
+		'FlxText' => FlxText,
+		'FlxTextBorderStyle' => FlxTextBorderStyle,
+		'FlxSound' => FlxSound,
+		'FlxAxes' => FlxAxes,
+		// Engine / Forever
+		'Settings' => Settings,
+		'VPaths' => Paths, // Vanilla Paths , basically access the whole engine Paths
+		"Conductor" => Conductor,
+		"Character" => Character,
+		'Cache' => Cache,
+		'Timings' => Timings,
+		'Note' => Note,
+		'StrumLine' => StrumLine,
+		'GameOverSubstate' => GameOverSubstate,
+		'parseCharType' => SongTools.parseCharType, // gotta make it a global script soon
+		'AttachedSprite' => AttachedSprite,
+		'OffsettedSprite' => OffsettedSprite,
+		'DepthSprite' => DepthSprite,
+		'SBar' => SBar, // Sanco Bar, my own FlxBar implementation
+		'SBarFillAxis' => SBarFillAxis,
+	];
 
 	private static var parser:Parser = new Parser();
 
@@ -66,56 +102,20 @@ class ScriptHandler
 	 */
 	public static function Initialize()
 	{
-		exp = new StringMap<Dynamic>();
-
-		// Classes (Haxe)
-		#if sys exp.set("Sys", Sys); #end
-		// I Love C# (OMG IT WORKS ON HTML NO WAY OMGGG)
-		exp.set('toString', Std.string);
-		exp.set('toInt', Std.parseInt);
-		exp.set('toInt32', Std.int);
-		exp.set('toFloat', Std.parseFloat);
-		exp.set("Math", Math);
-		exp.set("StringTools", StringTools);
-
-		// Classes (Flixel)
-		exp.set("FlxG", FlxG);
-		exp.set("FlxSprite", FlxSprite);
-		exp.set("FlxMath", FlxMath);
-		exp.set("FlxPoint", FlxPoint);
-		exp.set("FlxRect", FlxRect);
-		exp.set("FlxTween", FlxTween);
-		exp.set("FlxTimer", FlxTimer);
-		exp.set("FlxEase", FlxEase);
-		exp.set("FlxColor", Colors);
-		// will change it to my better bar ig
-		exp.set('FlxBar', FlxBar);
-		exp.set('FlxBarFillDirection', FlxBarFillDirection);
-		exp.set('FlxText', FlxText);
-		exp.set('FlxTextBorderStyle', FlxTextBorderStyle);
-		exp.set('FlxSound', FlxSound);
-		exp.set('FlxAxes', FlxAxes);
-
-		// Classes (Engine / Forever)
-		exp.set('Settings', Settings);
-		exp.set('VPaths', Paths); // Vanilla Paths, basically access the whole engine Paths
-		exp.set("Conductor", Conductor);
-		exp.set("Character", Character);
-		exp.set('Cache', Cache);
-		exp.set('Timings', Timings);
-		exp.set('Note', Note);
-		exp.set('StrumLine', StrumLine);
-		exp.set('GameOverSubstate', GameOverSubstate);
-		exp.set('parseCharType', SongTools.parseCharType); // gotta make it a global script soon
-		exp.set('AttachedSprite', AttachedSprite);
-		exp.set('OffsettedSprite', OffsettedSprite);
-		exp.set('DepthSprite', DepthSprite);
-		exp.set('SBar', SBar); // Sanco Bar, my own FlxBar implementation
-		exp.set('SBarFillAxis', SBarFillAxis);
-
+		#if macro
+		parser.preprocesorValues = getDefines();
+		#end
 		parser.allowTypes = true;
 		parser.allowJSON = true;
+		parser.allowMetadata = true;
 	}
+
+	#if macro
+	private static macro function getDefines():haxe.macro.Expr
+	{
+		return macro $v{haxe.macro.Context.getDefines()};
+	}
+	#end
 
 	// there has to be a better way for sure
 
