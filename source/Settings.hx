@@ -8,6 +8,7 @@ class Settings
 	// Gameplay
 	public static var downScroll:Bool = false;
 	public static var middleScroll:Bool = false;
+	public static var holdLayer:funkin.notes.Note.HoldLayer = TOP_MOST;
 
 	// Optimizations
 	public static var showNoteSplashes:Bool = true;

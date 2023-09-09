@@ -411,7 +411,7 @@ class QuaverGameplay extends MusicBeatState
 		var introArray:Array<FlxGraphic> = [];
 		var soundsArray:Array<Sound> = [];
 
-		if (!stageBuild.skip_defaultCountdown)
+		if (!stageBuild.skip.defaultCountdown)
 		{
 			var introName:Array<String> = ['ready', 'set', 'go'];
 			for (intro in introName)
@@ -426,7 +426,7 @@ class QuaverGameplay extends MusicBeatState
 
 		startTimer = new FlxTimer().start(Conductor.crochet / 1000, (tmr:FlxTimer) ->
 		{
-			if (!stageBuild.skip_defaultCountdown && countdown >= 0 && countdown < introArray.length)
+			if (!stageBuild.skip.defaultCountdown && countdown >= 0 && countdown < introArray.length)
 			{
 				var introSprite:FlxSprite = new FlxSprite().loadGraphic(introArray[countdown]);
 				introSprite.scrollFactor.set();
@@ -447,7 +447,7 @@ class QuaverGameplay extends MusicBeatState
 			callOnModules('onCountdownTick', countdown);
 
 			countdown++;
-			if (!stageBuild.skip_defaultCountdown)
+			if (!stageBuild.skip.defaultCountdown)
 				FlxG.sound.play(soundsArray[countdown], 0.6);
 		}, 5);
 	}

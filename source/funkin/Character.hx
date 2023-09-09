@@ -71,6 +71,7 @@ class Character extends OffsettedSprite
 	public var healthIcon:String = 'bf';
 	public var healthColor:FlxColor;
 
+	public var dead:Bool = false;
 	public var startedDeath:Bool = false;
 	public var hasMissAnimations:Bool = false;
 

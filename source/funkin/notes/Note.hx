@@ -8,6 +8,13 @@ import funkin.notes.Receptor.ReceptorData;
 import haxe.Json;
 import openfl.Assets;
 
+enum HoldLayer
+{
+	BEHIND_RECEPTOR;
+	IN_FRONT_RECEPTOR;
+	TOP_MOST;
+}
+
 // Find a better way to load the modules and data
 class Note extends FlxSprite
 {
@@ -177,11 +184,11 @@ class Note extends FlxSprite
 
 				case PSYCH:
 					if (isSustain)
-						canBeHit = (strumTime > Conductor.time - (Conductor.safeZoneOffset * .5)
+						canBeHit = (strumTime > (Conductor.time - Conductor.safeZoneOffset)
 							&& strumTime < Conductor.time + (Conductor.safeZoneOffset * .5));
 					else
 						canBeHit = (strumTime > (Conductor.time - Conductor.safeZoneOffset)
-							&& strumTime < Conductor.time + (Conductor.safeZoneOffset * .5));
+							&& strumTime < (Conductor.time + Conductor.safeZoneOffset));
 
 					tooLate = (strumTime < (Conductor.time - Conductor.safeZoneOffset) && !wasGoodHit);
 			}

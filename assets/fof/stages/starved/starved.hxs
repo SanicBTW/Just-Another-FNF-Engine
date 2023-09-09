@@ -26,13 +26,14 @@ var fearBar;
 // Game over thingy not working anymore
 function onCreate()
 {
-    stage.defaultCamZoom = 0.85;
+    stage.camera_settings.defaultZoom = 0.85;
     stage.hide_girlfriend = true;
-    stage.camera_opponent = [20, -60];
-    stage.skip_defaultCountdown = true;
+    stage.camera_settings.offsets.opponent.setTo(20, -60);
+    stage.skip.defaultCountdown = true;
+    stage.skip.healthCheck = true;
 
-    stage.boyfriend = [270, 175];
-    stage.opponent = [400, -250];
+    stage.positions.boyfriend.setTo(270, 175);
+    stage.positions.opponent.setTo(400, -250);
 
     GameOverSubstate.characterName = 'bf-starved-die';
     GameOverSubstate.deathSoundName = 'starved-death';
@@ -141,9 +142,6 @@ function onCreatePost()
     bfx = PlayState.boyfriendGroup.x;
     bfy = PlayState.boyfriendGroup.y;
 
-    // apparently fixes camera position
-    beatHit();
-
     UI.textFormat = "Sacrifices: $misses | Accuracy: $accuracy";
     UI.scoreText.x = 0;
     UI.scoreText.y = (FlxG.height - 45) - 5;
@@ -198,11 +196,11 @@ function onMoveCamera(who)
     {
         case 'dad':
         {
-            stage.defaultCamZoom = 1.15;
+            stage.camera_settings.defaultZoom = 1.15;
         }
         case 'boyfriend':
         {
-            stage.defaultCamZoom = 0.85;
+            stage.camera_settings.defaultZoom = 0.85;
         }
     }
 }
@@ -225,7 +223,10 @@ function onUpdate(elapsed)
     {
         // ok so this dumb bitch would return 1 UPON STATE CREATION LIKE WHAT THE ACTUAL FUCK BRO
         if (fearBar.percent >= 1)
+        {
             Timings.health = 0;
+            stage.skip.healthCheck = false;
+        }
     }
 }
 

@@ -93,15 +93,12 @@ class PlayState extends MusicBeatState
 		Paths.music("tea-time");
 
 		// dumb
-		if (SONG == null)
-		{
-			if (SongSelection.songSelected.isFS)
-				ChartLoader.loadFSChart(SongSelection.songSelected.songName);
-			else if (SongSelection.songSelected.netChart != null)
-				ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
-			else
-				ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
-		}
+		if (SongSelection.songSelected.isFS)
+			ChartLoader.loadFSChart(SongSelection.songSelected.songName);
+		else if (SongSelection.songSelected.netChart != null)
+			ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
+		else
+			ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -137,9 +134,11 @@ class PlayState extends MusicBeatState
 		stageBuild = new Stage(SONG.stage);
 		add(stageBuild);
 
-		boyfriendGroup = new FlxSpriteGroup(stageBuild.boyfriend[0], stageBuild.boyfriend[1]);
-		dadGroup = new FlxSpriteGroup(stageBuild.opponent[0], stageBuild.opponent[1]);
-		gfGroup = new FlxSpriteGroup(stageBuild.girlfriend[0], stageBuild.girlfriend[1]);
+		var positions:Stage.Positions = stageBuild.positions;
+		boyfriendGroup = new FlxSpriteGroup(positions.boyfriend.x, positions.boyfriend.y);
+		dadGroup = new FlxSpriteGroup(positions.opponent.x, positions.opponent.y);
+		gfGroup = new FlxSpriteGroup(positions.girlfriend.x, positions.girlfriend.y);
+		positions = null; // as its only a reference, making it null makes the var marked for gc i believe
 
 		add(gfGroup);
 		add(dadGroup);
@@ -162,7 +161,9 @@ class PlayState extends MusicBeatState
 		ui.cameras = [camHUD];
 		add(ui);
 
-		var camPos:FlxPoint = new FlxPoint(stageBuild.camera_girlfriend[0], stageBuild.camera_girlfriend[1]);
+		var gfOffset:Stage.Positions = stageBuild.camera_settings.offsets;
+		var camPos:FlxPoint = new FlxPoint(gfOffset.girlfriend.x, gfOffset.girlfriend.y);
+		gfOffset = null; // as its only a reference, making it null makes the var marked for gc i believe
 
 		if (!stageBuild.hide_girlfriend)
 		{
@@ -186,7 +187,7 @@ class PlayState extends MusicBeatState
 		add(camFollowPos);
 
 		FlxG.camera.follow(camFollowPos, LOCKON, 1);
-		FlxG.camera.zoom = (stageBuild != null) ? stageBuild.defaultCamZoom : 1;
+		FlxG.camera.zoom = (stageBuild != null) ? stageBuild.camera_settings.defaultZoom : 1;
 		FlxG.camera.focusOn(camFollow.getPosition());
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
@@ -227,12 +228,12 @@ class PlayState extends MusicBeatState
 	{
 		callOnModules('onUpdate', elapsed);
 
-		var lerpVal:Float = FlxMath.bound(elapsed * 2.4 * stageBuild.camera_speed, 0, 1);
+		var lerpVal:Float = FlxMath.bound(elapsed * 2.4 * stageBuild.camera_settings.speed, 0, 1);
 		camFollowPos.setPosition(FlxMath.lerp(camFollowPos.x, camFollow.x, lerpVal), FlxMath.lerp(camFollowPos.y, camFollow.y, lerpVal));
 
 		super.update(elapsed);
 
-		if (!paused)
+		if (!paused && !boyfriend.dead)
 			DiscordPresence.changePresence('Playing ${SONG.song}', ui.scoreText.text, null, true, Conductor.boundInst.length - Conductor.time);
 
 		if (startedCountdown && startingSong && !paused)
@@ -249,24 +250,15 @@ class PlayState extends MusicBeatState
 				Conductor.time = -Conductor.crochet * 5;
 		}
 
-		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.defaultCamZoom : 1, FlxG.camera.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.camera_settings.defaultZoom : 1, FlxG.camera.zoom,
+			FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
 
 		if (SONG.notes[Std.int(curStep / 16)] != null)
 			updateCamTarget(elapsed);
 
-		if (Timings.health <= 0)
-		{
-			callOnModules('onGameOver', null);
-			boyfriend.stunned = true;
-			updateTime = persistentDraw = persistentUpdate = false;
-
-			if (SONG.needsVoices)
-				Conductor.boundVocals.stop();
-			Conductor.boundInst.stop();
-			DiscordPresence.changePresence("Game Over");
-			openSubState(new GameOverSubstate(boyfriend.x, boyfriend.y));
-		}
+		// death check
+		doDeathCheck();
 
 		while ((ChartLoader.noteQueue[0] != null) && (ChartLoader.noteQueue[0].strumTime - Conductor.time) < 3500)
 		{
@@ -541,7 +533,7 @@ class PlayState extends MusicBeatState
 		var introArray:Array<FlxGraphic> = [];
 		var soundsArray:Array<Sound> = [];
 
-		if (!stageBuild.skip_defaultCountdown)
+		if (!stageBuild.skip.defaultCountdown)
 		{
 			var introName:Array<String> = ['ready', 'set', 'go'];
 			for (intro in introName)
@@ -581,7 +573,7 @@ class PlayState extends MusicBeatState
 				dad.dance();
 			}
 
-			if (!stageBuild.skip_defaultCountdown && countdown >= 0 && countdown < introArray.length)
+			if (!stageBuild.skip.defaultCountdown && countdown >= 0 && countdown < introArray.length)
 			{
 				var introSprite:FlxSprite = new FlxSprite().loadGraphic(introArray[countdown]);
 				introSprite.scrollFactor.set();
@@ -602,7 +594,7 @@ class PlayState extends MusicBeatState
 			callOnModules('onCountdownTick', countdown);
 
 			countdown++;
-			if (!stageBuild.skip_defaultCountdown)
+			if (!stageBuild.skip.defaultCountdown)
 				FlxG.sound.play(soundsArray[countdown], 0.6);
 		}, 5);
 	}
@@ -620,6 +612,25 @@ class PlayState extends MusicBeatState
 
 		setOnModules('songLength', Conductor.boundInst.length);
 		callOnModules('onSongStart', null);
+	}
+
+	private function doDeathCheck()
+	{
+		// Ignore any health check!!!
+		if (stageBuild.skip.healthCheck)
+			return;
+
+		if (Timings.health <= 0 && !boyfriend.dead)
+		{
+			boyfriend.stunned = boyfriend.dead = paused = true;
+			updateTime = persistentDraw = persistentUpdate = false;
+
+			if (SONG.needsVoices)
+				Conductor.boundVocals.stop();
+			Conductor.boundInst.stop();
+			DiscordPresence.changePresence("Game Over");
+			openSubState(new GameOverSubstate(boyfriend.x, boyfriend.y));
+		}
 	}
 
 	override public function beatHit(beat:Int)
@@ -787,13 +798,15 @@ class PlayState extends MusicBeatState
 		var charCenterX:Float = char.getMidpoint().x;
 		var charCenterY:Float = char.getMidpoint().y;
 
-		var offsetX:Float = (mustHit ? stageBuild.camera_boyfriend[0] : stageBuild.camera_opponent[0]);
+		var camOffsets:Stage.Positions = stageBuild.camera_settings.offsets;
+		var offsetX:Float = (mustHit ? camOffsets.boyfriend.x : camOffsets.opponent.x);
 		if (curSection.gfSection)
-			offsetX = stageBuild.camera_girlfriend[0];
+			offsetX = camOffsets.girlfriend.x;
 
-		var offsetY:Float = (mustHit ? stageBuild.camera_boyfriend[1] : stageBuild.camera_opponent[1]);
+		var offsetY:Float = (mustHit ? camOffsets.boyfriend.y : camOffsets.opponent.y);
 		if (curSection.gfSection)
-			offsetY = stageBuild.camera_girlfriend[1];
+			offsetY = camOffsets.girlfriend.y;
+		camOffsets = null; // as its only a reference, making it null makes the var marked for gc i believe
 
 		var centerX = (mustHit ? charCenterX - 100 : charCenterX + 150);
 		var centerY = (mustHit ? charCenterY - 100 : charCenterY - 100);
