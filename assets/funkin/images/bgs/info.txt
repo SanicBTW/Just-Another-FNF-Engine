@@ -1,0 +1,2 @@
+so as you can see there are bg themes, one the default bgs and my own bgs made by Slac/GlassGuy (thankss)
+these include a monochromatic version (dark / white / gray prob) that will be used as a fallback or to modify bg colors, they start with M_ to indicate that its a monochromatic version of the base image

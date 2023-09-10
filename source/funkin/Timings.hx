@@ -19,6 +19,8 @@ typedef Judgement =
 	var track:String; // The "this" variable to track
 }
 
+// Kade MS Rating is based on timeScale, which is more mean and accurate most of the times
+// Pshcy MS Rating is based on the Conductor safeZoneOffset which is safeFrames (default:10) / 60 * 1000, its more permissive and maybe accurate
 enum RatingStyle
 {
 	PSYCH;
@@ -73,9 +75,6 @@ class Timings
 	// Judgements metadata
 	// All health values are half the prev (beginning 0.07)
 	// Quaver judgements with the fixed diffs is kind of mean actually, really cool
-	// DO AN OPTION TO CHANGE MS RATING STYLES
-	// Kade MS Rating is based on timeScale, which is more mean and accurate most of the times
-	// Pshcy MS Rating is based on the Conductor safeZoneOffset which is safeFrames (default:10) / 60 * 1000, its more permissive and maybe accurate
 	public static final judgements:Array<Judgement> = [
 		{
 			name: 'sick',
@@ -167,6 +166,7 @@ class Timings
 		misses = 0;
 	}
 
+	// Look into shits
 	public static function judge(ms:Float, isSustain:Bool = false):String
 	{
 		for (i in 0...judgements.length)
@@ -174,13 +174,9 @@ class Timings
 			var judgement:Judgement = judgements[Math.round(Math.min(i, judgements.length - 1))];
 			if (ms <= judgement.timing * Conductor.timeScale)
 			{
-				// If is a sustain we only want to increase the notes accuracy and total hits
+				// If is a sustain we only want to return the rating
 				if (isSustain)
-				{
-					notesAccuracy += judgement.weight;
-					totalHits++;
 					return judgement.name;
-				}
 
 				// Increase combo
 				Reflect.setField(Timings, judgement.track, Reflect.field(Timings, judgement.track) + 1);

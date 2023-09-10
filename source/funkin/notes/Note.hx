@@ -34,7 +34,10 @@ class Note extends FlxSprite
 	public var prevNote:Note;
 	public var ignoreNote:Bool = false; // Psych
 	public var strumLine:Int = 0; // FE:R
-	public var doubleNote:Bool = false; // JAFE
+
+	// JAFE
+	public var doubleNote:Bool = false;
+	public var judgement:String = "sick"; // will save all judgements in the note and will be used for holds
 
 	// Sustains KE 1.6.2
 	public var parent:Note = null;

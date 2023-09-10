@@ -96,8 +96,9 @@ class SBar extends FlxSprite
 		_bgPoint = _fgPoint = new Point();
 
 		// Better naming to avoid reusing other bitmaps
-		_bgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true), BITMAP, 'SBAR_BG:${barWidth}x${barHeight}(${bgColor.toWebString()})');
-		_fgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true), BITMAP, 'SBAR_FG:${barWidth}x${barHeight}(${fgColor.toWebString()})');
+		// my dumb ass forgot about setting fill collors bruhh
+		_bgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true, bgColor), BITMAP, 'SBAR_BG:${barWidth}x${barHeight}(${bgColor.toWebString()})');
+		_fgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true, fgColor), BITMAP, 'SBAR_FG:${barWidth}x${barHeight}(${fgColor.toWebString()})');
 
 		// Setting it to false would cause the sprite to reuse another graphic with the same properties
 		makeGraphic(barWidth, barHeight, FlxColor.TRANSPARENT, true);

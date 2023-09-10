@@ -3,12 +3,10 @@ package funkin.states;
 import backend.DiscordPresence;
 import backend.IO;
 import base.TransitionState;
+import base.sprites.StateBG;
 import flixel.FlxG;
-import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.system.FlxSound;
 import flixel.text.FlxText;
-import flixel.util.FlxColor;
 import funkin.text.Alphabet;
 import haxe.io.Bytes;
 import network.MultiCallback;
@@ -153,18 +151,8 @@ class SongSelection extends TransitionState
 				FlxG.sound.playMusic(cock);
 		});
 
-		var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
-		darkBackground.setGraphicSize(Std.int(FlxG.width));
-		darkBackground.screenCenter();
-		darkBackground.alpha = 0.7;
-		add(darkBackground);
-
-		var bg:FlxSprite = new FlxSprite();
-		bg.loadGraphic(Paths.image('smenuBG'));
-		bg.setGraphicSize(FlxG.width);
+		var bg:StateBG = new StateBG('M_menuBG');
 		bg.screenCenter();
-		bg.blend = openfl.display.BlendMode.DIFFERENCE;
-		bg.alpha = 0.07;
 		add(bg);
 
 		grpOptions = new FlxTypedGroup<Alphabet>();

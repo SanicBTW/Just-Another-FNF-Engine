@@ -668,16 +668,15 @@ class PlayState extends MusicBeatState
 		{
 			var receptor:Receptor = getReceptor(playerStrums, note.noteData);
 			note.wasGoodHit = true;
+			note.judgement = Timings.judge(Math.abs(note.strumTime - Conductor.time), note.isSustain);
 			receptor.playAnim('confirm', true);
 
-			if (!note.isSustain)
-			{
-				var rating:String = Timings.judge(Math.abs(note.strumTime - Conductor.time));
-				ui.displayJudgement(rating, (note.strumTime < Conductor.time));
+			// bloxxin and other stuff type shit (only count parent timing when hold ended kind of wacky tho)
+			if (!note.isSustain && note.parent != note || note.isSustainEnd)
+				ui.displayJudgement((!note.isSustain && note.parent != note) ? note.judgement : note.parent.judgement, (note.strumTime < Conductor.time));
 
-				if (rating == "sick")
-					playerStrums.generateSplash(receptor);
-			}
+			if (!note.isSustain && note.judgement == "sick")
+				playerStrums.generateSplash(receptor);
 
 			characterSing(boyfriend, 'sing${receptor.getNoteDirection().toUpperCase()}');
 

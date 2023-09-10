@@ -1,13 +1,12 @@
 package funkin;
 
 import backend.Conductor;
-import base.sprites.DepthSprite;
+import base.sprites.*;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
-import flixel.util.FlxColor;
-import flixel.util.FlxSort;
+import flixel.util.*;
 
 using StringTools;
 
@@ -82,7 +81,7 @@ class UI extends FlxSpriteGroup
 		curJudgement.alpha = (preload) ? 0 : 1;
 
 		curJudgement.z = -Conductor.time;
-		if (perfect)
+		if (perfect || preload)
 			curJudgement.animation.play('sick-perfect');
 		else
 			curJudgement.animation.play(judgement + (late ? '-late' : '-early'));

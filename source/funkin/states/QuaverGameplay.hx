@@ -483,17 +483,16 @@ class QuaverGameplay extends MusicBeatState
 			var hitObj:HitObject = getHitObjectByTime(note.strumTime);
 			var receptor:Receptor = getReceptor(strums, note.noteData);
 			note.wasGoodHit = true;
+			note.judgement = Timings.judge(Math.abs(note.strumTime - Conductor.time), note.isSustain);
 			receptor.playAnim('confirm', true);
 			playHitObjectSound(hitObj);
 
-			if (!note.isSustain)
-			{
-				var rating:String = Timings.judge(Math.abs(note.strumTime - Conductor.time));
-				ui.displayJudgement(rating, (note.strumTime < Conductor.time));
+			// quaver type shit (only count parent timing when hold ended kind of wacky tho)
+			if (!note.isSustain && note.parent != note || note.isSustainEnd)
+				ui.displayJudgement((!note.isSustain && note.parent != note) ? note.judgement : note.parent.judgement, (note.strumTime < Conductor.time));
 
-				if (rating == "sick")
-					strums.generateSplash(receptor);
-			}
+			if (!note.isSustain && note.judgement == "sick")
+				strums.generateSplash(receptor);
 
 			callOnModules('goodNoteHit', [
 				ChartLoader.noteQueue.indexOf(note),

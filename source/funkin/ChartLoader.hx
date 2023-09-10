@@ -146,6 +146,9 @@ class ChartLoader
 
 			if (holdStep > 0)
 			{
+				// Set the new note as parent indicating that is the head of a sustain (becareful its referencing itself)
+				newNote.parent = newNote;
+
 				var floorStep:Int = Math.floor(holdStep);
 				for (note in 0...floorStep + 2)
 				{
@@ -204,6 +207,9 @@ class ChartLoader
 
 						if (holdStep > 0)
 						{
+							// Set the new note as parent indicating that is the head of a sustain (becareful its referencing itself)
+							newNote.parent = newNote;
+
 							var floorStep:Int = Math.floor(holdStep);
 							for (note in 0...floorStep + 2)
 							{

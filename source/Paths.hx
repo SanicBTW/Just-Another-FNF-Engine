@@ -121,3 +121,9 @@ enum abstract Libraries(String) to String
 	var FOF = "fof";
 	var SIXH = "6h";
 }
+
+enum abstract BGTheme(String) to String
+{
+	var DEFAULT = "default";
+	var SANCO = "sanco";
+}
