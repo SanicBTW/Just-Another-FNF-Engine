@@ -130,7 +130,7 @@ class SongSelection extends TransitionState
 
 			case "quaver":
 				{
-					TransitionState.switchState(new QuaverSelection());
+					TransitionState.switchState(new quaver.states.QuaverSelection());
 				}
 		}
 

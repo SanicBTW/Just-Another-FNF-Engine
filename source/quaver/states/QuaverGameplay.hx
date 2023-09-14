@@ -1,4 +1,4 @@
-package funkin.states;
+package quaver.states;
 
 import backend.Cache;
 import backend.Conductor;
@@ -16,7 +16,7 @@ import flixel.math.FlxMath;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
-import funkin.ChartLoader;
+import funkin.*;
 import funkin.Events.EventNote;
 import funkin.notes.Note;
 import funkin.notes.Receptor;
@@ -555,7 +555,7 @@ class QuaverGameplay extends MusicBeatState
 		updateTime = false;
 		FlxG.sound.music.stop();
 		callOnModules('onEndSong', null);
-		TransitionState.switchState(new SongSelection());
+		TransitionState.switchState(new funkin.states.SongSelection());
 	}
 
 	private function checkEventNote()

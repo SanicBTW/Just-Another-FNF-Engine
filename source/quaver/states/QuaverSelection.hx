@@ -1,4 +1,4 @@
-package funkin.states;
+package quaver.states;
 
 import backend.Conductor;
 import backend.DiscordPresence;
@@ -70,6 +70,8 @@ class QuaverSelection extends MusicBeatState
 
 		DiscordPresence.changePresence("Selecting Quaver Beatmap");
 
+		// TODO: When creating the state load the OpenFL Library and list the beatmaps based off the folders that were loaded
+
 		var maps:Array<String> = [];
 		// ??? It gives me nulls now, probably because of the async shit i made
 		try
@@ -140,7 +142,7 @@ class QuaverSelection extends MusicBeatState
 					{
 						case "NameList":
 							{
-								TransitionState.switchState(new SongSelection());
+								TransitionState.switchState(new funkin.states.SongSelection());
 							}
 
 						case "DiffList":

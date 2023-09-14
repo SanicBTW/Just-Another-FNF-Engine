@@ -26,11 +26,11 @@
 	<library name="funkin" preload="true" />
 	<assets path="assets/funkin" library="funkin" />
 
-	<library name="6h" preload="false" />
-	<assets path="assets/6h" library="6h" />
-
 	<library name="fof" preload="false" />
 	<assets path="assets/fof" library="fof" />
+
+	<library name="quaver" preload="false" />
+	<assets path="assets/quaver" library="quaver" />
 
 	<library name="fonts" preload="true" />
 	<assets path="assets/fonts" embed='true' library="fonts" />
@@ -43,7 +43,7 @@
 	<!-- Enable Discord Rich Presence -->
 	<define name="DISCORD_PRESENCE" if="windows || linux" />
 
-	<!-- Enable the Engine Crash Handler -->
+	<!-- Enable the engine Crash Handler -->
 	<define name="CRASH_HANDLER" if="windows || linux" />
 
 	<!-- Enables caching flx text graphics and bitmaps -->
