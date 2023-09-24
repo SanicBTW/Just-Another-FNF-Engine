@@ -70,18 +70,22 @@ class StrumLine extends FlxSpriteGroup
 				generateSplash(receptor, true);
 		}
 
+		add(holdGroup);
 		add(receptors);
 		add(notesGroup);
 
-		switch (Settings.holdLayer)
-		{
-			case BEHIND_RECEPTOR:
-				insert(members.indexOf(receptors) - 1, holdGroup);
-			case IN_FRONT_RECEPTOR:
-				insert(members.indexOf(notesGroup) - 1, holdGroup);
-			case TOP_MOST:
-				add(holdGroup);
-		}
+		// fix this ugly ass system
+		// insert(members.indexOf(receptors) - 1, holdGroup);
+
+		/*
+			switch (Settings.holdLayer)
+			{
+				case BEHIND_RECEPTOR:
+				case IN_FRONT_RECEPTOR:
+					insert(members.indexOf(notesGroup) - 1, holdGroup);
+				case TOP_MOST:
+					add(holdGroup);
+		}*/
 
 		if (Settings.showNoteSplashes)
 			add(splashes);
