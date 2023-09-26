@@ -1,28 +1,21 @@
 package states;
 
 import backend.*;
-import backend.Conductor.BPMChange;
-import backend.Controls.ActionType;
 import backend.scripting.IsolatedPaths;
 import engine.MusicBeatState;
 import engine.sprites.SBar;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.FlxState;
-import flixel.addons.display.FlxTiledSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
-import flixel.system.FlxSound;
 import flixel.util.FlxColor;
-import flixel.util.FlxGradient;
 import flixel.util.FlxSort;
 import funkin.Song;
 import network.MultiCallback;
 import network.pocketbase.Collection;
 import network.pocketbase.PBRequest;
 import network.pocketbase.Record.FunkinRecord;
-import network.pocketbase.User;
 import openfl.display.BlendMode;
 import openfl.media.Sound;
 import quaver.Qua;
@@ -111,7 +104,23 @@ class ScrollTest extends MusicBeatState
 		if (Conductor.boundInst != null)
 			timeBar.value = FlxMath.lerp(Conductor.time / Conductor.boundInst.length, timeBar.value, lerpVal);
 
-		noteSpawn();
+		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= strumCam.scroll.y + strumCam.height)
+		{
+			var nextNote:Note = shitNotes[0];
+			if (nextNote != null)
+			{
+				var strumLine:StrumLine = strums.members[nextNote.strumLine];
+				if (strumLine != null)
+					strumLine.pushNote(nextNote);
+				else
+				{
+					nextNote.mustPress = true;
+					playerStrums.pushNote(nextNote);
+				}
+			}
+
+			shitNotes.splice(shitNotes.indexOf(nextNote), 1);
+		}
 
 		super.update(elapsed);
 
@@ -225,6 +234,47 @@ class ScrollTest extends MusicBeatState
 				FlxG.resetState();
 			}
 
+			for (section in swagShit.notes)
+			{
+				for (songNotes in section.sectionNotes)
+				{
+					switch (songNotes[1])
+					{
+						default:
+							var stepTime:Float = (songNotes[0] / Conductor.stepCrochet);
+							var sustainTime:Float = 0;
+							var noteData:Int = Std.int(songNotes[1] % 4);
+							var hitNote:Bool = section.mustHitSection;
+
+							if (songNotes[2] > 0)
+								sustainTime = (songNotes[2] / Conductor.stepCrochet);
+
+							if (songNotes[1] > 3)
+								hitNote = !section.mustHitSection;
+
+							var strumLine:Int = (hitNote ? 1 : 0);
+
+							var oldNote:Note = null;
+							if (shitNotes.length > 0)
+								oldNote = shitNotes[shitNotes.length - 1];
+
+							var newNote:Note = new Note(stepTime, noteData, oldNote, false);
+							newNote.mustPress = hitNote;
+							newNote.strumLine = strumLine;
+							newNote.sustainLength = (sustainTime > 0) ? Math.floor(sustainTime) + 1 : 0;
+							shitNotes.push(newNote);
+
+						case -1:
+							return;
+					}
+				}
+			}
+
+			shitNotes.sort((a, b) ->
+			{
+				return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime);
+			});
+
 			generateBackground();
 		});
 
@@ -330,24 +380,6 @@ class ScrollTest extends MusicBeatState
 			shitNotes.push(nextNote);
 
 			curSection.sectionNotes.splice(curSection.sectionNotes.indexOf(curNote), 1);
-		}
-
-		while ((shitNotes[0] != null) && (shitNotes[0].strumTime - Conductor.time) <= strumCam.scroll.y + strumCam.height)
-		{
-			var nextNote:Note = shitNotes[0];
-			if (nextNote != null)
-			{
-				var strumLine:StrumLine = strums.members[nextNote.strumLine];
-				if (strumLine != null)
-					strumLine.pushNote(nextNote);
-				else
-				{
-					nextNote.mustPress = true;
-					playerStrums.pushNote(nextNote);
-				}
-			}
-
-			shitNotes.splice(shitNotes.indexOf(nextNote), 1);
 		}
 	}
 
