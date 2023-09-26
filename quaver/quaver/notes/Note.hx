@@ -1,8 +1,10 @@
 package quaver.notes;
 
+import backend.Conductor;
 import flixel.FlxSprite;
 import states.ScrollTest;
 
+// Sync with stable source
 @:publicFields
 class Note extends FlxSprite
 {
@@ -14,7 +16,7 @@ class Note extends FlxSprite
 
 	@:noCompletion
 	private function get_strumTime()
-		return (stepTime * ScrollTest.Conductor.stepCrochet);
+		return (stepTime * Conductor.stepCrochet);
 
 	var noteData:Int = 0;
 	var tooLate:Bool = false;

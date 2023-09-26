@@ -11,10 +11,10 @@ import openfl.media.Sound;
 import openfl.display3D.textures.Texture;
 #end
 
-// Rewrite soon again
+// Rewrite soon again (yup yup yup, will add actual threaded good requests ong)
 class Request<T>
 {
-	public static final userAgent:String = 'JAFE 0.2.X'; // See README.md Versioning
+	public static final userAgent:String = 'JAFE 0.2.10X'; // See Notion Versioning
 
 	public function new(url:String, callback:T->Void, type:RequestType)
 	{

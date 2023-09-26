@@ -1,219 +1,70 @@
 package window;
 
-import flixel.FlxG;
-import flixel.util.FlxColor;
-import openfl.display.Shape;
-import openfl.text.TextField;
-import openfl.text.TextFormat;
+import window.components.*;
+import window.packages.*;
 
-using backend.Extensions;
-
-// Joins both counters into one place to improve performance )?
-
-@:allow(flixel.FlxGame)
-class Overlay extends ExSprite
+// Sorry
+enum DesignUpdate
 {
-	// Framerate
-	public var currentFPS(default, null):Float;
-
-	@:noCompletion private var cacheCount:Int;
-	@:noCompletion private var times:Array<Float>;
-
-	// Memory
-	@:noCompletion public static final intervalArray:Array<String> = ['B', 'KB', 'MB', 'GB'];
-
-	public var currentMem(get, null):Float;
-	public var memoryPeak(default, null):Float;
-
-	// Design
-	private var _bg:Shape;
-	private var _text:TextField;
-
-	// The corner where the overlay is situated
-	public var _cornerPos(default, set):OverlayCorner = BOTTOM_LEFT;
-
-	// Won't change this since I'm too lazy to properly calculate the center
-	private var padding:Array<Float> = [20, 15];
-	private var offsets:Array<Float> = [0, 0];
-	private var fontSize:Int = #if html5 16 #else 14 #end;
-
-	// Lerping
-	public var targetX:Float = 0;
-	public var targetY:Float = 0;
-
-	public function new(X:Float = 10, Y:Float = 10)
-	{
-		super();
-
-		targetX = X;
-		targetY = Y;
-
-		// Reset FPS variables
-		currentFPS = 0;
-		cacheCount = 0;
-		times = [];
-
-		// Reset memory
-		memoryPeak = 0;
-
-		mouseEnabled = false;
-	}
-
-	// Setup sprites
-	override public function create()
-	{
-		_text = new TextField();
-		_text.text = '0 FPS\n0 MB / 0 MB';
-		_text.embedFonts = true;
-		_text.selectable = false;
-		_text.sharpness = 400;
-		_text.defaultTextFormat = new TextFormat(getFont('open_sans.ttf').fontName, fontSize, 0xFFFFFF);
-
-		_bg = drawRound(x, y, _text.textWidth + padding[0], _text.textHeight + padding[1], [10], FlxColor.BLACK, 0.5);
-
-		addChild(_bg);
-		addChild(_text);
-	}
-
-	override public function update(elapsed:Float, deltaTime:Float)
-	{
-		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 8.6), 0, 1);
-
-		// Resize to fit the text sizes
-		lerpTrack(_bg, "width", _text.textWidth + padding[0], lerpVal);
-		lerpTrack(_bg, "height", _text.textHeight + padding[1], lerpVal);
-
-		// Move to target positions
-		lerpTrack(this, "x", targetX + offsets[0], lerpVal);
-		lerpTrack(this, "y", targetY + offsets[1], lerpVal);
-
-		// Reposition the text based off some shitty formula
-		lerpTrack(_text, "x", _bg.x + padding[0] / 4, lerpVal);
-		lerpTrack(_text, "y", _bg.y + padding[1] / 4, lerpVal);
-
-		lerpTrack(_text, "width", _bg.width, lerpVal);
-		lerpTrack(_text, "height", _bg.height, lerpVal);
-
-		// Update needed variables
-		updateFPS();
-		updateMemory();
-
-		// Set the text
-		_text.text = '$currentFPS FPS\n${getInterval(currentMem)} / ${getInterval(memoryPeak)}';
-	}
-
-	// Update functions
-	private function updateFPS()
-	{
-		var now:Float = haxe.Timer.stamp();
-		times.push(now);
-
-		while (times[0] < now - 1)
-		{
-			times.shift();
-		}
-
-		currentFPS = Math.round((times.length + cacheCount) / 2);
-
-		if (currentFPS < FlxG.updateFramerate / 2)
-			_text.textColor = 0xFFFF0000;
-		else
-			_text.textColor = 0xFFFFFFFF;
-
-		cacheCount = times.length;
-	}
-
-	private function updateMemory()
-	{
-		if (currentMem > memoryPeak)
-			memoryPeak = currentMem;
-	}
-
-	// Forced positions - TODO: Set correct text positions (alignment and shit)
-	public function reposition(newWidth:Float, newHeight:Float)
-	{
-		switch (_cornerPos)
-		{
-			// We don't use width or height here
-			case TOP_LEFT:
-				targetX = 10;
-				targetY = 10;
-				offsets[0] = 0;
-
-			// We don't use width here
-			case BOTTOM_LEFT:
-				targetX = 10;
-				targetY = (newHeight - _bg.height) - 10;
-				offsets[0] = 0;
-
-			// We don't use height here
-			case TOP_RIGHT:
-				targetX = (newWidth - _bg.width) - 10;
-				targetY = 10;
-				offsets[0] = -20;
-
-			// We use width and height here
-			case BOTTOM_RIGHT:
-				targetX = (newWidth - _bg.width) - 10;
-				targetY = (newHeight - _bg.height) - 10;
-				offsets[0] = -20;
-		}
-	}
-
-	// The same as above but instead updates the position based off the current width and height
-
-	@:noCompletion
-	private function set__cornerPos(newCorner:OverlayCorner)
-	{
-		if (_cornerPos != newCorner)
-		{
-			_cornerPos = newCorner;
-			reposition(FlxG.width, FlxG.height);
-		}
-		return _cornerPos;
-	}
-
-	// Memory helpers
-	private static function getInterval(size:Float)
-	{
-		var data:Int = 0;
-		while (size > 1000 && data < intervalArray.length - 1)
-		{
-			data++;
-			size = size / 1000;
-		}
-		size = Math.round(size * 100) / 100;
-		return '$size ${intervalArray[data]}';
-	}
-
-	// From OpenFL System, added HL and Android memory getters )?
-	// Tested one by one in order to get proper accuracy when getting
-
-	@:noCompletion
-	private function get_currentMem()
-	{
-		#if hl
-		return hl.Gc.stats().currentMemory;
-		#elseif cpp
-		// shits more innnacurate now!!!!1
-		return cpp.vm.Gc.memInfo64(3);
-		#elseif java
-		// not tested
-		return java.vm.Gc.stats().heap;
-		#elseif (js && html5)
-		// no other way on getting this one - add support for the rest of the browsers
-		return
-			untyped #if haxe4 js.Syntax.code #else __js__ #end ("(window.performance && window.performance.memory) ? window.performance.memory.usedJSHeapSize : 0");
-		#else
-		return 0;
-		#end
-	}
+	UPDATE_1; // Basic TextFields, basic Volume Tray
+	UPDATE_2; // The rounded update, unifying FPS and Memory into a single sprite, also improving the Volume Tray
+	UPDATE_3; // Even better design, sliding panels for debugging, graphs and new Volume Panel
 }
 
-enum OverlayCorner
+typedef FPStruct =
 {
-	TOP_LEFT;
-	TOP_RIGHT;
-	BOTTOM_LEFT;
-	BOTTOM_RIGHT;
+	public var currentFPS(default, null):Float;
+	@:noCompletion var cacheCount:Int;
+	@:noCompletion var times:Array<Float>;
+	function updateFPS():Void;
+}
+
+typedef MemStruct =
+{
+	@:noCompletion public final intervalArray:Array<String>;
+	public var currentMem(get, null):Float;
+	public var memoryPeak(default, null):Float;
+	function updateMemory():Void;
+	@:noCompletion function get_currentMem():Float;
+}
+
+typedef VolStruct =
+{
+	var volume(get, null):Float;
+	@:noCompletion function get_volume():Float;
+	public function show():Void;
+}
+
+// Manages what type of UI Elements, updating and more
+
+@:allow(flixel.FlxGame)
+class Overlay extends ExSprite<Overlay>
+{
+	// Even if fps and memory are unified in Update 2 we want it to be separate although it references the same object
+	private var fps:ExSprite<FPStruct>;
+	private var memory:ExSprite<MemStruct>;
+	// This is not bounded to anything
+	private var volume:ExSprite<VolStruct>;
+
+	// X, Y Positions not needed as some stuff is automatically positioned by the overlay
+	public function new()
+	{
+		super();
+	}
+
+	// Fired when 'Settings.designUpdate' is changed
+	private function reloadDesign()
+	{
+		switch (Settings.designUpdate)
+		{
+			case UPDATE_1:
+			case UPDATE_2:
+				var jCounter:MCounter = new MCounter(10, 8);
+				fps = jCounter;
+				memory = jCounter;
+				addChild(fps);
+
+			case UPDATE_3:
+		}
+	}
 }

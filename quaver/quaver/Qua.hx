@@ -3,6 +3,11 @@ package quaver;
 using StringTools;
 using backend.Extensions;
 
+#if FS_ACCESS
+import backend.IO;
+import backend.io.Path;
+#end
+
 typedef TimingPoint =
 {
 	StartTime:Float,
@@ -15,17 +20,40 @@ typedef SliderVelocity =
 	Multiplier:Float
 }
 
+typedef SoundEffect =
+{
+	StartTime:Float,
+	Sample:Int, // Index for CustomAudioSamples, will instead use that array as Sound cache
+	Volume:Float // Will divide this by 100 to get 0.x
+}
+
+typedef KeySound =
+{
+	Sample:Int,
+	Volume:Float
+}
+
 typedef HitObject =
 {
 	StartTime:Float,
 	Lane:Int,
-	?EndTime:Float,
-	KeySounds:Array<Dynamic>
+	EndTime:Float,
+	HitSound:Null<String>,
+	KeySounds:Null<KeySound> // I don't believe a single HitObject can contain more than 1 KeySound
 }
 
-// Quaver Map but file extension
-// Never going to rewrite this
+enum abstract KeyMode(String) to String
+{
+	var Keys4 = "Keys4";
+	var Keys7 = "Keys7";
+}
 
+/**
+ * v1.1
+ *
+ * Missing editor layers and optimizations but It's working fine
+ * @author SanicBTW
+ */
 @:publicFields
 class Qua
 {
@@ -34,7 +62,7 @@ class Qua
 	var BackgroundFile:String = '';
 	var MapId:Int = 0;
 	var MapSetId:Int = 0;
-	var Mode:String = 'Keys4';
+	var Mode:KeyMode = Keys4;
 	var Title:String = '';
 	var Artist:String = '';
 	var Source:String = '';
@@ -46,61 +74,55 @@ class Qua
 	var InitialScrollVelocity:Float = 1;
 
 	var EditorLayers:Array<Dynamic> = []; // Dunno what is this actually
-	var CustomAudioSamples:Array<Dynamic> = []; // Neither this
-	var SoundEffects:Array<Dynamic> = []; // Uhhh
 
+	var CustomAudioSamples:Array<String> = []; // I guess it only has the Path line and nothing else
+	var SoundEffects:Array<SoundEffect> = [];
 	var TimingPoints:Array<TimingPoint> = [];
 	var SliderVelocities:Array<SliderVelocity> = [];
 	var HitObjects:Array<HitObject> = [];
 
 	private final exclusions:Array<String> = [
-		'HitObjects',
-		'TimingPoints',
-		'SliderVelocities',
-		// Arrays
 		'EditorLayers',
 		'CustomAudioSamples',
 		'SoundEffects',
+		'TimingPoints',
+		'SliderVelocities',
+		'HitObjects'
 	];
 
+	@:noCompletion
 	private var fields:Array<String> = [];
 
 	@:noCompletion
 	// Instead of parsing it, just do a quick search and that shit yknow
 	private var lines:Array<String> = [];
 
-	// 2 worked fine for a long ass time????
-	final length_min:Int = 1;
-
-	public function new(rawContent:String, parse:Bool = true)
+	function new(rawContent:String, parse:Bool = true)
 	{
 		lines = rawContent.trim().split("\n");
 		fields = Type.getInstanceFields(Type.getClass(this));
 
 		// Metadata must be parsed, objects are not needed for a menu right
 		parseMetadata();
+		parseAudioSamples(); // Oh yeah ofc, another method to parse just a few strings fuck im so dumb ffs
 		#if FS_ACCESS convertAudio(); #end
 
-		if (!parse)
+		if (parse == false)
 			return;
 
 		this.parseObjects();
 	}
 
-	public function parseMetadata()
+	private function parseMetadata()
 	{
-		var lastSection:String = '';
-
-		for (line in lines)
+		for (i in 0...lines.length)
 		{
-			var section:String = line.split(":")[0];
-			var value:String = line.split(":")[1];
+			var section:String = getSection(i);
+			var value:String = getSectionValue(i);
 
-			if (value.length > length_min
-				&& !(exclusions.contains(lastSection) || exclusions.contains(section.trim()))
-				&& fields.contains(section))
+			if (value.length > 1 && !exclusions.contains(section) && fields.contains(section))
 			{
-				Reflect.setField(this, section, value.trim());
+				Reflect.setField(this, section, value);
 				continue;
 			}
 
@@ -109,56 +131,129 @@ class Qua
 		}
 	}
 
-	public function parseObjects()
+	// You fucking dumbass, follows the same logic as parseObjects but blocking the section when it hits CustomAudioSamples
+	private function parseAudioSamples()
 	{
 		var lastSection:String = '';
+		var sectionBlock:Bool = false; // Block the parser to the current section
 
 		for (i in 0...lines.length)
 		{
-			var section:String = lines[i].split(":")[0];
-			var value:Null<String> = lines[i].split(":")[1];
+			var section:String = getSection(i);
+			var value:String = getSectionValue(i);
 
-			if (value.length <= length_min || value.trim() == "[]" && section.trim() != "KeySounds")
+			// Fast skip and get them audio paths quickly
+			if (section == "EditorLayers")
+				continue;
+
+			if ((lines[i].split(":")[1].length <= 1 || value == "[]" && section != "KeySounds") && !sectionBlock)
+			{
 				lastSection = section;
+				sectionBlock = (section == "CustomAudioSamples");
+			}
+
+			if (lastSection != section && section == "- Path")
+				CustomAudioSamples.push('quaver:assets/quaver/$MapSetId/$value');
+
+			if (section == "SoundEffects")
+				break;
+		}
+	}
+
+	private function parseObjects()
+	{
+		var lastSection:String = '';
+		var sectionBlock:Bool = false; // Block the parser to the current section
+
+		for (i in 0...lines.length)
+		{
+			var section:String = getSection(i);
+			var value:String = getSectionValue(i);
+
+			// Easy fix wtf
+			if ((lines[i].split(":")[1].length <= 1 || value == "[]" && section != "KeySounds") && !sectionBlock)
+			{
+				lastSection = section;
+				sectionBlock = (section == "HitObjects");
+			}
 
 			// lil check
-			if (lastSection != section && section.trim() == "- StartTime")
+			if (lastSection != section && section == "- StartTime")
 			{
 				// i fucking hate this
 				switch (lastSection)
 				{
+					case "SoundEffects":
+						SoundEffects.push({
+							StartTime: Std.parseFloat(value),
+							Sample: Std.parseInt(getSectionValue(i + 1)),
+							Volume: Std.parseInt(getSectionValue(i + 2)) / 100
+						});
+
 					case 'TimingPoints':
-						var timing:TimingPoint = {
-							StartTime: Std.parseFloat(value.trim()),
-							Bpm: Std.parseFloat(lines[i + 1].split(":")[1])
-						};
-						TimingPoints.push(timing);
+						TimingPoints.push({
+							StartTime: Std.parseFloat(value),
+							Bpm: Std.parseFloat(getSectionValue(i + 1))
+						});
 
 					case 'SliderVelocities':
-						var velocity:SliderVelocity = {
-							StartTime: Std.parseFloat(value.trim()),
-							Multiplier: Std.parseFloat(lines[i + 1].split(":")[1])
-						};
-						SliderVelocities.push(velocity);
+						SliderVelocities.push({
+							StartTime: Std.parseFloat(value),
+							Multiplier: Std.parseFloat(getSectionValue(i + 1))
+						});
 
 					case 'HitObjects':
 						var hitObj:HitObject = {
-							StartTime: Std.parseFloat(value.trim()),
-							Lane: Std.parseInt(lines[i + 1].split(":")[1]),
+							StartTime: Std.parseFloat(value),
+							Lane: Std.parseInt(getSectionValue(i + 1)),
 							EndTime: 0,
-							KeySounds: []
+							HitSound: null,
+							KeySounds: null
 						};
 
-						var secSection:String = lines[i + 2].split(":")[0].trim();
+						var secSection:String = getSection(i + 2);
 						switch (secSection)
 						{
-							case 'KeySounds':
-								hitObj.KeySounds = cast lines[i + 2].split(":")[1];
 							case 'EndTime':
-								hitObj.EndTime = Std.parseFloat(lines[i + 2].split(":")[1]);
+								hitObj.EndTime = Std.parseFloat(getSectionValue(i + 2));
 
-								// assuming the next section is uhhhhhhhh keysounds
-								hitObj.KeySounds = cast lines[i + 3].split(":")[1];
+								// More section checks lol
+								switch (getSection(i + 3))
+								{
+									case "HitSound":
+										if (getSectionValue(i + 3).contains(","))
+										{
+											hitObj.HitSound = getSectionValue(i + 3).split(",")[0]; // select the first one until v1.2
+										}
+										else hitObj.HitSound = getSectionValue(i + 3);
+
+									case "KeySounds":
+										// Surely a KeySound coming next line
+										if (getSectionValue(i + 3) != "[]")
+										{
+											hitObj.KeySounds = {
+												Sample: Std.parseInt(getSectionValue(i + 4)),
+												Volume: Std.parseInt(getSectionValue(i + 5)) / 100
+											};
+										}
+								}
+
+							case "HitSound":
+								if (getSectionValue(i + 2).contains(","))
+								{
+									hitObj.HitSound = getSectionValue(i + 2).split(",")[0]; // select the first one until v1.2
+								}
+								else hitObj.HitSound = getSectionValue(i + 2);
+
+							case 'KeySounds':
+								// Surely a KeySound coming next line
+								if (getSectionValue(i + 2) != "[]")
+								{
+									hitObj.KeySounds = {
+										Sample: Std.parseInt(getSectionValue(i + 3)),
+										Volume: Std.parseInt(getSectionValue(i + 4)) / 100
+									};
+								}
 						}
 						HitObjects.push(hitObj);
 				}
@@ -166,31 +261,32 @@ class Qua
 		}
 	}
 
+	// Helpers
 	#if FS_ACCESS
-	public function convertAudio()
+	private function convertAudio()
 	{
-		var path:String = haxe.io.Path.join([
-			lime.system.System.documentsDirectory,
-			"just_another_fnf_engine",
-			"quaver",
-			'$MapId'
-		]);
-
-		// uhhhhhh
-		var audioPath:String = haxe.io.Path.join([Sys.getCwd(), "assets", "funkin", "quaver", '$MapId', AudioFile]);
-		AudioFile = AudioFile.replace("mp3", "ogg");
-
-		var output:String = haxe.io.Path.join([path, AudioFile]);
-		var ffmpeg:String = haxe.io.Path.join([Sys.getCwd(), "ffmpeg.exe"]);
-
-		if (!sys.FileSystem.exists(path))
+		var path = Path.join(IO.getFolderPath(QUAVER), '$MapSetId');
+		if (!IO.existsOnFolder(QUAVER, '$MapSetId'))
 			sys.FileSystem.createDirectory(path);
 
+		// uhhhhhh
+		var audioPath:String = Path.join(Sys.getCwd(), "assets", "funkin", "quaver", '$MapSetId', AudioFile);
+		AudioFile = AudioFile.replace("mp3", "ogg");
+
+		var output:String = Path.join(path, AudioFile);
 		if (sys.FileSystem.exists(output))
 			return;
 
+		var ffmpeg:String = Path.join(Sys.getCwd(), "utils", "ffmpeg.exe");
 		if (Sys.command('$ffmpeg -i "$audioPath" -c:a libvorbis -q:a 4 "$output" -y') == 0)
 			trace('Finished converting audio file');
 	}
 	#end
+
+	// Always return a string
+	private inline function getSection(i:Int):String
+		return lines.unsafeGet(i).split(":")[0].trim();
+
+	private inline function getSectionValue(i:Int):String
+		return lines.unsafeGet(i).split(":")[1].trim();
 }

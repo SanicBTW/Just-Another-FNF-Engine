@@ -1,6 +1,7 @@
 package quaver.notes;
 
 import backend.Cache;
+import backend.Conductor;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -150,7 +151,7 @@ class StrumLine extends FlxSpriteGroup
 		super.update(elapsed);
 
 		_boardPattern.scale.y = scrollSpeed;
-		_boardPattern.height = ((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) * CELL_SIZE) * scrollSpeed;
+		_boardPattern.height = ((Conductor.boundInst.length / Conductor.stepCrochet) * CELL_SIZE) * scrollSpeed;
 
 		updateCrochet();
 		updateSections();
@@ -192,7 +193,7 @@ class StrumLine extends FlxSpriteGroup
 
 		sectionGroup.clear();
 
-		for (i in 0...Std.int((FlxG.sound.music.length / ScrollTest.Conductor.stepCrochet) / 16))
+		for (i in 0...Std.int((Conductor.boundInst.length / Conductor.stepCrochet) / 16))
 		{
 			// Them header
 			var lineSprite:FlxSprite = new FlxSprite(0, 0, _sectionLine);
@@ -256,7 +257,7 @@ class StrumLine extends FlxSpriteGroup
 	// Just sum update functions for uh debugging and clean code??
 	private function updateCrochet()
 	{
-		_conductorCrochet.y = getYFromStep(ScrollTest.Conductor.step) + (CELL_SIZE * 0.5);
+		_conductorCrochet.y = getYFromStep(Conductor.step) + (CELL_SIZE * 0.5);
 		receptors.y = _conductorCrochet.y;
 	}
 
@@ -338,8 +339,8 @@ class StrumLine extends FlxSpriteGroup
 			// Note is below the crochet
 			else
 			{
-				if ((note.strumTime * scrollSpeed) > (ScrollTest.Conductor.time * scrollSpeed) - 166
-					&& (note.strumTime * scrollSpeed) < (ScrollTest.Conductor.time * scrollSpeed) + 166)
+				if ((note.strumTime * scrollSpeed) > (Conductor.time * scrollSpeed) - 166
+					&& (note.strumTime * scrollSpeed) < (Conductor.time * scrollSpeed) + 166)
 					note.canBeHit = true;
 			}
 

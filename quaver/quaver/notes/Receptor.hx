@@ -12,7 +12,7 @@ class Receptor extends FlxSprite
 	public function new(X:Float, Y:Float, noteData:Int = 0)
 	{
 		this.noteData = noteData;
-		this.action = cast getArrowFromNum(noteData);
+		this.action = cast 'note_${getArrowFromNum(noteData)}';
 		super(X, Y);
 
 		frames = ScrollTest.Paths.getSparrowAtlas('NOTE_assets');

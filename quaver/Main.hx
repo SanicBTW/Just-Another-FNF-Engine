@@ -4,10 +4,12 @@ import backend.*;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode;
+import lime.system.Display;
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
-import window.VolumePanel;
+
+using StringTools;
 
 class Main extends Sprite
 {
@@ -15,9 +17,7 @@ class Main extends Sprite
 	private var gameHeight:Int = 768;
 	private var initialClass:Class<FlxState> = states.ScrollTest;
 	private var zoom:Float = -1;
-	private var framerate:Int = lime.system.System.getDisplay(0).currentMode.refreshRate;
-
-	public static var cock:VolumePanel;
+	private var framerate:Int = getDisplay().currentMode.refreshRate; // VSync :troll: - maybe not now
 
 	public static function main()
 		Lib.current.addChild(new Main());
@@ -44,8 +44,22 @@ class Main extends Sprite
 		hl.Gc.enable(true);
 		#end
 
-		Controls.Init();
-		// ScriptHandler.Initialize();
+		// Dynamic init omg
+		Type.getClassName(Save); // I need to do this to avoid crashing, dunno why maybe the class isn't loaded into the global scope
+		// IO and Save should be initialized pre openfl stage addition
+		for (classInit in ["IO", "Save", "Controls", "scripting.ScriptHandler"])
+		{
+			try
+			{
+				var targetClass = Type.resolveClass('backend.$classInit');
+				Reflect.callMethod(targetClass, Reflect.field(targetClass, "Initialize"), []);
+			}
+			catch (ex)
+			{
+				trace('CATCH! $ex at $classInit');
+			}
+		}
+
 		setupGame();
 
 		FlxG.signals.preStateCreate.add((_) ->
@@ -55,6 +69,25 @@ class Main extends Sprite
 			FlxG.bitmap.dumpCache();
 			Cache.collect();
 		});
+
+		#if sys
+		for (arg in Sys.args())
+		#end
+		#if html5
+		var args:Array<String> = js.Browser.location.search.substring(js.Browser.location.search.indexOf("?") + 1).split("&");
+		for (arg in args)
+		#end
+		{
+			arg = arg.toLowerCase();
+
+			if (arg.contains("-enable_gpu_rendering"))
+				Cache.gpuRender = true;
+
+			if (arg.contains("-fps"))
+				setFPS(Std.parseInt(arg.split(":")[1]));
+		}
+
+		DiscordPresence.Initialize(); // idk why the fuck this was throwing null function pointer????
 	}
 
 	private function setupGame()
@@ -74,14 +107,57 @@ class Main extends Sprite
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
 
-		cock = new VolumePanel();
-		addChild(cock);
-
 		FlxG.scaleMode = new FixedScaleAdjustSizeScaleMode();
 		FlxG.fixedTimestep = false;
 		#if !android
 		FlxG.autoPause = false;
 		FlxG.mouse.visible = false;
+		FlxG.mouse.useSystemCursor = true;
 		#end
+
+		#if CRASH_HANDLER
+		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(openfl.events.UncaughtErrorEvent.UNCAUGHT_ERROR, (ev) ->
+		{
+			trace('Uncaught error: ${Std.string(ev.error)}');
+			var args:Array<String> = Sys.args();
+			args.push('-crash:${Std.string(ev.error)}');
+			#if windows
+			new sys.io.Process('${backend.io.Path.join(Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe')}', args);
+			#end
+		});
+		#end
+	}
+
+	// Workaround because my Linux is giving up 0hz on the main display but hdmi is connected
+	public static function getDisplay():Display
+	{
+		var defDisplay:Display = lime.system.System.getDisplay(0);
+		for (i in 0...lime.system.System.numDisplays)
+		{
+			var display:Display = lime.system.System.getDisplay(i);
+			if (display.currentMode.refreshRate <= 0)
+			{
+				@:privateAccess
+				display.currentMode.refreshRate = 60;
+				defDisplay = display;
+			}
+		}
+
+		return defDisplay;
+	}
+
+	public static function setFPS(newFPS:Int)
+	{
+		Lib.current.stage.frameRate = newFPS;
+		if (newFPS > FlxG.drawFramerate)
+		{
+			FlxG.updateFramerate = newFPS;
+			FlxG.drawFramerate = newFPS;
+		}
+		else
+		{
+			FlxG.drawFramerate = newFPS;
+			FlxG.updateFramerate = newFPS;
+		}
 	}
 }

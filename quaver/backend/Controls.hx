@@ -24,10 +24,14 @@ enum abstract ActionType(String) to String
 	var CONFIRM = "confirm";
 	var BACK = "back";
 	var RESET = "reset";
-	var LEFT = "left";
-	var DOWN = "down";
-	var UP = "up";
-	var RIGHT = "right";
+	var UI_LEFT = "ui_left";
+	var UI_DOWN = "ui_down";
+	var UI_UP = "ui_up";
+	var UI_RIGHT = "ui_right";
+	var NOTE_LEFT = "note_left";
+	var NOTE_DOWN = "note_down";
+	var NOTE_UP = "note_up";
+	var NOTE_RIGHT = "note_right";
 }
 
 // Better? controls support (Static usage and non-static usage) (looks like the controls from fnf vanilla lmao)
@@ -39,14 +43,19 @@ class Controls
 		CONFIRM => [Keyboard.ENTER],
 		BACK => [Keyboard.ESCAPE],
 		RESET => [Keyboard.R],
-		LEFT => [Keyboard.LEFT, Keyboard.A, Keyboard.Z],
-		DOWN => [Keyboard.DOWN, Keyboard.S, Keyboard.X],
-		UP => [Keyboard.UP, Keyboard.W, Keyboard.COMMA],
-		RIGHT => [Keyboard.RIGHT, Keyboard.D, Keyboard.PERIOD]
+		UI_LEFT => [Keyboard.LEFT, Keyboard.A],
+		UI_DOWN => [Keyboard.DOWN, Keyboard.S],
+		UI_UP => [Keyboard.UP, Keyboard.W],
+		UI_RIGHT => [Keyboard.RIGHT, Keyboard.D],
+		NOTE_LEFT => [Keyboard.LEFT, Keyboard.A, Keyboard.Z],
+		NOTE_DOWN => [Keyboard.DOWN, Keyboard.S, Keyboard.X],
+		NOTE_UP => [Keyboard.UP, Keyboard.W, Keyboard.COMMA],
+		NOTE_RIGHT => [Keyboard.RIGHT, Keyboard.D, Keyboard.PERIOD]
 	];
 
 	private static var keysPressed:Array<Int> = [];
 
+	// System actions
 	public var confirm(get, null):Action = {
 		name: CONFIRM,
 		state: IDLE,
@@ -95,67 +104,133 @@ class Controls
 		};
 	}
 
-	public var left(get, null):Action = {
-		name: LEFT,
+	// ui actions
+	public var ui_left(get, null):Action = {
+		name: UI_LEFT,
 		state: IDLE,
-		keys: actions.get(LEFT)
+		keys: actions.get(UI_LEFT)
 	};
 
 	@:noCompletion
-	private function get_left():Action
+	private function get_ui_left():Action
 	{
 		return {
-			name: LEFT,
-			state: FlxG.keys.anyPressed(left.keys) ? PRESSED : RELEASED,
-			keys: left.keys
+			name: UI_LEFT,
+			state: FlxG.keys.anyPressed(ui_left.keys) ? PRESSED : RELEASED,
+			keys: ui_left.keys
 		};
 	}
 
-	public var down(get, null):Action = {
-		name: DOWN,
+	public var ui_down(get, null):Action = {
+		name: UI_DOWN,
 		state: IDLE,
-		keys: actions.get(DOWN)
+		keys: actions.get(UI_DOWN)
 	};
 
 	@:noCompletion
-	private function get_down():Action
+	private function get_ui_down():Action
 	{
 		return {
-			name: DOWN,
-			state: FlxG.keys.anyPressed(down.keys) ? PRESSED : RELEASED,
-			keys: down.keys
+			name: UI_DOWN,
+			state: FlxG.keys.anyPressed(ui_down.keys) ? PRESSED : RELEASED,
+			keys: ui_down.keys
 		};
 	}
 
-	public var up(get, null):Action = {
-		name: UP,
+	public var ui_up(get, null):Action = {
+		name: UI_UP,
 		state: IDLE,
-		keys: actions.get(UP)
+		keys: actions.get(UI_UP)
 	};
 
 	@:noCompletion
-	private function get_up():Action
+	private function get_ui_up():Action
 	{
 		return {
-			name: UP,
-			state: FlxG.keys.anyPressed(up.keys) ? PRESSED : RELEASED,
-			keys: up.keys
+			name: UI_UP,
+			state: FlxG.keys.anyPressed(ui_up.keys) ? PRESSED : RELEASED,
+			keys: ui_up.keys
 		};
 	}
 
-	public var right(get, null):Action = {
-		name: RIGHT,
+	public var ui_right(get, null):Action = {
+		name: UI_RIGHT,
 		state: IDLE,
-		keys: actions.get(RIGHT)
+		keys: actions.get(UI_RIGHT)
 	};
 
 	@:noCompletion
-	private function get_right():Action
+	private function get_ui_right():Action
 	{
 		return {
-			name: RIGHT,
-			state: FlxG.keys.anyPressed(right.keys) ? PRESSED : RELEASED,
-			keys: right.keys
+			name: UI_RIGHT,
+			state: FlxG.keys.anyPressed(ui_right.keys) ? PRESSED : RELEASED,
+			keys: ui_right.keys
+		};
+	}
+
+	// note actions
+	public var note_left(get, null):Action = {
+		name: NOTE_LEFT,
+		state: IDLE,
+		keys: actions.get(NOTE_LEFT)
+	};
+
+	@:noCompletion
+	private function get_note_left():Action
+	{
+		return {
+			name: NOTE_LEFT,
+			state: FlxG.keys.anyPressed(note_left.keys) ? PRESSED : RELEASED,
+			keys: note_left.keys
+		};
+	}
+
+	public var note_down(get, null):Action = {
+		name: NOTE_DOWN,
+		state: IDLE,
+		keys: actions.get(NOTE_DOWN)
+	};
+
+	@:noCompletion
+	private function get_note_down():Action
+	{
+		return {
+			name: NOTE_DOWN,
+			state: FlxG.keys.anyPressed(note_down.keys) ? PRESSED : RELEASED,
+			keys: note_down.keys
+		};
+	}
+
+	public var note_up(get, null):Action = {
+		name: NOTE_UP,
+		state: IDLE,
+		keys: actions.get(NOTE_UP)
+	};
+
+	@:noCompletion
+	private function get_note_up():Action
+	{
+		return {
+			name: NOTE_UP,
+			state: FlxG.keys.anyPressed(note_up.keys) ? PRESSED : RELEASED,
+			keys: note_up.keys
+		};
+	}
+
+	public var note_right(get, null):Action = {
+		name: NOTE_RIGHT,
+		state: IDLE,
+		keys: actions.get(NOTE_RIGHT)
+	};
+
+	@:noCompletion
+	private function get_note_right():Action
+	{
+		return {
+			name: NOTE_RIGHT,
+			state: FlxG.keys.anyPressed(note_right.keys) ? PRESSED : RELEASED,
+			keys: note_right.keys
 		};
 	}
 
@@ -164,7 +239,7 @@ class Controls
 	public static var onActionPressed:FlxTypedSignal<ActionType->Void> = new FlxTypedSignal<ActionType->Void>();
 	public static var onActionReleased:FlxTypedSignal<ActionType->Void> = new FlxTypedSignal<ActionType->Void>();
 
-	public static function Init()
+	public static function Initialize()
 	{
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);

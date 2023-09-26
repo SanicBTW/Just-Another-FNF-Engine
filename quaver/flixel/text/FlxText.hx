@@ -169,6 +169,7 @@ class FlxText extends FlxSprite
 	var _zeroOffset:Point;
 
 	var _lastKey:String;
+	var _extraHeight:Float = 1.2;
 
 	/**
 	 * Creates a new `FlxText` object at the specified position.
@@ -843,25 +844,40 @@ class FlxText extends FlxSprite
 		if (textField.textHeight == 0)
 			newHeight = oldHeight;
 
-		// Modified with custom drawing to reuse bitmaps and shit (better memory management)
-		if (oldWidth != newWidth || oldHeight != newHeight)
+		// TODO: instead of using the text field height, use the bitmap height
+
+		// Modified with custom drawing to reuse bitmaps and shit (better memory management ig)
+		/* This if block runs only when:
+			- old sizes dont match with new ones and auto size is enabled (for some reason even when the fieldwidth is set it keeps updating some shit and allocates memory)
+			- the bitmap and graphic is null to avoid errors
+			- (HTML5) when the height doesnt match when multiplied by extra height
+		 */
+		var sizeCheck:Bool = #if html5 (oldWidth != newWidth
+			|| oldHeight * _extraHeight != newHeight * _extraHeight) #else (oldWidth != newWidth || oldHeight != newHeight) #end;
+		if (sizeCheck && (autoSize || _bitmap == null))
 		{
 			// Need to generate a new buffer to store the text graphic
 			height = newHeight;
 			var intWidth:Int = Std.int(newWidth);
 			var intHeight:Int = Std.int(newHeight);
 
+			#if CACHE_FLXTEXT
+			var newName:String = 'text:${intWidth}x${intHeight}';
+			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT), GRAPHIC, newName));
+			#else
 			var key:String = FlxG.bitmap.getUniqueKey("text");
 			_lastKey = key;
 
 			_bitmap = new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT);
 			makeGraphic(intWidth, intHeight, FlxColor.TRANSPARENT, false, key);
+			#end
 
 			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			if (_hasBorderAlpha)
 				_borderPixels = _bitmap.clone();
 			frameHeight = Std.int(height);
-			textField.height = height * 1.2;
+			textField.height = height * _extraHeight;
 			_flashRect.setTo(0, 0, newWidth, newHeight);
 		}
 		else // Else just clear the old buffer before redrawing the text
@@ -870,7 +886,14 @@ class FlxText extends FlxSprite
 			if (_hasBorderAlpha)
 			{
 				if (_borderPixels == null)
+				{
+					#if CACHE_FLXTEXT
+					var newName:String = 'textbp:${frameWidth}x${frameHeight}';
+					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+					#else
 					_borderPixels = new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT);
+					#end
+				}
 				else
 					_borderPixels.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			}

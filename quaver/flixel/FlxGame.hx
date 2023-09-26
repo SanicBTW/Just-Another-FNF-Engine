@@ -10,7 +10,7 @@ import flixel.system.FlxSplash;
 import flixel.util.FlxArrayUtil;
 import openfl.Assets;
 import openfl.filters.BitmapFilter;
-import window.Overlay;
+import window.packages.*;
 #if desktop
 import flash.events.FocusEvent;
 #end
@@ -56,6 +56,11 @@ class FlxGame extends Sprite
 	@:allow(flixel.system.frontEnds.VCRFrontEnd)
 	public var recording(default, null):Bool = false;
 	#end
+
+	/**
+	 * The sound tray display container.
+	 */
+	public var soundTray(default, null):VolumeTray;
 
 	#if FLX_DEBUG
 	/**
@@ -224,9 +229,9 @@ class FlxGame extends Sprite
 	#end
 
 	/**
-	 * The Debug Overlay that shows stats in-game
+	 * The Debug Overlay that contains stats in-game
 	 */
-	public var overlay:Overlay;
+	public var overlay:MCounter;
 
 	/**
 	 * Instantiate a new game object.
@@ -322,13 +327,17 @@ class FlxGame extends Sprite
 
 		// No need for overlays on mobile.
 		#if !mobile
+		// Volume display tab
+		soundTray = new VolumeTray();
+		addChild(soundTray);
+
 		#if FLX_FOCUS_LOST_SCREEN
 		_focusLostScreen = Type.createInstance(_customFocusLostScreen, []);
 		addChild(_focusLostScreen);
 		#end
 		#end
 
-		overlay = new Overlay(10, 8);
+		overlay = new MCounter(10, 8);
 		addChild(overlay);
 
 		// Focus gained/lost monitoring
@@ -471,6 +480,9 @@ class FlxGame extends Sprite
 			_focusLostScreen.draw();
 		#end
 
+		if (soundTray != null)
+			soundTray.screenCenter();
+
 		#if FLX_POST_PROCESS
 		for (postProcess in postProcesses)
 			postProcess.rebuild();
@@ -478,6 +490,11 @@ class FlxGame extends Sprite
 
 		if (overlay != null)
 			overlay.reposition(width, height);
+
+		// Re-assign the FlxG saved on the ScriptHandler static exposure and loaded modules, also execute onGameResized
+		backend.scripting.ScriptHandler.exp.set('FlxG', FlxG);
+		_state.setOnModules('FlxG', FlxG);
+		_state.callOnModules('onGameResized', width, height);
 	}
 
 	/**
@@ -611,6 +628,8 @@ class FlxGame extends Sprite
 			FlxG.signals.preGameStart.dispatch();
 
 		FlxG.signals.preStateCreate.dispatch(_state);
+
+		// preload function
 
 		_state.create();
 

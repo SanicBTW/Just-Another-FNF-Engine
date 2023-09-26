@@ -1,13 +1,13 @@
 package window.components;
 
+// https://github.com/SanicBTW/Just-Another-FNF-Engine/blob/scrolling%26backend-rewrite/quaver/window/components/Slider.hx
 import flixel.util.FlxColor;
-import openfl.display.Shape;
 import openfl.geom.ColorTransform;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 
-// TODO: Add proper scaling and max and min values (possible idea: getter and setter of progress which adjusts the targetScale using some hacky formula with % dunno)
-class Slider extends ExSprite
+// TODO: Add max and min values (possible idea: getter and setter of progress which adjusts the targetScale using some hacky formula with % dunno)
+class Slider extends ExSprite<Slider>
 {
 	public var initialY:Float = 0;
 
@@ -16,9 +16,9 @@ class Slider extends ExSprite
 	private var targetSAlpha:Float = 1;
 	private var accumTimer:Float = 0;
 
-	private var _bgBar:Shape;
-	private var _fgBar:Shape;
-	private var _stepper:Shape;
+	private var _bgBar:RoundedSprite;
+	private var _fgBar:RoundedSprite;
+	private var _stepper:RoundedSprite;
 	private var _stpText:TextField;
 
 	private var _width:Int = 0;
@@ -62,17 +62,17 @@ class Slider extends ExSprite
 	{
 		_width = width;
 		_height = height;
-		active = false; // cuz we manually update it
+		active = false;
 
 		super();
 	}
 
 	override function create()
 	{
-		_bgBar = drawRound(0, 0, _width, _height, [_height], bgColor, 1);
-		_fgBar = drawRound(0, 0, _width, _height, [_height], fgColor, 1);
+		_bgBar = new RoundedSprite(0, 0, _width, _height, [_height], bgColor, 1);
+		_fgBar = new RoundedSprite(0, 0, _width, _height, [_height], fgColor, 1);
 
-		_stepper = drawRound(0, 0, _height + 5, _height + 5, [15], fgColor, 1);
+		_stepper = new RoundedSprite(0, 0, _height + 5, _height + 5, [_height * 2], fgColor, 1);
 		// start pos in case the lerp is too funky
 		_stepper.x = (_fgBar.width - _stepper.width) + (_stepper.width * 0.5);
 		_stepper.y = (_fgBar.height - _stepper.height) * 0.5;
@@ -97,11 +97,12 @@ class Slider extends ExSprite
 		var lerpVal:Float = flixel.math.FlxMath.bound(1 - (elapsed * 7.315), 0, 1);
 
 		lerpTrack(this, "y", targetY, lerpVal);
-		lerpTrack(_fgBar, "scaleX", value, lerpVal);
+
+		_fgBar.setSize(value * _width, _height, lerpVal);
 
 		lerpTrack(_stpText, "y", targetSY, lerpVal);
 		lerpTrack(_stpText, "alpha", targetSAlpha, lerpVal);
-		_stpText.text = '${Math.round(_fgBar.scaleX * 100)}%';
+		_stpText.text = '${Math.round((_fgBar.RealSizes.x / _width) * 100)}%';
 
 		// We want it to be instant snapping
 		_stepper.x = (_fgBar.width - _stepper.width) + (_stepper.width * 0.5);

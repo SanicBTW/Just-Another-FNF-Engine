@@ -3,7 +3,9 @@ package states;
 import backend.*;
 import backend.Conductor.BPMChange;
 import backend.Controls.ActionType;
-import engine.SBar;
+import backend.scripting.IsolatedPaths;
+import engine.MusicBeatState;
+import engine.sprites.SBar;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -31,12 +33,11 @@ import quaver.notes.StrumLine;
 using Lambda;
 using backend.Extensions;
 
-class ScrollTest extends FlxState
+class ScrollTest extends MusicBeatState
 {
-	public static var Controls:Controls = new Controls();
 	public static var Paths:IsolatedPaths = new IsolatedPaths('quaver');
-	public static var LocalPaths:IsolatedPaths = new IsolatedPaths(haxe.io.Path.join([lime.system.System.documentsDirectory, "just_another_fnf_engine", "quaver"]));
-	public static var Conductor:Conductor;
+	public static var LocalPaths:IsolatedPaths = new IsolatedPaths(backend.io.Path.join(lime.system.System.documentsDirectory, "just_another_fnf_engine",
+		"quaver"));
 
 	var camHUD:FlxCamera;
 	var camGame:FlxCamera;
@@ -54,7 +55,6 @@ class ScrollTest extends FlxState
 	var swagShit:SwagSong = null;
 
 	var shitNotes:Array<Note> = [];
-	var voices:FlxSound = new FlxSound();
 
 	var timeBar:SBar;
 
@@ -92,14 +92,6 @@ class ScrollTest extends FlxState
 		timeBar.screenCenter(Y);
 		add(timeBar);
 
-		// Automatic update haha
-		// Gotta create it on create (haha i want to kms) because of some issue with them signals and events lol
-		Conductor = new Conductor();
-		add(Conductor);
-
-		backend.Controls.onActionPressed.add(onActionPressed);
-		backend.Controls.onActionReleased.add(onActionReleased);
-
 		generateChart();
 
 		FlxG.camera.zoom = 1;
@@ -116,40 +108,12 @@ class ScrollTest extends FlxState
 		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, lerpVal);
 		strumCam.zoom = FlxMath.lerp(1, strumCam.zoom, lerpVal);
 
-		if (FlxG.sound.music != null)
-			timeBar.value = FlxMath.lerp(Conductor.time / FlxG.sound.music.length, timeBar.value, lerpVal);
+		if (Conductor.boundInst != null)
+			timeBar.value = FlxMath.lerp(Conductor.time / Conductor.boundInst.length, timeBar.value, lerpVal);
 
 		noteSpawn();
 
-		holdNotes(elapsed);
-
 		super.update(elapsed);
-
-		if (swagShit != null)
-		{
-			if (FlxG.sound.music != null && FlxG.sound.music.playing)
-			{
-				if (Math.abs(FlxG.sound.music.time - Conductor.time) > Conductor.resyncThreshold
-					|| (swagShit.needsVoices && Math.abs(voices.time - Conductor.time) > Conductor.resyncThreshold))
-				{
-					trace('Resyncing song time ${FlxG.sound.music.time}, ${Conductor.time}');
-					if (swagShit.needsVoices)
-						voices.pause();
-
-					Conductor.time = FlxG.sound.music.time;
-
-					if (swagShit.needsVoices)
-					{
-						voices.time = Conductor.time;
-						voices.play();
-					}
-
-					trace('New song time ${FlxG.sound.music.time}, ${Conductor.time}');
-				}
-
-				Conductor.time += elapsed * 1000;
-			}
-		}
 
 		if (strums.length > 0)
 		{
@@ -183,14 +147,6 @@ class ScrollTest extends FlxState
 		}
 	}
 
-	override function destroy()
-	{
-		backend.Controls.onActionPressed.remove(onActionPressed);
-		backend.Controls.onActionReleased.remove(onActionReleased);
-
-		super.destroy();
-	}
-
 	function generateBackground()
 	{
 		// dark background
@@ -212,6 +168,8 @@ class ScrollTest extends FlxState
 		playerStrums.cameras = strums.cameras;
 		strums.add(playerStrums);
 
+		Conductor.active = true;
+
 		if (swagShit != null)
 		{
 			for (strum in strums)
@@ -228,7 +186,7 @@ class ScrollTest extends FlxState
 			FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
 				1,
 				false);
-			FlxG.sound.music.stop();
+			Conductor.boundInst.stop();
 			Conductor.bpm = qua.TimingPoints[0].Bpm;
 
 			for (hitObject in qua.HitObjects)
@@ -259,25 +217,15 @@ class ScrollTest extends FlxState
 		var netCb:MultiCallback = new MultiCallback(() ->
 		{
 			swagShit = Song.createFromRaw(endChart);
+			swagShit.needsVoices = endVoices != null;
 
-			if (endVoices == null)
-				swagShit.needsVoices = false;
-
-			Conductor.changeBPM(swagShit.bpm);
-
-			FlxG.sound.music = new FlxSound();
-			FlxG.sound.music.loadEmbedded(endInst);
-
-			FlxG.sound.music.onComplete = function()
+			Conductor.bindSong(swagShit, endInst, endVoices);
+			Conductor.boundInst.onComplete = function()
 			{
 				FlxG.resetState();
 			}
 
-			voices.loadEmbedded(endVoices);
-			FlxG.sound.list.add(voices);
-
 			generateBackground();
-			Conductor.active = false;
 		});
 
 		PBRequest.getRecords('funkin', (funky:Collection<FunkinRecord>) ->
@@ -339,7 +287,7 @@ class ScrollTest extends FlxState
 
 	private function noteSpawn()
 	{
-		if (FlxG.sound.music == null || swagShit == null)
+		if (Conductor.boundInst == null || swagShit == null)
 			return;
 
 		var curSection:funkin.Song.SwagSection = swagShit.notes[Std.int(Conductor.roundStep / 16)];
@@ -403,83 +351,49 @@ class ScrollTest extends FlxState
 		}
 	}
 
-	private function holdNotes(elapsed:Float)
-	{
-		if (strums == null || playerStrums == null || opponentStrums == null)
-			return;
-
-		var holdArray:Array<Bool> = [
-			Controls.left.state == PRESSED,
-			Controls.down.state == PRESSED,
-			Controls.up.state == PRESSED,
-			Controls.right.state == PRESSED,
-		];
-
-		for (note in playerStrums.holdMap.keys())
-		{
-			note.holding = holdArray.unsafeGet(note.noteData);
-			var receptor:Receptor = playerStrums.receptors.members.unsafeGet(note.noteData);
-			var curHold:SustainNote = playerStrums.holdMap.get(note);
-			if (!curHold.exists)
-				return;
-
-			@:privateAccess
-			var crochet:FlxSprite = playerStrums._conductorCrochet;
-			var hheight:Float = curHold.hold.y + curHold.hold.height + curHold.end.height;
-
-			if (note.wasGoodHit && note.holding && (crochet.y >= curHold.hold.y && hheight <= crochet.y))
-			{
-				receptor.playAnim("confirm", true);
-
-				if (note.holdTime >= note.sustainLength)
-				{
-					note.holdTime = note.sustainLength;
-					trace('finished');
-				}
-
-				note.holdTime += elapsed * Conductor.stepCrochet;
-				// trace(note.holdTime >= note.sustainLength);
-				// trace(note.holdTime);
-			}
-		}
-	}
-
-	function onActionPressed(action:ActionType)
+	override public function onActionPressed(action:String)
 	{
 		switch (action)
 		{
-			case BACK | RESET:
+			case "back" | "reset":
 				return;
-
-			case CONFIRM:
-				if (FlxG.sound.music != null)
+			case "confirm":
+				if (Conductor.boundInst != null)
 				{
-					if (FlxG.sound.music.playing)
+					if (Conductor.boundInst.playing)
 					{
-						FlxG.sound.music.pause();
-						if (swagShit != null && swagShit.needsVoices)
-							voices.pause();
+						if (swagShit != null)
+						{
+							Conductor.boundInst.pause();
+							if (swagShit.needsVoices)
+								Conductor.boundVocals.pause();
+						}
+						else if (qua != null)
+							Conductor.boundInst.pause();
 					}
 					else
 					{
-						FlxG.sound.music.play();
-						if (swagShit != null && swagShit.needsVoices)
-							voices.play();
+						if (swagShit != null)
+						{
+							Conductor.boundInst.play();
+							if (swagShit.needsVoices)
+								Conductor.boundVocals.pause();
+						}
+						else if (qua != null)
+							Conductor.boundInst.play();
 					}
 				}
-
 			default:
 				if (playerStrums.botPlay)
 					return;
-
 				for (receptor in playerStrums.receptors)
 				{
 					if (action == receptor.action)
 					{
 						var data:Int = receptor.noteData;
 						var lastTime:Float = Conductor.time;
-						Conductor.time = FlxG.sound.music.time;
 
+						Conductor.time = Conductor.boundInst.time;
 						var possibleNotes:Array<Note> = [];
 						var directionList:Array<Int> = [];
 						var dumbNotes:Array<Note> = [];
@@ -517,7 +431,6 @@ class ScrollTest extends FlxState
 						{
 							playerStrums.destroyNote(note);
 						}
-
 						if (possibleNotes.length > 0)
 						{
 							for (coolNote in possibleNotes)
@@ -526,9 +439,7 @@ class ScrollTest extends FlxState
 									noteHit(coolNote);
 							}
 						}
-
 						Conductor.time = lastTime;
-
 						if (receptor.animation.curAnim.name != "confirm")
 							receptor.playAnim('pressed');
 					}
@@ -536,11 +447,11 @@ class ScrollTest extends FlxState
 		}
 	}
 
-	function onActionReleased(action:ActionType)
+	override public function onActionReleased(action:String)
 	{
 		switch (action)
 		{
-			case BACK | CONFIRM | RESET:
+			case "back" | "confirm" | "reset":
 				return;
 
 			default:
