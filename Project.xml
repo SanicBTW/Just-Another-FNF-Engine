@@ -4,7 +4,7 @@
 	<!-- _________________________ Application Settings _________________________ -->
 
 	<app title="Just Another FNF Engine" file="JAFE" main="Main" version="0.2.10" company="SanicBTW" 
-		packageName="com.sanicbtw.jafe" package="com.sanicbtw.jafe"/>
+		packageName="com.sanicbtw.jafe" package="com.sanicbtw.jafe" />
 	<app preloader="flixel.system.FlxPreloader" />
 	<set name="SWF_VERSION" value="11.8" />
 
@@ -20,17 +20,17 @@
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 
-	<source path="quaver" />
+	<source path="source" />
 	<assets path="assets" />
 
 	<library name="funkin" preload="true" />
 	<assets path="assets/funkin" library="funkin" />
 
-	<library name="6h" preload="false" />
-	<assets path="assets/6h" library="6h" />
-
 	<library name="fof" preload="false" />
 	<assets path="assets/fof" library="fof" />
+
+	<library name="quaver" preload="false" />
+	<assets path="assets/quaver" library="quaver" />
 
 	<library name="fonts" preload="true" />
 	<assets path="assets/fonts" embed='true' library="fonts" />
@@ -38,10 +38,16 @@
 	<!-- _________________________________ Defines ______________________________ -->
 
 	<!-- Allow the engine to access the FileSystem -->
-	<define name="FS_ACCESS" if="windows" />
+	<define name="FS_ACCESS" if="windows || linux" />
 
 	<!-- Enable Discord Rich Presence -->
-	<define name="DISCORD_PRESENCE" if="windows" />
+	<define name="DISCORD_PRESENCE" if="windows || linux" />
+
+	<!-- Enable the engine Crash Handler -->
+	<define name="CRASH_HANDLER" if="windows || linux" />
+
+	<!-- Enables caching flx text graphics and bitmaps -->
+	<define name="CACHE_FLXTEXT" />
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
@@ -53,14 +59,14 @@
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
-	<assets path="ffmpeg.exe" if="FS_ACCESS" /> 
+	<assets path="utils" if="FS_ACCESS" unless="linux || android" /> 
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
-	<haxedef name="FLX_NO_DEBUG" unless="debug"/>
+	<haxedef name="FLX_NO_DEBUG" unless="debug" />
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
 	<haxedef name="FLX_NO_GAMEPAD" />
-	
+
 	<haxedef name="FLX_NO_SOUND_TRAY" />
 
 	<section if="windows">
@@ -72,13 +78,16 @@
 
 	<haxedef name="hscriptPos" />
 
+	<!-- Enables Crash Handler on Debug -->
+	<undefine name="openfl-disable-handle-error" if="CRASH_HANDLER" />
+
 	<!-- _________________________________ Icons ________________________________ -->
 
-	<icon path="icons/icon16.png" size='16'/>
-	<icon path="icons/icon32.png" size='32'/>
-	<icon path="icons/icon64.png" size='64'/>
-	<icon path="icons/icon128.png" size='128'/>
-	<icon path="icons/icon256.png" size='256'/>
-	<icon path="icons/icon512.png" size='512'/>
+	<icon path="icons/icon16.png" size='16' />
+	<icon path="icons/icon32.png" size='32' />
+	<icon path="icons/icon64.png" size='64' />
+	<icon path="icons/icon128.png" size='128' />
+	<icon path="icons/icon256.png" size='256' />
+	<icon path="icons/icon512.png" size='512' />
 	<icon path="icons/iconOG.png" />
 </project>

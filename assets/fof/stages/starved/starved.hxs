@@ -11,7 +11,6 @@ var transparentColor = 0x00000000;
 var blackColor = 0xFF000000;
 var whiteColor = 0xFFFFFFFF;
 var redColor = 0xFFFF0000;
-var conductorOGState;
 var tweenTime = 1;
 
 var blackFuck;
@@ -24,15 +23,17 @@ var fearBBorder;
 var fearBBG;
 var fearBar;
 
+// Game over thingy not working anymore
 function onCreate()
 {
-    stage.defaultCamZoom = 0.85;
+    stage.camera_settings.defaultZoom = 0.85;
     stage.hide_girlfriend = true;
-    stage.camera_opponent = [20, -60];
-    stage.skip_defaultCountdown = true;
+    stage.camera_settings.offsets.opponent.setTo(20, -60);
+    stage.skip.defaultCountdown = true;
+    stage.skip.healthCheck = true;
 
-    stage.boyfriend = [270, 175];
-    stage.opponent = [400, -250];
+    stage.positions.boyfriend.setTo(270, 175);
+    stage.positions.opponent.setTo(400, -250);
 
     GameOverSubstate.characterName = 'bf-starved-die';
     GameOverSubstate.deathSoundName = 'starved-death';
@@ -41,27 +42,27 @@ function onCreate()
     GameOverSubstate.snapCamera = true;
 
     cityBG = new FlxSprite(-100, 0, Paths.image('city'));
-    cityBG.setGraphicSize(Math.round(cityBG.width * 1.5));
+    cityBG.setGraphicSize(toInt32(cityBG.width * 1.5));
     cityBG.scrollFactor.set(1, 0.9);
     add(cityBG);
 
     towerBG = new FlxSprite(-100, 0, Paths.image('towers'));
-    towerBG.setGraphicSize(Math.round(towerBG.width * 1.5));
+    towerBG.setGraphicSize(toInt32(towerBG.width * 1.5));
     towerBG.scrollFactor.set(1, 0.9);
     add(towerBG);
 
     fofStage = new FlxSprite(-100, 0, Paths.image('stage'));
-    fofStage.setGraphicSize(Math.round(fofStage.width * 1.5));
+    fofStage.setGraphicSize(toInt32(fofStage.width * 1.5));
     fofStage.scrollFactor.set(1, 0.9);
     add(fofStage);
 
     sonicDead = new FlxSprite(0, 100, Paths.image('sonicisfuckingdead'));
-    sonicDead.setGraphicSize(Math.round(sonicDead.width * 0.65));
+    sonicDead.setGraphicSize(toInt32(sonicDead.width * 0.65));
     sonicDead.scrollFactor.set(1, 0.9);
     add(sonicDead);
 
 	lightBG = new FlxSprite(-100, 0, Paths.image('light'));
-	lightBG.setGraphicSize(Math.round(lightBG.width * 1.5));
+	lightBG.setGraphicSize(toInt32(lightBG.width * 1.5));
 	lightBG.scrollFactor.set(1, 0.9);
     lightBG.alpha = 0;
 	add(lightBG);
@@ -79,17 +80,12 @@ function onCreate()
     fearBBG.scale.set(0.60, 1);
     fearBBG.updateHitbox();
 
-    fearBar = new FlxBar(fearBBG.x + 12, fearBBG.y + 16, FlxBarFillDirection.BOTTOM_TO_TOP, Math.round(fearBBG.width), Math.round(fearBBG.height), null,
-	    '', 0, 100);
-	fearBar.angle = 0;
+    fearBar = new SBar(fearBBG.x + 12, fearBBG.y + 16, toInt32(fearBBG.width), toInt32(fearBBG.height), transparentColor, redColor);
+	fearBar.angle = 180;
 	fearBar.scrollFactor.set();
-	fearBar.createFilledBar(transparentColor, redColor);
-	fearBar.numDivisions = 800;
 	fearBar.scale.set(0.56, 0.90);
 	fearBar.updateHitbox();
-
-    conductorOGState = Conductor.speedBasedBPM;
-    Conductor.speedBasedBPM = false;
+    fearBar.fillAxis = SBarFillAxis.VERTICAL;
 }
 
 function onStartCountdown()
@@ -98,7 +94,7 @@ function onStartCountdown()
     UI.add(fearBBG);
 	UI.add(fearBar);
 
-    PlayState.camMov = 15;
+    PlayState.camDisp = 15;
 
     add(blackFuck);
 
@@ -146,16 +142,13 @@ function onCreatePost()
     bfx = PlayState.boyfriendGroup.x;
     bfy = PlayState.boyfriendGroup.y;
 
-    // apparently fixes camera position
-    beatHit();
-    moveCamera();
-
     UI.textFormat = "Sacrifices: $misses | Accuracy: $accuracy";
     UI.scoreText.x = 0;
     UI.scoreText.y = (FlxG.height - 45) - 5;
+    if (Settings.downScroll)
+        UI.scoreText.y = 45;
     UI.scoreText.alignment = "center";
     UI.scoreText.size = 20;
-    UI.updateText();
 
     var i = 0;
     opponentStrums.visible = false;
@@ -171,9 +164,19 @@ function onCreatePost()
 	}
 }
 
-function onNoteMiss()
+function goodNoteHit()
 {
-    fear += 0.6;
+    fear -= 0.001;
+}
+
+function noteMiss()
+{
+    fear += 0.005;
+}
+
+function opponentNoteHit()
+{
+    fear += 0.0015;
 }
 
 function onCountdownStarted()
@@ -187,22 +190,17 @@ function onSongStart()
     FlxTween.tween(UI, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
 }
 
-function onEndSong()
-{
-    Conductor.speedBasedBPM = conductorOGState;
-}
-
 function onMoveCamera(who)
 {
     switch(who)
     {
         case 'dad':
         {
-            stage.defaultCamZoom = 1;
+            stage.camera_settings.defaultZoom = 1.15;
         }
         case 'boyfriend':
         {
-            stage.defaultCamZoom = 0.85;
+            stage.camera_settings.defaultZoom = 0.85;
         }
     }
 }
@@ -216,18 +214,20 @@ function onGameOverConfirm(isRestart)
 function onUpdate(elapsed)
 {
     zoomshit = camGame.zoom / 0.75;
-    PlayState.player.scale.set(zoomshit, zoomshit);
-    PlayState.player.x = bfx * zoomshit;
-    PlayState.player.y = bfy * zoomshit;
+    PlayState.boyfriend.scale.set(zoomshit, zoomshit);
+    PlayState.boyfriend.x = bfx * zoomshit;
+    PlayState.boyfriend.y = bfy * zoomshit;
+    fearBar.value = fear;
 
     if (PlayState.updateTime)
     {
-        fear += 0.475 * elapsed;
-        fearBar.value = fear;
+        // ok so this dumb bitch would return 1 UPON STATE CREATION LIKE WHAT THE ACTUAL FUCK BRO
+        if (fearBar.percent >= 1)
+        {
+            Timings.health = 0;
+            stage.skip.healthCheck = false;
+        }
     }
-
-    if (fear >= 100)
-        Timings.health = 0;
 }
 
 function onStepHit()
@@ -244,8 +244,8 @@ function onStepHit()
         if (PlayState.SONG.song == "Lucha or funa")
             return;
 
-		PlayState.player.colorTween = FlxTween.color(PlayState.player, tweenTime, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
-			PlayState.player.colorTween = null;
+		PlayState.boyfriend.colorTween = FlxTween.color(PlayState.boyfriend, tweenTime, whiteColor, redColor, {onComplete: function(twn:FlxTween) {
+			PlayState.boyfriend.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
     else if (curStep == 1437 || curStep == 1982)
@@ -260,8 +260,8 @@ function onStepHit()
         if (PlayState.SONG.song == "Lucha or funa")
             return;
 
-        PlayState.player.colorTween = FlxTween.color(PlayState.player, tweenTime, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
-			PlayState.player.colorTween = null;
+        PlayState.boyfriend.colorTween = FlxTween.color(PlayState.boyfriend, tweenTime, redColor, whiteColor, {onComplete: function(twn:FlxTween) {
+			PlayState.boyfriend.colorTween = null;
 		}, ease: FlxEase.quadInOut});
     }
 }
