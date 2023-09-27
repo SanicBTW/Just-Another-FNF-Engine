@@ -20,9 +20,15 @@ using backend.Extensions;
 
 typedef Section =
 {
-	var header:FlxSprite;
-	var body:Array<FlxSprite>;
+	var header:SectionLine;
+	var body:Array<SectionLine>;
 	var exists:Bool;
+	var time:Float;
+}
+
+typedef SectionLine =
+{
+	var ref:FlxSprite;
 	var time:Float;
 }
 
@@ -150,7 +156,6 @@ class StrumLine extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		_boardPattern.scale.y = scrollSpeed;
 		_boardPattern.height = ((Conductor.boundInst.length / Conductor.stepCrochet) * CELL_SIZE) * scrollSpeed;
 
 		updateCrochet();
@@ -185,7 +190,6 @@ class StrumLine extends FlxSpriteGroup
 		}
 	}
 
-	// TODO: Only use 5 generated sections for better optimization??
 	public function regenSections()
 	{
 		for (i in sectionGroup)
@@ -193,30 +197,46 @@ class StrumLine extends FlxSpriteGroup
 
 		sectionGroup.clear();
 
-		for (i in 0...Std.int((Conductor.boundInst.length / Conductor.stepCrochet) / 16))
+		for (section in Conductor.SONG.notes)
 		{
-			// Them header
-			var lineSprite:FlxSprite = new FlxSprite(0, 0, _sectionLine);
-			lineSprite.alpha = 0.5;
-			lineSprite.exists = false;
-			sectionGroup.add(lineSprite);
-
 			var curSection:Section = {
-				header: lineSprite,
+				header: null,
 				body: [],
-				exists: lineSprite.exists,
-				time: (i * 16)
+				exists: false,
+				time: section.startTime
 			};
 
-			// Section body lines
-			for (j in 1...4)
+			for (line in section.lines)
 			{
-				var thinLine:FlxSprite = new FlxSprite(0, 0, _line);
-				thinLine.alpha = 0.75;
-				thinLine.exists = curSection.exists;
-				curSection.body.push(thinLine);
-				sectionGroup.add(thinLine);
+				switch (line.type)
+				{
+					case HEADER:
+						{
+							// Them header
+							var lineSprite:FlxSprite = new FlxSprite(0, 0, _sectionLine);
+							lineSprite.alpha = 0.5;
+							lineSprite.exists = curSection.exists;
+							sectionGroup.add(lineSprite);
+							curSection.header = {
+								ref: lineSprite,
+								time: line.time
+							};
+						}
+
+					case BODY:
+						{
+							var thinLine:FlxSprite = new FlxSprite(0, 0, _line);
+							thinLine.alpha = 0.75;
+							thinLine.exists = curSection.exists;
+							curSection.body.push({
+								ref: thinLine,
+								time: line.time
+							});
+							sectionGroup.add(thinLine);
+						}
+				}
 			}
+
 			sectionList.push(curSection);
 		}
 	}
@@ -266,36 +286,37 @@ class StrumLine extends FlxSpriteGroup
 		for (i in 0...sectionList.length)
 		{
 			var curSection:Section = sectionList.unsafeGet(i);
-			var time:Float = curSection.time;
+			var header:SectionLine = curSection.header;
 
-			if (getYFromStep(time) <= camera.scroll.y + camera.height && !curSection.exists)
+			if (getYFromStep(header.time) <= camera.scroll.y + camera.height && !curSection.exists)
 			{
 				curSection.exists = true;
 
-				curSection.header.exists = curSection.exists;
+				header.ref.exists = curSection.exists;
 				for (j in 0...curSection.body.length)
-					curSection.body[j].exists = curSection.exists;
+					curSection.body[j].ref.exists = curSection.exists;
 
-				var displacement:Float = getYFromStep(time);
-				curSection.header.setPosition(_boardPattern.x + _boardPattern.width / 2 - curSection.header.width / 2, _boardPattern.y + displacement);
-				curSection.header.active = false;
+				var displacement:Float = getYFromStep(header.time);
+				header.ref.setPosition(_boardPattern.x + _boardPattern.width / 2 - header.ref.width / 2, _boardPattern.y + displacement);
+				header.ref.active = false;
 
 				for (j in 0...curSection.body.length)
 				{
-					var segment = curSection.body[j];
-					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(time + ((j + 1) * 4)));
+					var segment:FlxSprite = curSection.body[j].ref;
+					// time+ ((j + 1) * 4)
+					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(curSection.body[j].time));
 					segment.active = false;
 				}
 			}
 
-			if (getYFromStep(time) <= camera.scroll.y - camera.height && curSection.exists)
+			if (getYFromStep(header.time) <= camera.scroll.y - camera.height && curSection.exists)
 			{
-				if (curSection.header.y <= camera.scroll.y - camera.height && curSection.header.exists)
-					curSection.header.exists = false;
+				if (curSection.header.ref.y <= camera.scroll.y - camera.height && curSection.header.ref.exists)
+					curSection.header.ref.exists = false;
 
 				for (j in 0...curSection.body.length)
 				{
-					var bodyLine:FlxSprite = curSection.body[j];
+					var bodyLine:FlxSprite = curSection.body[j].ref;
 					if (bodyLine.y <= camera.scroll.y - camera.height && bodyLine.exists)
 						bodyLine.exists = false;
 				}

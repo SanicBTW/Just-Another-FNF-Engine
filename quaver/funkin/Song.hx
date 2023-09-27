@@ -1,6 +1,7 @@
 package funkin;
 
 import haxe.Json;
+import haxe.ds.Vector;
 
 using StringTools;
 
@@ -27,8 +28,9 @@ typedef SwagSection =
 
 	// section info shit for section creation my bad
 	var startTime:Float; // based on step crochets no funky elapsed shit sorry
+	var length:Float; // just startTime + endTime LMAO
 	var endTime:Float;
-	var lines:Array<SectionLine>;
+	var lines:Vector<SectionLine>;
 }
 
 typedef SwagSong =
@@ -68,10 +70,33 @@ class Song
 			var crochet:Float = (60 / bpm) * 1000;
 			var stepCrochet:Float = (crochet / beats);
 
-			// So the uhhhhh section must always need a header section including 4 body lines
 			section.startTime = (index * stepCrochet);
 			section.endTime = (section.startTime * steps);
-			trace(bpm, section.startTime, section.endTime);
+			section.length = section.startTime + section.endTime;
+
+			// So the uhhhhh section must always need a header section including 4 body lines
+			section.lines = new Vector<SectionLine>(5);
+
+			for (i in 0...Std.int((section.length / stepCrochet) / steps))
+			{
+				trace(i);
+			}
+
+			section.lines.set(0, {
+				type: HEADER,
+				time: section.startTime
+			});
+
+			for (i in 1...5)
+			{
+				section.lines.set(i, {
+					type: BODY,
+					time: section.lines.get(0).time + ((i + 1) * beats)
+				});
+			}
+
+			trace(section.lines);
+			trace(bpm, section.startTime, section.endTime, section.length);
 		}
 
 		return swagShit;
