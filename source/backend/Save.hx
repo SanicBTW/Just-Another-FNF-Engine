@@ -44,22 +44,50 @@ class Save
 	private static function loadQuaver()
 	{
 		// Converting all of the existing beatmaps is probably the best option to avoid having numbers and shit
-		for (MapSetId => MapIds in quaver.QuaverDB.availableMaps)
+		Paths.changeLibrary(QUAVER, (lib) ->
 		{
-			for (MapId in MapIds)
-			{
-				_db.get("quaverDB", MapId).then((savedM:Any) ->
-				{
-					var map:quaver.Qua = cast savedM;
-					if (map == null)
-					{
-						map = new quaver.Qua(Cache.getText(Paths.file('quaver/$MapSetId/$MapId.qua')), false);
-						_db.set("quaverDB", MapId, map);
-					}
+			var unfiltered:Array<String> = lib.list("TEXT"); // Only target .qua files cuz we only need em
 
-					quaver.QuaverDB.loadedMaps.set('${map.MapId}', map);
-				});
+			var maps:Map<String, Array<String>> = new Map();
+			for (entry in unfiltered)
+			{
+				var raw:String = entry.substring(0, entry.lastIndexOf("/")); // lil helper :skull:
+
+				var MapSetId:String = raw.substring(raw.lastIndexOf("/") + 1);
+				if (maps.get(MapSetId) == null)
+					maps.set(MapSetId, []);
+
+				// if value greater than -1 it means it was found
+				if (entry.indexOf(MapSetId) > -1)
+				{
+					raw = entry;
+
+					var MapId:String = backend.io.Path.withoutDirectory(backend.io.Path.withoutExtension(raw));
+					maps.get(MapSetId).push(MapId);
+				}
 			}
-		}
+			quaver.QuaverDB.availableMaps = maps; // copycat for safety purposes
+
+			for (MapSetId => MapIds in quaver.QuaverDB.availableMaps)
+			{
+				for (MapId in MapIds)
+				{
+					_db.get("quaverDB", MapId).then((savedM:Any) ->
+					{
+						var map:quaver.Qua = cast savedM;
+						if (map == null)
+						{
+							map = new quaver.Qua(Cache.getText(Paths.file('$MapSetId/$MapId.qua')), false);
+							_db.set("quaverDB", MapId, map);
+						}
+
+						quaver.QuaverDB.loadedMaps.set('${map.MapId}', map);
+					});
+				}
+			}
+		});
+
+		// Unload folder for memory purposes???? (HTML5 needs it tho, yeah idrc you can load it again when opening the selection state so yeah, windows doesnt need it cuz the song file is converted to ogg and saved locally)
+		openfl.utils.Assets.unloadLibrary(Paths.Libraries.QUAVER);
 	}
 }

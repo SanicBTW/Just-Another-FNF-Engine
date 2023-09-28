@@ -40,8 +40,6 @@ class SongSelection extends TransitionState
 		isFS: false
 	};
 
-	private var libIndicator:FlxText;
-
 	private var networkCb:MultiCallback = new MultiCallback(() ->
 	{
 		TransitionState.switchState(new PlayState());
@@ -87,13 +85,13 @@ class SongSelection extends TransitionState
 		{
 			case "libraries":
 				{
-					Paths.changeLibrary(FOF, () ->
+					Paths.changeLibrary(FOF, (lib) ->
 					{
 						diffStore.clear();
 
 						var regenArray:Array<String> = [];
 
-						var assets:Array<String> = Paths.getLibraryFiles("TEXT");
+						var assets:Array<String> = lib.list("TEXT");
 						for (i in 0...assets.length)
 						{
 							if (assets[i].contains("songs"))
@@ -149,6 +147,10 @@ class SongSelection extends TransitionState
 		}).then(function(cock)
 		{
 				FlxG.sound.playMusic(cock);
+		}).catchError(function(error)
+		{
+				// Notify user that there was an error while loading the song
+				trace(error);
 		});
 
 		var bg:StateBG = new StateBG('M_menuBG');
@@ -158,11 +160,7 @@ class SongSelection extends TransitionState
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
 
-		@:privateAccess
-		libIndicator = new FlxText(0, 15, 0, 'Library loaded: ${Paths._library}', 24);
-		libIndicator.setFormat(Paths.font('vcr.ttf'), 24);
-		libIndicator.screenCenter(X);
-		add(libIndicator);
+		// idk since when libIndicator has been here but damn it stayed for a long ass time
 
 		curPage = 0;
 

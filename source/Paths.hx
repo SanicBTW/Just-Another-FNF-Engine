@@ -20,10 +20,10 @@ class Paths
 	// Open a substate that indicates the loading state?
 	// If the new library is the default one, it will unload the previous one
 	// Search for a better way to change library (crashes after a couple of changes)
-	public static function changeLibrary(newLibrary:Libraries, onFinish:Void->Void)
+	public static function changeLibrary(newLibrary:Libraries, onFinish:Null<AssetLibrary>->Void)
 	{
 		if (_library == newLibrary)
-			onFinish();
+			onFinish(null);
 
 		if (Assets.hasLibrary(_oldLibrary) && _oldLibrary != DEFAULT)
 		{
@@ -36,10 +36,9 @@ class Paths
 			var loadLib:Future<AssetLibrary> = Assets.loadLibrary(newLibrary);
 			loadLib.onComplete((lib:AssetLibrary) ->
 			{
-				trace('Finished loading ${newLibrary}');
 				_oldLibrary = _library;
 				_library = newLibrary;
-				onFinish();
+				onFinish(lib);
 			});
 			loadLib.onError((err) ->
 			{
@@ -62,7 +61,7 @@ class Paths
 	public static function getLibraryFiles(?ofl:String, ?ffl:String):Array<String>
 	{
 		if (!Assets.hasLibrary(_library))
-			changeLibrary(_library, () -> {});
+			changeLibrary(_library, (_) -> {});
 
 		var files:Array<String> = Assets.getLibrary(_library).list(ofl);
 		var finalRet:Array<String> = [];
@@ -73,7 +72,6 @@ class Paths
 			{
 				if (file.contains(ffl))
 				{
-					trace(file);
 					finalRet.push(file);
 				}
 			}
@@ -118,6 +116,7 @@ class Paths
 enum abstract Libraries(String) to String
 {
 	var DEFAULT = "funkin";
+	var QUAVER = "quaver";
 	var FOF = "fof";
 	var SIXH = "6h";
 }

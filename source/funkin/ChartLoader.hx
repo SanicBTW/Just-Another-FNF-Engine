@@ -120,8 +120,10 @@ class ChartLoader
 			notes: [],
 			events: []
 		};
+		// Let me get this straight, SO YOU ARE TELLING ME THIS SHIT IS RETURNING NULL WHEN THE QUAVER LIBRARY IS LOADED FROM THE PREVIOUS STATE????
+		// yknow what just gonna enforce library fuck it
 		var audioFile:Sound = Cache.getSound(#if FS_ACCESS backend.io.Path.join(IO.getFolderPath(QUAVER), '${qua.MapSetId}',
-			qua.AudioFile) #else Paths.file('quaver/${qua.MapSetId}/${qua.AudioFile}') #end);
+			qua.AudioFile) #else 'quaver:assets/quaver/${qua.MapSetId}/${qua.AudioFile}' #end); // assuming the librarry is loaded (IT IS)
 
 		flixel.FlxG.sound.playMusic(audioFile, 1, false);
 		flixel.FlxG.sound.music.stop();

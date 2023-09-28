@@ -152,8 +152,9 @@ class Qua
 				sectionBlock = (section == "CustomAudioSamples");
 			}
 
+			// Cannot enforce library with my own API tf bro??
 			if (lastSection != section && section == "- Path")
-				CustomAudioSamples.push(Paths.file('quaver/$MapSetId/$value'));
+				CustomAudioSamples.push('quaver:assets/quaver/$MapSetId/$value');
 
 			if (section == "SoundEffects")
 				break;

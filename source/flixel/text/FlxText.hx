@@ -829,10 +829,10 @@ class FlxText extends FlxSprite
 		var oldWidth:Int = 0;
 		var oldHeight:Int = VERTICAL_GUTTER;
 
-		if (graphic != null)
+		if (_bitmap != null)
 		{
-			oldWidth = graphic.width;
-			oldHeight = graphic.height;
+			oldWidth = _bitmap.width;
+			oldHeight = _bitmap.height;
 		}
 
 		var newWidth:Float = textField.width;

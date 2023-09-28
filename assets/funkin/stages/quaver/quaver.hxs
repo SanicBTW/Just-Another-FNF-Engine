@@ -1,5 +1,3 @@
-var bg:FlxSprite;
-
 var centerMark:FlxText;
 
 var healthBar:SBar;
@@ -10,17 +8,6 @@ var lerpTime:Float;
 
 function onCreate()
 {
-    var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, 0xFF000000);
-	darkBackground.setGraphicSize(toInt32(FlxG.width));
-	darkBackground.screenCenter();
-	darkBackground.alpha = 0.6;
-	add(darkBackground);
-
-    bg = new FlxSprite();
-    bg.alpha = 0.5;
-    bg.blend = 3;
-    add(bg);
-
     centerMark = new FlxText(0, 0, 0, Conductor.SONG.song);
     centerMark.setFormat(Cache.getFont("vcr.ttf"), 24, 0xFFFFFFFF);
     centerMark.setBorderStyle(FlxTextBorderStyle.OUTLINE, 0xFF000000, 3);
@@ -44,9 +31,30 @@ function onCreatePost()
     UI.scoreText.size = 28;
     UI.scoreText.y += 25;
 
-    bg.loadGraphic(Cache.getGraphic(VPaths.getPath("quaver/" + qua.MapSetId + "/" + qua.BackgroundFile)));
-    bg.setGraphicSize(toInt32(FlxG.width));
-    bg.screenCenter();
+    var sprite:FlxSprite = Cache.getGraphic(VPaths.getPath(qua.MapSetId + "/" + qua.BackgroundFile));
+
+    if (sprite != null)
+    {
+        var darkBackground:FlxSprite = new FlxSprite().makeGraphic(1, 1, 0xFF000000);
+	    darkBackground.setGraphicSize(toInt32(FlxG.width));
+	    darkBackground.screenCenter();
+	    darkBackground.alpha = 0.6;
+	    add(darkBackground);
+
+        var bg:FlxSprite = new FlxSprite();
+        bg.loadGraphic(sprite);
+        bg.alpha = 0.5;
+        bg.blend = 3;
+        bg.setGraphicSize(toInt32(FlxG.width));
+        bg.screenCenter();
+        add(bg);
+    }
+    else
+    {
+        var bg:StateBG = new StateBG("M_menuBG");
+        bg.screenCenter();
+        add(bg);
+    }
 
     Timings.health = 2;
     UI.add(centerMark);

@@ -70,7 +70,12 @@ class QuaverSelection extends MusicBeatState
 
 		DiscordPresence.changePresence("Selecting Quaver Beatmap");
 
-		// TODO: When creating the state load the OpenFL Library and list the beatmaps based off the folders that were loaded
+		// TODO: When creating the state load the OpenFL Library and list the beatmaps based off the folders that were loaded - we already do that on first init dummy
+
+		Paths.changeLibrary(QUAVER, (_) ->
+		{
+			trace("Loaded quaver library");
+		});
 
 		var maps:Array<String> = [];
 		// ??? It gives me nulls now, probably because of the async shit i made

@@ -93,6 +93,7 @@ class ScriptHandler
 		'DepthSprite' => DepthSprite,
 		'SBar' => SBar, // Sanco Bar, my own FlxBar implementation
 		'SBarFillAxis' => SBarFillAxis,
+		"StateBG" => StateBG // Used for fallbacks on Quaver
 	];
 
 	private static var parser:Parser = new Parser();
