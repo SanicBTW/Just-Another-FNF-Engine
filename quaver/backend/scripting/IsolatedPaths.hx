@@ -1,6 +1,5 @@
 package backend.scripting;
 
-import Paths.Libraries;
 import backend.io.Path;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -10,11 +9,13 @@ import openfl.utils.Assets;
 // https://github.com/SanicBTW/Forever-Engine-Archive/blob/rewrite/source/Paths.hx#L17
 class IsolatedPaths
 {
+	private var library:String;
 	private var localPath:String;
 
-	public function new(localPath:String)
+	public function new(localPath:String, library:String = "funkin")
 	{
 		this.localPath = localPath;
+		this.library = library;
 	}
 
 	public function getPath(file:String):String
@@ -30,14 +31,7 @@ class IsolatedPaths
 		}
 		else
 		#end
-		{
-			@:privateAccess
-			var libPath:String = '${Paths._library}:assets/${Paths._library}/$localPath/$file';
-			if (Assets.exists(libPath))
-				return libPath;
-
-			return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$localPath/$file';
-		}
+		return '$library:assets/$library/$localPath/$file';
 	}
 
 	public inline function sound(key:String):Sound

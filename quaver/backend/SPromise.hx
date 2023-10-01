@@ -23,28 +23,31 @@ class SPromise<T> // Sanco Promise
 		#if sys
 		backend.BackgroundThread.execute(() ->
 		{
-			haxe.Timer.delay(() ->
+			init((value) ->
 			{
-				init((value) ->
+				if (state == PENDING)
+				{
+					state = FULFILLED;
+					result = value;
+					haxe.Timer.delay(() ->
+					{
+						for (handler in successHandlers)
+							handler(value);
+					}, 3);
+				}
+			}, (reason) ->
 				{
 					if (state == PENDING)
 					{
-						state = FULFILLED;
-						result = value;
-						for (handler in successHandlers)
-							handler(value);
-					}
-				}, (reason) ->
-					{
-						if (state == PENDING)
+						state = REJECTED;
+						error = reason;
+						haxe.Timer.delay(() ->
 						{
-							state = REJECTED;
-							error = reason;
 							for (handler in errorHandlers)
 								handler(reason);
-						}
-					});
-			}, 3);
+						}, 3);
+					}
+				});
 		});
 		#else
 		init((value) ->
@@ -53,8 +56,11 @@ class SPromise<T> // Sanco Promise
 			{
 				state = FULFILLED;
 				result = value;
-				for (handler in successHandlers)
-					handler(value);
+				haxe.Timer.delay(() ->
+				{
+					for (handler in successHandlers)
+						handler(value);
+				}, 3);
 			}
 		}, (reason) ->
 			{
@@ -62,8 +68,11 @@ class SPromise<T> // Sanco Promise
 				{
 					state = REJECTED;
 					error = reason;
-					for (handler in errorHandlers)
-						handler(reason);
+					haxe.Timer.delay(() ->
+					{
+						for (handler in errorHandlers)
+							handler(reason);
+					}, 3);
 				}
 			});
 		#end

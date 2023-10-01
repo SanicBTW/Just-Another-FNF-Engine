@@ -65,7 +65,7 @@ class MusicBeatState extends TransitionState implements MusicHandler
 
 	public function beatHit(beat:Int)
 	{
-		if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
+		if (SONG != null && SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
 			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
 
 		setOnModules('curBeat', beat);

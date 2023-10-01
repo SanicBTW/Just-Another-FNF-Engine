@@ -10,33 +10,24 @@ import flixel.addons.display.FlxTiledSprite;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxSpriteGroup;
-import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
-import states.ScrollTest;
 
 using backend.Extensions;
 
 typedef Section =
 {
-	var header:SectionLine;
-	var body:Array<SectionLine>;
+	var header:FlxSprite;
+	var body:Array<FlxSprite>;
 	var exists:Bool;
-	var time:Float;
-}
-
-typedef SectionLine =
-{
-	var ref:FlxSprite;
 	var time:Float;
 }
 
 typedef SustainNote =
 {
 	var holdLength:Float;
-	var hold:FlxTiledSprite;
-	var end:FlxTiledSprite;
+	var tail:FlxTypedSpriteGroup<FlxTiledSprite>;
 	var exists:Bool;
 }
 
@@ -156,7 +147,7 @@ class StrumLine extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		_boardPattern.height = ((Conductor.boundInst.length / Conductor.stepCrochet) * CELL_SIZE) * scrollSpeed;
+		_boardPattern.height = (((Conductor.boundInst != null) ? Conductor.boundInst.length : flixel.FlxG.sound.music.length / Conductor.stepCrochet) * CELL_SIZE) * scrollSpeed;
 
 		updateCrochet();
 		updateSections();
@@ -197,46 +188,30 @@ class StrumLine extends FlxSpriteGroup
 
 		sectionGroup.clear();
 
-		for (section in Conductor.SONG.notes)
+		for (i in 0...Std.int(((Conductor.boundInst != null) ? Conductor.boundInst.length : flixel.FlxG.sound.music.length / Conductor.stepCrochet) / 16))
 		{
+			// Them header
+			var lineSprite:FlxSprite = new FlxSprite(0, 0, _sectionLine);
+			lineSprite.alpha = 0.5;
+			lineSprite.exists = false;
+			sectionGroup.add(lineSprite);
+
 			var curSection:Section = {
-				header: null,
+				header: lineSprite,
 				body: [],
-				exists: false,
-				time: section.startTime
+				exists: lineSprite.exists,
+				time: (i * 16)
 			};
 
-			for (line in section.lines)
+			// Section body lines
+			for (j in 1...4)
 			{
-				switch (line.type)
-				{
-					case HEADER:
-						{
-							// Them header
-							var lineSprite:FlxSprite = new FlxSprite(0, 0, _sectionLine);
-							lineSprite.alpha = 0.5;
-							lineSprite.exists = curSection.exists;
-							sectionGroup.add(lineSprite);
-							curSection.header = {
-								ref: lineSprite,
-								time: line.time
-							};
-						}
-
-					case BODY:
-						{
-							var thinLine:FlxSprite = new FlxSprite(0, 0, _line);
-							thinLine.alpha = 0.75;
-							thinLine.exists = curSection.exists;
-							curSection.body.push({
-								ref: thinLine,
-								time: line.time
-							});
-							sectionGroup.add(thinLine);
-						}
-				}
+				var thinLine:FlxSprite = new FlxSprite(0, 0, _line);
+				thinLine.alpha = 0.75;
+				thinLine.exists = curSection.exists;
+				curSection.body.push(thinLine);
+				sectionGroup.add(thinLine);
 			}
-
 			sectionList.push(curSection);
 		}
 	}
@@ -250,27 +225,28 @@ class StrumLine extends FlxSpriteGroup
 
 		if (note.sustainLength > 0)
 		{
+			var holdNote:SustainNote = {
+				holdLength: note.sustainLength,
+				tail: new FlxTypedSpriteGroup<FlxTiledSprite>(),
+				exists: false
+			};
+
 			var resize:Float = (CELL_SIZE / SEPARATION);
 
 			var hold:FlxTiledSprite = new FlxTiledSprite(Cache.get('tail${note.noteData}-BODY', GRAPHIC), CELL_SIZE, CELL_SIZE * note.sustainLength);
 			hold.width = hold.graphic.width * resize;
 			hold.scale.set(resize, CELL_SIZE);
 			hold.exists = false;
-			holdGroup.add(hold);
+			holdGroup.add(holdNote.tail.insert(0, hold));
 
 			var end:FlxTiledSprite = new FlxTiledSprite(Cache.get('tail${note.noteData}-END', GRAPHIC), CELL_SIZE, CELL_SIZE);
 			end.width = end.graphic.width * resize;
 			end.height = end.graphic.height * resize;
 			end.scale.set(resize, resize);
 			end.exists = false;
-			holdGroup.add(end);
+			holdGroup.add(holdNote.tail.insert(1, end));
 
-			holdMap.set(note, {
-				holdLength: note.sustainLength,
-				hold: hold,
-				end: end,
-				exists: false
-			});
+			holdMap.set(note, holdNote);
 		}
 	}
 
@@ -286,37 +262,36 @@ class StrumLine extends FlxSpriteGroup
 		for (i in 0...sectionList.length)
 		{
 			var curSection:Section = sectionList.unsafeGet(i);
-			var header:SectionLine = curSection.header;
+			var time:Float = curSection.time;
 
-			if (getYFromStep(header.time) <= camera.scroll.y + camera.height && !curSection.exists)
+			if (getYFromStep(time) <= camera.scroll.y + camera.height && !curSection.exists)
 			{
 				curSection.exists = true;
 
-				header.ref.exists = curSection.exists;
+				curSection.header.exists = curSection.exists;
 				for (j in 0...curSection.body.length)
-					curSection.body[j].ref.exists = curSection.exists;
+					curSection.body[j].exists = curSection.exists;
 
-				var displacement:Float = getYFromStep(header.time);
-				header.ref.setPosition(_boardPattern.x + _boardPattern.width / 2 - header.ref.width / 2, _boardPattern.y + displacement);
-				header.ref.active = false;
+				var displacement:Float = getYFromStep(time);
+				curSection.header.setPosition(_boardPattern.x + _boardPattern.width / 2 - curSection.header.width / 2, _boardPattern.y + displacement);
+				curSection.header.active = false;
 
 				for (j in 0...curSection.body.length)
 				{
-					var segment:FlxSprite = curSection.body[j].ref;
-					// time+ ((j + 1) * 4)
-					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(curSection.body[j].time));
+					var segment = curSection.body[j];
+					segment.setPosition(_boardPattern.x + _boardPattern.width / 2 - segment.width / 2, _boardPattern.y + getYFromStep(time + ((j + 1) * 4)));
 					segment.active = false;
 				}
 			}
 
-			if (getYFromStep(header.time) <= camera.scroll.y - camera.height && curSection.exists)
+			if (getYFromStep(time) <= camera.scroll.y - camera.height && curSection.exists)
 			{
-				if (curSection.header.ref.y <= camera.scroll.y - camera.height && curSection.header.ref.exists)
-					curSection.header.ref.exists = false;
+				if (curSection.header.y <= camera.scroll.y - camera.height && curSection.header.exists)
+					curSection.header.exists = false;
 
 				for (j in 0...curSection.body.length)
 				{
-					var bodyLine:FlxSprite = curSection.body[j].ref;
+					var bodyLine:FlxSprite = curSection.body[j];
 					if (bodyLine.y <= camera.scroll.y - camera.height && bodyLine.exists)
 						bodyLine.exists = false;
 				}
@@ -341,7 +316,7 @@ class StrumLine extends FlxSpriteGroup
 					destroyNote(note);
 			}
 
-			// Input shit
+			// Input shit (gotta improve it??)
 
 			// Note is above the crochet by half cell
 			if (getYFromStep(note.stepTime) + (note.height + (CELL_SIZE * 0.5)) <= _conductorCrochet.y)
@@ -351,11 +326,7 @@ class StrumLine extends FlxSpriteGroup
 				note.alpha = 0.3;
 
 				if (note.isSustain)
-				{
-					var curHold:SustainNote = holdMap.get(note);
-					curHold.hold.alpha = 0.3;
-					curHold.end.alpha = 0.3;
-				}
+					holdMap.get(note).tail.alpha = 0.3;
 			}
 			// Note is below the crochet
 			else
@@ -397,20 +368,16 @@ class StrumLine extends FlxSpriteGroup
 				destroyNote(note);
 			}
 
-			curHold.hold.exists = curHold.end.exists = curHold.exists;
-			curHold.hold.active = curHold.end.active = false;
+			curHold.tail.exists = curHold.exists;
+			curHold.tail.active = false;
 
-			curHold.hold.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.hold.width / 2);
-			curHold.hold.y = getYFromStep(note.stepTime) + CELL_SIZE / 2;
-			curHold.hold.height = (((CELL_SIZE * curHold.holdLength) * scrollSpeed) - (CELL_SIZE * (1 - scrollSpeed)));
-
-			curHold.end.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.end.width / 2);
-			curHold.end.y = curHold.hold.y + curHold.hold.height;
+			curHold.tail.x = _boardPattern.x + note.noteData * CELL_SIZE + (note.width / 2 - curHold.tail.width / 2);
+			curHold.tail.y = getYFromStep(note.stepTime) + CELL_SIZE / 2;
+			curHold.tail.height = (((CELL_SIZE * curHold.holdLength) * scrollSpeed) - (CELL_SIZE * (1 - scrollSpeed)));
 
 			if (botPlay)
 			{
-				if (_conductorCrochet.y >= curHold.hold.y
-					&& _conductorCrochet.y <= curHold.hold.y + curHold.hold.height + curHold.end.height)
+				if (_conductorCrochet.y >= curHold.tail.y && _conductorCrochet.y <= curHold.tail.y + curHold.tail.height)
 				{
 					receptors.members.unsafeGet(note.noteData).playAnim('confirm', true);
 				}
@@ -449,15 +416,11 @@ class StrumLine extends FlxSpriteGroup
 		{
 			var curHold:SustainNote = holdMap.get(note);
 			curHold.exists = false;
+			curHold.tail.kill();
 
-			curHold.hold.kill();
-			curHold.end.kill();
-
-			holdGroup.remove(curHold.hold, true);
-			holdGroup.remove(curHold.end, true);
-
-			curHold.hold.destroy();
-			curHold.end.destroy();
+			holdGroup.remove(curHold.tail.members[0], true); // 0 them body
+			holdGroup.remove(curHold.tail.members[1], true); // 1 its tail :smiling_imp:
+			curHold.tail.destroy();
 
 			holdMap.remove(note);
 		}

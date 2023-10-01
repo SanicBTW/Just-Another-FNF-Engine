@@ -32,6 +32,8 @@ class ScrollTest extends MusicBeatState
 	public static var LocalPaths:IsolatedPaths = new IsolatedPaths(backend.io.Path.join(lime.system.System.documentsDirectory, "just_another_fnf_engine",
 		"quaver"));
 
+	var quaver:IsolatedPaths = new IsolatedPaths('24184', 'quaver');
+
 	var camHUD:FlxCamera;
 	var camGame:FlxCamera;
 	var camBG:FlxCamera;
@@ -175,6 +177,7 @@ class ScrollTest extends MusicBeatState
 
 		playerStrums = new StrumLine((FlxG.width / 2) + FlxG.width / 4);
 		playerStrums.cameras = strums.cameras;
+		playerStrums.botPlay = true;
 		strums.add(playerStrums);
 
 		Conductor.active = true;
@@ -190,130 +193,129 @@ class ScrollTest extends MusicBeatState
 
 	function generateChart()
 	{
-		/*
-			qua = new Qua(Cache.getText(Paths.getPath('107408/107408.qua')));
-			FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else Paths.getPath('${qua.MapId}/${qua.AudioFile}') #end),
-				1,
-				false);
-			Conductor.boundInst.stop();
-			Conductor.bpm = qua.TimingPoints[0].Bpm;
+		qua = new Qua(Cache.getText(quaver.getPath('107408.qua')));
+		FlxG.sound.playMusic(Cache.getSound(#if FS_ACCESS LocalPaths.getPath('${qua.MapId}/${qua.AudioFile}') #else quaver.getPath('${qua.AudioFile}') #end),
+			1, false);
+		FlxG.sound.music.stop();
+		Conductor.bpm = qua.TimingPoints[0].Bpm;
 
-			for (hitObject in qua.HitObjects)
-			{
-				var startTime:Float = (hitObject.StartTime / Conductor.stepCrochet);
-				var noteData:Int = hitObject.Lane - 1;
-				var endTime:Float = 0;
-
-				if (hitObject.EndTime > 0)
-					endTime = (hitObject.EndTime / Conductor.stepCrochet);
-
-				var oldNote:Note = null;
-				if (shitNotes.length > 0)
-					oldNote = shitNotes[shitNotes.length - 1];
-
-				var newNote:Note = new Note(startTime, noteData, oldNote);
-				newNote.strumLine = 1;
-				newNote.isSustain = (endTime > 0);
-				newNote.sustainLength = (endTime > 0) ? Math.floor((endTime - startTime)) + 1 : 0;
-				shitNotes.push(newNote);
-			}
-			generateBackground(); */
-
-		var endChart:String = '';
-		var endInst:Sound = new Sound();
-		var endVoices:Null<Sound> = null;
-
-		var netCb:MultiCallback = new MultiCallback(() ->
+		for (hitObject in qua.HitObjects)
 		{
-			swagShit = Song.createFromRaw(endChart);
-			swagShit.needsVoices = endVoices != null;
+			var startTime:Float = (hitObject.StartTime / Conductor.stepCrochet);
+			var noteData:Int = hitObject.Lane - 1;
+			var endTime:Float = 0;
 
-			Conductor.bindSong(swagShit, endInst, endVoices);
-			Conductor.boundInst.onComplete = function()
-			{
-				FlxG.resetState();
-			}
+			if (hitObject.EndTime > 0)
+				endTime = (hitObject.EndTime / Conductor.stepCrochet);
 
-			for (section in swagShit.notes)
+			var oldNote:Note = null;
+			if (shitNotes.length > 0)
+				oldNote = shitNotes[shitNotes.length - 1];
+
+			var newNote:Note = new Note(startTime, noteData, oldNote);
+			newNote.strumLine = 1;
+			newNote.isSustain = (endTime > 0);
+			newNote.sustainLength = (endTime > 0) ? Math.floor((endTime - startTime)) + 1 : 0;
+			shitNotes.push(newNote);
+		}
+		generateBackground();
+
+		/*
+			var endChart:String = '';
+			var endInst:Sound = new Sound();
+			var endVoices:Null<Sound> = null;
+
+			var netCb:MultiCallback = new MultiCallback(() ->
 			{
-				for (songNotes in section.sectionNotes)
+				swagShit = Song.createFromRaw(endChart);
+				swagShit.needsVoices = endVoices != null;
+
+				Conductor.bindSong(swagShit, endInst, endVoices);
+				Conductor.boundInst.onComplete = function()
 				{
-					switch (songNotes[1])
+					FlxG.resetState();
+				}
+
+				for (section in swagShit.notes)
+				{
+					for (songNotes in section.sectionNotes)
 					{
-						default:
-							var stepTime:Float = (songNotes[0] / Conductor.stepCrochet);
-							var sustainTime:Float = 0;
-							var noteData:Int = Std.int(songNotes[1] % 4);
-							var hitNote:Bool = section.mustHitSection;
+						switch (songNotes[1])
+						{
+							default:
+								var stepTime:Float = (songNotes[0] / Conductor.stepCrochet);
+								var sustainTime:Float = 0;
+								var noteData:Int = Std.int(songNotes[1] % 4);
+								var hitNote:Bool = section.mustHitSection;
 
-							if (songNotes[2] > 0)
-								sustainTime = (songNotes[2] / Conductor.stepCrochet);
+								if (songNotes[2] > 0)
+									sustainTime = (songNotes[2] / Conductor.stepCrochet);
 
-							if (songNotes[1] > 3)
-								hitNote = !section.mustHitSection;
+								if (songNotes[1] > 3)
+									hitNote = !section.mustHitSection;
 
-							var strumLine:Int = (hitNote ? 1 : 0);
+								var strumLine:Int = (hitNote ? 1 : 0);
 
-							var oldNote:Note = null;
-							if (shitNotes.length > 0)
-								oldNote = shitNotes[shitNotes.length - 1];
+								var oldNote:Note = null;
+								if (shitNotes.length > 0)
+									oldNote = shitNotes[shitNotes.length - 1];
 
-							var newNote:Note = new Note(stepTime, noteData, oldNote, false);
-							newNote.mustPress = hitNote;
-							newNote.strumLine = strumLine;
-							newNote.sustainLength = (sustainTime > 0) ? Math.floor(sustainTime) + 1 : 0;
-							shitNotes.push(newNote);
+								var newNote:Note = new Note(stepTime, noteData, oldNote, false);
+								newNote.mustPress = hitNote;
+								newNote.strumLine = strumLine;
+								newNote.sustainLength = (sustainTime > 0) ? Math.floor(sustainTime) + 1 : 0;
+								shitNotes.push(newNote);
 
-						case -1:
-							return;
+							case -1:
+								return;
+						}
 					}
 				}
-			}
 
-			shitNotes.sort((a, b) ->
-			{
-				return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime);
+				shitNotes.sort((a, b) ->
+				{
+					return FlxSort.byValues(FlxSort.ASCENDING, a.strumTime, b.strumTime);
+				});
+
+				generateBackground();
 			});
 
-			generateBackground();
-		});
-
-		PBRequest.getRecords('funkin', (funky:Collection<FunkinRecord>) ->
-		{
-			funky.items.shuffle();
-
-			var selected:FunkinRecord = funky.items.randomElement();
-
-			var chartCb:() -> Void = netCb.add("chart:" + selected.id);
-			var instCb:() -> Void = netCb.add("inst:" + selected.id);
-			var voicesCb:() -> Void = netCb.add("voices:" + selected.id);
-
-			PBRequest.getFile(selected, 'chart', (chart:String) ->
+			PBRequest.getRecords('funkin', (funky:Collection<FunkinRecord>) ->
 			{
-				endChart = chart;
-				trace('finished loading chart');
-				chartCb();
+				funky.items.shuffle();
 
-				PBRequest.getFile(selected, 'inst', (inst:Sound) ->
+				var selected:FunkinRecord = funky.items.randomElement();
+
+				var chartCb:() -> Void = netCb.add("chart:" + selected.id);
+				var instCb:() -> Void = netCb.add("inst:" + selected.id);
+				var voicesCb:() -> Void = netCb.add("voices:" + selected.id);
+
+				PBRequest.getFile(selected, 'chart', (chart:String) ->
 				{
-					endInst = inst;
-					trace('finished loading inst');
-					instCb();
+					endChart = chart;
+					trace('finished loading chart');
+					chartCb();
 
-					if (selected.voices != '')
+					PBRequest.getFile(selected, 'inst', (inst:Sound) ->
 					{
-						PBRequest.getFile(selected, 'voices', (voices:Sound) ->
+						endInst = inst;
+						trace('finished loading inst');
+						instCb();
+
+						if (selected.voices != '')
 						{
-							endVoices = voices;
-							trace('finished loading voices');
+							PBRequest.getFile(selected, 'voices', (voices:Sound) ->
+							{
+								endVoices = voices;
+								trace('finished loading voices');
+								voicesCb();
+							}, SOUND);
+						}
+						else
 							voicesCb();
-						}, SOUND);
-					}
-					else
-						voicesCb();
-				}, SOUND);
-			}, RAW_STRING);
-		});
+					}, SOUND);
+				}, RAW_STRING);
+		});*/
 
 		Conductor.onStepHit.add((curStep) ->
 		{
@@ -335,54 +337,6 @@ class ScrollTest extends MusicBeatState
 		});
 	}
 
-	private function noteSpawn()
-	{
-		if (Conductor.boundInst == null || swagShit == null)
-			return;
-
-		var curSection:funkin.Song.SwagSection = swagShit.notes[Std.int(Conductor.roundStep / 16)];
-		if (curSection == null)
-			return;
-
-		var curNote:Dynamic = curSection.sectionNotes[0];
-		if (curNote == null)
-		{
-			curSection = swagShit.notes[Std.int(Conductor.roundStep / 16) + 1];
-			if (curSection == null)
-				return;
-
-			curNote = curSection.sectionNotes[0];
-			if (curNote == null)
-				return;
-		}
-
-		if (curNote[1] > -1)
-		{
-			var stepTime:Float = (curNote[0] / Conductor.stepCrochet);
-			var sustainTime:Float = 0;
-			var noteData:Int = Std.int(curNote[1] % 4);
-			var hitNote:Bool = (curNote[1] > 3) ? !curSection.mustHitSection : curSection.mustHitSection;
-
-			if (curNote[2] > 0)
-				sustainTime = (curNote[2] / Conductor.stepCrochet);
-
-			var strumLine:Int = (hitNote ? 1 : 0);
-
-			var oldNote:Note = null;
-			if (shitNotes.length > 0)
-				oldNote = shitNotes[shitNotes.length - 1];
-
-			var nextNote:Note = new Note(stepTime, noteData, oldNote, false);
-			nextNote.mustPress = hitNote;
-			nextNote.strumLine = strumLine;
-			nextNote.isSustain = (sustainTime > 0);
-			nextNote.sustainLength = (sustainTime > 0) ? Math.floor(sustainTime) + 1 : 0;
-			shitNotes.push(nextNote);
-
-			curSection.sectionNotes.splice(curSection.sectionNotes.indexOf(curNote), 1);
-		}
-	}
-
 	override public function onActionPressed(action:String)
 	{
 		switch (action)
@@ -390,29 +344,30 @@ class ScrollTest extends MusicBeatState
 			case "back" | "reset":
 				return;
 			case "confirm":
-				if (Conductor.boundInst != null)
+				var sound:flixel.system.FlxSound = (Conductor.boundInst != null) ? Conductor.boundInst : FlxG.sound.music;
+				if (sound != null)
 				{
-					if (Conductor.boundInst.playing)
+					if (sound.playing)
 					{
 						if (swagShit != null)
 						{
-							Conductor.boundInst.pause();
+							sound.pause();
 							if (swagShit.needsVoices)
 								Conductor.boundVocals.pause();
 						}
 						else if (qua != null)
-							Conductor.boundInst.pause();
+							sound.pause();
 					}
 					else
 					{
 						if (swagShit != null)
 						{
-							Conductor.boundInst.play();
+							sound.play();
 							if (swagShit.needsVoices)
 								Conductor.boundVocals.pause();
 						}
 						else if (qua != null)
-							Conductor.boundInst.play();
+							sound.play();
 					}
 				}
 			default:
@@ -425,7 +380,7 @@ class ScrollTest extends MusicBeatState
 						var data:Int = receptor.noteData;
 						var lastTime:Float = Conductor.time;
 
-						Conductor.time = Conductor.boundInst.time;
+						Conductor.time = (Conductor.boundInst != null) ? Conductor.boundInst.time : FlxG.sound.music.time;
 						var possibleNotes:Array<Note> = [];
 						var directionList:Array<Int> = [];
 						var dumbNotes:Array<Note> = [];

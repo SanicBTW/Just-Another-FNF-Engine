@@ -1,11 +1,11 @@
 package flixel.addons.display;
 
-import flash.display.BitmapData;
-import flash.geom.Point;
-import flash.geom.Rectangle;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
+import openfl.display.BitmapData;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
 
 /**
  * FlxGridOverlay
