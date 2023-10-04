@@ -1,4 +1,4 @@
-# What has been modified
+# Modifications from the engine
 - Default Sound Tray for mine
 - Removed default FlxSave
 - Default antialiasing from loaded settings
@@ -11,9 +11,13 @@
 - FlxText actually reusing graphics and using a custom drawing method
 - FlxGraphicsShader added screen vec2 and elapsed float
 
-# Discarded or fix pending
-- ~~Added soloud~~
-- ~~Automatically set scroll factor Y to 0 (for the Scale Mode)~~ (Pending fix)
-- ~~Added FLX_DEFAULT_ASSETS to user definables~~ (Pending fix) (Never coming back surely)
+# Updated (Keeping modifications)
+- FlxText -> https://github.com/HaxeFlixel/flixel/pull/2789 & https://github.com/HaxeFlixel/flixel/pull/2846
+- FlxSpriteUtil -> https://github.com/HaxeFlixel/flixel/pull/2869
+- FlxColor -> Flixel 5.4.0
+- FlxAnimationController -> https://github.com/HaxeFlixel/flixel/pull/2913
+- FlxSprite -> https://github.com/HaxeFlixel/flixel/pull/2875 & https://github.com/HaxeFlixel/flixel/pull/2881
+- FlxColorTransformUtil -> https://github.com/HaxeFlixel/flixel/pull/2875
+- FlxSubState -> https://github.com/HaxeFlixel/flixel/pull/2897
 
 # Flixel 4.11.0

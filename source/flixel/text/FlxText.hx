@@ -37,11 +37,16 @@ import openfl.utils.AssetType;
 /**
  * Extends FlxSprite to support rendering text. Can tint, fade, rotate and scale just like a sprite. Doesn't really animate
  * though. Also does nice pixel-perfect centering on pixel fonts as long as they are only one-liners.
+ * 
+ * ## Autosizing
+ * 
+ * By default `FlxText` is autosized to fit it's text. 
+ * To set a fixed size, * use the `fieldWidth`, `fieldHeight` and `autoSize` fields.
  */
 class FlxText extends FlxSprite
 {
 	/**
-	 * 2px gutter on both top and bottom
+	 * 4px gutter at the bottom when the field has automatic height
 	 */
 	static inline var VERTICAL_GUTTER:Int = 4;
 
@@ -124,13 +129,26 @@ class FlxText extends FlxSprite
 	/**
 	 * The width of the `TextField` object used for bitmap generation for this `FlxText` object.
 	 * Use it when you want to change the visible width of text. Enables `autoSize` if `<= 0`.
+	 * 
+	 * **NOTE:** auto width always implies auto height
 	 */
 	public var fieldWidth(get, set):Float;
 
 	/**
-	 * Whether the `fieldWidth` should be determined automatically. Requires `wordWrap` to be `false`.
+	 * The height of `TextField` object used for bitmap generation for this `FlxText` object.
+	 * Use it when you want to change the visible height of the text. Enables "auto height" if `<= 0`.
+	 * 
+	 * **NOTE:** Fixed height has no effect if `autoSize = true`.
+	 */
+	public var fieldHeight(get, set):Float;
+
+	/**
+	 * Whether the `fieldWidth` and `fieldHeight` should be determined automatically. 
+	 * Requires `wordWrap` to be `false`.
 	 */
 	public var autoSize(get, set):Bool;
+
+	var _autoHeight:Bool = true;
 
 	/**
 	 * Offset that is applied to the shadow border style, if active.
@@ -208,12 +226,11 @@ class FlxText extends FlxSprite
 		textField.text = Text;
 		fieldWidth = FieldWidth;
 		textField.embedFonts = EmbeddedFont;
-		textField.sharpness = 400;
+		textField.sharpness = 100;
 		textField.height = (Text.length <= 0) ? 1 : 10;
 
 		allowCollisions = NONE;
 		moves = false;
-		antialiasing = true;
 
 		_zeroOffset = new Point();
 
@@ -533,11 +550,14 @@ class FlxText extends FlxSprite
 
 	function clean()
 	{
+		#if !CACHE_FLXTEXT
+		// Cache class will automatically handle graphic and bitmap cleaning
 		if (_lastKey != null)
 			FlxG.bitmap.removeByKey(_lastKey);
 		FlxG.bitmap.remove(graphic);
 		if (graphic != null)
 			graphic.destroy();
+		#end
 	}
 
 	@:noCompletion
@@ -550,6 +570,8 @@ class FlxText extends FlxSprite
 		{
 			wordWrap = false;
 			autoSize = true;
+			// auto width always implies auto height
+			_autoHeight = true;
 		}
 		else
 		{
@@ -566,6 +588,31 @@ class FlxText extends FlxSprite
 	function get_fieldWidth():Float
 	{
 		return (textField != null) ? textField.width : 0;
+	}
+
+	@:noCompletion
+	function get_fieldHeight():Float
+	{
+		return (textField != null) ? textField.height : 0;
+	}
+
+	@:noCompletion
+	function set_fieldHeight(value:Float):Float
+	{
+		if (textField == null)
+			return value;
+
+		if (value <= 0)
+		{
+			_autoHeight = true;
+		}
+		else
+		{
+			_autoHeight = false;
+			textField.height = value;
+		}
+		_regen = true;
+		return value;
 	}
 
 	@:noCompletion
@@ -835,9 +882,11 @@ class FlxText extends FlxSprite
 			oldHeight = _bitmap.height;
 		}
 
-		var newWidth:Float = textField.width;
+		var newWidth:Int = Math.ceil(textField.width);
+		var fieldHeight:Float = _autoHeight ? textField.textHeight : textField.height;
+		var vertGutter:Int = _autoHeight ? VERTICAL_GUTTER : 0;
 		// Account for gutter
-		var newHeight:Float = textField.textHeight + VERTICAL_GUTTER;
+		var newHeight:Int = Math.ceil(fieldHeight) + vertGutter;
 
 		// prevent text height from shrinking on flash if text == ""
 		if (textField.textHeight == 0)
@@ -851,27 +900,26 @@ class FlxText extends FlxSprite
 		if ((oldWidth != newWidth || oldHeight != newHeight) && (autoSize || _bitmap == null))
 		{
 			// Need to generate a new buffer to store the text graphic
-			height = newHeight;
-			var intWidth:Int = Std.int(newWidth);
-			var intHeight:Int = Std.int(newHeight);
-
 			#if CACHE_FLXTEXT
-			var newName:String = 'text:${intWidth}x${intHeight}';
-			_bitmap = Cache.set(new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
-			loadGraphic(Cache.set(FlxGraphic.fromRectangle(intWidth, intHeight, FlxColor.TRANSPARENT), GRAPHIC, newName));
+			var newName:String = 'text:${newWidth}x${newHeight}';
+			_bitmap = Cache.set(new BitmapData(newWidth, newHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+			loadGraphic(Cache.set(FlxGraphic.fromRectangle(newWidth, newHeight, FlxColor.TRANSPARENT, true), GRAPHIC, newName));
 			#else
 			var key:String = FlxG.bitmap.getUniqueKey("text");
 			_lastKey = key;
 
-			_bitmap = new BitmapData(intWidth, intHeight, true, FlxColor.TRANSPARENT);
-			makeGraphic(intWidth, intHeight, FlxColor.TRANSPARENT, false, key);
+			_bitmap = new BitmapData(newWidth, newHeight, true, FlxColor.TRANSPARENT);
+			makeGraphic(newWidth, newHeight, FlxColor.TRANSPARENT, false, key);
 			#end
 
 			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
+
 			if (_hasBorderAlpha)
 				_borderPixels = _bitmap.clone();
-			frameHeight = Std.int(height);
-			textField.height = height * 1.2;
+
+			if (_autoHeight)
+				textField.height = newHeight;
+
 			_flashRect.setTo(0, 0, newWidth, newHeight);
 		}
 		else // Else just clear the old buffer before redrawing the text
@@ -893,7 +941,7 @@ class FlxText extends FlxSprite
 			}
 		}
 
-		if (textField != null && textField.text != null && textField.text.length > 0)
+		if (textField != null && textField.text != null)
 		{
 			// Now that we've cleared a buffer, we need to actually render the text to it
 			copyTextFormat(_defaultFormat, _formatAdjusted);
@@ -942,6 +990,12 @@ class FlxText extends FlxSprite
 
 			return;
 		}
+		#elseif !web
+		// Fix to render desktop and mobile text in the same visual location as web
+		_matrix.translate(-1, -1); // left and up
+		graphic.draw(textField, _matrix);
+		_matrix.translate(1, 1); // return to center
+		return;
 		#end
 
 		graphic.draw(textField, _matrix);
