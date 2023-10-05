@@ -894,10 +894,10 @@ class FlxText extends FlxSprite
 
 		// Modified with custom drawing to reuse bitmaps and shit (better memory management ig)
 		/* This if block runs only when:
-			- old sizes dont match with new ones and auto size is enabled (for some reason even when the fieldwidth is set it keeps updating some shit and allocates memory)
+			- old sizes dont match with new ones and auto size or auto height is enabled (for some reason even when the fieldwidth is set it keeps updating some shit and allocates memory)
 			- the bitmap and graphic is null to avoid errors
 		 */
-		if ((oldWidth != newWidth || oldHeight != newHeight) && (autoSize || _bitmap == null))
+		if ((oldWidth != newWidth || oldHeight != newHeight) && ((autoSize || _autoHeight) || _bitmap == null))
 		{
 			// Need to generate a new buffer to store the text graphic
 			#if CACHE_FLXTEXT
