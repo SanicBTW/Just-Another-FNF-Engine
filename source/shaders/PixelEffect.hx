@@ -22,6 +22,7 @@ class PixelEffect extends BaseEffect<PixelShader>
 	}
 }
 
+// Should base the size of the uv by the texture size and NOT from the screen
 class PixelShader extends FlxGraphicsShader
 {
 	@:glFragmentSource('
@@ -32,7 +33,7 @@ class PixelShader extends FlxGraphicsShader
 
         void main()
         {
-            vec2 size = vec2(PIXEL_FACTOR * screen.xy / screen.x);
+            vec2 size = vec2(PIXEL_FACTOR * openfl_TextureSize.xy / openfl_TextureSize.x);
             vec2 uv = floor(openfl_TextureCoordv * size) / size;
             gl_FragColor = flixel_texture2D(bitmap, uv);
         }

@@ -3,6 +3,7 @@ package backend;
 class Save
 {
 	private static var _db:SqliteKeyValue;
+	public static var shouldLoadQuaver:Bool = true; // temp fix to avoid loading quaver beatmapps always
 
 	public static function Initialize()
 	{
@@ -15,7 +16,9 @@ class Save
 			{
 				_db = newDB;
 				loadSettings();
-				loadQuaver();
+
+				if (shouldLoadQuaver)
+					loadQuaver();
 			});
 	}
 
@@ -43,6 +46,7 @@ class Save
 	@:noCompletion
 	private static function loadQuaver()
 	{
+		// TODO: find a way to not parse all the beatmaps and shit on startup
 		// Converting all of the existing beatmaps is probably the best option to avoid having numbers and shit
 		Paths.changeLibrary(QUAVER, (lib) ->
 		{

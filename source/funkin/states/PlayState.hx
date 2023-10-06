@@ -27,6 +27,7 @@ import funkin.substates.GameOverSubstate;
 import funkin.substates.PauseSubstate;
 import openfl.media.Sound;
 import transitions.FadeTransition;
+import shaders.*;
 
 using StringTools;
 
@@ -82,6 +83,8 @@ class PlayState extends MusicBeatState
 	// Pause handling
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
+
+	public var cockEffect:PixelEffect = new PixelEffect();
 
 	override public function create()
 	{
@@ -145,6 +148,7 @@ class PlayState extends MusicBeatState
 		add(boyfriendGroup);
 
 		boyfriend = new Character(0, 0, true, SONG.player1);
+		boyfriend.shader = cockEffect.shader;
 		dad = new Character(0, 0, false, SONG.player2);
 
 		if (!stageBuild.hide_girlfriend)
