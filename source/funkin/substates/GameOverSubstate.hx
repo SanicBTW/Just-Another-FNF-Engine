@@ -1,6 +1,7 @@
 package funkin.substates;
 
 import backend.Conductor;
+import backend.Controls;
 import base.MusicBeatState;
 import base.TransitionState;
 import flixel.FlxG;
@@ -169,6 +170,8 @@ class GameOverSubstate extends MusicBeatSubState
 		var currentState:MusicBeatState = cast(FlxG.state, MusicBeatState);
 		@:privateAccess
 		{
+			Controls.onActionEvent.removeEventCallback(currentState.onActionPressed, "onActionPressed");
+			Controls.onActionEvent.removeEventCallback(currentState.onActionReleased, "onActionReleased");
 			Conductor.onStepHit.remove(currentState.stepHit);
 			Conductor.onBeatHit.remove(currentState.beatHit);
 			Conductor.boundInst = null;

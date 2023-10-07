@@ -16,8 +16,6 @@ class PixelEffect extends BaseEffect<PixelShader>
 	public function new()
 	{
 		shader = new PixelShader();
-		screenWidth = flixel.FlxG.width;
-		screenHeight = flixel.FlxG.height;
 		PIXEL_FACTOR = 2048.;
 	}
 }
