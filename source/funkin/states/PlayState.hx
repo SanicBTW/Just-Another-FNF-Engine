@@ -84,8 +84,6 @@ class PlayState extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
-	public var cockEffect:PixelEffect = new PixelEffect();
-
 	override public function create()
 	{
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)

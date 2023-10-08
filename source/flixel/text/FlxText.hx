@@ -189,6 +189,18 @@ class FlxText extends FlxSprite
 	var _lastKey:String;
 
 	/**
+	 * Disables the cache to avoid having the issue where
+	 *
+	 * the cache re-uses a bitmap that is being used on another
+	 *
+	 * FlxText and has the same text across sprites
+	 *
+	 *
+	 * Pending fix
+	 */
+	public var disableCaching:Bool = false;
+
+	/**
 	 * Creates a new `FlxText` object at the specified position.
 	 *
 	 * @param   X              The x position of the text.
@@ -901,9 +913,20 @@ class FlxText extends FlxSprite
 		{
 			// Need to generate a new buffer to store the text graphic
 			#if CACHE_FLXTEXT
-			var newName:String = 'text:${newWidth}x${newHeight}';
-			_bitmap = Cache.set(new BitmapData(newWidth, newHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
-			loadGraphic(Cache.set(FlxGraphic.fromRectangle(newWidth, newHeight, FlxColor.TRANSPARENT, true), GRAPHIC, newName));
+			if (!disableCaching) // behaves the same as disabled cache flxtext define
+			{
+				var key:String = FlxG.bitmap.getUniqueKey("text");
+				_lastKey = key;
+
+				_bitmap = new BitmapData(newWidth, newHeight, true, FlxColor.TRANSPARENT);
+				makeGraphic(newWidth, newHeight, FlxColor.TRANSPARENT, true, key);
+			}
+			else
+			{
+				var newName:String = 'text:${newWidth}x${newHeight}';
+				_bitmap = Cache.set(new BitmapData(newWidth, newHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+				loadGraphic(Cache.set(FlxGraphic.fromRectangle(newWidth, newHeight, FlxColor.TRANSPARENT, true), GRAPHIC, newName));
+			}
 			#else
 			var key:String = FlxG.bitmap.getUniqueKey("text");
 			_lastKey = key;

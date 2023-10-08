@@ -3,6 +3,7 @@ package shaders;
 import flixel.graphics.tile.FlxGraphicsShader;
 
 @:publicFields
+// TODO: Rename it to something better or move the code to FlxGraphicsShader lol
 class BaseEffect<T:FlxGraphicsShader>
 {
 	var shader(default, null):T;
