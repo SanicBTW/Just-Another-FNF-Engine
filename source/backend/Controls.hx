@@ -1,16 +1,9 @@
 package backend;
 
-import backend.Event.EventGroup;
 import flixel.FlxG;
+import lime.app.Event;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
-
-typedef Action =
-{
-	var name:ActionType;
-	var state:ActionState;
-	var keys:Array<Null<Int>>;
-}
 
 enum ActionState
 {
@@ -35,9 +28,20 @@ enum abstract ActionType(String) to String
 }
 
 // Better? controls support (Static usage and non-static usage) (looks like the controls from fnf vanilla lmao)
-// On property getter, change the original variable shit for Reflect to work and not return IDLE
 class Controls
 {
+	private static final keyCodes:Map<Int, String> = [
+		65 => "A", 66 => "B", 67 => "C", 68 => "D", 69 => "E", 70 => "F", 71 => "G", 72 => "H", 73 => "I", 74 => "J", 75 => "K", 76 => "L", 77 => "M",
+		78 => "N", 79 => "O", 80 => "P", 81 => "Q", 82 => "R", 83 => "S", 84 => "T", 85 => "U", 86 => "V", 87 => "W", 88 => "X", 89 => "Y", 90 => "Z",
+		48 => "0", 49 => "1", 50 => "2", 51 => "3", 52 => "4", 53 => "5", 54 => "6", 55 => "7", 56 => "8", 57 => "9", 33 => "Page Up", 34 => "Page Down",
+		36 => "Home", 35 => "End", 45 => "Insert", 27 => "Escape", 189 => "-", 187 => "+", 46 => "Delete", 8 => "Backspace", 219 => "[", 221 => "]",
+		220 => "\\", 20 => "Caps Lock", 186 => ";", 222 => "\"", 13 => "Enter", 16 => "Shift", 188 => ",", 190 => ".", 191 => "/", 192 => "`", 17 => "Ctrl",
+		18 => "Alt", 32 => "Space", 38 => "Up", 40 => "Down", 37 => "Left", 39 => "Right", 9 => "Tab", 301 => "Print Screen", 112 => "F1", 113 => "F2",
+		114 => "F3", 115 => "F4", 116 => "F5", 117 => "F6", 118 => "F7", 119 => "F8", 120 => "F9", 121 => "F10", 122 => "F11", 123 => "F12", 96 => "Numpad 0",
+		97 => "Numpad 1", 98 => "Numpad 2", 99 => "Numpad 3", 100 => "Numpad 4", 101 => "Numpad 5", 102 => "Numpad 6", 103 => "Numpad 7", 104 => "Numpad 8",
+		105 => "Numpad 9", 109 => "Numpad -", 107 => "Numpad +", 110 => "Numpad .", 106 => "Numpad *"
+	];
+
 	// Base map which is used to get the keys in non-static variables
 	private static var actions:Map<ActionType, Array<Null<Int>>> = [
 		CONFIRM => [Keyboard.ENTER],
@@ -53,199 +57,40 @@ class Controls
 		NOTE_RIGHT => [Keyboard.RIGHT, Keyboard.D, Keyboard.PERIOD]
 	];
 
-	private static var keysPressed:Array<Int> = [];
+	// dont show this bad boy in intellisense
+	@:noCompletion
+	public static var keysPressed:Array<Int> = [];
 
 	// system actions
-	public var confirm(get, null):Action = {
-		name: CONFIRM,
-		state: IDLE,
-		keys: actions.get(CONFIRM)
-	};
-
-	@:noCompletion
-	private function get_confirm():Action
-	{
-		return {
-			name: CONFIRM,
-			state: FlxG.keys.anyPressed(confirm.keys) ? PRESSED : RELEASED,
-			keys: confirm.keys
-		};
-	}
-
-	public var back(get, null):Action = {
-		name: BACK,
-		state: IDLE,
-		keys: actions.get(BACK)
-	};
-
-	@:noCompletion
-	private function get_back():Action
-	{
-		return {
-			name: BACK,
-			state: FlxG.keys.anyPressed(back.keys) ? PRESSED : RELEASED,
-			keys: back.keys
-		};
-	}
-
-	public var reset(get, null):Action = {
-		name: RESET,
-		state: IDLE,
-		keys: actions.get(RESET)
-	};
-
-	@:noCompletion
-	private function get_reset():Action
-	{
-		return {
-			name: RESET,
-			state: FlxG.keys.anyPressed(reset.keys) ? PRESSED : RELEASED,
-			keys: reset.keys
-		};
-	}
+	public var confirm(default, null):Action = new Action(CONFIRM);
+	public var back(default, null):Action = new Action(BACK);
+	public var reset(default, null):Action = new Action(RESET);
 
 	// ui actions
-	public var ui_left(get, null):Action = {
-		name: UI_LEFT,
-		state: IDLE,
-		keys: actions.get(UI_LEFT)
-	};
-
-	@:noCompletion
-	private function get_ui_left():Action
-	{
-		return {
-			name: UI_LEFT,
-			state: FlxG.keys.anyPressed(ui_left.keys) ? PRESSED : RELEASED,
-			keys: ui_left.keys
-		};
-	}
-
-	public var ui_down(get, null):Action = {
-		name: UI_DOWN,
-		state: IDLE,
-		keys: actions.get(UI_DOWN)
-	};
-
-	@:noCompletion
-	private function get_ui_down():Action
-	{
-		return {
-			name: UI_DOWN,
-			state: FlxG.keys.anyPressed(ui_down.keys) ? PRESSED : RELEASED,
-			keys: ui_down.keys
-		};
-	}
-
-	public var ui_up(get, null):Action = {
-		name: UI_UP,
-		state: IDLE,
-		keys: actions.get(UI_UP)
-	};
-
-	@:noCompletion
-	private function get_ui_up():Action
-	{
-		return {
-			name: UI_UP,
-			state: FlxG.keys.anyPressed(ui_up.keys) ? PRESSED : RELEASED,
-			keys: ui_up.keys
-		};
-	}
-
-	public var ui_right(get, null):Action = {
-		name: UI_RIGHT,
-		state: IDLE,
-		keys: actions.get(UI_RIGHT)
-	};
-
-	@:noCompletion
-	private function get_ui_right():Action
-	{
-		return {
-			name: UI_RIGHT,
-			state: FlxG.keys.anyPressed(ui_right.keys) ? PRESSED : RELEASED,
-			keys: ui_right.keys
-		};
-	}
+	public var ui_left(default, null):Action = new Action(UI_LEFT);
+	public var ui_down(default, null):Action = new Action(UI_DOWN);
+	public var ui_up(default, null):Action = new Action(UI_UP);
+	public var ui_right(default, null):Action = new Action(UI_RIGHT);
 
 	// note actions
-	public var note_left(get, null):Action = {
-		name: NOTE_LEFT,
-		state: IDLE,
-		keys: actions.get(NOTE_LEFT)
-	};
-
-	@:noCompletion
-	private function get_note_left():Action
-	{
-		return {
-			name: NOTE_LEFT,
-			state: FlxG.keys.anyPressed(note_left.keys) ? PRESSED : RELEASED,
-			keys: note_left.keys
-		};
-	}
-
-	public var note_down(get, null):Action = {
-		name: NOTE_DOWN,
-		state: IDLE,
-		keys: actions.get(NOTE_DOWN)
-	};
-
-	@:noCompletion
-	private function get_note_down():Action
-	{
-		return {
-			name: NOTE_DOWN,
-			state: FlxG.keys.anyPressed(note_down.keys) ? PRESSED : RELEASED,
-			keys: note_down.keys
-		};
-	}
-
-	public var note_up(get, null):Action = {
-		name: NOTE_UP,
-		state: IDLE,
-		keys: actions.get(NOTE_UP)
-	};
-
-	@:noCompletion
-	private function get_note_up():Action
-	{
-		return {
-			name: NOTE_UP,
-			state: FlxG.keys.anyPressed(note_up.keys) ? PRESSED : RELEASED,
-			keys: note_up.keys
-		};
-	}
-
-	public var note_right(get, null):Action = {
-		name: NOTE_RIGHT,
-		state: IDLE,
-		keys: actions.get(NOTE_RIGHT)
-	};
-
-	@:noCompletion
-	private function get_note_right():Action
-	{
-		return {
-			name: NOTE_RIGHT,
-			state: FlxG.keys.anyPressed(note_right.keys) ? PRESSED : RELEASED,
-			keys: note_right.keys
-		};
-	}
+	public var note_left(default, null):Action = new Action(NOTE_LEFT);
+	public var note_down(default, null):Action = new Action(NOTE_DOWN);
+	public var note_up(default, null):Action = new Action(NOTE_UP);
+	public var note_right(default, null):Action = new Action(NOTE_RIGHT);
 
 	public function new() {}
 
-	public static var onActionEvent:EventGroup<ActionType> = new EventGroup<ActionType>();
+	public static var onActionPressed:Event<ActionType->Void> = new Event<ActionType->Void>();
+	public static var onActionReleased:Event<ActionType->Void> = new Event<ActionType->Void>();
 
 	public static function Initialize()
 	{
-		onActionEvent.addEvent('onActionPressed');
-		onActionEvent.addEvent('onActionReleased');
-
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 	}
+
+	public static function keyCodeToString(keyCode:Null<Int>):String
+		return keyCode != null ? keyCodes.get(keyCode) : "None";
 
 	private static function onKeyDown(evt:KeyboardEvent)
 	{
@@ -258,7 +103,7 @@ class Controls
 			{
 				// Instead of creating a new object that contains keys and state and shit, just dispatch the action name
 				if (keys.contains(evt.keyCode))
-					onActionEvent.triggerEvent("onActionPressed", name);
+					onActionPressed.dispatch(name);
 			}
 		}
 	}
@@ -274,8 +119,75 @@ class Controls
 			{
 				// Instead of creating a new object that contains keys and state and shit, just dispatch the action name
 				if (keys.contains(evt.keyCode))
-					onActionEvent.triggerEvent("onActionReleased", name);
+					onActionReleased.dispatch(name);
 			}
 		}
+	}
+}
+
+@:publicFields
+class Action
+{
+	var name(default, null):ActionType;
+	var state(get, null):ActionState;
+
+	@:noCompletion
+	private function get_state():ActionState
+	{
+		for (keyA in keys)
+		{
+			for (keyP in Controls.keysPressed)
+			{
+				if (keyA == keyP)
+					return PRESSED;
+			}
+		}
+		return RELEASED;
+	}
+
+	@:isVar var keys(get, set):Array<Null<Int>> = [];
+
+	// internal
+	@:noCompletion
+	private var _ikeys:Array<Null<Int>> = [];
+
+	// does it work properly??
+
+	@:noCompletion
+	private function get_keys():Array<Null<Int>>
+	{
+		@:privateAccess
+		if (Controls.actions.exists(name))
+			return Controls.actions.get(name);
+		else
+			return _ikeys;
+	}
+
+	@:noCompletion
+	private function set_keys(newKeys:Null<Array<Null<Int>>>):Array<Null<Int>>
+	{
+		@:privateAccess
+		if (Controls.actions.exists(name))
+		{
+			if (newKeys != null)
+				Controls.actions.set(name, newKeys);
+			else
+				Controls.actions.set(name, keys);
+		}
+		else
+			_ikeys = newKeys;
+
+		return keys;
+	}
+
+	// private var _copycat:shaders.ShaderTesting.DeepCopy; idk if copy cat its necessary here prob for defaults
+	// streamlined the process more
+	// what the fuck did i do here - 3 days later since i rewrote the code
+	function new(name:ActionType, state:ActionState = IDLE, keys:Null<Array<Null<Int>>> = null)
+	{
+		this.name = name;
+		this.state = state;
+		this._ikeys = this.keys;
+		this.keys = keys;
 	}
 }

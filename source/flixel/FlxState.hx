@@ -112,8 +112,8 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControls
 	 */
 	public function create():Void
 	{
-		Controls.onActionEvent.addCallbackTo(onActionPressed, "onActionPressed");
-		Controls.onActionEvent.addCallbackTo(onActionReleased, "onActionReleased");
+		Controls.onActionPressed.add(onActionPressed);
+		Controls.onActionReleased.add(onActionReleased);
 	}
 
 	override public function draw():Void
@@ -182,8 +182,8 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControls
 
 	override public function destroy():Void
 	{
-		Controls.onActionEvent.removeEventCallback(onActionPressed, "onActionPressed");
-		Controls.onActionEvent.removeEventCallback(onActionReleased, "onActionReleased");
+		Controls.onActionPressed.remove(onActionPressed);
+		Controls.onActionReleased.remove(onActionReleased);
 		controls = null;
 
 		FlxDestroyUtil.destroy(_subStateOpened);

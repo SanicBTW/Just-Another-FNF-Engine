@@ -203,7 +203,7 @@ class ShaderTesting extends FlxState
 					curSelected = 0; // as this aint curProperty getter or setter and modifies it through reflect, gotta force refreshing by ourselves
 					// should reset these too jus in case
 					holdTime = 0;
-					holdValue = 0;
+					holdValue = curProperty;
 				}
 
 			case "back":

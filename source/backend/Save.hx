@@ -16,7 +16,7 @@ class Save
 			{
 				_db = newDB;
 				loadSettings();
-
+				loadKeybinds();
 				if (shouldLoadQuaver)
 					loadQuaver();
 			});
@@ -40,6 +40,31 @@ class Save
 
 				Reflect.setField(Settings, field, save);
 			});
+		}
+	}
+
+	@:noCompletion
+	private static function loadKeybinds()
+	{
+		@:privateAccess
+		{
+			var keys = Controls.actions.keys();
+			for (key in keys)
+			{
+				var defKeys:Null<Array<Null<Int>>> = Controls.actions.get(key);
+				var fkey:String = Std.string(key);
+
+				_db.get('keybinds', fkey).then((save:Any) ->
+				{
+					if (save == null)
+					{
+						_db.set('keybinds', fkey, defKeys);
+						save = defKeys;
+					}
+
+					Reflect.setProperty(Reflect.getProperty(flixel.FlxG.state.controls, fkey), 'keys', save);
+				});
+			}
 		}
 	}
 
