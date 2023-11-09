@@ -1,7 +1,7 @@
 package shaders;
 
 import backend.SPromise;
-import base.sprites.SBar;
+import base.sprites.RoundedSprite;
 import base.sprites.StateBG;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -30,8 +30,8 @@ class ShaderTesting extends FlxState
 	private var gf:PendingSprite;
 
 	private var curEffect:BaseEffect<Dynamic>;
-	private var grpOptions:FlxTypedGroup<LerpedFlxText>;
-	private var grpProperties:FlxTypedGroup<LerpedFlxText>;
+	private var grpOptions:FlxTypedGroup<ShaderEntry>;
+	private var grpProperties:FlxTypedGroup<ShaderEntry>;
 
 	private var curSelected(default, set):Int = 0;
 	private var selectedShader:String = "";
@@ -49,7 +49,7 @@ class ShaderTesting extends FlxState
 	{
 		curSelected += value;
 
-		var group:FlxTypedGroup<LerpedFlxText> = (onProperties) ? grpProperties : grpOptions;
+		var group:FlxTypedGroup<ShaderEntry> = (onProperties) ? grpProperties : grpOptions;
 
 		if (curSelected < 0)
 			curSelected = group.members.length - 1;
@@ -58,25 +58,27 @@ class ShaderTesting extends FlxState
 
 		var tf:Int = 0;
 
-		for (text in group.members)
+		for (entry in group.members)
 		{
-			text.targetY = tf - curSelected;
+			entry.targetY = tf - curSelected;
 			tf++;
 
-			text.alpha = 0.6;
-			text.targetX = 1.5;
+			entry.bg.alpha = 0.15;
+			entry.text.alpha = 0.45;
+			entry.targetX = 1.5;
 			// sizing re-allocates
-			// text.size = initialSize - 4;
+			// entry.text.size = initialSize - 4;
 
-			if (text.targetY == 0)
+			if (entry.targetY == 0)
 			{
-				text.alpha = 1;
-				text.targetX = 0;
+				entry.bg.alpha = 0.55;
+				entry.text.alpha = 0.85;
+				entry.targetX = 0;
 
 				if (onProperties)
 				{
 					var prop:String = properties.get(selectedShader)[curSelected];
-					text.text = '$prop $curProperty';
+					entry.text.text = '$prop $curProperty';
 				}
 			}
 		}
@@ -102,10 +104,10 @@ class ShaderTesting extends FlxState
 		bg.screenCenter();
 		add(bg);
 
-		grpOptions = new FlxTypedGroup<LerpedFlxText>();
+		grpOptions = new FlxTypedGroup<ShaderEntry>();
 		add(grpOptions);
 
-		grpProperties = new FlxTypedGroup<LerpedFlxText>();
+		grpProperties = new FlxTypedGroup<ShaderEntry>();
 		add(grpProperties);
 
 		gf = new PendingSprite(FlxG.width * 0.4, FlxG.height * 0.07, "https://storage.sancopublic.com/gfDanceTitle", (sprite) ->
@@ -125,13 +127,13 @@ class ShaderTesting extends FlxState
 
 			for (i in 0...shaders.length)
 			{
-				var text:LerpedFlxText = new LerpedFlxText(20, 320, FlxG.width - (gf.width + gf.x), shaders[i], 28);
-				text.autoSize = false;
-				text.color = FlxColor.BLACK;
-				text.font = Paths.font("open_sans.ttf");
-				text.alignment = LEFT;
-				text.targetY = i;
-				grpOptions.add(text);
+				var entry:ShaderEntry = new ShaderEntry(20, 320, FlxG.width - (gf.width + gf.x), shaders[i], 28);
+				entry.text.autoSize = false;
+				entry.text.color = FlxColor.WHITE;
+				entry.text.font = Paths.font("open_sans.ttf");
+				entry.text.alignment = LEFT;
+				entry.targetY = i;
+				grpOptions.add(entry);
 			}
 
 			curSelected = grpOptions.length + 1;
@@ -266,14 +268,14 @@ class ShaderTesting extends FlxState
 		{
 			for (i in 0...properties.length)
 			{
-				var text:LerpedFlxText = new LerpedFlxText(340, 320, FlxG.width / 2, properties[i], 28);
-				text.autoSize = false;
-				text.disableCaching = true;
-				text.color = FlxColor.BLACK;
-				text.font = Paths.font("open_sans.ttf");
-				text.alignment = LEFT;
-				text.targetY = i;
-				grpProperties.add(text);
+				var entry:ShaderEntry = new ShaderEntry(340, 320, FlxG.width / 2, properties[i], 28);
+				entry.text.autoSize = false;
+				entry.text.disableCaching = true;
+				entry.text.color = FlxColor.WHITE;
+				entry.text.font = Paths.font("open_sans.ttf");
+				entry.text.alignment = LEFT;
+				entry.targetY = i;
+				grpProperties.add(entry);
 			}
 			holdValue = curProperty;
 			onProperties = true;
@@ -359,29 +361,40 @@ class PendingSprite extends FlxSprite
 	}
 }
 
-class LerpedFlxText extends FlxText
+// joins flxtext and rounded sprite, not using lerped flx text or modifying it cuz it already works so im leavin it as it is just in case, but this is heavily based off it so
+class ShaderEntry extends FlxSpriteGroup
 {
+	public var bg:RoundedSprite;
+	public var text:FlxText;
+
 	public var targetX:Float = 0;
 	public var targetY:Float = 0;
 	public var initialPositions:Vector2 = new Vector2(0, 0);
 	public var defaultText:String = "";
 
-	override public function new(X:Float, Y:Float, FieldWidth:Float, Text:String, Size:Int, EmbeddedFont:Bool = true)
+	override public function new(X:Float, Y:Float, FieldWidth:Float, Text:String, Size:Int)
 	{
+		super(X, Y);
+
 		initialPositions.setTo(X, Y);
 		defaultText = Text;
-		super(X, Y, FieldWidth, Text, Size, EmbeddedFont);
+
+		text = new FlxText(12.5, 12.5, FieldWidth, Text, Size, true);
+		bg = new RoundedSprite(0, 0, Math.floor(text.width + 25), Math.floor(text.height + 25), [50], FlxColor.BLACK, 0.75);
+
+		add(bg);
+		add(text);
 	}
 
 	override public function update(elapsed:Float)
 	{
 		var lerpVal:Float = FlxMath.bound(elapsed * 9.6, 0, 1);
-		x = FlxMath.lerp(x, (targetX * size / 2) + initialPositions.x, lerpVal);
-		y = FlxMath.lerp(y, (targetY * 1.3 * size) + initialPositions.y, lerpVal);
+		x = FlxMath.lerp(x, (targetX * text.size / 2) + initialPositions.x, lerpVal);
+		y = FlxMath.lerp(y, (targetY * 1.3 * height) + initialPositions.y, lerpVal);
 
 		// force
-		if (targetY != 0 && text != defaultText)
-			text = defaultText;
+		if (targetY != 0 && text.text != defaultText)
+			text.text = defaultText;
 
 		super.update(elapsed);
 	}
