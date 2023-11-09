@@ -271,7 +271,7 @@ class Qua
 			sys.FileSystem.createDirectory(path);
 
 		// uhhhhhh
-		var audioPath:String = Path.join(Sys.getCwd(), "assets", "funkin", "quaver", '$MapSetId', AudioFile);
+		var audioPath:String = Path.join(Sys.getCwd(), "assets", "quaver", '$MapSetId', AudioFile);
 		AudioFile = AudioFile.replace("mp3", "ogg");
 
 		var output:String = Path.join(path, AudioFile);
