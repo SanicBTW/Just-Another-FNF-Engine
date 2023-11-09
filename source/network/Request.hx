@@ -2,8 +2,8 @@ package network;
 
 import backend.Cache;
 import backend.SPromise;
+import com.akifox.asynchttp.*;
 import flixel.graphics.FlxGraphic;
-import haxe.Http;
 import haxe.io.Bytes;
 import lime.graphics.Image;
 import openfl.display.BitmapData;
@@ -47,103 +47,113 @@ class Request<T> extends SPromise<T>
 	{
 		super((resolve, reject) ->
 		{
-			var http:Http = new Http(opt.url);
+			var http = new HttpRequest({
+				url: opt.url,
+				async: true,
+				headers: new HttpHeaders(),
+				callback: (response:HttpResponse) ->
+				{
+					if (!response.isOK)
+					{
+						reject(response.status);
+						return;
+					}
+
+					switch (opt.type)
+					{
+						case STRING:
+							resolve(cast response.content);
+
+						case OBJECT:
+							resolve(cast haxe.Json.parse(response.content));
+
+						case BYTES:
+							resolve(cast response.contentRaw);
+
+						case SOUND:
+							if (Cache.exists(opt.url))
+							{
+								resolve(cast Cache.get(opt.url, SOUND));
+								return;
+							}
+
+							#if html5
+							Sound.loadFromFile(opt.url).onComplete((sound:Sound) ->
+							{
+								resolve(cast Cache.set(sound, SOUND, opt.url));
+							});
+							#else
+							var sound:Sound = new Sound();
+							sound.loadCompressedDataFromByteArray(response.contentRaw, response.contentRaw.length);
+							resolve(cast Cache.set(sound, SOUND, opt.url));
+							#end
+
+						case IMAGE:
+							if (Cache.exists(opt.url))
+							{
+								resolve(cast Cache.get(opt.url, GRAPHIC));
+								return;
+							}
+
+							#if html5
+							Image.loadFromFile(opt.url).onComplete((limeImg:Image) ->
+							{
+								var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
+								var newGraphic:FlxGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
+
+								resolve(cast newGraphic);
+							});
+							#else
+							var limeImg:Image = Image.fromBytes(response.contentRaw);
+							var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
+							var newGraphic:FlxGraphic;
+
+							if (Cache.gpuRender)
+							{
+								var texture:Texture = Cache.getTexture(opt.url, bitData);
+								newGraphic = Cache.set(FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture)), GRAPHIC, opt.url);
+							}
+							else
+								newGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
+
+							resolve(cast newGraphic);
+							#end
+					}
+				},
+				callbackError: (response:HttpResponse) ->
+				{
+					trace(response.error, response.status);
+					reject(response.error);
+				},
+				callbackProgress: (loaded:Int, total:Int) -> {}
+			});
 
 			if (opt.headers != null)
 			{
 				for (header in opt.headers)
 				{
-					http.addHeader(header.name, header.value);
+					http.headers.add(header.name, header.value);
 				}
 			}
 
 			// Refused to set unsafe header "User-Agent"
-			#if !html5 http.addHeader('User-Agent', userAgent); #end
+			#if !html5 http.headers.add('User-Agent', userAgent); #end
 
-			http.onError = (msg) ->
-			{
-				var error = http.responseData == null ? msg : http.responseData;
-				reject(error);
-				return;
-			}
-
-			switch (opt.type)
-			{
-				case STRING:
-					http.onData = (data:String) ->
-					{
-						resolve(cast data);
-					}
-
-				case OBJECT:
-					http.onData = (data:String) ->
-					{
-						resolve(cast haxe.Json.parse(data));
-					}
-
-				case BYTES:
-					http.onBytes = (bytes:Bytes) ->
-					{
-						resolve(cast bytes);
-					}
-
-				case SOUND:
-					#if html5
-					Sound.loadFromFile(opt.url).onComplete((sound:Sound) ->
-					{
-						resolve(cast Cache.set(sound, SOUND, opt.url));
-					});
-					#else
-					http.onBytes = (bytes:Bytes) ->
-					{
-						var sound:Sound = new Sound();
-						sound.loadCompressedDataFromByteArray(bytes, bytes.length);
-						resolve(cast Cache.set(sound, SOUND, opt.url));
-					}
-					#end
-
-				case IMAGE:
-					#if html5
-					Image.loadFromFile(opt.url).onComplete((limeImg:Image) ->
-					{
-						var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
-						var newGraphic:FlxGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
-
-						resolve(cast newGraphic);
-					});
-					#else
-					http.onBytes = (bytes:Bytes) ->
-					{
-						var limeImg:Image = Image.fromBytes(bytes);
-						var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
-						var newGraphic:FlxGraphic;
-
-						if (Cache.gpuRender)
-						{
-							var texture:Texture = Cache.getTexture(opt.url, bitData);
-							newGraphic = Cache.set(FlxGraphic.fromBitmapData(BitmapData.fromTexture(texture)), GRAPHIC, opt.url);
-						}
-						else
-							newGraphic = Cache.set(FlxGraphic.fromBitmapData(bitData), GRAPHIC, opt.url);
-
-						resolve(cast newGraphic);
-					}
-					#end
-			}
-
-			if (opt.post != null && opt.post)
-			{
-				if (opt.postData != null)
-					http.setPostData(opt.postData);
-				if (opt.postBytes != null)
-					http.setPostBytes(opt.postBytes);
-			}
+			/*
+				// http-socket doesnt have posting
+				if (opt.post != null && opt.post)
+				{
+					if (opt.postData != null)
+						http.setPostData(opt.postData);
+					if (opt.postBytes != null)
+						http.setPostBytes(opt.postBytes);
+			}*/
 
 			#if html5
 			if (opt.type != SOUND || opt.type != IMAGE)
-				http.request(opt.post);
+				http.send();
 			#else
-			http.request(opt.post);
+			http.send();
 			#end
 		});
 	}

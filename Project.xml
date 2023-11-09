@@ -41,7 +41,7 @@
 	<define name="FS_ACCESS" if="windows || linux" />
 
 	<!-- Enable Discord Rich Presence -->
-	<define name="DISCORD_PRESENCE" if="windows || linux" />
+	<!-- <define name="DISCORD_PRESENCE" if="windows || linux" /> -->
 
 	<!-- Enable the engine Crash Handler -->
 	<define name="CRASH_HANDLER" if="windows || linux" />
@@ -54,6 +54,7 @@
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
 	<haxelib name="SSIni" />
+	<haxelib name="akifox-asynchttp" />
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
