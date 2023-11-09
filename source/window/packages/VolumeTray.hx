@@ -62,6 +62,7 @@ class VolumeTray extends Tray
 		_volBar = new RoundedSprite(0, 0, _width - 10, 5, [5]);
 		_volBar.x = 5;
 		_volBar.y = (_height - _volBar.height) - 5;
+		_volBar.ForceResize = true;
 		addChild(_volBar);
 	}
 

@@ -6,8 +6,6 @@ import lime.math.Vector2;
 import openfl.display.GraphicsPath;
 import openfl.display.Shape;
 
-typedef SetDataFunc = (type:Int, initIndex:Int, ?lerp:Float, data:haxe.Rest<Float>) -> Void;
-
 // idk why i made it as an abstract enum lmfao, probably to remember about the command ints just in case
 enum abstract CommandType(Int) to Int
 {
@@ -24,10 +22,15 @@ enum DrawMethod
 
 // smart ass math(no)
 // bro this ugly ass copy paste code i gotta make it better - i did make it better
+// hey i just learnt maths holy fuck
+// lerping to 1 returns the same value lol
+// i need to actually optimize this bullshit
+// rewrite soon
 
 class RoundedSprite extends Shape
 {
-	public static var drawMethod:DrawMethod = #if !html5 GRAPHICS_PATH #else SHAPE_DRAWING #end;
+	// the default method, shouldnt be changed on runtime, if it has to change on runtime due to performance reasons, every instance will be redrawn with the new method
+	public static final drawMethod:DrawMethod = #if !html5 GRAPHICS_PATH #else SHAPE_DRAWING #end;
 
 	static final anchor:Float = (1 - Math.sin(45 * (Math.PI / 180)));
 	static final control:Float = (1 - Math.tan(22.5 * (Math.PI / 180)));
@@ -36,7 +39,6 @@ class RoundedSprite extends Shape
 
 	private var X:Float = 0;
 	private var Y:Float = 0;
-	private var Alpha:Float = 0;
 	private var Path:GraphicsPath;
 	private var Dirty:Bool = true;
 
@@ -44,6 +46,32 @@ class RoundedSprite extends Shape
 	public var RealSizes:Vector2 = new Vector2(0, 0);
 	public var CornerRadius:Array<Float> = [];
 	public var Color:FlxColor = FlxColor.WHITE;
+	public var DrawMethod(default, set):DrawMethod = RoundedSprite.drawMethod;
+	public var ForceResize:Bool = false; // i want to kms
+
+	// if the draw method changes, it has to clean re-initialize the necessary stuff in order to properly work
+	// example: on runtime when changing from graphics to shape shouldnt be a problem but in the other direction it could cause a null exception since it doesnt have Path initialized
+
+	@:noCompletion
+	private function set_DrawMethod(Method:DrawMethod):DrawMethod
+	{
+		if (DrawMethod != Method)
+		{
+			switch (Method)
+			{
+				case GRAPHICS_PATH:
+					Path = new GraphicsPath(new openfl.Vector<Int>(), new openfl.Vector<Float>(), NON_ZERO);
+					_initGraphicsPath((X + width), (Y + height));
+				case SHAPE_DRAWING:
+					_redrawShape(width, height);
+			}
+
+			redraw();
+			DrawMethod = Method;
+		}
+
+		return DrawMethod;
+	}
 
 	public function new(X:Float, Y:Float, Width:Float, Height:Float, CornerRadius:Array<Float>, Color:FlxColor = FlxColor.WHITE, Alpha:Float = 1)
 	{
@@ -53,7 +81,7 @@ class RoundedSprite extends Shape
 		this.Y = Y;
 		this.CornerRadius = CornerRadius;
 		this.Color = Color;
-		this.Alpha = Alpha;
+		this.alpha = Alpha;
 		this.RealSizes.setTo(Width, Height);
 
 		switch (drawMethod)
@@ -69,27 +97,29 @@ class RoundedSprite extends Shape
 	}
 
 	// smartass cleaning and optimization
-	public function setSize(newWidth:Float, newHeight:Float, ?lerp:Float)
+	public function setSize(newWidth:Float, newHeight:Float, lerp:Float = 1)
 	{
-		Dirty = (newWidth != width || newHeight != height);
+		var oldWidth:Int = Math.ceil(RealSizes.x);
+		var oldHeight:Int = Math.ceil(RealSizes.y);
 
-		// if the corners are lerped why the real size shouldnt
-		if (lerp != null)
+		var newIWidth:Int = Math.ceil(newWidth);
+		var newIHeight:Int = Math.ceil(newHeight);
+
+		if ((newIWidth > oldWidth || newIHeight > oldHeight) || ForceResize)
 		{
+			// if the corners are lerped why the real size shouldnt
 			RealSizes.x = FlxMath.lerp(newWidth, RealSizes.x, lerp);
 			RealSizes.y = FlxMath.lerp(newHeight, RealSizes.y, lerp);
-		}
-		else
-			RealSizes.setTo(newWidth, newHeight);
 
-		switch (drawMethod)
-		{
-			case GRAPHICS_PATH:
-				_resizeGraphicsPath(newWidth, newHeight, lerp);
-			case SHAPE_DRAWING: // nada
-		}
+			switch (drawMethod)
+			{
+				case GRAPHICS_PATH:
+					_resizeGraphicsPath(newWidth, newHeight, lerp);
+				case SHAPE_DRAWING: // nada
+			}
 
-		redraw();
+			redraw();
+		}
 	}
 
 	public function redraw()
@@ -101,7 +131,7 @@ class RoundedSprite extends Shape
 		{
 			case GRAPHICS_PATH:
 				graphics.clear();
-				graphics.beginFill(Color, Alpha); // Fill color
+				graphics.beginFill(Color, alpha); // Fill color
 				graphics.drawPath(Path.commands, Path.data, Path.winding);
 				graphics.endFill();
 			case SHAPE_DRAWING:
@@ -194,7 +224,7 @@ class RoundedSprite extends Shape
 	@:noCompletion
 	private function _redrawShape(Width:Float, Height:Float)
 	{
-		graphics.beginFill(Color, Alpha);
+		graphics.beginFill(Color, alpha);
 		if (CornerRadius.length < 3)
 			graphics.drawRoundRect(X, Y, Width, Height, CornerRadius[0], CornerRadius[0]);
 		else
@@ -207,7 +237,7 @@ class RoundedSprite extends Shape
 	// Size systems
 
 	@:noCompletion
-	private function _resizeGraphicsPath(newWidth:Float, newHeight:Float, ?lerp:Float)
+	private function _resizeGraphicsPath(newWidth:Float, newHeight:Float, lerp:Float = 1)
 	{
 		// Update the path data with the new size while preserving the corner radius
 		var XW:Float = (X + newWidth);
@@ -218,8 +248,6 @@ class RoundedSprite extends Shape
 		if (YH <= min)
 			YH = min;
 
-		var callee:SetDataFunc = Reflect.field(this, lerp != null ? "setLerpData" : "setData");
-
 		if (CornerRadius.length < 3)
 		{
 			var RAD:Float = (CornerRadius[0] / 2);
@@ -227,25 +255,25 @@ class RoundedSprite extends Shape
 			var S:Float = RAD * control;
 
 			// bottom right
-			callee(MoveTo, 0, lerp, XW, YH - RAD);
-			callee(CurveTo, 2, lerp, XW, YH - S, XW - A, YH - A);
-			callee(CurveTo, 6, lerp, XW - S, YH, XW - RAD, YH);
+			setData(MoveTo, 0, lerp, XW, YH - RAD);
+			setData(CurveTo, 2, lerp, XW, YH - S, XW - A, YH - A);
+			setData(CurveTo, 6, lerp, XW - S, YH, XW - RAD, YH);
 
 			// bottom left
-			callee(LineTo, 10, lerp, X + RAD, YH);
-			callee(CurveTo, 12, lerp, X + S, YH, X + A, YH - A);
-			callee(CurveTo, 16, lerp, X, YH - S, X, YH - RAD);
+			setData(LineTo, 10, lerp, X + RAD, YH);
+			setData(CurveTo, 12, lerp, X + S, YH, X + A, YH - A);
+			setData(CurveTo, 16, lerp, X, YH - S, X, YH - RAD);
 
 			// top left
-			callee(LineTo, 20, lerp, X, Y + RAD);
-			callee(CurveTo, 22, lerp, X, Y + S, X + A, Y + A);
-			callee(CurveTo, 26, lerp, X + S, Y, X + RAD, Y);
+			setData(LineTo, 20, lerp, X, Y + RAD);
+			setData(CurveTo, 22, lerp, X, Y + S, X + A, Y + A);
+			setData(CurveTo, 26, lerp, X + S, Y, X + RAD, Y);
 
 			// top right
-			callee(LineTo, 30, lerp, XW - RAD, Y);
-			callee(CurveTo, 32, lerp, XW - S, Y, XW - A, Y + A);
-			callee(CurveTo, 36, lerp, XW, Y + S, XW, Y + RAD);
-			callee(LineTo, 40, lerp, XW, YH - RAD);
+			setData(LineTo, 30, lerp, XW - RAD, Y);
+			setData(CurveTo, 32, lerp, XW - S, Y, XW - A, Y + A);
+			setData(CurveTo, 36, lerp, XW, Y + S, XW, Y + RAD);
+			setData(LineTo, 40, lerp, XW, YH - RAD);
 		}
 		else
 		{
@@ -258,34 +286,34 @@ class RoundedSprite extends Shape
 			var S:Float = BotRight_RAD * control;
 
 			// bottom right
-			callee(MoveTo, 0, lerp, XW, YH - BotRight_RAD);
-			callee(CurveTo, 2, lerp, XW, YH - S, XW - A, YH - A);
-			callee(CurveTo, 6, lerp, XW - S, YH, XW - BotRight_RAD, YH);
+			setData(MoveTo, 0, lerp, XW, YH - BotRight_RAD);
+			setData(CurveTo, 2, lerp, XW, YH - S, XW - A, YH - A);
+			setData(CurveTo, 6, lerp, XW - S, YH, XW - BotRight_RAD, YH);
 
 			A = BotLeft_RAD * anchor;
 			S = BotLeft_RAD * control;
 
 			// bottom left
-			callee(LineTo, 10, lerp, X + BotLeft_RAD, YH);
-			callee(CurveTo, 12, lerp, X + S, YH, X + A, YH - A);
-			callee(CurveTo, 16, lerp, X, YH - S, X, YH - BotLeft_RAD);
+			setData(LineTo, 10, lerp, X + BotLeft_RAD, YH);
+			setData(CurveTo, 12, lerp, X + S, YH, X + A, YH - A);
+			setData(CurveTo, 16, lerp, X, YH - S, X, YH - BotLeft_RAD);
 
 			A = TopLeft_RAD * anchor;
 			S = TopLeft_RAD * control;
 
 			// top left
-			callee(LineTo, 20, lerp, X, Y + TopLeft_RAD);
-			callee(CurveTo, 22, lerp, X, Y + S, X + A, Y + A);
-			callee(CurveTo, 26, lerp, X + S, Y, X + TopLeft_RAD, Y);
+			setData(LineTo, 20, lerp, X, Y + TopLeft_RAD);
+			setData(CurveTo, 22, lerp, X, Y + S, X + A, Y + A);
+			setData(CurveTo, 26, lerp, X + S, Y, X + TopLeft_RAD, Y);
 
 			A = TopRight_RAD * anchor;
 			S = TopRight_RAD * control;
 
 			// top right
-			callee(LineTo, 30, lerp, XW - TopRight_RAD, Y);
-			callee(CurveTo, 32, lerp, XW - S, Y, XW - A, Y + A);
-			callee(CurveTo, 36, lerp, XW, Y + S, XW, Y + TopRight_RAD);
-			callee(LineTo, 40, lerp, XW, YH - TopRight_RAD);
+			setData(LineTo, 30, lerp, XW - TopRight_RAD, Y);
+			setData(CurveTo, 32, lerp, XW - S, Y, XW - A, Y + A);
+			setData(CurveTo, 36, lerp, XW, Y + S, XW, Y + TopRight_RAD);
+			setData(LineTo, 40, lerp, XW, YH - TopRight_RAD);
 		}
 
 		Dirty = true;
@@ -294,7 +322,7 @@ class RoundedSprite extends Shape
 	/// Helpers
 
 	@:noCompletion
-	private function setData(type:CommandType = CommandType.LineTo, initIndex:Int, data:haxe.Rest<Float>)
+	private function setData(type:CommandType = CommandType.LineTo, iIndex:Int, lerp:Float = 1, data:haxe.Rest<Float>)
 	{
 		var arr:Array<Float> = data.toArray();
 		switch (type)
@@ -302,41 +330,21 @@ class RoundedSprite extends Shape
 			// Move to and line to only takes up 2 indices of GraphicsPath data
 			case MoveTo | LineTo:
 				{
-					Path.data[initIndex] = arr[0];
-					Path.data[initIndex + 1] = arr[1];
+					for (i in 0...1)
+					{
+						// trace(i);
+						Path.data[iIndex + i] = FlxMath.lerp(arr[i], Path.data[iIndex + i], lerp);
+					}
 				}
 
 			// Curve to takes up to 3 indices or 4 indices including the init
 			case CurveTo:
 				{
-					Path.data[initIndex] = arr[0];
-					Path.data[initIndex + 1] = arr[1];
-					Path.data[initIndex + 2] = arr[2];
-					Path.data[initIndex + 3] = arr[3];
-				}
-		}
-	}
-
-	@:noCompletion
-	private function setLerpData(type:CommandType = CommandType.LineTo, initIndex:Int, lerp:Float, data:haxe.Rest<Float>)
-	{
-		var arr:Array<Float> = data.toArray();
-		switch (type)
-		{
-			// Move to and line to only takes up 2 indices of GraphicsPath data
-			case MoveTo | LineTo:
-				{
-					Path.data[initIndex] = FlxMath.lerp(arr[0], Path.data[initIndex], lerp);
-					Path.data[initIndex + 1] = FlxMath.lerp(arr[1], Path.data[initIndex + 1], lerp);
-				}
-
-			// Curve to takes up to 3 indices or 4 indices including the init
-			case CurveTo:
-				{
-					Path.data[initIndex] = FlxMath.lerp(arr[0], Path.data[initIndex], lerp);
-					Path.data[initIndex + 1] = FlxMath.lerp(arr[1], Path.data[initIndex + 1], lerp);
-					Path.data[initIndex + 2] = FlxMath.lerp(arr[2], Path.data[initIndex + 2], lerp);
-					Path.data[initIndex + 3] = FlxMath.lerp(arr[3], Path.data[initIndex + 3], lerp);
+					for (i in 0...3)
+					{
+						// trace(i);
+						Path.data[iIndex + i] = FlxMath.lerp(arr[i], Path.data[iIndex + i], lerp);
+					}
 				}
 		}
 	}
