@@ -2,6 +2,8 @@ package backend;
 
 import flixel.FlxG;
 import lime.app.Event;
+import lime.ui.Gamepad;
+import lime.ui.GamepadButton;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
 
@@ -42,7 +44,7 @@ class Controls
 		105 => "Numpad 9", 109 => "Numpad -", 107 => "Numpad +", 110 => "Numpad .", 106 => "Numpad *"
 	];
 
-	// Base map which is used to get the keys in non-static variables
+	// Base map which is used to get the keys in non-static variables and dispatching the events
 	private static var actions:Map<ActionType, Array<Null<Int>>> = [
 		CONFIRM => [Keyboard.ENTER],
 		BACK => [Keyboard.ESCAPE],
@@ -57,9 +59,29 @@ class Controls
 		NOTE_RIGHT => [Keyboard.RIGHT, Keyboard.D, Keyboard.PERIOD]
 	];
 
+	// Base map which is used to get the gamepad buttons in non-static variables and dispatching the events
+	// TODO: when entering a state that requires some bindings that are inside a ui specific action unbind it to make the note action work properly
+	private static var gamepadActions:Map<ActionType, Array<Null<GamepadButton>>> = [
+		CONFIRM => [GamepadButton.START],
+		BACK => [GamepadButton.BACK],
+		RESET => [null],
+		UI_LEFT => [GamepadButton.DPAD_LEFT],
+		UI_DOWN => [GamepadButton.DPAD_DOWN],
+		UI_UP => [GamepadButton.DPAD_UP],
+		UI_RIGHT => [GamepadButton.DPAD_RIGHT],
+		NOTE_LEFT => [GamepadButton.DPAD_LEFT, GamepadButton.X],
+		NOTE_DOWN => [GamepadButton.DPAD_DOWN, GamepadButton.A],
+		NOTE_UP => [GamepadButton.DPAD_UP, GamepadButton.Y],
+		NOTE_RIGHT => [GamepadButton.DPAD_RIGHT, GamepadButton.B]
+	];
+
 	// dont show this bad boy in intellisense
 	@:noCompletion
 	public static var keysPressed:Array<Int> = [];
+
+	// sorry for this but prob the best way
+	@:noCompletion
+	public static var buttonsPressed:Array<GamepadButton> = [];
 
 	// system actions
 	public var confirm(default, null):Action = new Action(CONFIRM);
@@ -82,19 +104,28 @@ class Controls
 
 	public static var onActionPressed:Event<ActionType->Void> = new Event<ActionType->Void>();
 	public static var onActionReleased:Event<ActionType->Void> = new Event<ActionType->Void>();
+	private static var connectedGamepad:Null<Gamepad> = null;
 
 	public static function Initialize()
 	{
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+
+		Gamepad.onConnect.add(onGamepadConnect);
+
+		// only select the first one
+		var gamepad:Null<Gamepad> = Gamepad.devices.get(0);
+		if (gamepad != null)
+			Gamepad.onConnect.dispatch(gamepad);
 	}
 
 	public static function keyCodeToString(keyCode:Null<Int>):String
 		return keyCode != null ? keyCodes.get(keyCode) : "None";
 
+	// KEYS
 	private static function onKeyDown(evt:KeyboardEvent)
 	{
-		if (FlxG.keys.enabled && ((FlxG.state.active || FlxG.state.persistentUpdate)) && !keysPressed.contains(evt.keyCode))
+		if (FlxG.keys.enabled && (FlxG.state.active || FlxG.state.persistentUpdate) && !keysPressed.contains(evt.keyCode))
 		{
 			keysPressed.push(evt.keyCode);
 
@@ -110,7 +141,7 @@ class Controls
 
 	private static function onKeyUp(evt:KeyboardEvent)
 	{
-		if (FlxG.keys.enabled && ((FlxG.state.active || FlxG.state.persistentUpdate)) && keysPressed.contains(evt.keyCode))
+		if (FlxG.keys.enabled && (FlxG.state.active || FlxG.state.persistentUpdate) && keysPressed.contains(evt.keyCode))
 		{
 			keysPressed.remove(evt.keyCode);
 
@@ -123,6 +154,54 @@ class Controls
 			}
 		}
 	}
+
+	// GAMEPADS
+	private static function onGamepadConnect(gamepad:Gamepad):Void
+	{
+		connectedGamepad = gamepad;
+
+		gamepad.onDisconnect.add(() ->
+		{
+			connectedGamepad = null;
+			trace('Gamepad ${gamepad.name} disconnected');
+		});
+
+		// axis movements seems kind of trippy so nono to that
+
+		// Follows the same onKeyUp/onKeyDown functions
+		gamepad.onButtonDown.add((button:GamepadButton) ->
+		{
+			// gampead.connected :skull:
+			if (gamepad.connected && (FlxG.state.active || FlxG.state.persistentUpdate) && !buttonsPressed.contains(button))
+			{
+				buttonsPressed.push(button);
+
+				// Get them name and keys
+				for (name => buttons in gamepadActions)
+				{
+					// Instead of creating a new object that contains keys and state and shit, just dispatch the action name
+					if (buttons.contains(button))
+						onActionPressed.dispatch(name);
+				}
+			}
+		});
+
+		gamepad.onButtonUp.add((button:GamepadButton) ->
+		{
+			if (gamepad.connected && (FlxG.state.active || FlxG.state.persistentUpdate) && buttonsPressed.contains(button))
+			{
+				buttonsPressed.remove(button);
+
+				// Get them name and keys
+				for (name => buttons in gamepadActions)
+				{
+					// Instead of creating a new object that contains keys and state and shit, just dispatch the action name
+					if (buttons.contains(button))
+						onActionReleased.dispatch(name);
+				}
+			}
+		});
+	}
 }
 
 @:publicFields
@@ -134,12 +213,31 @@ class Action
 	@:noCompletion
 	private function get_state():ActionState
 	{
-		for (keyA in keys)
+		@:privateAccess
+		if (Controls.connectedGamepad != null)
 		{
-			for (keyP in Controls.keysPressed)
+			// buttonAction
+			for (buttonA in buttons)
 			{
-				if (keyA == keyP)
-					return PRESSED;
+				// buttonPressed
+				for (buttonP in Controls.buttonsPressed)
+				{
+					if (buttonA == buttonP)
+						return PRESSED;
+				}
+			}
+		}
+		else
+		{
+			// keyAction
+			for (keyA in keys)
+			{
+				// keyPressed
+				for (keyP in Controls.keysPressed)
+				{
+					if (keyA == keyP)
+						return PRESSED;
+				}
 			}
 		}
 		return RELEASED;
@@ -180,14 +278,53 @@ class Action
 		return keys;
 	}
 
+	@:isVar var buttons(get, set):Array<Null<GamepadButton>> = [];
+
+	// internal
+	@:noCompletion
+	private var _ibuttons:Array<Null<GamepadButton>> = [];
+
+	// does it work properly?? - such a copy paste lmfao
+
+	@:noCompletion
+	private function get_buttons():Array<Null<GamepadButton>>
+	{
+		@:privateAccess
+		if (Controls.gamepadActions.exists(name))
+			return Controls.gamepadActions.get(name);
+		else
+			return _ibuttons;
+	}
+
+	@:noCompletion
+	private function set_buttons(newButtons:Null<Array<Null<GamepadButton>>>):Array<Null<GamepadButton>>
+	{
+		@:privateAccess
+		if (Controls.gamepadActions.exists(name))
+		{
+			if (newButtons != null)
+				Controls.gamepadActions.set(name, newButtons);
+			else
+				Controls.gamepadActions.set(name, buttons);
+		}
+		else
+			_ibuttons = newButtons;
+
+		return buttons;
+	}
+
 	// private var _copycat:shaders.ShaderTesting.DeepCopy; idk if copy cat its necessary here prob for defaults
 	// streamlined the process more
 	// what the fuck did i do here - 3 days later since i rewrote the code
-	function new(name:ActionType, state:ActionState = IDLE, keys:Null<Array<Null<Int>>> = null)
+	function new(name:ActionType, state:ActionState = IDLE, keys:Null<Array<Null<Int>>> = null, buttons:Null<Array<Null<GamepadButton>>> = null)
 	{
 		this.name = name;
 		this.state = state;
+
 		this._ikeys = this.keys;
+		this._ibuttons = this.buttons;
+
 		this.keys = keys;
+		this.buttons = buttons;
 	}
 }
