@@ -68,9 +68,6 @@ class Prompt extends FlxSpriteGroup
 	public var button1:PromptButton;
 	public var button2:PromptButton;
 
-	private var selector:FlxSprite;
-	private var selectorSine:Float = 0;
-
 	public function new(title:String, description:String, type:ButtonType)
 	{
 		super();
@@ -102,32 +99,7 @@ class Prompt extends FlxSpriteGroup
 			default:
 		}
 
-		button1.onOver.callback = () ->
-		{
-			selector.x = button1.x;
-		};
-
-		button2.onOver.callback = () ->
-		{
-			selector.x = button2.x;
-		}
-
 		add(button1);
 		add(button2);
-
-		selector = new FlxSprite(button1.x, button1.y).makeGraphic(Std.int(button1.width), Std.int(button1.height), flixel.util.FlxColor.WHITE);
-		selector.alpha = 0.5;
-		add(selector);
-	}
-
-	override function update(elapsed:Float)
-	{
-		if (selector != null)
-		{
-			selectorSine += 200 * elapsed;
-			selector.alpha = 0.5 * Math.sin((Math.PI * selectorSine) / 200);
-		}
-
-		super.update(elapsed);
 	}
 }
