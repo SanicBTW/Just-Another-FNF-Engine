@@ -134,7 +134,7 @@ class ChartLoader
 		for (hitObject in qua.HitObjects)
 		{
 			var strumTime:Float = hitObject.StartTime;
-			var noteData:Int = Std.int(hitObject.Lane % 4);
+			var noteData:Int = Std.int(hitObject.Lane - 1);
 			var endTime:Float = hitObject.EndTime;
 
 			var oldNote:Note = null;
