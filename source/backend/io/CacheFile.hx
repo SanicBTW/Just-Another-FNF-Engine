@@ -12,6 +12,10 @@ using StringTools;
 import sys.FileSystem;
 import sys.io.File;
 #end
+#if html5
+import js.Browser;
+import js.html.Storage;
+#end
 
 // Based off https://github.com/SanicBTW/Sanco-Bot-Rewritten/blob/bcc2c638d4f0bb7fa912620113c749d9015e7b32/src/OptFHandler.ts
 // This class is meant for persistent data across instances
@@ -23,19 +27,38 @@ class CacheFile
 	private static final blankReg:EReg = ~/^[ \n\r\t]$/;
 	private static final entryReg:EReg = ~/^([^:]+):(.*)$/;
 
-	private static final fileName:String = "cache.jafe";
+	private static final fileName:String = #if html5 "cache:jafe" #else "cache.jafe" #end;
 	private static final template:String = 'savePath:n\nfsAllowed:f\nnetAllowed:f\ndiscrpcAllowed:f\ndiscToken:n\ngavePerms:f\nq_beatmaps:n';
 
 	public static var comments(default, null):Array<String> = [];
 	public static var data(default, null):DynamicMap<String, Dynamic> = new DynamicMap<String, Dynamic>();
 
+	#if html5
+	private static var lStorage:Storage;
+	#end
+
 	// This function will try to create a file on the app directory
 	public static function Initialize()
 	{
+		#if sys
 		if (!FileSystem.exists(Sys.getCwd() + fileName))
 			File.saveContent(Sys.getCwd() + fileName, encrypt(template));
 
 		var content:String = decrypt(File.getContent(Sys.getCwd() + fileName));
+		#end
+
+		#if html5
+		lStorage = Browser.getLocalStorage();
+		if (lStorage == null)
+			throw "Local Storage unsupported or disabled";
+
+		trace(lStorage.getItem(fileName));
+		if (lStorage.getItem(fileName) == null)
+			lStorage.setItem(fileName, encrypt(template));
+
+		var content:String = decrypt(lStorage.getItem(fileName));
+		#end
+
 		for (i in (~/\r\n|\r|\n/g).split(content))
 		{
 			var i:String = i.trim();
@@ -85,7 +108,13 @@ class CacheFile
 			flush += '${name}:${Serializer.run(value)}\n';
 		}
 
+		#if sys
 		File.saveContent(Sys.getCwd() + fileName, encrypt(flush));
+		#end
+
+		#if html5
+		lStorage.setItem(fileName, encrypt(flush));
+		#end
 	}
 
 	private static function rot13(data:String):String

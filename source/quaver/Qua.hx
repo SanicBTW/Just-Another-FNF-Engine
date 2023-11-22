@@ -49,7 +49,7 @@ enum abstract KeyMode(String) to String
 }
 
 /**
- * v1.1
+ * v1.2
  *
  * Missing editor layers and optimizations but It's working fine
  * @author SanicBTW

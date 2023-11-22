@@ -1,8 +1,10 @@
 package backend;
 
 import flixel.FlxG;
+import flixel.math.FlxMath;
 import lime.app.Event;
 import lime.ui.Gamepad;
+import lime.ui.GamepadAxis;
 import lime.ui.GamepadButton;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
@@ -27,6 +29,16 @@ enum abstract ActionType(String) to String
 	var NOTE_DOWN = "note_down";
 	var NOTE_UP = "note_up";
 	var NOTE_RIGHT = "note_right";
+}
+
+// Custom made to know the real direction where the gamepad axis is moving to
+// isnt it too obvious by the names?
+enum GamepadAxisDirection
+{
+	LEFT_X;
+	RIGHT_X;
+	UP_Y;
+	DOWN_Y;
 }
 
 // Better? controls support (Static usage and non-static usage) (looks like the controls from fnf vanilla lmao)
@@ -83,16 +95,20 @@ class Controls
 	@:noCompletion
 	public static var buttonsPressed:Array<GamepadButton> = [];
 
+	// workaround to check if an axis is moving or currently controlled
+	@:noCompletion
+	public static var movingAxes:Array<GamepadAxisDirection> = [];
+
 	// system actions
 	public var confirm(default, null):Action = new Action(CONFIRM);
 	public var back(default, null):Action = new Action(BACK);
 	public var reset(default, null):Action = new Action(RESET);
 
 	// ui actions
-	public var ui_left(default, null):Action = new Action(UI_LEFT);
-	public var ui_down(default, null):Action = new Action(UI_DOWN);
-	public var ui_up(default, null):Action = new Action(UI_UP);
-	public var ui_right(default, null):Action = new Action(UI_RIGHT);
+	public var ui_left(default, null):Action = new Action(UI_LEFT, true);
+	public var ui_down(default, null):Action = new Action(UI_DOWN, true);
+	public var ui_up(default, null):Action = new Action(UI_UP, true);
+	public var ui_right(default, null):Action = new Action(UI_RIGHT, true);
 
 	// note actions
 	public var note_left(default, null):Action = new Action(NOTE_LEFT);
@@ -104,7 +120,9 @@ class Controls
 
 	public static var onActionPressed:Event<ActionType->Void> = new Event<ActionType->Void>();
 	public static var onActionReleased:Event<ActionType->Void> = new Event<ActionType->Void>();
+
 	private static var connectedGamepad:Null<Gamepad> = null;
+	private static var deadZone:Float = 0.25;
 
 	public static function Initialize()
 	{
@@ -166,7 +184,43 @@ class Controls
 			trace('Gamepad ${gamepad.name} disconnected');
 		});
 
-		// axis movements seems kind of trippy so nono to that
+		// forced bindings, only for ui actions
+		gamepad.onAxisMove.add((axis:GamepadAxis, dist:Float) ->
+		{
+			switch (axis)
+			{
+				case LEFT_X:
+					var norm:Float = FlxMath.roundDecimal(dist, 2);
+
+					if (!isIdle(norm))
+					{
+						checkAndPush(norm > deadZone, UI_RIGHT, RIGHT_X);
+						checkAndPush(norm < -deadZone, UI_LEFT, LEFT_X);
+					}
+					else
+					{
+						// the axis is not moved, we force it to delete it
+						checkAndPush(true, UI_RIGHT, RIGHT_X, true);
+						checkAndPush(true, UI_LEFT, LEFT_X, true);
+					}
+				case LEFT_Y:
+					var norm:Float = FlxMath.roundDecimal(dist, 2);
+
+					if (!isIdle(norm))
+					{
+						checkAndPush(norm > deadZone, UI_DOWN, DOWN_Y);
+						checkAndPush(norm < -deadZone, UI_UP, UP_Y);
+					}
+					else
+					{
+						checkAndPush(true, UI_DOWN, DOWN_Y, true);
+						checkAndPush(true, UI_UP, UP_Y, true);
+					}
+
+				default:
+					return;
+			}
+		});
 
 		// Follows the same onKeyUp/onKeyDown functions
 		gamepad.onButtonDown.add((button:GamepadButton) ->
@@ -202,7 +256,32 @@ class Controls
 			}
 		});
 	}
+
+	// Gamepad utils
+	private static function isIdle(norm:Float):Bool
+		return (Math.abs(norm) < deadZone);
+
+	private static function checkAndPush(condition:Bool, action:ActionType, toDir:GamepadAxisDirection, delete:Bool = false)
+	{
+		// js is such a baby "Can't create closure on an extern inline member method" :nerd:
+		#if !js var arrfunc:(x:GamepadAxisDirection) -> Any = delete ? movingAxes.remove : movingAxes.push; #end
+		var ev:Event<ActionType->Void> = delete ? onActionReleased : onActionPressed;
+		var check:Bool = delete ? movingAxes.contains(toDir) : !movingAxes.contains(toDir);
+		if (condition && check)
+		{
+			#if !js arrfunc(toDir); #end
+			#if js
+			if (delete)
+				movingAxes.remove(toDir);
+			else
+				movingAxes.push(toDir);
+			#end
+			ev.dispatch(action);
+		}
+	}
 }
+
+// WILL probably rewrite sometime to clean the code
 
 @:publicFields
 class Action
@@ -216,31 +295,44 @@ class Action
 		@:privateAccess
 		if (Controls.connectedGamepad != null)
 		{
-			// buttonAction
-			for (buttonA in buttons)
+			var state:ActionState = quickCheck(buttons, Controls.buttonsPressed) ? PRESSED : RELEASED;
+			// forced and not checking, i know where im giving perms to act on axis, also is a  fallback)? for the standard buttons
+			if (actsOnAxis && state == RELEASED)
 			{
-				// buttonPressed
-				for (buttonP in Controls.buttonsPressed)
+				switch (name)
 				{
-					if (buttonA == buttonP)
-						return PRESSED;
+					case UI_LEFT:
+						state = quickCheck([GamepadAxisDirection.LEFT_X], Controls.movingAxes) ? PRESSED : RELEASED;
+
+					case UI_RIGHT:
+						state = quickCheck([GamepadAxisDirection.RIGHT_X], Controls.movingAxes) ? PRESSED : RELEASED;
+
+					case UI_UP:
+						state = quickCheck([GamepadAxisDirection.UP_Y], Controls.movingAxes) ? PRESSED : RELEASED;
+
+					case UI_DOWN:
+						state = quickCheck([GamepadAxisDirection.DOWN_Y], Controls.movingAxes) ? PRESSED : RELEASED;
+
+					default:
 				}
 			}
+
+			return state;
 		}
 		else
-		{
-			// keyAction
-			for (keyA in keys)
-			{
-				// keyPressed
-				for (keyP in Controls.keysPressed)
-				{
-					if (keyA == keyP)
-						return PRESSED;
-				}
-			}
-		}
+			return quickCheck(keys, Controls.keysPressed) ? PRESSED : RELEASED;
+
 		return RELEASED;
+	}
+
+	private function quickCheck(data:Array<Any>, onArray:Array<Any>):Bool
+	{
+		for (value in data)
+		{
+			return onArray.indexOf(value) > -1;
+		}
+
+		return false;
 	}
 
 	@:isVar var keys(get, set):Array<Null<Int>> = [];
@@ -278,6 +370,7 @@ class Action
 		return keys;
 	}
 
+	var actsOnAxis:Bool = false;
 	@:isVar var buttons(get, set):Array<Null<GamepadButton>> = [];
 
 	// internal
@@ -316,7 +409,9 @@ class Action
 	// private var _copycat:shaders.ShaderTesting.DeepCopy; idk if copy cat its necessary here prob for defaults
 	// streamlined the process more
 	// what the fuck did i do here - 3 days later since i rewrote the code
-	function new(name:ActionType, state:ActionState = IDLE, keys:Null<Array<Null<Int>>> = null, buttons:Null<Array<Null<GamepadButton>>> = null)
+	// if acts on axis, it will also check movingAxis array on the given action
+	function new(name:ActionType, actsOnAxis:Bool = false, state:ActionState = IDLE, keys:Null<Array<Null<Int>>> = null,
+			buttons:Null<Array<Null<GamepadButton>>> = null)
 	{
 		this.name = name;
 		this.state = state;
@@ -326,5 +421,6 @@ class Action
 
 		this.keys = keys;
 		this.buttons = buttons;
+		this.actsOnAxis = actsOnAxis;
 	}
 }
