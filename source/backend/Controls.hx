@@ -42,7 +42,7 @@ enum GamepadAxisDirection
 }
 
 // Better? controls support (Static usage and non-static usage) (looks like the controls from fnf vanilla lmao)
-class Controls
+class ControlsV2
 {
 	private static final keyCodes:Map<Int, String> = [
 		65 => "A", 66 => "B", 67 => "C", 68 => "D", 69 => "E", 70 => "F", 71 => "G", 72 => "H", 73 => "I", 74 => "J", 75 => "K", 76 => "L", 77 => "M",
@@ -293,25 +293,25 @@ class Action
 	private function get_state():ActionState
 	{
 		@:privateAccess
-		if (Controls.connectedGamepad != null)
+		if (ControlsV2.connectedGamepad != null)
 		{
-			var state:ActionState = quickCheck(buttons, Controls.buttonsPressed) ? PRESSED : RELEASED;
+			var state:ActionState = quickCheck(buttons, ControlsV2.buttonsPressed) ? PRESSED : RELEASED;
 			// forced and not checking, i know where im giving perms to act on axis, also is a  fallback)? for the standard buttons
 			if (actsOnAxis && state == RELEASED)
 			{
 				switch (name)
 				{
 					case UI_LEFT:
-						state = quickCheck([GamepadAxisDirection.LEFT_X], Controls.movingAxes) ? PRESSED : RELEASED;
+						state = quickCheck([GamepadAxisDirection.LEFT_X], ControlsV2.movingAxes) ? PRESSED : RELEASED;
 
 					case UI_RIGHT:
-						state = quickCheck([GamepadAxisDirection.RIGHT_X], Controls.movingAxes) ? PRESSED : RELEASED;
+						state = quickCheck([GamepadAxisDirection.RIGHT_X], ControlsV2.movingAxes) ? PRESSED : RELEASED;
 
 					case UI_UP:
-						state = quickCheck([GamepadAxisDirection.UP_Y], Controls.movingAxes) ? PRESSED : RELEASED;
+						state = quickCheck([GamepadAxisDirection.UP_Y], ControlsV2.movingAxes) ? PRESSED : RELEASED;
 
 					case UI_DOWN:
-						state = quickCheck([GamepadAxisDirection.DOWN_Y], Controls.movingAxes) ? PRESSED : RELEASED;
+						state = quickCheck([GamepadAxisDirection.DOWN_Y], ControlsV2.movingAxes) ? PRESSED : RELEASED;
 
 					default:
 				}
@@ -320,7 +320,7 @@ class Action
 			return state;
 		}
 		else
-			return quickCheck(keys, Controls.keysPressed) ? PRESSED : RELEASED;
+			return quickCheck(keys, ControlsV2.keysPressed) ? PRESSED : RELEASED;
 
 		return RELEASED;
 	}
@@ -347,8 +347,8 @@ class Action
 	private function get_keys():Array<Null<Int>>
 	{
 		@:privateAccess
-		if (Controls.actions.exists(name))
-			return Controls.actions.get(name);
+		if (ControlsV2.actions.exists(name))
+			return ControlsV2.actions.get(name);
 		else
 			return _ikeys;
 	}
@@ -357,12 +357,12 @@ class Action
 	private function set_keys(newKeys:Null<Array<Null<Int>>>):Array<Null<Int>>
 	{
 		@:privateAccess
-		if (Controls.actions.exists(name))
+		if (ControlsV2.actions.exists(name))
 		{
 			if (newKeys != null)
-				Controls.actions.set(name, newKeys);
+				ControlsV2.actions.set(name, newKeys);
 			else
-				Controls.actions.set(name, keys);
+				ControlsV2.actions.set(name, keys);
 		}
 		else
 			_ikeys = newKeys;
@@ -383,8 +383,8 @@ class Action
 	private function get_buttons():Array<Null<GamepadButton>>
 	{
 		@:privateAccess
-		if (Controls.gamepadActions.exists(name))
-			return Controls.gamepadActions.get(name);
+		if (ControlsV2.gamepadActions.exists(name))
+			return ControlsV2.gamepadActions.get(name);
 		else
 			return _ibuttons;
 	}
@@ -393,12 +393,12 @@ class Action
 	private function set_buttons(newButtons:Null<Array<Null<GamepadButton>>>):Array<Null<GamepadButton>>
 	{
 		@:privateAccess
-		if (Controls.gamepadActions.exists(name))
+		if (ControlsV2.gamepadActions.exists(name))
 		{
 			if (newButtons != null)
-				Controls.gamepadActions.set(name, newButtons);
+				ControlsV2.gamepadActions.set(name, newButtons);
 			else
-				Controls.gamepadActions.set(name, buttons);
+				ControlsV2.gamepadActions.set(name, buttons);
 		}
 		else
 			_ibuttons = newButtons;

@@ -2,6 +2,7 @@ package quaver.states;
 
 import backend.Conductor;
 import backend.DiscordPresence;
+import backend.input.Controls.ActionType;
 import base.MusicBeatState;
 import base.TransitionState;
 import base.sprites.StateBG;
@@ -72,6 +73,8 @@ class QuaverSelection extends MusicBeatState
 
 		// TODO: When creating the state load the OpenFL Library and list the beatmaps based off the folders that were loaded - we already do that on first init dummy
 
+		// Library is changed cuz bgs want to access it
+
 		Paths.changeLibrary(QUAVER, (_) ->
 		{
 			trace("Loaded quaver library");
@@ -100,19 +103,22 @@ class QuaverSelection extends MusicBeatState
 		super.create();
 	}
 
-	override function onActionPressed(action:String)
+	override function onActionPressed(action:ActionType)
 	{
 		if (blockInputs)
 			return;
 
 		switch (action)
 		{
-			case "ui_up":
+			default:
+				return;
+
+			case UI_UP:
 				curSelected = -1;
-			case "ui_down":
+			case UI_DOWN:
 				curSelected = 1;
 
-			case "confirm":
+			case CONFIRM:
 				{
 					blockInputs = true;
 
@@ -139,7 +145,7 @@ class QuaverSelection extends MusicBeatState
 					}
 				}
 
-			case "back":
+			case BACK:
 				{
 					blockInputs = true;
 
@@ -166,7 +172,7 @@ class QuaverSelection extends MusicBeatState
 		}
 	}
 
-	override function onActionReleased(action:String)
+	override function onActionReleased(action:ActionType)
 	{
 		blockInputs = false;
 	}

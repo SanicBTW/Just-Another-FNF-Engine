@@ -3,7 +3,7 @@ function generateReceptor(receptor:Receptor)
     receptor.frames = Paths.getSparrowAtlas('NOTE_assets');
 
     var direction:String = getNoteDirection();
-    receptor.action = 'note_' + direction;
+    receptor.action = 'NOTE_' + direction.toUpperCase();
 
 	receptor.animation.addByPrefix('static', 'arrow' + direction.toUpperCase());
 	receptor.animation.addByPrefix('pressed', direction + ' press', 24, false);

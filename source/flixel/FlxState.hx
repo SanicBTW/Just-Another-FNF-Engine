@@ -1,6 +1,6 @@
 package flixel;
 
-import backend.Controls;
+import backend.input.Controls;
 import backend.scripting.*;
 import flixel.group.FlxGroup;
 import flixel.util.FlxColor;
@@ -283,12 +283,12 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControls
 	/**
 	 * This method is called when the Controls receive a KeyPress on the Window
 	 */
-	public function onActionPressed(action:String) {}
+	public function onActionPressed(action:ActionType) {}
 
 	/**
 	 * This method is called when the Controls receive a KeyReleased on the Window
 	 */
-	public function onActionReleased(action:String) {}
+	public function onActionReleased(action:ActionType) {}
 
 	@:allow(flixel.FlxGame)
 	private function tryUpdate(elapsed:Float):Void
@@ -346,9 +346,8 @@ interface IControls
 	// Object that contains game input, as well as having a static exposure for single key input
 	public var controls:Controls;
 
-	// Could be "ActionType" but we dont talk about that
-	public function onActionPressed(action:String):Void;
-	public function onActionReleased(action:String):Void;
+	public function onActionPressed(action:ActionType):Void;
+	public function onActionReleased(action:ActionType):Void;
 }
 
 // Totally not a ripoff FunkinLua from Psych Engine (its 3 am leave me alone)

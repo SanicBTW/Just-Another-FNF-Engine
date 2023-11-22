@@ -2,6 +2,7 @@ package funkin.states;
 
 import backend.Conductor;
 import backend.DiscordPresence;
+import backend.input.Controls.ActionType;
 import backend.scripting.*;
 import base.MusicBeatState;
 import base.TransitionState;
@@ -293,12 +294,12 @@ class PlayState extends MusicBeatState
 		callOnModules('onUpdatePost', elapsed);
 	}
 
-	override public function onActionPressed(action:String)
+	override public function onActionPressed(action:ActionType)
 	{
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
 		{
-			case "confirm":
+			case PAUSE:
 				if (canPause)
 				{
 					persistentUpdate = false;
@@ -306,7 +307,7 @@ class PlayState extends MusicBeatState
 					openSubState(new PauseSubstate());
 				}
 
-			case "reset":
+			case RESET:
 				if (startingSong)
 					return;
 				Timings.health = 0;
@@ -380,12 +381,12 @@ class PlayState extends MusicBeatState
 		callOnModules('onKeyPress', action);
 	}
 
-	override public function onActionReleased(action:String)
+	override public function onActionReleased(action:ActionType)
 	{
 		// Check system actions and the rest of actions will be check through the strum group
 		switch (action)
 		{
-			case "confirm" | "back" | "reset":
+			case CONFIRM | BACK | RESET | PAUSE:
 				return;
 
 			default:
@@ -409,10 +410,10 @@ class PlayState extends MusicBeatState
 			return;
 
 		var holdArray:Array<Bool> = [
-			controls.note_left.state == PRESSED,
-			controls.note_down.state == PRESSED,
-			controls.note_up.state == PRESSED,
-			controls.note_right.state == PRESSED
+			controls.NOTE_LEFT.state == PRESSED,
+			controls.NOTE_DOWN.state == PRESSED,
+			controls.NOTE_UP.state == PRESSED,
+			controls.NOTE_RIGHT.state == PRESSED
 		];
 
 		if (!playerStrums.botPlay)

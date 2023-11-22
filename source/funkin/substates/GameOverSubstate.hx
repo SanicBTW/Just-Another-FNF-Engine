@@ -1,7 +1,7 @@
 package funkin.substates;
 
 import backend.Conductor;
-import backend.Controls;
+import backend.input.Controls;
 import base.MusicBeatState;
 import base.TransitionState;
 import flixel.FlxG;
@@ -121,19 +121,22 @@ class GameOverSubstate extends MusicBeatSubState
 		callOnModules('onUpdatePost', elapsed);
 	}
 
-	override public function onActionPressed(action:String)
+	override public function onActionPressed(action:ActionType)
 	{
 		super.onActionPressed(action);
 
 		switch (action)
 		{
-			case "confirm":
+			default:
+				return;
+
+			case CONFIRM:
 				callOnModules('onGameOverConfirm', true);
 				finish(() ->
 				{
 					TransitionState.switchState(new funkin.states.PlayState());
 				});
-			case "back":
+			case BACK:
 				callOnModules('onGameOverConfirm', false);
 				finish(() ->
 				{

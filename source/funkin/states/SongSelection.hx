@@ -2,6 +2,7 @@ package funkin.states;
 
 import backend.DiscordPresence;
 import backend.IO;
+import backend.input.Controls.ActionType;
 import base.TransitionState;
 import base.sprites.StateBG;
 import flixel.FlxG;
@@ -85,28 +86,37 @@ class SongSelection extends TransitionState
 		{
 			case "libraries":
 				{
-					Paths.changeLibrary(FOF, (lib) ->
+					try
 					{
-						diffStore.clear();
-
-						var regenArray:Array<String> = [];
-
-						var assets:Array<String> = lib.list("TEXT");
-						for (i in 0...assets.length)
+						Paths.changeLibrary(FOF, (lib) ->
 						{
-							if (assets[i].contains("songs"))
-							{
-								// Smart shit right here lol
-								var fullName:String = assets[i].substring(assets[i].lastIndexOf("/") + 1);
-								var song:String = fullName.substring(0, fullName.lastIndexOf("-"));
-								var diff:String = fullName.substring(fullName.lastIndexOf("-"), fullName.lastIndexOf("."));
+							diffStore.clear();
 
-								diffStore.set(song, ChartLoader.intDiffMap.get(diff));
-								regenArray.insert(i, song);
+							var regenArray:Array<String> = [];
+
+							var assets:Array<String> = lib.list("TEXT");
+							for (i in 0...assets.length)
+							{
+								if (assets[i].contains("songs"))
+								{
+									// Smart shit right here lol
+									var fullName:String = assets[i].substring(assets[i].lastIndexOf("/") + 1);
+									var song:String = fullName.substring(0, fullName.lastIndexOf("-"));
+									var diff:String = fullName.substring(fullName.lastIndexOf("-"), fullName.lastIndexOf("."));
+
+									diffStore.set(song, ChartLoader.intDiffMap.get(diff));
+									regenArray.insert(i, song);
+								}
 							}
-						}
-						regenMenu(regenArray);
-					});
+							regenMenu(regenArray);
+						});
+					}
+					catch (ex)
+					{
+						trace(ex);
+						diffStore.set("fight-or-flight", 2);
+						regenMenu(["fight-or-flight"]);
+					}
 				}
 
 			case "funkin":
@@ -123,7 +133,10 @@ class SongSelection extends TransitionState
 							regenArray.push(song.song);
 						}
 						regenMenu(regenArray);
-					});
+					}).catchError((ex) ->
+						{
+							regenMenu(["Failed to request"]);
+						});
 				}
 
 			case "quaver":
@@ -170,23 +183,26 @@ class SongSelection extends TransitionState
 		super.create();
 	}
 
-	override function onActionPressed(action:String)
+	override function onActionPressed(action:ActionType)
 	{
 		if (blockInputs)
 			return;
 
 		switch (action)
 		{
-			case "ui_up":
+			default:
+				return;
+
+			case UI_UP:
 				curSelected = -1;
-			case "ui_down":
+			case UI_DOWN:
 				curSelected = 1;
-			case "ui_left":
+			case UI_LEFT:
 				curPage = -1;
-			case "ui_right":
+			case UI_RIGHT:
 				curPage = 1;
 
-			case "confirm":
+			case CONFIRM:
 				blockInputs = true;
 
 				switch (pages[curPage])

@@ -1,5 +1,6 @@
 package funkin.notes;
 
+import backend.input.Controls.ActionType;
 import backend.scripting.ForeverModule;
 import flixel.FlxSprite;
 
@@ -19,7 +20,7 @@ class Receptor extends FlxSprite
 
 	public var noteData:Int;
 	public var noteType:String;
-	public var action:String;
+	public var action:ActionType;
 
 	public var receptorData:ReceptorData;
 	public var noteModule:ForeverModule;

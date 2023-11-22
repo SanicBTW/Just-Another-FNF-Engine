@@ -46,26 +46,27 @@ class Save
 	@:noCompletion
 	private static function loadKeybinds()
 	{
-		@:privateAccess
-		{
-			var keys = Controls.actions.keys();
-			for (key in keys)
+		/* TODO
+			@:privateAccess
 			{
-				var defKeys:Null<Array<Null<Int>>> = Controls.actions.get(key);
-				var fkey:String = Std.string(key);
-
-				_db.get('keybinds', fkey).then((save:Any) ->
+				var keys = Controls.actions.keys();
+				for (key in keys)
 				{
-					if (save == null)
-					{
-						_db.set('keybinds', fkey, defKeys);
-						save = defKeys;
-					}
+					var defKeys:Null<Array<Null<Int>>> = Controls.actions.get(key);
+					var fkey:String = Std.string(key);
 
-					Reflect.setProperty(Reflect.getProperty(flixel.FlxG.state.controls, fkey), 'keys', save);
-				});
-			}
-		}
+					_db.get('keybinds', fkey).then((save:Any) ->
+					{
+						if (save == null)
+						{
+							_db.set('keybinds', fkey, defKeys);
+							save = defKeys;
+						}
+
+						Reflect.setProperty(Reflect.getProperty(flixel.FlxG.state.controls, fkey), 'keys', save);
+					});
+				}
+		}*/
 	}
 
 	@:noCompletion

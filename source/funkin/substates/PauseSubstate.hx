@@ -1,5 +1,6 @@
 package funkin.substates;
 
+import backend.input.Controls.ActionType;
 import base.TransitionState;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -60,17 +61,20 @@ class PauseSubstate extends FlxSubState
 		super.update(elapsed);
 	}
 
-	override public function onActionPressed(action:String)
+	override public function onActionPressed(action:ActionType)
 	{
 		super.onActionPressed(action);
 
 		switch (action)
 		{
-			case "ui_up":
+			default:
+				return;
+
+			case UI_UP:
 				changeSelection(-1);
-			case "ui_down":
+			case UI_DOWN:
 				changeSelection(1);
-			case "confirm":
+			case CONFIRM:
 				{
 					switch (menuItems[curSelected])
 					{
