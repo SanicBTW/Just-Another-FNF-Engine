@@ -119,7 +119,7 @@ class Main extends Sprite
 		com.akifox.asynchttp.AsyncHttp.logEnabled = false;
 		com.akifox.asynchttp.AsyncHttp.userAgent = network.Request.userAgent;
 		FlxGraphic.defaultPersist = true;
-		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, true, false));
+		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, false, false));
 
 		FlxG.fixedTimestep = false;
 		#if !android
