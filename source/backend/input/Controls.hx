@@ -94,7 +94,7 @@ class Controls
 
 			state.subStateClosed.add((_) ->
 			{
-				checkActor(Type.getClassName(Type.getClass(state)));
+				checkActor(Type.getClassName(Type.getClass(FlxG.state)));
 			});
 		});
 	}
