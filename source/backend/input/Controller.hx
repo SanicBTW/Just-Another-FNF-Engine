@@ -35,8 +35,6 @@ class Controller
 		NOTE_RIGHT => [GamepadButton.DPAD_RIGHT, GamepadButton.B]
 	];
 
-	private static var copycat:DeepCopy = new DeepCopy(actions, []);
-
 	private static var input:Null<Gamepad> = null;
 
 	// Needed for axis
