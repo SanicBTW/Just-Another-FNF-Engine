@@ -1,6 +1,9 @@
 package;
 
 import backend.*;
+import backend.input.Controls;
+import backend.io.CacheFile;
+import backend.scripting.ScriptHandler;
 import flixel.*;
 import flixel.graphics.FlxGraphic;
 import lime.system.Display;
@@ -9,6 +12,11 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 
 using StringTools;
+
+#if sys
+import lime.media.openal.ALC;
+import lime.media.openal.ALDevice;
+#end
 
 class Main extends Sprite
 {
@@ -19,7 +27,26 @@ class Main extends Sprite
 	private var framerate:Int = getDisplay().currentMode.refreshRate; // VSync :troll: - maybe not now
 
 	public static function main()
+	{
+		CacheFile.Initialize();
+		ScriptHandler.Initialize();
+		#if sys
+		// My jailbroken chromebook doesn't have an audio driver, i aint payin 10€ for it sorry coolstar
+		var dev:Null<ALDevice> = ALC.openDevice();
+		if (dev == null)
+		{
+			trace("Failed to open OpenAL Device");
+			Conductor.force = true;
+		}
+		else
+		{
+			// Have to look into this, idk if it closes the device used on the window or sum shit
+			var state:Bool = ALC.closeDevice(dev);
+			trace(state);
+		}
+		#end
 		Lib.current.addChild(new Main());
+	}
 
 	public function new()
 	{
@@ -43,14 +70,9 @@ class Main extends Sprite
 		hl.Gc.enable(true);
 		#end
 
-		// Dynamic init omg
-		Type.getClassName(Save); // I need to do this to avoid crashing, dunno why maybe the class isn't loaded into the global scope
-		// IO and Save should be initialized pre openfl stage addition
-		for (classInit in ["IO", "Save", "Controls", "DiscordPresence", "scripting.ScriptHandler"])
-		{
-			var targetClass = Type.resolveClass('backend.$classInit');
-			Reflect.callMethod(targetClass, Reflect.field(targetClass, "Initialize"), []);
-		}
+		Controls.Initialize();
+		IO.Initialize();
+		Save.Initialize();
 
 		setupGame();
 

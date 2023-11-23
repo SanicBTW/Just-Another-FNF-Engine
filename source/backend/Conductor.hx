@@ -13,12 +13,6 @@ typedef BPMChange =
 	var step:Float;
 }
 
-enum BeatDivisor
-{
-	FOURTHS;
-	CROCHET;
-}
-
 @:publicFields
 class Conductor
 {
@@ -128,6 +122,9 @@ class Conductor
 	// LifeTime
 	static var active:Bool = false;
 
+	// If it should work even if an audio device doesn't exists
+	static var force:Bool = false; // Search for a better name or sum
+
 	// FNF - Speed
 	static var speed(default, set):Float;
 
@@ -182,6 +179,19 @@ class Conductor
 	{
 		if (!active)
 			return;
+
+		if (force)
+		{
+			time += elapsed * 1000;
+
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.time = time;
+
+			if (boundInst != null)
+				boundInst.time = time;
+
+			return;
+		}
 
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 		{
