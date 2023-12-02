@@ -39,7 +39,7 @@ class Controller
 
 	// Needed for axis
 	private static var movingAxes:Array<GamepadAxisDirection> = [];
-	public static var deadzone:Float = 0.25;
+	public static var deadzone:Float = 0.35;
 
 	public static function setup()
 	{
@@ -82,6 +82,7 @@ class Controller
 
 	// Still uses the old code
 	// Joystick movements SHOULD never be rebinded
+	// Btw if both joysticks are being moved its a little bit weird
 	// TODO: Triggers
 	private static function axisMove(axis:GamepadAxis, dist:Float):Void
 	{
@@ -89,6 +90,28 @@ class Controller
 		{
 			default:
 				return;
+
+			case TRIGGER_LEFT:
+				var norm:Float = FlxMath.roundDecimal(dist, 2);
+				if (!isIdle(norm))
+				{
+					detection(norm > deadzone, UI_LEFT, LEFT);
+				}
+				else
+				{
+					detection(true, UI_LEFT, LEFT, true);
+				}
+
+			case TRIGGER_RIGHT:
+				var norm:Float = FlxMath.roundDecimal(dist, 2);
+				if (!isIdle(norm))
+				{
+					detection(norm > deadzone, UI_RIGHT, RIGHT);
+				}
+				else
+				{
+					detection(true, UI_RIGHT, RIGHT, true);
+				}
 
 			case LEFT_X | RIGHT_X:
 				var norm:Float = FlxMath.roundDecimal(dist, 2);

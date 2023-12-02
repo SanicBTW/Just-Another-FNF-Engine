@@ -14,8 +14,7 @@ import openfl.events.Event;
 using StringTools;
 
 #if sys
-import lime.media.openal.ALC;
-import lime.media.openal.ALDevice;
+import lime.media.openal.*;
 #end
 
 class Main extends Sprite
@@ -40,11 +39,14 @@ class Main extends Sprite
 		}
 		else
 		{
-			// Have to look into this, idk if it closes the device used on the window or sum shit
-			var state:Bool = ALC.closeDevice(dev);
-			trace(state);
+			// Ok this doesn't close the context nor the device used in the OpenAL Window
+			var ret:Bool = ALC.closeDevice(dev);
+			if (!ret)
+				trace("Failed to close OpenAL Device");
 		}
 		#end
+		Lib.current.stage.align = TOP_LEFT;
+		Lib.current.stage.scaleMode = NO_SCALE;
 		Lib.current.addChild(new Main());
 	}
 

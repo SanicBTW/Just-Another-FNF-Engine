@@ -17,7 +17,6 @@ class DeepCopy
 		_exclusions = exclusions;
 
 		defaultFields = Reflect.fields(o);
-		trace(defaultFields);
 		for (field in defaultFields)
 		{
 			if (exclusions.indexOf(field) > -1)

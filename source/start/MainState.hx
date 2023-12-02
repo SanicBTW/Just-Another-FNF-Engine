@@ -16,7 +16,6 @@ class MainState extends MusicBeatState
 		Conductor.changeBPM(102, false);
 
 		bg = new StateBG('menuBG');
-		bg.screenCenter();
 		add(bg);
 
 		super.create();

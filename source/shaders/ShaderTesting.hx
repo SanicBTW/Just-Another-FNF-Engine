@@ -103,7 +103,6 @@ class ShaderTesting extends FlxState
 	override function create()
 	{
 		var bg:StateBG = new StateBG('menuBG');
-		bg.screenCenter();
 		add(bg);
 
 		grpOptions = new FlxTypedGroup<ShaderEntry>();

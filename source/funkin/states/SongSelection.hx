@@ -167,7 +167,6 @@ class SongSelection extends TransitionState
 		});
 
 		var bg:StateBG = new StateBG('M_menuBG');
-		bg.screenCenter();
 		add(bg);
 
 		grpOptions = new FlxTypedGroup<Alphabet>();

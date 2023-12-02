@@ -29,7 +29,7 @@ enum abstract ActionType(String) to String
 	var CONFIRM = "CONFIRM";
 	var BACK = "BACK";
 	var RESET = "RESET";
-	var PAUSE = "pause";
+	var PAUSE = "PAUSE";
 	var UI_LEFT = "UI_LEFT";
 	var UI_DOWN = "UI_DOWN";
 	var UI_UP = "UI_UP";
@@ -52,7 +52,7 @@ class Controls
 	public var UI_RIGHT(default, null):Action = new Action(ActionType.UI_RIGHT);
 
 	// note actions
-	public var pause(default, null):Action = new Action(ActionType.PAUSE);
+	public var PAUSE(default, null):Action = new Action(ActionType.PAUSE);
 	public var RESET(default, null):Action = new Action(ActionType.RESET);
 	public var NOTE_LEFT(default, null):Action = new Action(ActionType.NOTE_LEFT);
 	public var NOTE_DOWN(default, null):Action = new Action(ActionType.NOTE_DOWN);
@@ -67,11 +67,7 @@ class Controls
 	private static var actor:Actors = UI;
 
 	// When switching states, the code will try to automatically switch the actor to avoid issues and manual override
-	public static var uiStates:Array<String> = [
-		Type.getClassName(PauseSubstate),
-		Type.getClassName(GameOverSubstate),
-		Type.getClassName(SongSelection)
-	];
+	public static var uiStates:Array<String> = [];
 	public static var noteStates:Array<String> = [Type.getClassName(QuaverGameplay), Type.getClassName(PlayState)];
 
 	public static var onActionPressed:Event<ActionType->Void> = new Event<ActionType->Void>();
@@ -103,9 +99,13 @@ class Controls
 	{
 		if (uiStates.contains(resState))
 			actor = UI;
+		else
+			actor = NOTE;
 
 		if (noteStates.contains(resState))
 			actor = NOTE;
+		else
+			actor = UI;
 	}
 
 	// Used for each Input Method to automatically dispatch events without too much fuss
