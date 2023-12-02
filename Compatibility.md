@@ -10,7 +10,6 @@ The next libraries that will get forced will be:
 - flixel: 4.11.0
 - flixel-addons: 2.11.0 or 3.2.1
 - lime: 8.1.0 preferred 7.9.0
-- hxcpp: 4.3.2
 - openfl: 9.3.2
 
 

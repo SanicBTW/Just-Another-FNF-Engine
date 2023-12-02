@@ -47,7 +47,7 @@
 	<define name="CRASH_HANDLER" if="windows || linux" />
 
 	<!-- Enables caching flx text graphics and bitmaps -->
-	<define name="CACHE_FLXTEXT" />
+	<!-- <define name="CACHE_FLXTEXT" /> -->
 
 	<!-- _______________________________ Libraries ______________________________ -->
 

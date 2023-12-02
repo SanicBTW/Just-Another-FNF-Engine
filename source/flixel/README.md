@@ -20,4 +20,7 @@
 - FlxColorTransformUtil -> https://github.com/HaxeFlixel/flixel/pull/2875
 - FlxSubState -> https://github.com/HaxeFlixel/flixel/pull/2897
 
+# Notice
+These modifications of Flixel will be moved to another repo including modifications to another libraries like OpenFL and Lime which will be required in order to compile the engine
+
 # Flixel 4.11.0
