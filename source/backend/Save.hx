@@ -3,20 +3,20 @@ package backend;
 class Save
 {
 	private static var _db:SqliteKeyValue;
-	public static var shouldLoadQuaver:Bool = true; // temp fix to avoid loading quaver beatmapps always
+	public static var shouldLoadQuaver:Bool = true; // temp fix to avoid loading quaver beatmaps always
 
 	public static function Initialize()
 	{
 		new SqliteKeyValue({
 			path: #if html5 "JAFE:DB" #else backend.io.Path.join(IO.getFolderPath(PARENT), "JAFE.db") #end,
-			tables: ["settings", "keybinds", "highscores", "quaverDB"],
+			tables: ["settings", "binds", "highscores", "quaverDB"],
 			version: Std.parseInt(lime.app.Application.current.meta.get("version")
 				.split(".")[1]) // Because this param isn't used on sys, it uses the html5 one instead
 		}).then((newDB) ->
 			{
 				_db = newDB;
 				loadSettings();
-				loadKeybinds();
+				reloadKeybinds();
 				if (shouldLoadQuaver)
 					loadQuaver();
 			});
@@ -44,29 +44,46 @@ class Save
 	}
 
 	@:noCompletion
-	private static function loadKeybinds()
+	private static function reloadKeybinds() // I think it works on both ways, when saving and when loading cuz when loading it takes up the default binds and when saving it gets the modified binds (cuz we directly modify the action map) and this accesses the action map
 	{
-		/* TODO
-			@:privateAccess
+		var endMap:haxe.ds.DynamicMap<backend.input.Controls.ActionType, backend.input.Controls.SavedAction> = new haxe.ds.DynamicMap();
+
+		// I don't want to cook a macro for nothing (I ain't workin on macros ever again bruh and even worse if its working with enums)
+		var actions:Array<backend.input.Controls.ActionType> = [
+			CONFIRM, BACK, RESET, PAUSE, UI_LEFT, UI_DOWN, UI_UP, UI_RIGHT, NOTE_LEFT, NOTE_DOWN, NOTE_UP, NOTE_RIGHT
+		];
+
+		@:privateAccess
+		{
+			for (action in actions)
 			{
-				var keys = Controls.actions.keys();
-				for (key in keys)
+				// 100% sure that ain't null ong
+				endMap[action] = {
+					kbBinds: backend.input.Keyboard.actions.get(action),
+					gpBinds: backend.input.Controller.actions.get(action)
+				};
+
+				_db.get('binds', Std.string(action)).then((save:Any) ->
 				{
-					var defKeys:Null<Array<Null<Int>>> = Controls.actions.get(key);
-					var fkey:String = Std.string(key);
-
-					_db.get('keybinds', fkey).then((save:Any) ->
+					if (save == null)
 					{
-						if (save == null)
-						{
-							_db.set('keybinds', fkey, defKeys);
-							save = defKeys;
-						}
+						_db.set('binds', Std.string(action), endMap[action]);
+						save = endMap[action];
+						#if debug
+						trace('Saved binds on $action not found');
+						#end
+					}
 
-						Reflect.setProperty(Reflect.getProperty(flixel.FlxG.state.controls, fkey), 'keys', save);
-					});
-				}
-		}*/
+					var binds:backend.input.Controls.SavedAction = save;
+					#if debug
+					trace('Saved binds on $action found $binds');
+					#end
+
+					backend.input.Keyboard.actions.set(action, binds.kbBinds);
+					backend.input.Controller.actions.set(action, binds.gpBinds);
+				});
+			}
+		}
 	}
 
 	@:noCompletion

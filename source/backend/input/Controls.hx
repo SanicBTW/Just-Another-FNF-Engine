@@ -3,7 +3,6 @@ package backend.input;
 import backend.input.*;
 import flixel.FlxG;
 import funkin.states.*;
-import funkin.substates.*;
 import lime.app.Event;
 import quaver.states.*;
 
@@ -12,8 +11,9 @@ import quaver.states.*;
 // Used as a switch on which Actions are we currently listening
 enum Actors
 {
-	UI; // All UI_ Prefixed Actions including "Confirm" and "Back"
-	NOTE; // All NOTE_ Prefixed Actions including "Reset"
+	UI; // All UI_ Prefixed Actions including "Confirm", "Back" and "Reset"
+	NOTE; // All NOTE_ Prefixed Actions including "Reset" and "Pause"
+	NONE; // Any keybind that is pressed WONT be dispatched, this one has to be set manually
 }
 
 // Realized that IDLE is stupid since I can always return RELEASED for fresh Actions
@@ -38,6 +38,13 @@ enum abstract ActionType(String) to String
 	var NOTE_DOWN = "NOTE_DOWN";
 	var NOTE_UP = "NOTE_UP";
 	var NOTE_RIGHT = "NOTE_RIGHT";
+}
+
+// Joining them in a single object since it easier to load and save in a single call
+typedef SavedAction =
+{
+	var gpBinds:Array<Null<Int>>; // Gamepad Binds, at first I thought on makin them GamepadButtons but that's dumb
+	var kbBinds:Array<Null<Int>>; // Keyboard Binds, jus the same as always
 }
 
 // Controls V3 - Surely the last rewrite I'm going to make to the input
@@ -113,8 +120,8 @@ class Controls
 	@:noCompletion
 	public static function dispatchPressed(action:ActionType)
 	{
-		// Avoid firing if the Controls object from the state is null
-		if (FlxG.state.controls == null && (!FlxG.state.active || !FlxG.state.persistentUpdate))
+		// Avoid firing if the Controls object from the state is null or if the actor is none
+		if ((FlxG.state.controls == null && (!FlxG.state.active || !FlxG.state.persistentUpdate)) || (actor == NONE))
 			return;
 
 		Reflect.setField(Reflect.field(FlxG.state.controls, action), "state", ActionState.PRESSED);
@@ -128,14 +135,18 @@ class Controls
 			case NOTE:
 				if (cast(action, String).indexOf("NOTE_") > -1 || action == RESET || action == PAUSE)
 					onActionPressed.dispatch(action);
+
+			// easy enough lol
+			case NONE:
+				return;
 		}
 	}
 
 	@:noCompletion
 	public static function dispatchReleased(action:ActionType)
 	{
-		// Avoid firing if the Controls object from the state is null
-		if (FlxG.state.controls == null && (!FlxG.state.active || !FlxG.state.persistentUpdate))
+		// Avoid firing if the Controls object from the state is null or if the actor is none
+		if ((FlxG.state.controls == null && (!FlxG.state.active || !FlxG.state.persistentUpdate)) || (actor == NONE))
 			return;
 
 		Reflect.setField(Reflect.field(FlxG.state.controls, action), "state", ActionState.RELEASED);
@@ -149,6 +160,10 @@ class Controls
 			case NOTE:
 				if (cast(action, String).indexOf("NOTE_") > -1 || action == RESET || action == PAUSE)
 					onActionReleased.dispatch(action);
+
+			// jus return nothin
+			case NONE:
+				return;
 		}
 	}
 }
