@@ -623,7 +623,7 @@ class QuaverGameplay extends MusicBeatState
 		if (hitObject.HitSound != null)
 		{
 			var targetSound:String = 'soft-hit${hitObject.HitSound.toLowerCase()}.wav';
-			var targetPath:String = Paths.file('quaver/${qua.MapSetId}/$targetSound');
+			var targetPath:String = 'quaver:assets/quaver/${qua.MapSetId}/$targetSound'; // forgot to enforce when i was moving quaver to its own lib my bad
 			FlxG.sound.play(Cache.getSound(targetPath), 0.4);
 		}
 
