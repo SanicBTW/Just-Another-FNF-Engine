@@ -1,5 +1,10 @@
 # Just Another FNF Engine - 0.2.10
 
+## Branch: Scrolling & Backend Rewrite
+- SYNCED WITH MASTER SOURCE ON 26/09/23
+
+- Keeping master source folder just in case merging is needed in the future
+
 A rewrite of Friday Night Funkin' mixing:
 - Forever Engine
 - - Legacy 

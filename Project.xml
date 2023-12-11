@@ -3,7 +3,7 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Just Another FNF Engine" file="JAFE" main="Main" version="0.2.10" company="SanicBTW" 
+	<app title="Just Another FNF Engine" file="JAFE" main="Main" version="0.2.10X" company="SanicBTW" 
 		packageName="com.sanicbtw.jafe" package="com.sanicbtw.jafe" />
 	<app preloader="flixel.system.FlxPreloader" />
 	<set name="SWF_VERSION" value="11.8" />
@@ -20,16 +20,13 @@
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 
-	<source path="source" />
+	<source path="quaver" />
 	<assets path="assets" />
 
 	<library name="funkin" preload="true" />
 	<assets path="assets/funkin" library="funkin" />
 
-	<library name="fof" preload="false" />
-	<assets path="assets/fof" library="fof" />
-
-	<library name="quaver" preload="false" />
+	<library name="quaver" preload="true" />
 	<assets path="assets/quaver" library="quaver" />
 
 	<library name="fonts" preload="true" />
@@ -53,6 +50,7 @@
 
 	<haxelib name="flixel" />
 	<haxelib name="hscript" />
+
 	<haxelib name="SSIni" />
 	<haxelib name="akifox-asynchttp" />
 
