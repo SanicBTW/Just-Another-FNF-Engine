@@ -38,6 +38,9 @@ class Keyboard
 		NOTE_UP => [OKeyboard.UP, OKeyboard.W, OKeyboard.COMMA],
 		NOTE_RIGHT => [OKeyboard.RIGHT, OKeyboard.D, OKeyboard.PERIOD]
 	];
+	private static var _defaultActions:Map<ActionType, Array<Null<Int>>> = actions.copy();
+
+	public static var keysPressed:Array<Int> = [];
 
 	public static function setup()
 	{
@@ -47,19 +50,29 @@ class Keyboard
 
 	private static function onKeyDown(evt:KeyboardEvent)
 	{
-		for (action => keys in actions)
+		if (!keysPressed.contains(evt.keyCode))
 		{
-			if (keys.contains(evt.keyCode))
-				Controls.dispatchPressed(action);
+			keysPressed.push(evt.keyCode);
+
+			for (action => keys in actions)
+			{
+				if (keys.contains(evt.keyCode))
+					Controls.dispatchPressed(action);
+			}
 		}
 	}
 
 	private static function onKeyUp(evt:KeyboardEvent)
 	{
-		for (action => keys in actions)
+		if (keysPressed.contains(evt.keyCode))
 		{
-			if (keys.contains(evt.keyCode))
-				Controls.dispatchReleased(action);
+			keysPressed.remove(evt.keyCode);
+
+			for (action => keys in actions)
+			{
+				if (keys.contains(evt.keyCode))
+					Controls.dispatchReleased(action);
+			}
 		}
 	}
 }

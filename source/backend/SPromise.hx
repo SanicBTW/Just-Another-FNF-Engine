@@ -21,31 +21,28 @@ class SPromise<T> // Sanco Promise
 	function new(init:PromiseInit<T>):Void
 	{
 		#if sys
-		backend.BackgroundThread.execute(() ->
+		haxe.Timer.delay(() ->
 		{
-			haxe.Timer.delay(() ->
+			init((value) ->
 			{
-				init((value) ->
+				if (state == PENDING)
+				{
+					state = FULFILLED;
+					result = value;
+					for (handler in successHandlers)
+						handler(value);
+				}
+			}, (reason) ->
 				{
 					if (state == PENDING)
 					{
-						state = FULFILLED;
-						result = value;
-						for (handler in successHandlers)
-							handler(value);
+						state = REJECTED;
+						error = reason;
+						for (handler in errorHandlers)
+							handler(reason);
 					}
-				}, (reason) ->
-					{
-						if (state == PENDING)
-						{
-							state = REJECTED;
-							error = reason;
-							for (handler in errorHandlers)
-								handler(reason);
-						}
-					});
-			}, 3);
-		});
+				});
+		}, 3);
 		#else
 		init((value) ->
 		{

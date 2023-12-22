@@ -55,6 +55,7 @@ class IO
 		Cache.collect();
 	}
 
+	// add quality percentage for the stuff
 	public static function getSong(song:String, file:SongFile, diff:Int = 1):Dynamic
 	{
 		var parentPath:String = Path.join(getFolderPath(SONGS), Paths.formatString(song));
@@ -124,17 +125,43 @@ class IO
 	private static function addFolder(name:AssetFolder, parent:AssetFolder = PARENT)
 		appFolders.set(name, Path.join(appFolders.get(parent), name));
 
-	public static inline function exists(file:String):Bool
-		return FileSystem.exists(file);
+	public static function existsOnFolder(folder:AssetFolder = PARENT, file:String):Bool
+		return exists(Path.join(appFolders.get(folder), file));
 
-	public static inline function existsOnFolder(folder:AssetFolder = PARENT, file:String):Bool
-		return FileSystem.exists(Path.join(appFolders.get(folder), file));
-
-	public static inline function getFolderPath(folder:AssetFolder = PARENT):String
+	public static function getFolderPath(folder:AssetFolder = PARENT):String
 		return appFolders.get(folder);
 
-	public static inline function getFolderFiles(folder:AssetFolder = PARENT):Array<String>
-		return FileSystem.readDirectory(appFolders.get(folder));
+	public static function getFolderFiles(folder:AssetFolder = PARENT):Array<String>
+		return readDirectory(appFolders.get(folder));
+
+	// Wrapper functions for native FileSystem
+	public static function exists(file:String):Bool
+		return FileSystem.exists(file);
+
+	public static function createDirectory(path:String):Void
+		return FileSystem.createDirectory(path);
+
+	public static function deleteFile(path:String):Void
+		return FileSystem.deleteFile(path);
+
+	public static function deleteDirectory(path:String):Void
+		return FileSystem.deleteDirectory(path);
+
+	public static function readDirectory(path:String):Array<String>
+		return FileSystem.readDirectory(path);
+
+	// Wrapper functions for native File
+	public static function getContent(path:String):String
+		return File.getContent(path);
+
+	public static function getBytes(path:String):Bytes
+		return File.getBytes(path);
+
+	public static function saveContent(path:String, content:String):Void
+		return File.saveContent(path, content);
+
+	public static function saveBytes(path:String, bytes:Bytes):Void
+		return File.saveBytes(path, bytes);
 }
 #else
 class IO

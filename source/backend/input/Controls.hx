@@ -40,7 +40,7 @@ enum abstract ActionType(String) to String
 	var NOTE_RIGHT = "NOTE_RIGHT";
 }
 
-// Joining them in a single object since it easier to load and save in a single call
+// Joining them in a single object since its easier to load and save in a single call
 typedef SavedAction =
 {
 	var gpBinds:Array<Null<Int>>; // Gamepad Binds, at first I thought on makin them GamepadButtons but that's dumb

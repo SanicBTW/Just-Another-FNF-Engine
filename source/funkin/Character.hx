@@ -265,42 +265,42 @@ class Character extends OffsettedSprite
 		}
 	}
 
-	// goofy
+	// goofy - lets prioritize filesystem before assets (why didnt we do this already??)
 	private function getCharPath():String
 	{
-		var retPath:String = Paths.getPath('characters/$curCharacter/$curCharacter.hxs', TEXT);
-		if (Assets.exists(retPath))
+		var retPath:String = Path.join(IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.hxs');
+		if (IO.exists(retPath))
 		{
 			extension = '.hxs';
 			return retPath;
 		}
 		else
 		{
-			retPath = Path.join(IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.hxs');
-			if (IO.exists(retPath))
+			retPath = Paths.file('characters/$curCharacter/$curCharacter.hxs');
+			if (Assets.exists(retPath))
 			{
 				extension = '.hxs';
 				return retPath;
 			}
 		}
 
-		retPath = Paths.getPath('characters/$curCharacter/$curCharacter.json', TEXT);
-		if (Assets.exists(retPath))
+		retPath = Path.join(IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.json');
+		if (IO.exists(retPath))
 		{
 			extension = '.json';
 			return retPath;
 		}
 		else
 		{
-			retPath = Path.join(IO.getFolderPath(CHARACTERS), '$curCharacter/$curCharacter.json');
-			if (IO.exists(retPath))
+			retPath = Paths.file('characters/$curCharacter/$curCharacter.json');
+			if (Assets.exists(retPath))
 			{
 				extension = '.json';
 				return retPath;
 			}
 		}
 
-		retPath = Paths.getPath('characters/$DEFAULT/$DEFAULT.json', TEXT);
+		retPath = Paths.file('characters/$DEFAULT/$DEFAULT.json');
 		curCharacter = DEFAULT;
 		extension = '.json';
 

@@ -1,6 +1,7 @@
 package backend.scripting;
 
 import backend.Conductor;
+import backend.input.*;
 import backend.io.Path;
 import base.sprites.*;
 import base.sprites.SBar.SBarFillAxis;
@@ -93,7 +94,27 @@ class ScriptHandler
 		'DepthSprite' => DepthSprite,
 		'SBar' => SBar, // Sanco Bar, my own FlxBar implementation
 		'SBarFillAxis' => SBarFillAxis,
-		"StateBG" => StateBG // Used for fallbacks on Quaver
+		"StateBG" => StateBG, // Used for fallbacks on Quaver
+		"Controls" => Controls, // In case is needed to add some custom bind (Once I finish the code for rebinding and Funkergarten I will work on custom binds)
+		"Controller" => Controller, // Access to the Controller schema and more
+		"GamepadButton" => {
+			A: lime.ui.GamepadButton.A,
+			B: lime.ui.GamepadButton.B,
+			X: lime.ui.GamepadButton.X,
+			Y: lime.ui.GamepadButton.Y,
+			BACK: lime.ui.GamepadButton.BACK,
+			GUIDE: lime.ui.GamepadButton.GUIDE,
+			START: lime.ui.GamepadButton.START,
+			LEFT_STICK: lime.ui.GamepadButton.LEFT_STICK,
+			RIGHT_STICK: lime.ui.GamepadButton.RIGHT_STICK,
+			LEFT_SHOULDER: lime.ui.GamepadButton.LEFT_SHOULDER,
+			RIGHT_SHOULDER: lime.ui.GamepadButton.RIGHT_SHOULDER,
+			DPAD_UP: lime.ui.GamepadButton.DPAD_UP,
+			DPAD_DOWN: lime.ui.GamepadButton.DPAD_DOWN,
+			DPAD_LEFT: lime.ui.GamepadButton.DPAD_LEFT,
+			DPAD_RIGHT: lime.ui.GamepadButton.DPAD_RIGHT,
+		}, // Dependency
+		"Keyboard" => Keyboard, // Access to the Keyboard stuff
 	];
 
 	private static var parser:Parser = new Parser();
@@ -130,12 +151,7 @@ class ScriptHandler
 	 */
 	public static function loadModule(file:String, ?assetFolder:String, ?extraParams:StringMap<Dynamic>, ?fallback:String):ForeverModule
 	{
-		var expr:Expr = null;
-		var module:ForeverModule = null;
-
-		// Prefer FS Content than Asset Content
 		#if FS_ACCESS
-		var parseContent:Null<String> = null;
 		var folder:IO.AssetFolder = cast assetFolder.split("/")[0];
 		#end
 
@@ -144,64 +160,59 @@ class ScriptHandler
 		if (fallback != null)
 			fallback = Path.withoutExtension(fallback);
 
-		// Goofy path parsing lol
-		var modulePath:String = Paths.file('$assetFolder/$file.hxs');
+		// declare it beforehand for target conditionals
+		var modulePath:String = "";
 
-		function parse()
+		// Better path parsing? and now prioritizes filesystem, now it shouldnt try to check for fallbacks on filesystem since the fallback will be always default or some shit
+		// fuck now the defaults are being overriden too, fuck it
+		#if FS_ACCESS
+		modulePath = Path.join(IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$file.hxs');
+		if (IO.exists(modulePath))
+			return parse(modulePath, folder, extraParams);
+		#end
+
+		modulePath = Paths.file('$assetFolder/$file.hxs');
+		if (Assets.exists(modulePath, TEXT))
+			return parse(modulePath, assetFolder, extraParams);
+
+		if (fallback == null)
+			throw('Failed to load module $file');
+
+		// Ez replace - wont check on filesystem
+		assetFolder = assetFolder.replace(file, fallback);
+		modulePath = Paths.file('$assetFolder/$fallback.hxs');
+
+		if (Assets.exists(modulePath, TEXT))
+			return parse(modulePath, assetFolder, extraParams);
+
+		// what does run before, the throw or the return, we will never know
+		throw('Failed to load module $file and its fallback $fallback');
+	}
+
+	/**
+	 * [Undocumented]
+	 */
+	private static function parse(modulePath:String, ?assetFolder:String, ?extraParams:StringMap<Dynamic>):ForeverModule
+	{
+		var expr:Expr = null;
+		var module:ForeverModule = null;
+
+		try
 		{
-			try
-			{
-				var parseEnd:String = #if FS_ACCESS parseContent != null ? parseContent : Paths.text(modulePath) #else Paths.text(modulePath) #end;
-				var parseFolder:String = #if FS_ACCESS parseContent != null ? Path.join(IO.getFolderPath(folder), file) : assetFolder #else assetFolder #end;
+			var parseEnd:String = #if FS_ACCESS Cache.fromFS(modulePath) ? IO.getContent(modulePath) : Paths.text(modulePath) #else Paths.text(modulePath) #end;
+			var parseFolder:String = Cache.fromFS(modulePath) ? Path.join(IO.getFolderPath(cast assetFolder),
+				modulePath.substring(modulePath.lastIndexOf("/"), modulePath.lastIndexOf("."))) : assetFolder;
 
-				expr = parser.parseString(parseEnd, modulePath);
-				module = new ForeverModule(expr, parseFolder, extraParams);
+			expr = parser.parseString(parseEnd, modulePath);
+			module = new ForeverModule(expr, parseFolder, extraParams);
 
-				@:privateAccess
-				flixel.FlxG.state.modules.push(module);
-			}
-			catch (ex:Error)
-			{
-				trace('HScript parsing exception, caused at line ${ex.line} on ${ex.origin} (${ex.e})');
-			}
+			@:privateAccess
+			flixel.FlxG.state.modules.push(module);
 		}
-
-		if (!Assets.exists(modulePath, TEXT))
+		catch (ex:Error)
 		{
-			#if FS_ACCESS
-			modulePath = Path.join(IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$file.hxs');
-			if (IO.exists(modulePath))
-			{
-				parseContent = sys.io.File.getContent(modulePath);
-				parse();
-				return module;
-			}
-			#end
-
-			if (fallback == null)
-				throw('Failed to load module $file');
-
-			// Ez replace
-			assetFolder = assetFolder.replace(file, fallback);
-			modulePath = Paths.file('$assetFolder/$fallback.hxs');
-
-			if (!Assets.exists(modulePath, TEXT))
-			{
-				#if FS_ACCESS
-				modulePath = Path.join(IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$fallback.hxs');
-				if (IO.exists(modulePath))
-				{
-					parseContent = sys.io.File.getContent(modulePath);
-					parse();
-					return module;
-				}
-				else
-				#end
-				throw('Failed to load module $file and its fallback $fallback');
-			}
+			trace('HScript parsing exception, caused at line ${ex.line} on ${ex.origin} (${ex.e})');
 		}
-
-		parse();
 
 		return module;
 	}

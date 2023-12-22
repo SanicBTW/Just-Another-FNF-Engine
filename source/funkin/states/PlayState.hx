@@ -54,6 +54,7 @@ class PlayState extends MusicBeatState
 
 	// Strum handling
 	private var strumLines:FlxTypedGroup<StrumLine>;
+	private var holdingLanes:Array<Bool> = [];
 
 	public var playerStrums:StrumLine;
 	public var opponentStrums:StrumLine;
@@ -96,7 +97,7 @@ class PlayState extends MusicBeatState
 
 		// dumb
 		if (SongSelection.songSelected.isFS)
-			ChartLoader.loadFSChart(SongSelection.songSelected.songName);
+			ChartLoader.loadFSChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
 		else if (SongSelection.songSelected.netChart != null)
 			ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
 		else
@@ -129,6 +130,7 @@ class PlayState extends MusicBeatState
 
 		playerStrums = new StrumLine(Settings.middleScroll ? (FlxG.width / 2) : (FlxG.width / 2) + separationX, yPos);
 		playerStrums.onMiss.add(noteMiss);
+		playerStrums.onBotHit.add(botHit);
 		strumLines.add(playerStrums);
 
 		add(strumLines);
@@ -140,7 +142,7 @@ class PlayState extends MusicBeatState
 		boyfriendGroup = new FlxSpriteGroup(positions.boyfriend.x, positions.boyfriend.y);
 		dadGroup = new FlxSpriteGroup(positions.opponent.x, positions.opponent.y);
 		gfGroup = new FlxSpriteGroup(positions.girlfriend.x, positions.girlfriend.y);
-		positions = null; // as its only a reference, making it null makes the var marked for gc i believe
+		positions = null; // as its only a reference, making it null makes the var marked for gc i believe - thats on mark-and-sweep gc dummy
 
 		add(gfGroup);
 		add(dadGroup);
@@ -286,6 +288,9 @@ class PlayState extends MusicBeatState
 			ChartLoader.noteQueue.splice(ChartLoader.noteQueue.indexOf(nextNote), 1);
 		}
 
+		if (FlxG.keys.justPressed.ONE)
+			playerStrums.botPlay = !playerStrums.botPlay;
+
 		holdNotes(elapsed);
 		checkEventNote();
 
@@ -320,6 +325,8 @@ class PlayState extends MusicBeatState
 						if (action == receptor.action)
 						{
 							var data:Int = receptor.noteData;
+							holdingLanes[data] = true;
+
 							var lastTime:Float = Conductor.time;
 							Conductor.time = Conductor.boundInst.time;
 
@@ -396,6 +403,7 @@ class PlayState extends MusicBeatState
 					{
 						if (action == receptor.action)
 						{
+							holdingLanes[receptor.noteData] = false;
 							receptor.playAnim('static');
 						}
 					}
@@ -409,18 +417,11 @@ class PlayState extends MusicBeatState
 		if (playerStrums == null || paused)
 			return;
 
-		var holdArray:Array<Bool> = [
-			controls.NOTE_LEFT.state == PRESSED,
-			controls.NOTE_DOWN.state == PRESSED,
-			controls.NOTE_UP.state == PRESSED,
-			controls.NOTE_RIGHT.state == PRESSED
-		];
-
 		if (!playerStrums.botPlay)
 		{
 			playerStrums.allNotes.forEachAlive(function(coolNote:Note)
 			{
-				if (holdArray[coolNote.noteData])
+				if (holdingLanes[coolNote.noteData])
 				{
 					if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
 						&& coolNote.canBeHit
@@ -436,7 +437,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (boyfriend != null
-			&& (!holdArray.contains(true) || playerStrums.botPlay)
+			&& (!holdingLanes.contains(true) || playerStrums.botPlay)
 			&& boyfriend.animation.curAnim != null
 			&& boyfriend.holdTimer > Conductor.stepCrochet * (boyfriend.singDuration / 1000)
 			&& boyfriend.animation.curAnim.name.startsWith("sing")
@@ -670,17 +671,34 @@ class PlayState extends MusicBeatState
 		{
 			var receptor:Receptor = getReceptor(playerStrums, note.noteData);
 			note.wasGoodHit = true;
-			note.judgement = Timings.judge(Math.abs(note.strumTime - Conductor.time), note.isSustain);
+
+			// diff is already passed through Math.abs on judger
+			var diff:Float = switch (Settings.diffStyle)
+			{
+				case TIME: (note.strumTime - Conductor.time);
+				case HITBOX: receptor.getScreenPosition().distanceTo(note.getScreenPosition()); // single liner kinda messy ngl
+			}
+
+			var lateCond:Bool = switch (Settings.diffStyle)
+			{
+				case TIME: (note.strumTime < Conductor.time);
+				case HITBOX: (note.getScreenPosition().y < receptor.getScreenPosition().y); // another single liner yikes
+			}
+
+			note.judgement = Timings.judge(diff, note.isSustain);
 			receptor.playAnim('confirm', true);
 
-			// bloxxin and other stuff type shit (only count parent timing when hold ended kind of wacky tho)
-			if (!note.isSustain && note.parent != note || note.isSustainEnd)
-				ui.displayJudgement((!note.isSustain && note.parent != note) ? note.judgement : note.parent.judgement, (note.strumTime < Conductor.time));
+			if (!note.isSustain)
+				ui.displayJudgement(note.judgement, lateCond);
 
 			if (!note.isSustain && note.judgement == "sick")
 				playerStrums.generateSplash(receptor);
 
-			characterSing(boyfriend, 'sing${receptor.getNoteDirection().toUpperCase()}');
+			var char:Character = boyfriend;
+			if (!stageBuild.hide_girlfriend && note.gfNote)
+				char = gf;
+
+			characterSing(char, 'sing${receptor.getNoteDirection().toUpperCase()}');
 
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
@@ -702,8 +720,16 @@ class PlayState extends MusicBeatState
 		if (SONG.needsVoices)
 			Conductor.boundVocals.volume = 0;
 
-		if (boyfriend.hasMissAnimations)
-			characterSing(boyfriend, 'sing${note.getNoteDirection().toUpperCase()}miss');
+		// kind of dynamic stuff i guess
+		var char:Character = boyfriend;
+		if (!stageBuild.hide_girlfriend && note.gfNote)
+			char = gf;
+
+		if (char.hasMissAnimations && !char.curCharacter.contains("gf"))
+			characterSing(char, 'sing${note.getNoteDirection().toUpperCase()}miss');
+
+		if (!char.hasMissAnimations && char.curCharacter.contains("gf"))
+			characterSing(char, "sad");
 
 		Timings.judge(Timings.judgements[Timings.judgements.length - 1].timing);
 		ui.displayJudgement('miss', true);
@@ -719,7 +745,7 @@ class PlayState extends MusicBeatState
 	private function botHit(note:Note)
 	{
 		var curStrums:StrumLine = (note.mustPress ? playerStrums : opponentStrums);
-		var curChar:Character = (note.mustPress ? boyfriend : dad);
+		var curChar:Character = (note.mustPress ? ((!stageBuild.hide_girlfriend && note.gfNote) ? gf : boyfriend) : dad);
 		if (!note.wasGoodHit)
 		{
 			var receptor:Receptor = getReceptor(curStrums, note.noteData);
@@ -740,7 +766,7 @@ class PlayState extends MusicBeatState
 
 			characterSing(curChar, 'sing${receptor.getNoteDirection().toUpperCase()}');
 
-			callOnModules('${curChar == boyfriend ? "goodNoteHit" : "opponentNoteHit"}', [
+			callOnModules('${(curChar == boyfriend || curChar == gf) ? "goodNoteHit" : "opponentNoteHit"}', [
 				ChartLoader.noteQueue.indexOf(note),
 				note.noteData,
 				note.noteType,

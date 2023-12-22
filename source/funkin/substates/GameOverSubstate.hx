@@ -1,6 +1,8 @@
 package funkin.substates;
 
+import backend.Cache;
 import backend.Conductor;
+import backend.IO;
 import backend.input.Controls;
 import base.MusicBeatState;
 import base.TransitionState;
@@ -11,6 +13,7 @@ import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import funkin.Character;
+import openfl.media.Sound;
 
 // PE
 class GameOverSubstate extends MusicBeatSubState
@@ -67,7 +70,7 @@ class GameOverSubstate extends MusicBeatSubState
 		// why not
 		var camPos:FlxPoint = new FlxPoint(playerDead.getGraphicMidpoint().x, playerDead.getGraphicMidpoint().y);
 
-		FlxG.sound.play(Paths.sound(deathSoundName));
+		FlxG.sound.play(getSound(deathSoundName));
 		Conductor.changeBPM(100);
 		FlxG.camera.scroll.set();
 		FlxG.camera.target = null;
@@ -112,7 +115,7 @@ class GameOverSubstate extends MusicBeatSubState
 
 			if (playerDead.animation.curAnim.finished)
 			{
-				FlxG.sound.playMusic(Paths.music(loopSoundName), 1);
+				FlxG.sound.playMusic(getMusic(loopSoundName), 1);
 				playerDead.startedDeath = true;
 				bop = true;
 			}
@@ -159,8 +162,9 @@ class GameOverSubstate extends MusicBeatSubState
 		{
 			isEnding = true;
 			playerDead.playAnim('deathConfirm', true);
-			FlxG.sound.music.stop();
-			FlxG.sound.play(Paths.music(endSoundName));
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.stop();
+			FlxG.sound.play(getMusic(endSoundName));
 			new FlxTimer().start(0.7, function(tmr:FlxTimer)
 			{
 				FlxG.camera.fade(FlxColor.BLACK, 2, false, end);
@@ -180,5 +184,24 @@ class GameOverSubstate extends MusicBeatSubState
 			Conductor.boundInst = null;
 			Conductor.boundVocals = null;
 		}
+	}
+
+	// Prioritize filesystem
+	private function getSound(file:String):Sound
+	{
+		// on html5 it will always return false - if not found we try on assets because 100% there is something on it
+		if (IO.exists(backend.io.Path.join(IO.getFolderPath(SOUNDS), '$file.ogg')))
+			return Cache.getSound(backend.io.Path.join(IO.getFolderPath(SOUNDS), '$file.ogg'));
+
+		return Paths.sound(file);
+	}
+
+	private function getMusic(file:String):Sound
+	{
+		// on html5 it will always return false - if not found we try on assets because 100% there is something on it
+		if (IO.exists(backend.io.Path.join(IO.getFolderPath(MUSIC), '$file.ogg')))
+			return Cache.getSound(backend.io.Path.join(IO.getFolderPath(MUSIC), '$file.ogg'));
+
+		return Paths.music(file);
 	}
 }

@@ -10,6 +10,7 @@
 - Moved engine state essentials to FlxState and FlxSubState
 - FlxText actually reusing graphics and using a custom drawing method
 - FlxGraphicsShader added screen vec2 and elapsed float
+- Only a few Shapes available from Flixel Addons 3.2.1
 
 # Updated (Keeping modifications)
 - FlxText -> https://github.com/HaxeFlixel/flixel/pull/2789 & https://github.com/HaxeFlixel/flixel/pull/2846
@@ -19,6 +20,7 @@
 - FlxSprite -> https://github.com/HaxeFlixel/flixel/pull/2875 & https://github.com/HaxeFlixel/flixel/pull/2881
 - FlxColorTransformUtil -> https://github.com/HaxeFlixel/flixel/pull/2875
 - FlxSubState -> https://github.com/HaxeFlixel/flixel/pull/2897
+- FlxPoint -> Added rotateByDegrees and rotateByRadians from Flixel 5.4.1
 
 # Notice
 These modifications of Flixel will be moved to another repo including modifications to another libraries like OpenFL and Lime which will be required in order to compile the engine

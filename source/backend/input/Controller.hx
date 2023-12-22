@@ -16,9 +16,24 @@ enum GamepadAxisDirection
 	DOWN;
 }
 
+// Which schema should the engine use to represent the gamepad buttons
+
+enum abstract GamepadType(String) to String from String
+{
+	var XBOX = "xbox";
+	var PS4 = "ps4";
+}
+
 // Manages Gamepad shit, has some old code which was impossible to improve (imo)
 class Controller
 {
+	private static var input:Null<Gamepad> = null;
+	public static var type:GamepadType = XBOX; // We don't know which one is it so we just going with makin xbox the default one
+
+	// bro what
+	public static function rawIntToButton(int:Null<Int>):GamepadButton
+		return cast int;
+
 	// Realized GamepadButtons are integers too
 	private static var actions:Map<ActionType, Array<Null<Int>>> = [
 		CONFIRM => [GamepadButton.START, GamepadButton.A],
@@ -34,8 +49,9 @@ class Controller
 		NOTE_UP => [GamepadButton.DPAD_UP, GamepadButton.Y],
 		NOTE_RIGHT => [GamepadButton.DPAD_RIGHT, GamepadButton.B]
 	];
+	private static var _defaultActions:Map<ActionType, Array<Null<Int>>> = actions.copy();
 
-	private static var input:Null<Gamepad> = null;
+	public static var buttonsPressed:Array<Int> = [];
 
 	// Needed for axis
 	private static var movingAxes:Array<GamepadAxisDirection> = [];
@@ -61,29 +77,39 @@ class Controller
 	// Events
 	private static function connect(gamepad:Gamepad):Void
 	{
+		trace('Connected ${gamepad.name} [${gamepad.guid} | ${gamepad.id} | ${gamepad.connected}]');
+
 		// DO NOT change the connected gamepad
-		if (input == null)
-			input = gamepad;
+		if (input != null)
+		{
+			trace('A gamepad is already registered (${input.name}), new one (${gamepad.name}) will not be set up');
+			return;
+		}
 
-		trace('Connected ${input.name} [${input.guid} | ${input.id} | ${input.connected}]');
+		input = gamepad;
 
-		gamepad.onDisconnect.add(disconnect);
-		gamepad.onAxisMove.add(axisMove);
-		gamepad.onButtonDown.add(buttonDown);
-		gamepad.onButtonUp.add(buttonUp);
+		if (input.name.indexOf("PS4") > -1 || input.name.indexOf("DualShock 4") > -1)
+			type = PS4;
+		else
+			type = XBOX;
+
+		input.onDisconnect.add(disconnect);
+		input.onAxisMove.add(axisMove);
+		input.onButtonDown.add(buttonDown);
+		input.onButtonUp.add(buttonUp);
 	}
 
 	private static function disconnect():Void
 	{
 		trace('Disconnected ${input.name} [${input.guid} | ${input.id} | ${input.connected}]');
 		input = null;
+		type = XBOX; // revert just in case
 		checkConnections();
 	}
 
 	// Still uses the old code
 	// Joystick movements SHOULD never be rebinded
 	// Btw if both joysticks are being moved its a little bit weird
-	// TODO: Triggers
 	private static function axisMove(axis:GamepadAxis, dist:Float):Void
 	{
 		switch (axis)
@@ -145,19 +171,29 @@ class Controller
 
 	private static function buttonDown(button:GamepadButton):Void
 	{
-		for (action => buttons in actions)
+		if (!buttonsPressed.contains(button))
 		{
-			if (buttons.contains(button))
-				Controls.dispatchPressed(action);
+			buttonsPressed.push(button);
+
+			for (action => buttons in actions)
+			{
+				if (buttons.contains(button))
+					Controls.dispatchPressed(action);
+			}
 		}
 	}
 
 	private static function buttonUp(button:GamepadButton):Void
 	{
-		for (action => buttons in actions)
+		if (buttonsPressed.contains(button))
 		{
-			if (buttons.contains(button))
-				Controls.dispatchReleased(action);
+			buttonsPressed.remove(button);
+
+			for (action => buttons in actions)
+			{
+				if (buttons.contains(button))
+					Controls.dispatchReleased(action);
+			}
 		}
 	}
 

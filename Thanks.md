@@ -1,18 +1,18 @@
 # Special Thanks
-- SlacDeveloper for making most of the sprites
+- GlassGuy_ for making most of the sprites
 - AndyDavinci for making the engine icon
 - Dulce for editing the Discord RPC Images
 
 # V1 Online Testers (Thanks a lot!)
 - Galo
-- SlacDev
+- GlassGuy_
 - Dulce
 - AndyDavinci
 
 # Alpha Testers
 - ElDulceV
 - Galo
-- SlacDev
+- GlassGuy_
 - Bonndubz
 - Levi
 - EchidnaWeon

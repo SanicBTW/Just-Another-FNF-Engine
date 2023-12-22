@@ -21,7 +21,7 @@ using StringTools;
 
 class SongSelection extends TransitionState
 {
-	private final pages:Array<String> = ["libraries", "funkin", "quaver"];
+	private final pages:Array<String> = ["libraries", "funkin", "quaver", "fs"];
 	private var curPage(default, set):Int = 0;
 	private var curSelected(default, set):Int = 0;
 	private var curText(get, null):String;
@@ -142,6 +142,11 @@ class SongSelection extends TransitionState
 			case "quaver":
 				{
 					TransitionState.switchState(new quaver.states.QuaverSelection());
+				}
+
+			case "fs":
+				{
+					TransitionState.switchState(new FSSelection());
 				}
 		}
 

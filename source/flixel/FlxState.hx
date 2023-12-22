@@ -13,16 +13,16 @@ import haxe.Rest;
 	Currently has: 
 	- Modding API
 	- Controls API
-	- Preloading assets
-	- A Sandboxed Paths object that can only access specified folder (new IsolatedPaths('assets/funkin')) will only have access to that directory
-	- Music timings, once I find a way to fix delay
+	- Preloading assets (Pending)
+	- A Sandboxed Paths object that can only access specified folder (new IsolatedPaths('assets/funkin')) will only have access to that directory (Pending)
+	- Music timings, once I find a way to fix delay (Implemented on MusicBeatState, pending)
  */
 /**
  * This is the basic game "state" object - e.g. in a simple game you might have a menu state and a play state.
  * It is for all intents and purpose a fancy `FlxGroup`. And really, it's not even that fancy.
  */
 @:keepSub // workaround for HaxeFoundation/haxe#3749
-class FlxState extends FlxGroup implements IModuleAPI implements IControls
+class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI
 {
 	/**
 	 * Determines whether or not this state is updated even when it is not the active state.
@@ -341,7 +341,7 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControls
 // More interfaces will come soon like, languages, active networking, etc
 // Input Shit
 
-interface IControls
+interface IControlsAPI
 {
 	// Object that contains game input, as well as having a static exposure for single key input
 	public var controls:Controls;

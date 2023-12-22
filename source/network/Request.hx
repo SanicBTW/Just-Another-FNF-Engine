@@ -122,7 +122,6 @@ class Request<T> extends SPromise<T>
 				},
 				callbackError: (response:HttpResponse) ->
 				{
-					trace(response.error, response.status);
 					reject(response.error);
 				},
 				callbackProgress: (loaded:Int, total:Int) -> {}

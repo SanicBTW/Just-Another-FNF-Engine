@@ -52,7 +52,6 @@ class CacheFile
 		if (lStorage == null)
 			throw "Local Storage unsupported or disabled";
 
-		trace(lStorage.getItem(fileName));
 		if (lStorage.getItem(fileName) == null)
 			lStorage.setItem(fileName, encrypt(template));
 

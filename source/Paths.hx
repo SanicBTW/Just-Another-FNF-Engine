@@ -20,10 +20,14 @@ class Paths
 	// Open a substate that indicates the loading state?
 	// If the new library is the default one, it will unload the previous one
 	// Search for a better way to change library (crashes after a couple of changes)
+	// You dummy it crashed because we were returning null if we tried to change to the same library :skull: now its fixed and doesnt seem to be crashing anymore
 	public static function changeLibrary(newLibrary:Libraries, onFinish:Null<AssetLibrary>->Void)
 	{
 		if (_library == newLibrary)
-			onFinish(null);
+		{
+			onFinish(cast Assets.getLibrary(_library));
+			return;
+		}
 
 		if (Assets.hasLibrary(_oldLibrary) && _oldLibrary != DEFAULT)
 		{
@@ -57,7 +61,7 @@ class Paths
 		return '${Libraries.DEFAULT}:assets/${Libraries.DEFAULT}/$file';
 	}
 
-	// ofl - open fl filter / ffl - folder filter loll
+	// ofl - open fl filter / ffl - folder filter loll - tested in my Mic'd Up port for HTML5, shits fresh and workin fine :sunglasses:
 	public static function getLibraryFiles(?ofl:String, ?ffl:String):Array<String>
 	{
 		if (!Assets.hasLibrary(_library))

@@ -89,7 +89,7 @@ class Conductor
 	];
 
 	// Resync
-	static final resyncThreshold:Float = 30;
+	static final resyncThreshold:Float = 50;
 
 	static var lastTime(get, null):Float = 0;
 
@@ -130,7 +130,7 @@ class Conductor
 
 	@:noCompletion
 	private static function set_speed(value:Float):Float
-		return speed = rate * value;
+		return speed = flixel.math.FlxMath.roundDecimal(rate * value, 2);
 
 	static var rate:Float = 0.45;
 
@@ -142,6 +142,7 @@ class Conductor
 	// FNF - Input
 	static var safeFrames:Int = 10;
 	static var safeZoneOffset:Float = (safeFrames / 60) * 1000;
+	// 166 is normalized since its 10 secs / 60 frames but what about higher framerates and shit
 	static var timeScale:Float = safeZoneOffset / 166;
 
 	static function bindSong(newData:SongData, newInst:Sound, ?newVocals:Sound)

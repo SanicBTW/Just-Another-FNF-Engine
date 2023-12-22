@@ -28,12 +28,12 @@ class ChartLoader
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
 
-	public static function loadFSChart(songName:String):SongData
+	public static function loadFSChart(songName:String, songDiff:Int = 1):SongData
 	{
 		resetQueues();
 		var startTime:Float = haxe.Timer.stamp();
 
-		var rawChart:String = IO.getSong(songName, CHART, 1);
+		var rawChart:String = IO.getSong(songName, CHART, songDiff);
 		var inst:Sound = IO.getSong(songName, INST);
 		var vocals:Null<Sound> = IO.getSong(songName, VOICES);
 
@@ -204,6 +204,7 @@ class ChartLoader
 
 						var newNote:Note = new Note(strumTime, noteData, songNotes[3], strumLine, oldNote);
 						newNote.mustPress = hitNote;
+						newNote.gfNote = (section.gfSection || songNotes[3] == "GF Sing"); // force
 						var holdStep:Float = newNote.sustainLength = songNotes[2] / Conductor.stepCrochet;
 						noteQueue.push(newNote);
 
@@ -218,7 +219,9 @@ class ChartLoader
 								var time:Float = strumTime + (Conductor.stepCrochet * note) + (Conductor.stepCrochet / Conductor.speed);
 								var sustainNote:Note = new Note(time, noteData, newNote.noteType, strumLine, noteQueue[Std.int(noteQueue.length - 1)], true);
 
+								// when setting a parent, set the properties directly on set_parent(parent:Note) on Note
 								sustainNote.mustPress = hitNote;
+								sustainNote.gfNote = newNote.gfNote;
 								sustainNote.parent = newNote;
 								sustainNote.spotHold = note;
 

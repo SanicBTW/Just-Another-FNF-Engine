@@ -1,6 +1,8 @@
 package funkin.notes;
 
 import backend.Conductor;
+import backend.IO;
+import backend.io.Path;
 import backend.scripting.*;
 import flixel.FlxSprite;
 import flixel.math.FlxRect;
@@ -33,6 +35,7 @@ class Note extends FlxSprite
 	public var sustainLength:Float = 0;
 	public var prevNote:Note;
 	public var ignoreNote:Bool = false; // Psych
+	public var gfNote:Bool = false; // Psych
 	public var strumLine:Int = 0; // FE:R
 
 	// JAFE
@@ -133,34 +136,42 @@ class Note extends FlxSprite
 		}
 	}
 
+	// i forgot to add support for filesystem in here my bad, included filesystem priority :+1:
 	public static function returnNoteData(noteType:String):ReceptorData
 	{
-		if (!dataCache.exists(noteType))
-		{
-			trace('Setting note data $noteType');
+		if (dataCache.exists(noteType))
+			return dataCache.get(noteType);
 
-			// i forgot
-			var path:String = Paths.file('notetypes/$noteType/$noteType.json');
+		#if debug trace('Setting note data $noteType'); #end
+
+		var path:String = Path.join(IO.getFolderPath(NOTETYPES), '$noteType/$noteType.json');
+		if (!IO.exists(path))
+		{
+			path = Paths.file('notetypes/$noteType/$noteType.json');
+
+			// the reason behind why we dont prioritize defaults is because the default skin can be overriden but it will be always available on assets but not in filesystem
 			if (!Assets.exists(path))
 				path = Paths.file('notetypes/$DEFAULT/$DEFAULT.json');
-
-			dataCache.set(noteType, cast Json.parse(Paths.text(path)));
 		}
-		return dataCache.get(noteType);
+
+		dataCache.set(noteType, cast Json.parse(Paths.text(path)));
+
+		return cast Json.parse(Paths.text(path));
 	}
 
 	public static function returnNoteScript(noteType:String):ForeverModule
 	{
-		// load up the note script
-		if (!scriptCache.exists(noteType))
-		{
-			trace('Setting note script $noteType');
-			var module:ForeverModule = ScriptHandler.loadModule(noteType, 'notetypes/$noteType', DEFAULT);
-			// We don't want the note script to get updated all the time
-			module.active = false;
-			scriptCache.set(noteType, module);
-		}
-		return scriptCache.get(noteType);
+		if (scriptCache.exists(noteType))
+			return scriptCache.get(noteType);
+
+		#if debug trace('Setting note script $noteType'); #end
+
+		var module:ForeverModule = ScriptHandler.loadModule(noteType, 'notetypes/$noteType', DEFAULT);
+		// We don't want the note script to get updated all the time
+		module.active = false;
+		scriptCache.set(noteType, module);
+
+		return module;
 	}
 
 	public function getNoteDirection()

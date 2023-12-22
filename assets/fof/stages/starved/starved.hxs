@@ -18,6 +18,7 @@ var startCircle;
 var startText;
 
 // fortinait o la bbg
+var canIncrease = false;
 var fear = 0;
 var fearBBorder;
 var fearBBG;
@@ -131,6 +132,8 @@ function onStartCountdown()
 			remove(blackFuck);
 		}});
 	});
+
+    UI.judgementOffset[0] = 455;
 }
 
 function onCreatePost()
@@ -142,7 +145,8 @@ function onCreatePost()
     bfx = PlayState.boyfriendGroup.x;
     bfy = PlayState.boyfriendGroup.y;
 
-    UI.textFormat = "Sacrifices: $misses | Accuracy: $accuracy";
+    UI.fcFormat = " [fc]";
+    UI.textFormat = "Sacrifices: $misses | Accuracy: $accuracy$fc";
     UI.scoreText.x = 0;
     UI.scoreText.y = (FlxG.height - 45) - 5;
     if (Settings.downScroll)
@@ -188,6 +192,7 @@ function onCountdownStarted()
 function onSongStart()
 {
     FlxTween.tween(UI, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
+    canIncrease = true;
 }
 
 function onMoveCamera(who)
@@ -219,7 +224,7 @@ function onUpdate(elapsed)
     PlayState.boyfriend.y = bfy * zoomshit;
     fearBar.value = fear;
 
-    if (PlayState.updateTime)
+    if (canIncrease)
     {
         // ok so this dumb bitch would return 1 UPON STATE CREATION LIKE WHAT THE ACTUAL FUCK BRO
         if (fearBar.percent >= 1)

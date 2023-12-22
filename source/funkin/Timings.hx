@@ -19,18 +19,29 @@ typedef Judgement =
 	var track:String; // The "this" variable to track
 }
 
-// Kade MS Rating is based on timeScale, which is more mean and accurate most of the times
-// Pshcy MS Rating is based on the Conductor safeZoneOffset which is safeFrames (default:10) / 60 * 1000, its more permissive and maybe accurate
+// Kade is based on timeScale, which is more mean and accurate most of the times
+// Psych is based on the Conductor safeZoneOffset which is safeFrames (default:10) / 60 * 1000, its more permissive and maybe accurate
 enum RatingStyle
 {
 	PSYCH;
 	KADE;
 }
 
+// Kade is always based off MS but you can select Score which is the default rating before Psych 0.4 I believe
 enum AccuracyStyle
 {
 	SCORE;
 	MS;
+}
+
+// Time Diff is the default one every engine (Conductor time - note time)
+// Hitbox Diff however was implemented on this one (just for fun) and thought it was more accurate (Distance to the receptor screen pos from the receptor note pos)
+// I dont really know if its actually hitbox or whatever to call it now but it just pretty much checks the note distance (position, not hitbox) to the receptor (position, not hitbox)
+// Late conditions are also different for each one
+enum DiffStyle
+{
+	TIME;
+	HITBOX;
 }
 
 class Timings
@@ -166,13 +177,24 @@ class Timings
 		misses = 0;
 	}
 
+	// Depending on the Rating Style, it will use another Judge, it can be more accurate or not
+	private static function judger(ms:Float, timing:Float):Bool
+	{
+		return switch (Settings.ratingStyle)
+		{
+			case KADE: Math.abs(ms) <= (timing * Conductor.timeScale);
+			// basically 166 * (100 (sick) / 166) -> 166 * 0.27 -> 44,9
+			case PSYCH: Math.abs(ms) <= (Conductor.safeZoneOffset * (timing / Conductor.safeZoneOffset));
+		}
+	}
+
 	// Look into shits
 	public static function judge(ms:Float, isSustain:Bool = false):String
 	{
 		for (i in 0...judgements.length)
 		{
 			var judgement:Judgement = judgements[Math.round(Math.min(i, judgements.length - 1))];
-			if (ms <= judgement.timing * Conductor.timeScale)
+			if (judger(ms, judgement.timing))
 			{
 				// If is a sustain we only want to return the rating
 				if (isSustain)

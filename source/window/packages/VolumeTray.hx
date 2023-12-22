@@ -39,7 +39,7 @@ class VolumeTray extends Tray
 	{
 		y = -Lib.current.stage.stageHeight;
 
-		var bg:RoundedSprite = new RoundedSprite(0, 0, _width, _height, [0, 0, 10, 10], FlxColor.BLACK, 0.6);
+		var bg:RoundedSprite = new RoundedSprite(0, 0, _width, _height, [0, 0, 5, 5], FlxColor.BLACK, 0.6);
 		screenCenter();
 		addChild(bg);
 
@@ -73,7 +73,7 @@ class VolumeTray extends Tray
 		y = FlxMath.lerp(targetY, y, lerpVal);
 
 		_volBar.setSize(volume * (_width - 10), _volBar.height, lerpVal);
-		_volTracker.text = '${Math.round((_volBar.RealSizes.x / (_width - 10)) * 100)}%';
+		_volTracker.text = '${Math.round((_volBar.width / (_width - 10)) * 100)}%';
 
 		// Only update it when it contains a 0 (lerp ended), make it an option or something lol
 		if (_volTracker.text.contains("0"))

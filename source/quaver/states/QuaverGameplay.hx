@@ -1,31 +1,23 @@
 package quaver.states;
 
-import backend.Cache;
-import backend.Conductor;
-import backend.DiscordPresence;
+import backend.*;
 import backend.input.Controls.ActionType;
 import backend.scripting.ForeverModule;
-import base.MusicBeatState;
-import base.TransitionState;
-import flixel.FlxCamera;
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.FlxSubState;
+import base.*;
+import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
 import funkin.*;
 import funkin.Events.EventNote;
-import funkin.notes.Note;
-import funkin.notes.Receptor;
-import funkin.notes.StrumLine;
-import funkin.substates.GameOverSubstate;
-import funkin.substates.PauseSubstate;
+import funkin.notes.*;
 import openfl.media.Sound;
 import quaver.Qua;
+import quaver.substates.PauseSubstate;
 import transitions.FadeTransition;
 
 using StringTools;
@@ -40,6 +32,7 @@ class QuaverGameplay extends MusicBeatState
 
 	// Strum handling
 	private var strumLines:FlxTypedGroup<StrumLine>;
+	private var holdingLanes:Array<Bool> = [];
 
 	public var strums:StrumLine;
 
@@ -65,7 +58,6 @@ class QuaverGameplay extends MusicBeatState
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 			FlxG.sound.music.stop();
 
-		GameOverSubstate.resetVariables();
 		Timings.call();
 		Paths.music("tea-time");
 		qua = ChartLoader.loadBeatmap(QuaverSelection.mapID);
@@ -217,6 +209,8 @@ class QuaverGameplay extends MusicBeatState
 						if (action == receptor.action)
 						{
 							var data:Int = receptor.noteData;
+							holdingLanes[data] = true;
+
 							var lastTime:Float = Conductor.time;
 							Conductor.time = FlxG.sound.music.time;
 
@@ -293,6 +287,7 @@ class QuaverGameplay extends MusicBeatState
 					{
 						if (action == receptor.action)
 						{
+							holdingLanes[receptor.noteData] = false;
 							receptor.playAnim('static');
 						}
 					}
@@ -306,18 +301,11 @@ class QuaverGameplay extends MusicBeatState
 		if (strums == null || paused)
 			return;
 
-		var holdArray:Array<Bool> = [
-			controls.NOTE_LEFT.state == PRESSED,
-			controls.NOTE_DOWN.state == PRESSED,
-			controls.NOTE_UP.state == PRESSED,
-			controls.NOTE_RIGHT.state == PRESSED
-		];
-
 		if (!strums.botPlay)
 		{
 			strums.allNotes.forEachAlive(function(coolNote:Note)
 			{
-				if (holdArray[coolNote.noteData])
+				if (holdingLanes[coolNote.noteData])
 				{
 					if ((coolNote.parent != null && coolNote.parent.wasGoodHit)
 						&& coolNote.canBeHit
@@ -484,13 +472,26 @@ class QuaverGameplay extends MusicBeatState
 			var hitObj:HitObject = getHitObjectByTime(note.strumTime);
 			var receptor:Receptor = getReceptor(strums, note.noteData);
 			note.wasGoodHit = true;
-			note.judgement = Timings.judge(Math.abs(note.strumTime - Conductor.time), note.isSustain);
+
+			// diff is already passed through Math.abs on judger
+			var diff:Float = switch (Settings.diffStyle)
+			{
+				case TIME: (note.strumTime - Conductor.time);
+				case HITBOX: receptor.getScreenPosition().distanceTo(note.getScreenPosition()); // single liner kinda messy ngl
+			}
+
+			var lateCond:Bool = switch (Settings.diffStyle)
+			{
+				case TIME: (note.strumTime < Conductor.time);
+				case HITBOX: (note.getScreenPosition().y < receptor.getScreenPosition().y); // another single liner yikes
+			}
+
+			note.judgement = Timings.judge(diff, note.isSustain);
 			receptor.playAnim('confirm', true);
 			playHitObjectSound(hitObj);
 
-			// quaver type shit (only count parent timing when hold ended kind of wacky tho)
-			if (!note.isSustain && note.parent != note || note.isSustainEnd)
-				ui.displayJudgement((!note.isSustain && note.parent != note) ? note.judgement : note.parent.judgement, (note.strumTime < Conductor.time));
+			if (!note.isSustain)
+				ui.displayJudgement(note.judgement, lateCond);
 
 			if (!note.isSustain && note.judgement == "sick")
 				strums.generateSplash(receptor);
@@ -556,7 +557,7 @@ class QuaverGameplay extends MusicBeatState
 		updateTime = false;
 		FlxG.sound.music.stop();
 		callOnModules('onEndSong', null);
-		TransitionState.switchState(new funkin.states.SongSelection());
+		TransitionState.switchState(new QuaverSelection());
 	}
 
 	private function checkEventNote()

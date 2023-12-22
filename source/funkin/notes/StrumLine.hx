@@ -118,6 +118,10 @@ class StrumLine extends FlxSpriteGroup
 
 	public function generateSplash(receptor:Receptor, preload:Bool = false)
 	{
+		// why would we want splashes on something we cant see??!?!?!!?!?!
+		if (!visible)
+			return;
+
 		var module:backend.scripting.ForeverModule = Note.returnNoteScript(receptor.noteType);
 		if (Settings.showNoteSplashes && module.exists("generateSplash"))
 		{
@@ -135,7 +139,7 @@ class StrumLine extends FlxSpriteGroup
 			splashNote.x = receptors.members[receptor.noteData].x;
 			splashNote.y = receptors.members[receptor.noteData].y;
 
-			module.get("generateSplash")(splashNote, receptor.noteData);
+			module.get("generateSplash")(splashNote, receptor.noteData, receptor.swagWidth, receptor.getNoteColor());
 
 			if (splashNote.animation != null)
 			{

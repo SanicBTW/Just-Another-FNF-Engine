@@ -718,7 +718,7 @@ class FlxText extends FlxSprite
 	@:noCompletion
 	inline function get_embedded():Bool
 	{
-		return textField.embedFonts = true;
+		return textField.embedFonts;
 	}
 
 	@:noCompletion
@@ -927,6 +927,8 @@ class FlxText extends FlxSprite
 				_bitmap = Cache.set(new BitmapData(newWidth, newHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
 				loadGraphic(Cache.set(FlxGraphic.fromRectangle(newWidth, newHeight, FlxColor.TRANSPARENT, true), GRAPHIC, newName));
 			}
+
+			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 			#else
 			var key:String = FlxG.bitmap.getUniqueKey("text");
 			_lastKey = key;
@@ -934,8 +936,6 @@ class FlxText extends FlxSprite
 			_bitmap = new BitmapData(newWidth, newHeight, true, FlxColor.TRANSPARENT);
 			makeGraphic(newWidth, newHeight, FlxColor.TRANSPARENT, false, key);
 			#end
-
-			_bitmap.fillRect(_flashRect, FlxColor.TRANSPARENT);
 
 			if (_hasBorderAlpha)
 				_borderPixels = _bitmap.clone();
@@ -954,9 +954,9 @@ class FlxText extends FlxSprite
 				{
 					#if CACHE_FLXTEXT
 					var newName:String = 'textbp:${frameWidth}x${frameHeight}';
-					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT), BITMAP, newName);
+					_borderPixels = Cache.set(new BitmapData(frameWidth, frameHeight, true), BITMAP, newName);
 					#else
-					_borderPixels = new BitmapData(frameWidth, frameHeight, true, FlxColor.TRANSPARENT);
+					_borderPixels = new BitmapData(frameWidth, frameHeight, true);
 					#end
 				}
 				else

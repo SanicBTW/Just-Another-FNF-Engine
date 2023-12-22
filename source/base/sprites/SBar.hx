@@ -8,10 +8,9 @@ import openfl.geom.ColorTransform;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 
-// Sanco Bar, basically an alternative to FlxBar but uhhhhhhhhhh better I guess???
+// Simple Bar, basically an alternative to FlxBar but uhhhhhhhhhh better I guess???
 // Originally from https://github.com/SanicBTW/Just-Another-FNF-Engine/blob/221672cfcc8e77ab1db4b5a11e23b14e642425a2/source/base/ui/Bar.hx
 // Also fun fact, I made it after learning how FlxText worked
-// i only copied the old code and added some funky color change lol
 // TODO: proper getters and setters yknow what i mean
 class SBar extends FlxSprite
 {

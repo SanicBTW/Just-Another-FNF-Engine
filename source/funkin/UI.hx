@@ -14,6 +14,7 @@ using StringTools;
 class UI extends FlxSpriteGroup
 {
 	var textFormat:String = "Score $score\nAccuracy $accuracy\nRank $rank$fc";
+	var fcFormat:String = " | [fc]";
 	var judgementOffset:Array<Float> = [0, 0]; // Soon will be moved to Settings
 
 	var scoreText:FlxText;
@@ -52,9 +53,9 @@ class UI extends FlxSpriteGroup
 
 	public function formatText():String
 	{
-		var fcDisplay:String = (Timings.ratingFC != null ? ' | [${Timings.ratingFC}]' : '');
+		var fcDisplay:String = (Timings.ratingFC != null ? fcFormat.replace("fc", Timings.ratingFC) : '');
 		return textFormat.replace("$score", '${Timings.score}')
-			.replace("$accuracy", '${Timings.getAccuracy()}')
+			.replace("$accuracy", Timings.getAccuracy())
 			.replace("$rank", Timings.ratingName)
 			.replace("$fc", fcDisplay)
 			.replace("$misses", '${Timings.misses}');

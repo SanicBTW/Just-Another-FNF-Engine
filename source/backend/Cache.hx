@@ -113,7 +113,7 @@ class Cache
 
 	public static inline function getText(path:String):String
 	{
-		return #if FS_ACCESS (fromFS(path)) ? sys.io.File.getContent(path) : #end
+		return #if FS_ACCESS (fromFS(path)) ? IO.getContent(path) : #end
 		Assets.getText(path);
 	}
 
@@ -208,7 +208,6 @@ class Cache
 		if (graphic != null && graphic.bitmap != null)
 		{
 			graphic.bitmap.lock();
-
 			@:privateAccess
 			if (graphic.bitmap.__texture != null)
 			{
@@ -289,7 +288,6 @@ class Cache
 			if (sound._sound != null && !usedSounds.contains(sound._sound))
 				usedSounds.push(sound._sound);
 		});
-
 		@:privateAccess
 		if (FlxG.sound.music != null && FlxG.sound.music._sound != null && !usedSounds.contains(FlxG.sound.music._sound))
 			usedSounds.push(FlxG.sound.music._sound);
