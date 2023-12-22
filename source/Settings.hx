@@ -14,9 +14,10 @@ class Settings
 	// Optimizations
 	public static var showNoteSplashes:Bool = true;
 
-	// Timings & Accuracy styles
+	// Timings, Accuracy and Diff styles
 	public static var ratingStyle:funkin.Timings.RatingStyle = PSYCH;
 	public static var accuracyStyle:funkin.Timings.AccuracyStyle = SCORE;
+	public static var diffStyle:funkin.Timings.DiffStyle = TIME;
 
 	// Timing Windows
 	public static var sickTiming:Float = 45;
