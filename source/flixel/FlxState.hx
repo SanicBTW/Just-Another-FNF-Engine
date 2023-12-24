@@ -2,6 +2,9 @@ package flixel;
 
 import backend.input.Controls;
 import backend.scripting.*;
+import base.sprites.TouchControls;
+import flixel.addons.ui.FlxVirtualPad.FlxActionMode;
+import flixel.addons.ui.FlxVirtualPad.FlxDPadMode;
 import flixel.group.FlxGroup;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
@@ -22,7 +25,7 @@ import haxe.Rest;
  * It is for all intents and purpose a fancy `FlxGroup`. And really, it's not even that fancy.
  */
 @:keepSub // workaround for HaxeFoundation/haxe#3749
-class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI
+class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI implements ITouchAPI
 {
 	/**
 	 * Determines whether or not this state is updated even when it is not the active state.
@@ -92,6 +95,12 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI
 	@:noCompletion
 	private var _subStateClosed:FlxTypedSignal<FlxSubState->Void>;
 
+	/**
+	 * How fast or slow time should pass in the state; default is `1.0`.
+	 * This is independant per state.
+	 */
+	public var timeScale:Float = 1;
+
 	// Engine Variables, exposed globally across FlxStates
 
 	/**
@@ -103,6 +112,11 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI
 	 * Object that contains Game Input
 	 */
 	public var controls:Controls = new Controls();
+
+	/**
+	 * Sprite that contains Touchscreen Game Input
+	 */
+	public var touchControls:TouchControls;
 
 	/**
 	 * This function is called after the game engine successfully switches states.
@@ -185,6 +199,12 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI
 		Controls.onActionPressed.remove(onActionPressed);
 		Controls.onActionReleased.remove(onActionReleased);
 		controls = null;
+
+		if (touchControls != null)
+		{
+			touchControls = FlxDestroyUtil.destroy(touchControls);
+			touchControls = null;
+		}
 
 		FlxDestroyUtil.destroy(_subStateOpened);
 		FlxDestroyUtil.destroy(_subStateClosed);
@@ -290,11 +310,57 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI
 	 */
 	public function onActionReleased(action:ActionType) {}
 
+	/// TouchAPI
+	// Starting flag to set the usage of the touch controls on HTML5
+	#if html5 public static var enableTouch:Bool = false; #end
+
+	/**
+	 * Call this method to add touch controls to the current state, always call this function after super.create
+	 * 
+	 * This function only takes effect on Mobile targets and HTML5 through a starting argument
+	 */
+	public function addTouchControls(mode:ControlsMode, ?DPad:FlxDPadMode, ?Action:FlxActionMode)
+	{
+		#if (mobile || html5)
+		#if html5
+		if (!enableTouch)
+			return;
+		#end
+
+		touchControls = new TouchControls(mode, DPad, Action);
+
+		var camControls = new flixel.FlxCamera();
+		FlxG.cameras.add(camControls, false);
+		camControls.bgColor.alpha = 0;
+
+		touchControls.cameras = [camControls];
+		touchControls.visible = true;
+		add(touchControls);
+		#end
+	}
+
+	/**
+	 * Call this method to remove touch controls from the current state
+	 * 
+	 * This function only takes effect on Mobile targets and HTML5 through a starting argument
+	 */
+	public function removeTouchControls()
+	{
+		#if (mobile || html5)
+		#if html5
+		if (!enableTouch)
+			return;
+		#end
+		if (touchControls != null)
+			remove(touchControls);
+		#end
+	}
+
 	@:allow(flixel.FlxGame)
 	private function tryUpdate(elapsed:Float):Void
 	{
 		if (persistentUpdate || subState == null)
-			update(elapsed);
+			update(elapsed * timeScale);
 
 		if (_requestSubStateReset)
 		{
@@ -303,7 +369,7 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI
 		}
 		if (subState != null)
 		{
-			subState.tryUpdate(elapsed);
+			subState.tryUpdate(elapsed * timeScale);
 		}
 	}
 
@@ -360,4 +426,14 @@ interface IModuleAPI
 	// Will only execute the active modules
 	public function callOnModules(event:String, args:Rest<Dynamic>):Void;
 	public function setOnModules(variable:String, arg:Dynamic):Void;
+}
+
+// More input shit but for touch screens
+interface ITouchAPI
+{
+	// Sprite that contains the game input for touch screens, DPAD or Hitbox
+	public var touchControls:TouchControls;
+
+	public function addTouchControls(mode:ControlsMode, ?DPAD:FlxDPadMode, ?Action:FlxActionMode):Void;
+	public function removeTouchControls():Void;
 }

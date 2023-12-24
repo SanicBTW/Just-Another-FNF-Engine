@@ -156,9 +156,11 @@ class ScriptHandler
 		#end
 
 		// Remove the extension as we will manually add it (and to avoid errors)
-		file = Path.withoutExtension(file);
+		// HTML5 sucks tbh lol
+		var rawFile:String = Path.withoutExtension(#if html5 Std.string(file) #else file #end);
+		var rawFallback:Null<String> = null;
 		if (fallback != null)
-			fallback = Path.withoutExtension(fallback);
+			rawFallback = Path.withoutExtension(#if html5 Std.string(fallback) #else fallback #end);
 
 		// declare it beforehand for target conditionals
 		var modulePath:String = "";
@@ -166,27 +168,27 @@ class ScriptHandler
 		// Better path parsing? and now prioritizes filesystem, now it shouldnt try to check for fallbacks on filesystem since the fallback will be always default or some shit
 		// fuck now the defaults are being overriden too, fuck it
 		#if FS_ACCESS
-		modulePath = Path.join(IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$file.hxs');
+		modulePath = Path.join(IO.getFolderPath(folder), '${assetFolder.replace(folder, "")}/$rawFile.hxs');
 		if (IO.exists(modulePath))
 			return parse(modulePath, folder, extraParams);
 		#end
 
-		modulePath = Paths.file('$assetFolder/$file.hxs');
+		modulePath = Paths.file('$assetFolder/$rawFile.hxs');
 		if (Assets.exists(modulePath, TEXT))
 			return parse(modulePath, assetFolder, extraParams);
 
 		if (fallback == null)
-			throw('Failed to load module $file');
+			throw('Failed to load module $rawFile');
 
 		// Ez replace - wont check on filesystem
-		assetFolder = assetFolder.replace(file, fallback);
-		modulePath = Paths.file('$assetFolder/$fallback.hxs');
+		assetFolder = assetFolder.replace(rawFile, rawFallback);
+		modulePath = Paths.file('$assetFolder/$rawFallback.hxs');
 
 		if (Assets.exists(modulePath, TEXT))
 			return parse(modulePath, assetFolder, extraParams);
 
 		// what does run before, the throw or the return, we will never know
-		throw('Failed to load module $file and its fallback $fallback');
+		throw('Failed to load module $rawFile and its fallback $rawFallback');
 	}
 
 	/**

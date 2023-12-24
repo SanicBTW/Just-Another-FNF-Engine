@@ -268,19 +268,23 @@ class Qua
 	{
 		var path = Path.join(IO.getFolderPath(QUAVER), '$MapSetId');
 		if (!IO.existsOnFolder(QUAVER, '$MapSetId'))
-			sys.FileSystem.createDirectory(path);
+			IO.createDirectory(path);
 
 		// uhhhhhh
 		var audioPath:String = Path.join(Sys.getCwd(), "assets", "quaver", '$MapSetId', AudioFile);
 		AudioFile = AudioFile.replace("mp3", "ogg");
 
 		var output:String = Path.join(path, AudioFile);
-		if (sys.FileSystem.exists(output))
+		if (IO.exists(output))
 			return;
 
+		#if windows
 		var ffmpeg:String = Path.join(Sys.getCwd(), "utils", "ffmpeg.exe");
-		if (Sys.command('$ffmpeg -i "$audioPath" -c:a libvorbis -q:a 4 "$output" -y') == 0)
+		var ffmpegCmd:String = '$ffmpeg -i "$audioPath" -c:a libvorbis -q:a 4 "$output" -y';
+		// never spawn a bunch of processes inside a thread that are detached from the app bro :skull:
+		if (Sys.command(ffmpegCmd) == 0)
 			trace('Finished converting audio file');
+		#end
 	}
 	#end
 

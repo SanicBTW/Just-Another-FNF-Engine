@@ -185,6 +185,8 @@ class SongSelection extends TransitionState
 		DiscordPresence.changePresence("Scrolling through the menus");
 
 		super.create();
+
+		addTouchControls(DPAD, LEFT_FULL, A_B);
 	}
 
 	override function onActionPressed(action:ActionType)

@@ -49,6 +49,8 @@ class PauseSubstate extends FlxSubState
 		changeSelection();
 
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+
+		addTouchControls(DPAD, UP_DOWN, A_B);
 	}
 
 	override public function update(elapsed:Float)

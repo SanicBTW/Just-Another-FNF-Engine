@@ -38,23 +38,25 @@
 	<!-- _________________________________ Defines ______________________________ -->
 
 	<!-- Allow the engine to access the FileSystem -->
-	<define name="FS_ACCESS" if="windows || linux" />
+	<define name="FS_ACCESS" if="windows || linux || android" />
 
 	<!-- Enable Discord Rich Presence -->
 	<!-- <define name="DISCORD_PRESENCE" if="windows || linux" /> -->
 
 	<!-- Enable the engine Crash Handler -->
-	<define name="CRASH_HANDLER" if="windows || linux" />
+	<define name="CRASH_HANDLER" if="windows || linux || android" />
 
 	<!-- Enables caching flx text graphics and bitmaps -->
 	<!-- <define name="CACHE_FLXTEXT" /> -->
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="flixel" />
+	<haxelib name="flixel" version="4.11.0"/>
+	<haxelib name="flixel-ui" version="2.5.0"/>
 	<haxelib name="hscript" />
 	<haxelib name="SSIni" />
 	<haxelib name="akifox-asynchttp" />
+	<haxelib name="extension-androidtools" if="android"/>
 
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
@@ -76,6 +78,7 @@
 	</section>
 
 	<haxedef name="hscriptPos" />
+	<haxedef name="no-deprecation-warnings" />
 
 	<!-- Enables Crash Handler on Debug -->
 	<undefine name="openfl-disable-handle-error" if="CRASH_HANDLER" />

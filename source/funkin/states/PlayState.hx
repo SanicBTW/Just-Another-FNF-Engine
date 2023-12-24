@@ -50,8 +50,6 @@ class PlayState extends MusicBeatState
 	private var camDisplaceY:Float = 0;
 	private var camDisp:Float = 18;
 
-	private var bfTurn:Bool = false;
-
 	// Strum handling
 	private var strumLines:FlxTypedGroup<StrumLine>;
 	private var holdingLanes:Array<Bool> = [];
@@ -209,9 +207,8 @@ class PlayState extends MusicBeatState
 		setOnModules('UI', ui);
 		setOnModules('stepHit', stepHit);
 		setOnModules('beatHit', beatHit);
-		// TODO: find a way to add these in the new camera movement style
-		// setOnModules('moveCamera', moveCamera);
-		// setOnModules('moveCameraSection', moveCameraSection);
+		setOnModules('moveCamera', moveCamera);
+		setOnModules('moveCameraSection', moveCameraSection);
 
 		startingSong = true;
 
@@ -224,6 +221,8 @@ class PlayState extends MusicBeatState
 		setupCountdown();
 
 		super.create();
+
+		addTouchControls(HITBOX);
 
 		FadeTransition.nextCamera = camOther;
 	}
@@ -290,6 +289,12 @@ class PlayState extends MusicBeatState
 
 		if (FlxG.keys.justPressed.ONE)
 			playerStrums.botPlay = !playerStrums.botPlay;
+
+		// quick pause method
+		#if android
+		if (FlxG.android.justPressed.BACK)
+			onActionPressed(PAUSE);
+		#end
 
 		holdNotes(elapsed);
 		checkEventNote();
@@ -876,6 +881,64 @@ class PlayState extends MusicBeatState
 					}
 				}
 			}
+		}
+	}
+
+	private function moveCameraSection(?id:Int = 0)
+	{
+		if (SONG.notes[id] == null || SONG.notes[lastSection] == null)
+			return;
+
+		if (id != lastSection)
+		{
+			if (SONG.notes[id].mustHitSection != SONG.notes[lastSection].mustHitSection)
+			{
+				camDisplaceX = 0;
+				camDisplaceY = 0;
+				lastSection = id;
+			}
+		}
+		if (!stageBuild.hide_girlfriend && SONG.notes[id].gfSection)
+		{
+			camFollow.setPosition(gf.getMidpoint().x, gf.getMidpoint().y);
+			camFollow.x += gf.cameraPosition.x + stageBuild.camera_settings.offsets.girlfriend.x;
+			camFollow.y += gf.cameraPosition.y + stageBuild.camera_settings.offsets.girlfriend.y;
+
+			camDisplaceX = camFollow.x;
+			camDisplaceY = camFollow.y;
+			callOnModules('onMoveCamera', 'gf');
+			return;
+		}
+
+		if (!SONG.notes[id].mustHitSection)
+		{
+			moveCamera(true);
+			camDisplaceX = camFollow.x;
+			camDisplaceY = camFollow.y;
+			callOnModules('onMoveCamera', 'dad');
+		}
+		else
+		{
+			moveCamera(false);
+			camDisplaceX = camFollow.x;
+			camDisplaceY = camFollow.y;
+			callOnModules('onMoveCamera', 'boyfriend');
+		}
+	}
+
+	private function moveCamera(isDad:Bool)
+	{
+		if (isDad)
+		{
+			camFollow.setPosition(dad.getMidpoint().x + 150, dad.getMidpoint().y - 100);
+			camFollow.x += dad.cameraPosition.x + stageBuild.camera_settings.offsets.opponent.x;
+			camFollow.y += dad.cameraPosition.y + stageBuild.camera_settings.offsets.opponent.y;
+		}
+		else
+		{
+			camFollow.setPosition(boyfriend.getMidpoint().x - 100, boyfriend.getMidpoint().y - 100);
+			camFollow.x -= boyfriend.cameraPosition.x - stageBuild.camera_settings.offsets.boyfriend.x;
+			camFollow.y += boyfriend.cameraPosition.y + stageBuild.camera_settings.offsets.boyfriend.y;
 		}
 	}
 

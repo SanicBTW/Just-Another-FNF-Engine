@@ -41,10 +41,17 @@ class CacheFile
 	public static function Initialize()
 	{
 		#if sys
-		if (!FileSystem.exists(Sys.getCwd() + fileName))
-			File.saveContent(Sys.getCwd() + fileName, encrypt(template));
+		var parentPath:String = "";
+		#if android
+		parentPath = android.content.Context.getCacheDir();
+		#else
+		parentPath = Sys.getCwd();
+		#end
 
-		var content:String = decrypt(File.getContent(Sys.getCwd() + fileName));
+		if (!FileSystem.exists(parentPath + fileName))
+			File.saveContent(parentPath + fileName, encrypt(template));
+
+		var content:String = decrypt(File.getContent(parentPath + fileName));
 		#end
 
 		#if html5

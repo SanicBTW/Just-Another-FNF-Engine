@@ -90,6 +90,8 @@ class GameOverSubstate extends MusicBeatSubState
 
 		add(camFollow);
 		add(camFollowPos);
+
+		addTouchControls(DPAD, NONE, A_B);
 	}
 
 	override public function update(elapsed:Float)

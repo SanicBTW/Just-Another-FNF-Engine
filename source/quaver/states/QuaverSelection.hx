@@ -100,6 +100,8 @@ class QuaverSelection extends MusicBeatState
 		regenMenu(maps);
 
 		super.create();
+
+		addTouchControls(DPAD, UP_DOWN, A_B);
 	}
 
 	override function onActionPressed(action:ActionType)

@@ -198,4 +198,20 @@ class Extensions<T>
 
 		setArrayLength(arr, len - gap);
 	}
+
+	public static function findFirst<T>(arr:Array<T>, f:T->Bool):T
+	{
+		var resolve:T = null;
+
+		for (v in arr)
+		{
+			if (f(v))
+			{
+				resolve = v;
+				break;
+			}
+		}
+
+		return resolve;
+	}
 }

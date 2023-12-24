@@ -27,6 +27,15 @@ class Main extends Sprite
 
 	public static function main()
 	{
+		#if android
+		android.Permissions.requestPermission(android.Permissions.WRITE_EXTERNAL_STORAGE);
+		android.Permissions.requestPermission(android.Permissions.READ_EXTERNAL_STORAGE);
+
+		if (!android.Permissions.getGrantedPermissions().contains(android.Permissions.WRITE_EXTERNAL_STORAGE)
+			|| !android.Permissions.getGrantedPermissions().contains(android.Permissions.READ_EXTERNAL_STORAGE))
+			throw "Not enough permissions";
+		#end
+
 		CacheFile.Initialize();
 		ScriptHandler.Initialize();
 		#if sys
@@ -98,6 +107,7 @@ class Main extends Sprite
 
 			Cache.gpuRender = arg.contains("-enable_gpu_rendering");
 			Save.shouldLoadQuaver = !arg.contains("-no_quaver_loading");
+			#if html5 flixel.FlxState.enableTouch = arg.contains("-enable_touch"); #end
 
 			if (arg.contains("-fps"))
 				setFPS(Std.parseInt(arg.split(":")[1]));
@@ -129,15 +139,15 @@ class Main extends Sprite
 		FlxG.mouse.useSystemCursor = true;
 		#end
 
+		#if android
+		FlxG.android.preventDefaultKeys = [BACK];
+		#end
+
 		#if CRASH_HANDLER
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(openfl.events.UncaughtErrorEvent.UNCAUGHT_ERROR, (ev) ->
 		{
 			trace('Uncaught error: ${Std.string(ev.error)}');
-			var args:Array<String> = Sys.args();
-			args.push('-crash:${Std.string(ev.error)}');
-			#if windows
-			new sys.io.Process('${backend.io.Path.join(Sys.getCwd(), '${lime.app.Application.current.meta.get("file")}.exe')}', args);
-			#end
+			lime.app.Application.current.window.alert(ev.error);
 		});
 		#end
 	}

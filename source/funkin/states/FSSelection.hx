@@ -85,6 +85,8 @@ class FSSelection extends MusicBeatState
 		curSelected = grpOptions.length + 1;
 
 		super.create();
+
+		addTouchControls(DPAD, UP_DOWN, A_B);
 	}
 
 	override function update(elapsed:Float)

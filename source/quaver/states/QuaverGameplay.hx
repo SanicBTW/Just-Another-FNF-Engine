@@ -118,6 +118,8 @@ class QuaverGameplay extends MusicBeatState
 
 		super.create();
 
+		addTouchControls(HITBOX);
+
 		FadeTransition.nextCamera = camOther;
 	}
 
@@ -176,6 +178,12 @@ class QuaverGameplay extends MusicBeatState
 
 		if (FlxG.keys.justPressed.ONE)
 			strums.botPlay = !strums.botPlay;
+
+		// quick pause method
+		#if android
+		if (FlxG.android.justPressed.BACK)
+			onActionPressed(PAUSE);
+		#end
 
 		holdNotes(elapsed);
 		checkEventNote();
