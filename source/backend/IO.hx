@@ -25,7 +25,12 @@ class IO
 	public static function Initialize()
 	{
 		// Set the parent folder, in future versions it will be changeable
+		#if !android
 		appFolders.set(PARENT, Path.join(System.documentsDirectory, 'just_another_fnf_engine'));
+		#else
+		// for good measure lets save that data inside obb
+		appFolders.set(PARENT, Path.join(android.content.Context.getObbDir()));
+		#end
 
 		addFolder(DATA);
 		addFolder(SONGS);
