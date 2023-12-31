@@ -703,7 +703,11 @@ class PlayState extends MusicBeatState
 			if (!stageBuild.hide_girlfriend && note.gfNote)
 				char = gf;
 
-			characterSing(char, 'sing${receptor.getNoteDirection().toUpperCase()}');
+			if (!note.doubleNote && (note.isSustain || !note.isSustain))
+				characterSing(char, 'sing${receptor.getNoteDirection().toUpperCase()}');
+
+			if (note.doubleNote)
+				makeTrail(char);
 
 			if (SONG.needsVoices)
 				Conductor.boundVocals.volume = 1;
@@ -769,7 +773,11 @@ class PlayState extends MusicBeatState
 			if (!note.isSustain)
 				curStrums.generateSplash(receptor);
 
-			characterSing(curChar, 'sing${receptor.getNoteDirection().toUpperCase()}');
+			if (!note.doubleNote && (note.isSustain || !note.isSustain))
+				characterSing(curChar, 'sing${receptor.getNoteDirection().toUpperCase()}');
+
+			if (note.doubleNote)
+				makeTrail(curChar);
 
 			callOnModules('${(curChar == boyfriend || curChar == gf) ? "goodNoteHit" : "opponentNoteHit"}', [
 				ChartLoader.noteQueue.indexOf(note),
@@ -992,6 +1000,41 @@ class PlayState extends MusicBeatState
 			callOnModules('onEventHit', event.event, value1, value2);
 			ChartLoader.eventQueue.shift();
 		}
+	}
+
+	// Recycling soon :))))
+	private function makeTrail(char:Character)
+	{
+		if (char == null)
+			return;
+
+		var daCopy:FlxSprite = char.clone();
+		daCopy.frames = char.frames;
+		daCopy.animation.copyFrom(char.animation);
+		daCopy.alpha = 0.9;
+		daCopy.setPosition(char.x, char.y);
+		daCopy.animation.play(char.animation.curAnim.name, true);
+		daCopy.offset.copyFrom(char.offset);
+		daCopy.scale.copyFrom(char.scale);
+		daCopy.color = char.color;
+
+		// ez enough
+		var group:FlxSpriteGroup = boyfriendGroup;
+		if (dadGroup.members.contains(char))
+			group = dadGroup;
+
+		if (gfGroup.members.contains(char))
+			group = gfGroup;
+
+		insert(members.indexOf(group) - 1, daCopy);
+		FlxTween.tween(daCopy, {alpha: 0}, Conductor.stepCrochet * (char.singDuration / 1000), {
+			ease: FlxEase.quadInOut,
+			onComplete: function(_)
+			{
+				daCopy.destroy();
+				daCopy = null;
+			}
+		});
 	}
 
 	private inline function getReceptor(strumLine:StrumLine, noteData:Int):Receptor

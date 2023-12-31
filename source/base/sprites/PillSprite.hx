@@ -37,13 +37,16 @@ class PillSprite extends FlxShape
 
 	override public function drawSpecificShape(?matrix:Matrix):Void
 	{
+		// For proper rounding
 		var minusVal:Float = Math.min(shapeWidth, shapeHeight);
+		var rad:Float = (minusVal / 2) - (lineStyle.thickness / 2);
+
+		// Proper positioning from FlxShapeBox
+		var rectPos:Float = (lineStyle.thickness / 2);
 
 		// because sometimes it looks weird
 		// 0.25 looks decent lets go with it
 		var midY:Float = getPos(Y) - 0.25;
-		var rectPos:Float = (lineStyle.thickness / 2);
-		var rad:Float = (minusVal / 2);
 
 		FlxSpriteUtil.drawCircle(this, rectPos + rad, midY, rad, fillColor, lineStyle, {matrix: matrix});
 		FlxSpriteUtil.drawCircle(this, (rectPos + shapeWidth) - rad, midY, rad, fillColor, lineStyle, {matrix: matrix});

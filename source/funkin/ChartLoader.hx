@@ -7,6 +7,7 @@ import flixel.util.FlxSort;
 import funkin.Events.EventNote;
 import funkin.SongTools;
 import funkin.notes.Note;
+import haxe.ds.DynamicMap;
 import openfl.media.Sound;
 import openfl.utils.Assets;
 import quaver.*;
@@ -182,6 +183,8 @@ class ChartLoader
 
 	private static function parseNotes(swagSong:SongData)
 	{
+		var noteTimes:DynamicMap<Int, Array<Float>> = new DynamicMap<Int, Array<Float>>();
+
 		for (section in swagSong.notes)
 		{
 			for (songNotes in section.sectionNotes)
@@ -205,6 +208,7 @@ class ChartLoader
 						var newNote:Note = new Note(strumTime, noteData, songNotes[3], strumLine, oldNote);
 						newNote.mustPress = hitNote;
 						newNote.gfNote = (section.gfSection || songNotes[3] == "GF Sing"); // force
+						newNote.doubleNote = checkDouble(noteTimes, strumLine, strumTime);
 						var holdStep:Float = newNote.sustainLength = songNotes[2] / Conductor.stepCrochet;
 						noteQueue.push(newNote);
 
@@ -221,6 +225,7 @@ class ChartLoader
 
 								// when setting a parent, set the properties directly on set_parent(parent:Note) on Note
 								sustainNote.mustPress = hitNote;
+								sustainNote.doubleNote = checkDouble(noteTimes, strumLine, time);
 								sustainNote.gfNote = newNote.gfNote;
 								sustainNote.parent = newNote;
 								sustainNote.spotHold = note;
@@ -294,5 +299,17 @@ class ChartLoader
 
 		noteQueue = [];
 		eventQueue = [];
+	}
+
+	private static function checkDouble(map:DynamicMap<Int, Array<Float>>, lane:Int, time:Float):Bool
+	{
+		if (!map.exists(lane))
+			map[lane] = [];
+
+		var ret:Bool = map[lane].contains(time);
+		if (!ret)
+			map[lane].push(time);
+
+		return ret;
 	}
 }
