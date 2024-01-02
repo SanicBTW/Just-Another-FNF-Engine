@@ -144,7 +144,7 @@
 	"image": "characters/Starved_Tails",
 	"position": [
 		-150,
-		70
+		150
 	],
 	"healthicon": "tailsstarved",
 	"flip_x": true,
@@ -154,7 +154,7 @@
 		0
 	],
 	"camera_position": [
-		-150,
+		-250,
 		-140
 	],
 	"sing_duration": 4,

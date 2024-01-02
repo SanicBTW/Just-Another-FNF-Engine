@@ -24,17 +24,17 @@ var fearBBorder;
 var fearBBG;
 var fearBar;
 
-// Game over thingy not working anymore
 function onCreate()
 {
     stage.camera_settings.defaultZoom = 0.85;
-    stage.hide_girlfriend = true;
     stage.camera_settings.offsets.opponent.setTo(20, -60);
+    stage.camera_settings.speed = 1.5;
+    stage.hide_girlfriend = true;
     stage.skip.defaultCountdown = true;
     stage.skip.healthCheck = true;
 
-    stage.positions.boyfriend.setTo(270, 175);
-    stage.positions.opponent.setTo(400, -250);
+    stage.positions.boyfriend.setTo(150, 225);
+    stage.positions.opponent.setTo(400, -160);
 
     GameOverSubstate.characterName = 'bf-starved-die';
     GameOverSubstate.deathSoundName = 'starved-death';
@@ -164,6 +164,7 @@ function onCreatePost()
         FlxTween.tween(receptor, {x: endX}, (Conductor.crochet * 4) / 1000,
 			{ease: FlxEase.circOut, startDelay: (Conductor.crochet / 1000) + ((Conductor.stepCrochet / 1000) * i)});
 
+        receptor.setAlpha = 0.65;
         i++;
 	}
 }
