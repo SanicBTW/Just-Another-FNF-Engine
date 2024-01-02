@@ -85,6 +85,10 @@ class Main extends Sprite
 		IO.Initialize();
 		Save.Initialize();
 
+		// Populate on game startup to avoid populating everytime we start a new song
+		// Look into it soon
+		funkin.Judgement.populate();
+
 		setupGame();
 
 		FlxG.signals.preStateCreate.add((_) ->

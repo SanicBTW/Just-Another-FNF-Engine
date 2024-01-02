@@ -186,7 +186,7 @@ class Note extends FlxSprite
 		{
 			switch (Settings.ratingStyle)
 			{
-				case KADE:
+				case KADE | ETTERNA:
 					var diff:Float = strumTime - Conductor.time;
 
 					if (isSustain)

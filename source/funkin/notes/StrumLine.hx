@@ -265,7 +265,7 @@ class StrumLine extends FlxSpriteGroup
 			{
 				switch (Settings.ratingStyle)
 				{
-					case KADE:
+					case KADE | ETTERNA:
 						if (strumNote.strumTime <= Conductor.time)
 							onBotHit.dispatch(strumNote);
 					case PSYCH:

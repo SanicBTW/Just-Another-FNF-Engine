@@ -1,58 +1,15 @@
 package funkin;
 
 import backend.Conductor;
-import flixel.util.FlxColor;
-
-// I don't really know how to rewrite this one so I'm just gonna copy the old code lol
-
-typedef Judgement =
-{
-	var name:String; // Judgement name
-	var timing:Float; // MS to achieve the judgement
-	var weight:Float; // The weight/accuracy of the judgement
-
-	var fcStatus:Null<String>; // The FC rating aka SFC/FC
-	var score:Int; // Given score by achieving the judgement
-	var health:Float; // Amount of health given
-	var shortName:String; // The initials? (what is displayed if there isn't any combo)
-	var color:FlxColor; // The judgement color
-	var track:String; // The "this" variable to track
-}
-
-// Kade is based on timeScale, which is more mean and accurate most of the times
-// Psych is based on the Conductor safeZoneOffset which is safeFrames (default:10) / 60 * 1000, its more permissive and maybe accurate
-enum RatingStyle
-{
-	PSYCH;
-	KADE;
-}
-
-// Kade is always based off MS but you can select Score which is the default rating before Psych 0.4 I believe
-enum AccuracyStyle
-{
-	SCORE;
-	MS;
-}
-
-// Time Diff is the default one every engine (Conductor time - note time)
-// Hitbox Diff however was implemented on this one (just for fun) and thought it was more accurate (Distance to the receptor screen pos from the receptor note pos)
-// I dont really know if its actually hitbox or whatever to call it now but it just pretty much checks the note distance (position, not hitbox) to the receptor (position, not hitbox)
-// Late conditions are also different for each one
-enum DiffStyle
-{
-	TIME;
-	HITBOX;
-}
 
 class Timings
 {
 	// Judgements
-	public static var marvs:Int = 0;
-	public static var sicks:Int = 0;
-	public static var goods:Int = 0;
-	public static var bads:Int = 0;
-	public static var shits:Int = 0;
-	public static var misses:Int = 0;
+	public static var misses(get, null):Int;
+
+	@:noCompletion
+	private static function get_misses():Int
+		return judgements[judgements.length - 1].counter;
 
 	// Combo & FC lowest
 	public static var lowestRating:String = "sick";
@@ -86,63 +43,7 @@ class Timings
 	// Judgements metadata
 	// All health values are half the prev (beginning 0.07)
 	// Quaver judgements with the fixed diffs is kind of mean actually, really cool
-	public static final judgements:Array<Judgement> = [
-		{
-			name: 'sick',
-			timing: Settings.sickTiming,
-			weight: 100,
-			fcStatus: 'SFC',
-			health: 0.035,
-			score: 350,
-			shortName: "SK",
-			color: FlxColor.fromRGB(255, 255, 51),
-			track: "sicks"
-		},
-		{
-			name: 'good',
-			timing: Settings.goodTiming,
-			weight: 75,
-			fcStatus: 'GFC',
-			health: 0.0175,
-			score: 150,
-			shortName: "GD",
-			color: FlxColor.fromRGB(30, 144, 255),
-			track: "goods"
-		},
-		{
-			name: 'bad',
-			timing: Settings.badTiming,
-			weight: 50,
-			fcStatus: 'FC',
-			health: -0.00875,
-			score: 50,
-			shortName: "BD",
-			color: FlxColor.fromRGB(148, 0, 211),
-			track: "bads"
-		},
-		{
-			name: 'shit',
-			timing: Settings.shitTiming,
-			weight: 25,
-			fcStatus: null,
-			health: -0.2,
-			score: -50,
-			shortName: 'ST',
-			color: FlxColor.fromRGB(178, 34, 34),
-			track: "shits"
-		},
-		{
-			name: 'miss',
-			timing: Settings.missTiming,
-			weight: -100,
-			fcStatus: null,
-			health: -0.0475,
-			score: -100,
-			shortName: 'MS',
-			color: FlxColor.fromRGB(204, 66, 66),
-			track: "misses"
-		}
-	];
+	public static var judgements:Array<Judgement> = [];
 
 	// I don't understand how to set the ratings lol
 	public static final accuracyRatings:Map<String, Int> = [
@@ -169,26 +70,12 @@ class Timings
 		totalHits = 0;
 		notesAccuracy = 0;
 
-		marvs = 0;
-		sicks = 0;
-		goods = 0;
-		bads = 0;
-		shits = 0;
-		misses = 0;
-	}
-
-	// Depending on the Rating Style, it will use another Judge, it can be more accurate or not
-	private static function judger(ms:Float, timing:Float):Bool
-	{
-		return switch (Settings.ratingStyle)
+		for (judgement in judgements)
 		{
-			case KADE: Math.abs(ms) <= (timing * Conductor.timeScale);
-			// basically 166 * (100 (sick) / 166) -> 166 * 0.27 -> 44,9
-			case PSYCH: Math.abs(ms) <= (Conductor.safeZoneOffset * (timing / Conductor.safeZoneOffset));
+			judgement.counter = 0;
 		}
 	}
 
-	// Look into shits
 	public static function judge(ms:Float, isSustain:Bool = false):String
 	{
 		for (i in 0...judgements.length)
@@ -201,7 +88,7 @@ class Timings
 					return judgement.name;
 
 				// Increase combo
-				Reflect.setField(Timings, judgement.track, Reflect.field(Timings, judgement.track) + 1);
+				judgement.counter++;
 
 				// Set the lowest rating
 				if (lowestRating != judgement.name)
@@ -219,7 +106,11 @@ class Timings
 					totalHits++;
 				}
 
-				notesAccuracy += judgement.weight;
+				if (Settings.ratingStyle == ETTERNA)
+					notesAccuracy += wife3(ms, Conductor.timeScale);
+				else
+					notesAccuracy += judgement.weight;
+
 				score += judgement.score;
 
 				if (health >= 2)
@@ -252,27 +143,6 @@ class Timings
 		return retString;
 	}
 
-	private static function updateRank()
-	{
-		// I didn't have a chance, had to copy the code from Forever lol
-		var biggest:Int = 0;
-		for (rating in accuracyRatings.keys())
-		{
-			if ((accuracyRatings.get(rating) <= accuracy) && (accuracyRatings.get(rating) >= biggest))
-			{
-				biggest = accuracyRatings.get(rating);
-				ratingName = rating;
-			}
-		}
-
-		// shits should count as misses too ig
-		ratingFC = "";
-		if (getJudgementByName(lowestRating).fcStatus != null)
-			ratingFC = getJudgementByName(lowestRating).fcStatus;
-		else
-			ratingFC = ((misses > 0 || shits > 0) && (misses < 10 && shits < 10)) ? "SDCB" : null;
-	}
-
 	public static function getJudgementIndex(searchJudgement:String)
 	{
 		for (judgement in judgements)
@@ -292,5 +162,84 @@ class Timings
 		}
 
 		return null;
+	}
+
+	// Helper functions
+	// Depending on the Rating Style, it will use another Judge, it can be more accurate or not
+	private static function judger(ms:Float, timing:Float):Bool
+	{
+		return switch (Settings.ratingStyle)
+		{
+			// i fucking dont know what to do with etterna judger so ill just set it with kade since it will always judge based off the diff and add a custom weight
+			case KADE | ETTERNA: Math.abs(ms) <= (timing * Conductor.timeScale);
+			// basically 166 * (100 (sick) / 166) -> 166 * 0.27 -> 44,9
+			case PSYCH: Math.abs(ms) <= (Conductor.safeZoneOffset * (timing / Conductor.safeZoneOffset));
+		}
+	}
+
+	private static function updateRank()
+	{
+		// I didn't have a chance, had to copy the code from Forever lol
+		var biggest:Int = 0;
+		for (rating in accuracyRatings.keys())
+		{
+			if ((accuracyRatings.get(rating) <= accuracy) && (accuracyRatings.get(rating) >= biggest))
+			{
+				biggest = accuracyRatings.get(rating);
+				ratingName = rating;
+			}
+		}
+
+		ratingFC = "";
+		if (getJudgementByName(lowestRating).fcStatus != null)
+			ratingFC = getJudgementByName(lowestRating).fcStatus;
+		else
+			ratingFC = (misses > 0 && misses < 10) ? "SDCB" : null;
+	}
+
+	// ETTERNA - WIFE3 FROM https://github.com/SanicBTW/Kade-Engine-1.6.2/blob/master/source/EtternaFunctions.hx
+	// When possible I will work more on this
+	// erf constants
+	private static var a1 = 0.254829592;
+	private static var a2 = -0.284496736;
+	private static var a3 = 1.421413741;
+	private static var a4 = -1.453152027;
+	private static var a5 = 1.061405429;
+	private static var p = 0.3275911;
+
+	private static function erf(x:Float):Float
+	{
+		// Save the sign of x
+		var sign = 1;
+		if (x < 0)
+			sign = -1;
+		x = Math.abs(x);
+
+		// A&S formula 7.1.26
+		var t = 1.0 / (1.0 + p * x);
+		var y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+
+		return sign * y;
+	}
+
+	private static function wife3(maxms:Float, ts:Float):Float
+	{
+		var max_points = 1.0;
+		var miss_weight = -5.5;
+		var ridic = 5 * ts;
+		var max_boo_weight = 180 * ts;
+		var ts_pow = 0.75;
+		var zero = 65 * (Math.pow(ts, ts_pow));
+		var power = 2.5;
+		var dev = 22.7 * (Math.pow(ts, ts_pow));
+
+		if (maxms <= ridic) // anything below this (judge scaled) threshold is counted as full pts
+			return max_points;
+		else if (maxms <= zero) // ma/pa region, exponential
+			return max_points * erf((zero - maxms) / dev);
+		else if (maxms <= max_boo_weight) // cb region, linear
+			return (maxms - zero) * miss_weight / (max_boo_weight - zero);
+		else
+			return miss_weight;
 	}
 }

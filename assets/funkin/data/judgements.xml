@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- timings are customized by the player -->
+<!-- if timing overriding is necessary, you can add <forceTiming>value</forceTiming> -->
+
+<Judgement name="sick">
+    <!-- default variables -->
+    <weight>100</weight>
+    <fcStatus>SFC</fcStatus>
+    <health>0.035</health>
+    <score>350</score>
+    <!-- these are for the counters from the hud -->
+    <shortName>SK</shortName>
+    <color format="rgb">255, 255, 51</color>
+</Judgement>
+
+<Judgement name="good">
+    <weight>75</weight>
+    <fcStatus>GFC</fcStatus>
+    <health>0.0175</health>
+    <score>150</score>
+    <shortName>GD</shortName>
+    <color format="rgb">30, 144, 255</color>
+</Judgement>
+
+<Judgement name="bad">
+    <weight>50</weight>
+    <fcStatus>FC</fcStatus>
+    <health>-0.00875</health>
+    <score>50</score>
+    <shortName>BD</shortName>
+    <color format="rgb">148, 0, 211</color>
+</Judgement>
+
+<Judgement name="shit">
+    <weight>25</weight>
+    <health>-0.2</health>
+    <score>-50</score>
+    <shortName>ST</shortName>
+    <color format="rgb">178, 34, 34</color>
+</Judgement>
+
+<Judgement name="miss">
+    <weight>-100</weight>
+    <health>-0.0475</health>
+    <score>-100</score>
+    <shortName>MS</shortName>
+    <color format="rgb">204, 66, 66</color>
+</Judgement>
