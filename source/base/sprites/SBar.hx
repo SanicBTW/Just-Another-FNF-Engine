@@ -95,7 +95,6 @@ class SBar extends FlxSprite
 		_bgPoint = _fgPoint = new Point();
 
 		// Better naming to avoid reusing other bitmaps
-		// my dumb ass forgot about setting fill collors bruhh - thought i fixed it (HTML5) guess fucking not - ithink html5 doesnt like lerps on fucking rectangles??
 		_bgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true, bgColor), BITMAP, 'SBAR_BG:${barWidth}x${barHeight}(${bgColor.toWebString()})');
 		_fgBitmap = Cache.set(new BitmapData(barWidth, barHeight, true, fgColor), BITMAP, 'SBAR_FG:${barWidth}x${barHeight}(${fgColor.toWebString()})');
 
@@ -125,11 +124,11 @@ class SBar extends FlxSprite
 		switch (fillAxis)
 		{
 			case HORIZONTAL:
-				_fgRect.width = (value * barWidth);
+				_fgRect.width = Math.floor(value * barWidth);
 				_fgRect.height = barHeight;
 			case VERTICAL:
 				_fgRect.width = barWidth;
-				_fgRect.height = (value * barHeight);
+				_fgRect.height = Math.floor(value * barHeight);
 		}
 
 		pixels.copyPixels(_fgBitmap, _fgRect, _fgPoint, null, null, true);

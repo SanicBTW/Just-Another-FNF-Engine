@@ -11,7 +11,7 @@ class Save
 			path: #if html5 "JAFE:DB" #else backend.io.Path.join(IO.getFolderPath(PARENT), "JAFE.db") #end,
 			tables: ["settings", "binds", "highscores", "quaverDB"],
 			version: Std.parseInt(lime.app.Application.current.meta.get("version")
-				.split(".")[1]) // Because this param isn't used on sys, it uses the html5 one instead
+				.split(".")[0]) // Because this param isn't used on sys, it uses the html5 one instead
 		}).then((newDB) ->
 			{
 				_db = newDB;
