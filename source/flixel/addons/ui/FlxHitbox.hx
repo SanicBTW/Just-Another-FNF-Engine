@@ -75,9 +75,6 @@ class FlxHitbox extends FlxSpriteGroup
 
 	private function onTouchBegin(ev:TouchEvent)
 	{
-		if (ev == null)
-			return;
-
 		var localX:Float = ev.localX;
 		var localY:Float = ev.localY;
 
@@ -86,14 +83,15 @@ class FlxHitbox extends FlxSpriteGroup
 		{
 			return point.inRect(f.region);
 		});
+
+		if (reg == null)
+			return;
+
 		Controls.dispatchPressed(reg.action);
 	}
 
 	private function onTouchEnd(ev:TouchEvent)
 	{
-		if (ev == null)
-			return;
-
 		var localX:Float = ev.localX;
 		var localY:Float = ev.localY;
 
@@ -102,6 +100,10 @@ class FlxHitbox extends FlxSpriteGroup
 		{
 			return point.inRect(f.region);
 		});
+
+		if (reg == null)
+			return;
+
 		Controls.dispatchReleased(reg.action);
 	}
 

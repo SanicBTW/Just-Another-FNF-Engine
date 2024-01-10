@@ -54,7 +54,6 @@
 	<haxelib name="flixel" version="4.11.0" />
 	<haxelib name="flixel-ui" version="2.5.0" />
 	<haxelib name="hscript" />
-	<haxelib name="SSIni" />
 	<haxelib name="akifox-asynchttp" />
 	<haxelib name="extension-androidtools" if="android" />
 
