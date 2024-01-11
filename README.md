@@ -1,7 +1,7 @@
 # Just Another FNF Engine - 1.0.0rcX
 
 <p align="center">
-  <img src="./source/schmovin/SchmovinLogo.png" alt="Schmovin' Logo"/>
+  <img src="https://github.com/4mbr0s3-2/Schmovin/blob/main/SchmovinLogo.png?raw=true" alt="Schmovin' Logo"/>
 </p>
 
 ## Branch: schmovin
