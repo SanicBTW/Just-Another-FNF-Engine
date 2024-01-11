@@ -1,0 +1,3 @@
+[submodule "source/schmovin"]
+	path = source/schmovin
+	url = https://github.com/SanicBTW/Schmovin

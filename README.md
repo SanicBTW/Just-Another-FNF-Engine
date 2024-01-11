@@ -1,13 +1,18 @@
-# Just Another FNF Engine - 0.2.10
+# Just Another FNF Engine - 1.0.0rcX
 
-A rewrite of Friday Night Funkin' mixing:
-- Forever Engine
-- - Legacy 
-- - Rewrite
-- Kade Engine 1.6.2 
-- My Psych Engine 0.3.2h fork
+<p align="center">
+  <img src="./source/schmovin/SchmovinLogo.png" alt="Schmovin' Logo"/>
+</p>
 
-and more!
+## Branch: schmovin
+
+This branch targets on adding Schmovin to the engine and also giving steps on how to implement it into another engine while keeping it kind of simple.
+
+If you want to follow the steps I took to implement Schomvin' into the engine please take a look into  `Schmovin.md`.
+
+## Credits
+
+4mbr0s3 2 for making Schmovin.
 
 # NOTION PUBLISHED!!!
 
