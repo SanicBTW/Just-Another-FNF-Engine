@@ -1,4 +1,4 @@
-package options;
+package funkin.states.options;
 
 import backend.input.Controls.ActionType;
 import backend.input.Controls;

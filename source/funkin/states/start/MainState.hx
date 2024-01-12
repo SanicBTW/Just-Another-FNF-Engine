@@ -1,4 +1,4 @@
-package start;
+package funkin.states.start;
 
 import backend.Conductor;
 import backend.io.CacheFile;

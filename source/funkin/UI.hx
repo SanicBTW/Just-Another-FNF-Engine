@@ -7,6 +7,7 @@ import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
 import flixel.util.*;
+import funkin.components.JudgementCounter;
 
 using StringTools;
 
@@ -40,6 +41,36 @@ class UI extends FlxSpriteGroup
 		comboGroup = new FlxTypedSpriteGroup<DepthSprite>();
 		add(judgementGroup);
 		add(comboGroup);
+
+		var padding:Null<Float> = 20;
+
+		var judgementsArray:Array<Judgement> = [];
+		for (idx => judge in Timings.judgements)
+			judgementsArray.insert(idx, judge);
+		judgementsArray.sort(sortJudgements);
+
+		var pre:JudgementCounter = new JudgementCounter(0, 0, judgementsArray[0]);
+		var th:Null<Float> = judgementsArray.length * (pre.height + padding) - padding; // total height
+		var sy:Null<Float> = (FlxG.height - th) / 2; // start y
+
+		pre = null;
+
+		for (idx => judge in judgementsArray)
+		{
+			var counter:JudgementCounter = new JudgementCounter(0, 0, judge);
+			counter.x = FlxG.width - (counter.width + padding);
+
+			if (idx == judgementsArray.length / 2)
+				counter.y = (FlxG.height / 2);
+			else
+				counter.y = sy + idx * (counter.height + padding);
+
+			add(counter);
+		}
+
+		// mark as gc
+		padding = th = sy = null;
+		judgementsArray = null;
 
 		displayJudgement('sick', false, true);
 	}
@@ -163,5 +194,10 @@ class UI extends FlxSpriteGroup
 
 		judgementGroup.sort(DepthSprite.depthSorting, FlxSort.DESCENDING);
 		comboGroup.sort(DepthSprite.depthSorting, FlxSort.DESCENDING);
+	}
+
+	private function sortJudgements(Obj1:Judgement, Obj2:Judgement)
+	{
+		return FlxSort.byValues(FlxSort.DESCENDING, Timings.getJudgementIndex(Obj1.name), Timings.getJudgementIndex(Obj2.name));
 	}
 }

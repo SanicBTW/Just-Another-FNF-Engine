@@ -1,4 +1,4 @@
-package start;
+package funkin.states.start;
 
 import backend.io.CacheFile;
 import flixel.FlxG;

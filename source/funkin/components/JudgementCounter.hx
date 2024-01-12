@@ -1,16 +1,13 @@
 package funkin.components;
 
-// I'm actually gonna have to rewrite this bruh - might do
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import funkin.Timings;
 
 class JudgementCounter extends FlxSpriteGroup
 {
-	private var trackJudgement:String;
-	private var defaultText:String;
+	private var track:Judgement;
 
 	private var counterBG:FlxSprite;
 	private var counterText:FlxText;
@@ -19,16 +16,13 @@ class JudgementCounter extends FlxSpriteGroup
 	{
 		super(X, Y);
 
-		defaultText = judgement.shortName;
-		trackJudgement = judgement.track;
-
 		counterBG = new FlxSprite(0, 0).loadGraphic(Paths.image("ui/judgementCounter"));
 		counterBG.color = judgement.color;
 		counterBG.setGraphicSize(60, 60);
 		updateHitbox();
 		add(counterBG);
 
-		counterText = new FlxText(0, 0, counterBG.width, defaultText, 22);
+		counterText = new FlxText(0, 0, counterBG.width, judgement.shortName, 22);
 		counterText.autoSize = false;
 		counterText.font = Paths.font('funkin.otf');
 		counterText.alignment = CENTER;
@@ -39,10 +33,10 @@ class JudgementCounter extends FlxSpriteGroup
 
 	override public function update(elapsed:Float)
 	{
-		if (Reflect.field(Timings, trackJudgement) > 0)
-			counterText.text = '${Reflect.field(Timings, trackJudgement)}';
-		else if (Reflect.field(Timings, trackJudgement) < 0 && counterText.text != defaultText)
-			counterText.text = defaultText;
+		if (track.counter > 0)
+			counterText.text = '${track.counter}';
+		else if (track.counter < 0 && counterText.text != track.shortName)
+			counterText.text = track.shortName;
 
 		super.update(elapsed);
 	}
