@@ -16,6 +16,8 @@ class JudgementCounter extends FlxSpriteGroup
 	{
 		super(X, Y);
 
+		track = judgement;
+
 		counterBG = new FlxSprite(0, 0).loadGraphic(Paths.image("ui/judgementCounter"));
 		counterBG.color = judgement.color;
 		counterBG.setGraphicSize(60, 60);
