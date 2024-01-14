@@ -7,6 +7,7 @@ import flixel.util.FlxColor;
 import funkin.states.options.OptionsState;
 
 // Not exactly a component but its used in settings so uhhhh yeah
+@:allow(funkin.components.Sidebar)
 class SidebarItem extends FlxSpriteGroup
 {
 	private var _bg:RoundSprite;

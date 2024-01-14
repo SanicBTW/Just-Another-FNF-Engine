@@ -40,8 +40,21 @@ class Sidebar extends FlxSpriteGroup
 		#end
 	}
 
-	public function addSection(name:String)
+	public function addSection(name:String, isFirst:Bool = false, isEnd:Bool = false)
 	{
-		_sections.add(new SidebarItem(this, name));
+		if (_sections == null)
+			return;
+
+		var section:SidebarItem = new SidebarItem(this, name, isFirst, isEnd);
+		if (!isFirst)
+		{
+			var lastSec:SidebarItem = _sections.members[_sections.length - 1];
+			if (lastSec == null)
+				return;
+
+			section.y += (lastSec.y + lastSec._bg.shapeHeight);
+		}
+
+		_sections.add(section);
 	}
 }

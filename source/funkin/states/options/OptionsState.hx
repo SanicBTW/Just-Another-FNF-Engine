@@ -14,6 +14,15 @@ class OptionsState extends MusicBeatState
 	private var menuBG:StateBG;
 	private var sideBar:Sidebar;
 
+	private var sections:Array<String> = [
+		"Graphics",
+		"Gameplay",
+		"Optimizations",
+		"Gameplay Styling",
+		"Timing Windows",
+		"Window UI"
+	];
+
 	override public function create()
 	{
 		FlxG.mouse.visible = true;
@@ -27,6 +36,11 @@ class OptionsState extends MusicBeatState
 		add(bgOverlay);
 
 		add(sideBar = new Sidebar((bgOverlay.shapeWidth - margin) / 4, bgOverlay.shapeHeight - margin));
+
+		for (cat in sections)
+		{
+			sideBar.addSection(cat, sections[0] == cat, sections[sections.length - 1] == cat);
+		}
 
 		super.create();
 	}
