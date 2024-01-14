@@ -28,12 +28,12 @@ class Main extends Sprite
 	public static function main()
 	{
 		#if android
-		android.Permissions.requestPermission(android.Permissions.WRITE_EXTERNAL_STORAGE);
-		android.Permissions.requestPermission(android.Permissions.READ_EXTERNAL_STORAGE);
-
 		if (!android.Permissions.getGrantedPermissions().contains(android.Permissions.WRITE_EXTERNAL_STORAGE)
-			|| !android.Permissions.getGrantedPermissions().contains(android.Permissions.READ_EXTERNAL_STORAGE))
-			throw "Not enough permissions";
+			&& !android.Permissions.getGrantedPermissions().contains(android.Permissions.READ_EXTERNAL_STORAGE))
+		{
+			android.Permissions.requestPermission(android.Permissions.WRITE_EXTERNAL_STORAGE);
+			android.Permissions.requestPermission(android.Permissions.READ_EXTERNAL_STORAGE);
+		}
 		#end
 
 		CacheFile.Initialize();
