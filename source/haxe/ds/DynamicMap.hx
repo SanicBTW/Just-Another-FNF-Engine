@@ -57,13 +57,8 @@ abstract DynamicMap<K, V>(IMap<K, V>)
 
 		If `key` is `null`, the result is unspecified.
 	**/
+	@:op([])
 	public inline function set(key:K, value:V)
-		this.set(key, value);
-
-	// Array access
-
-	@:op([]) @:noCompletion
-	private inline function aSet(key:K, value:V)
 		this.set(key, value);
 
 	// Direct access (forced to use string for obvious reasons)
@@ -87,13 +82,8 @@ abstract DynamicMap<K, V>(IMap<K, V>)
 
 		If `key` is `null`, the result is unspecified.
 	**/
+	@:op([])
 	public inline function get(key:K)
-		return this.get(key);
-
-	// Array access
-
-	@:op([]) @:noCompletion
-	private inline function aGet(key:K)
 		return this.get(key);
 
 	// Direct access (forced to use string for obvious reasons)
@@ -227,51 +217,3 @@ abstract DynamicMap<K, V>(IMap<K, V>)
 		return cast map;
 	}
 }
-
-/*
-	the quick cooked version i made first before actually workin on it
-
-	@:transitive
-	@:multiType(@:followWithAbstracts K)
-	abstract Assets<K, V>(IMap<K, V>) 
-	{
-	public function new();
-
-	@:op([])
-	private inline function get(k:K):V
-		return this.get(k);
-
-	@:op([])
-	private inline function set(k:K, v:V):V
-	{
-		this.set(k, v);
-		return v;
-	}
-
-	@:op(a.b)
-	private inline function dGet(k:String):V
-		return this.get(cast k);
-
-	@:op(a.b)
-	private inline function dSet(k:String, v:V):V
-	{
-		this.set(cast k, v);
-		return v;
-	}
-
-	@:to static inline function toStringMap<K:String, V>(t:IMap<K, V>):StringMap<V> {
-		return new StringMap<V>();
-	}
-
-	@:to static inline function toIntMap<K:Int, V>(t:IMap<K, V>):IntMap<V> {
-		return new IntMap<V>();
-	}
-
-	@:to static inline function toEnumValueMapMap<K:EnumValue, V>(t:IMap<K, V>):EnumValueMap<K, V> {
-		return new EnumValueMap<K, V>();
-	}
-
-	@:to static inline function toObjectMap<K:{}, V>(t:IMap<K, V>):ObjectMap<K, V> {
-		return new ObjectMap<K, V>();
-	}
-}*/

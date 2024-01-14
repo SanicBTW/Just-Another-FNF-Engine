@@ -198,6 +198,6 @@ class UI extends FlxSpriteGroup
 
 	private function sortJudgements(Obj1:Judgement, Obj2:Judgement)
 	{
-		return FlxSort.byValues(FlxSort.DESCENDING, Timings.getJudgementIndex(Obj1.name), Timings.getJudgementIndex(Obj2.name));
+		return FlxSort.byValues(FlxSort.ASCENDING, Timings.getJudgementIndex(Obj1.name), Timings.getJudgementIndex(Obj2.name));
 	}
 }

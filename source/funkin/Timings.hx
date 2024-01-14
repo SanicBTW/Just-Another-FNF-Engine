@@ -98,7 +98,7 @@ class Timings
 				}
 
 				// Set more vars
-				if (judgement.name == "miss" || judgement.name == "shit")
+				if (judgement.name == "miss")
 					combo = 0;
 				else
 				{
@@ -107,7 +107,7 @@ class Timings
 				}
 
 				if (Settings.ratingStyle == ETTERNA)
-					notesAccuracy += wife3(ms, Conductor.timeScale);
+					notesAccuracy += wife3(ms, Conductor.timeScale) * 100; // yea
 				else
 					notesAccuracy += judgement.weight;
 

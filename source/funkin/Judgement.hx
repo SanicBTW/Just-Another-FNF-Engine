@@ -81,7 +81,7 @@ class Judgement
 				newJudgement.score = Std.parseInt(child.node.score.innerData);
 
 				// Required for the UI
-				newJudgement.shortName = child.node.health.innerData;
+				newJudgement.shortName = child.node.shortName.innerData;
 				if (child.node.color.att.format == "rgb")
 				{
 					var rgb:Array<String> = child.node.color.innerData.split(",");

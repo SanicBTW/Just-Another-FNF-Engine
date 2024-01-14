@@ -8,7 +8,6 @@ import flixel.*;
 import flixel.graphics.FlxGraphic;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
-import flixel.math.FlxPoint;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
@@ -633,13 +632,21 @@ class QuaverGameplay extends MusicBeatState
 		{
 			var targetSound:String = 'soft-hit${hitObject.HitSound.toLowerCase()}.wav';
 			var targetPath:String = 'quaver:assets/quaver/${qua.MapSetId}/$targetSound'; // forgot to enforce when i was moving quaver to its own lib my bad
-			FlxG.sound.play(Cache.getSound(targetPath), 0.4);
+			var sound = Cache.getSound(targetPath);
+			if (sound == null)
+				return;
+
+			FlxG.sound.play(sound, 0.4);
 		}
 
 		if (hitObject.KeySounds != null)
 		{
 			var targetPath:String = qua.CustomAudioSamples[hitObject.KeySounds.Sample - 1];
-			FlxG.sound.play(Cache.getSound(targetPath), hitObject.KeySounds.Volume);
+			var sound = Cache.getSound(targetPath);
+			if (sound == null)
+				return;
+
+			FlxG.sound.play(sound, hitObject.KeySounds.Volume);
 		}
 	}
 }
