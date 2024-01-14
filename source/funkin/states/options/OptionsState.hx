@@ -13,6 +13,7 @@ class OptionsState extends MusicBeatState
 
 	private var menuBG:StateBG;
 	private var sideBar:Sidebar;
+	private var sideContent:RoundSprite;
 
 	private var sections:Array<String> = [
 		"Graphics",
@@ -35,7 +36,14 @@ class OptionsState extends MusicBeatState
 		bgOverlay.alpha = 0.5;
 		add(bgOverlay);
 
-		add(sideBar = new Sidebar((bgOverlay.shapeWidth - margin) / 4, bgOverlay.shapeHeight - margin));
+		sideBar = new Sidebar((bgOverlay.shapeWidth - margin) / 4, bgOverlay.shapeHeight - margin);
+		add(sideBar);
+
+		sideContent = new RoundSprite(sideBar.width + (margin / 2), 0, (bgOverlay.width - sideBar.width) - (margin / 2), bgOverlay.shapeHeight - margin, [15],
+			FlxColor.WHITE);
+		sideContent.screenCenter(Y);
+		sideContent.alpha = 0.75;
+		add(sideContent);
 
 		for (cat in sections)
 		{

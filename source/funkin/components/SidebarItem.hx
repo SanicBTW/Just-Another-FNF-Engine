@@ -1,6 +1,7 @@
 package funkin.components;
 
 import base.sprites.RoundSprite;
+import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
@@ -25,8 +26,8 @@ class SidebarItem extends FlxSpriteGroup
 		if (isEnd)
 			cornerRad = [0, 0, 15, 15];
 
-		_bg = new RoundSprite(parent._bg.x, (parent._header.y + parent._header.fieldHeight) + (OptionsState.margin - 5), parent._bg.shapeWidth, 50, cornerRad,
-			FlxColor.WHITE);
+		_bg = new RoundSprite(parent._bg.x, (parent._header.y + parent._header.fieldHeight) + (OptionsState.margin * 1.5), parent._bg.shapeWidth, 50,
+			cornerRad, FlxColor.WHITE);
 		_bg.alpha = 0.8;
 
 		_text = new FlxText(_bg.x + 5, _bg.y + 15, 0, name, 20);
@@ -34,5 +35,15 @@ class SidebarItem extends FlxSpriteGroup
 
 		add(_bg);
 		add(_text);
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (FlxG.mouse.overlaps(this))
+			_bg.fillColor = FlxColor.GRAY;
+		else
+			_bg.fillColor = FlxColor.WHITE;
 	}
 }
