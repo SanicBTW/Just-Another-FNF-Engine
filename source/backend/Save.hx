@@ -1,25 +1,35 @@
 package backend;
 
+import database.IDatabase.DBBackend;
+
 class Save
 {
-	private static var _db:SqliteKeyValue;
+	private static var _db:DBBackend;
 	public static var shouldLoadQuaver:Bool = true; // temp fix to avoid loading quaver beatmaps always
 
 	public static function Initialize()
 	{
-		new SqliteKeyValue({
+		var dbConnect:SPromise<DBBackend> = new DBBackend({
 			path: #if html5 "JAFE:DB" #else backend.io.Path.join(IO.getFolderPath(PARENT), "JAFE.db") #end,
-			tables: ["settings", "binds", "highscores", "quaverDB"],
+			tables: [SETTINGS, BINDS, HIGHSCORES, QUAVER_DB],
 			version: Std.parseInt(lime.app.Application.current.meta.get("version")
 				.split(".")[0]) // Because this param isn't used on sys, it uses the html5 one instead
-		}).then((newDB) ->
-			{
-				_db = newDB;
-				loadSettings();
-				reloadKeybinds();
-				if (shouldLoadQuaver)
-					loadQuaver();
-			});
+		}).connect();
+
+		dbConnect.then((newDB) ->
+		{
+			_db = newDB;
+			trace("Successfully connected to the Database Backend");
+			loadSettings();
+			reloadKeybinds();
+			if (shouldLoadQuaver)
+				loadQuaver();
+		});
+
+		dbConnect.catchError((err) ->
+		{
+			trace('Failed to connect to the Database Backend: $err');
+		});
 	}
 
 	@:noCompletion
@@ -30,11 +40,11 @@ class Save
 		for (field in settings)
 		{
 			var defaultValue:Any = Reflect.field(Settings, field);
-			_db.get("settings", field).then((save:Any) ->
+			_db.get(SETTINGS, field).then((save:Any) ->
 			{
 				if (save == null)
 				{
-					_db.set("settings", field, defaultValue);
+					_db.set(SETTINGS, field, defaultValue);
 					save = defaultValue;
 				}
 
@@ -63,11 +73,11 @@ class Save
 					gpBinds: backend.input.Controller.actions.get(action)
 				};
 
-				_db.get('binds', Std.string(action)).then((save:Any) ->
+				_db.get(BINDS, Std.string(action)).then((save:Any) ->
 				{
 					if (save == null)
 					{
-						_db.set('binds', Std.string(action), endMap[action]);
+						_db.set(BINDS, Std.string(action), endMap[action]);
 						save = endMap[action];
 						#if debug
 						trace('Saved binds on $action not found');
@@ -75,10 +85,6 @@ class Save
 					}
 
 					var binds:backend.input.Controls.SavedAction = save;
-					#if debug
-					trace('Saved binds on $action found $binds');
-					#end
-
 					backend.input.Keyboard.actions.set(action, binds.kbBinds);
 					backend.input.Controller.actions.set(action, binds.gpBinds);
 				});
@@ -119,13 +125,13 @@ class Save
 			{
 				for (MapId in MapIds)
 				{
-					_db.get("quaverDB", MapId).then((savedM:Any) ->
+					_db.get(QUAVER_DB, MapId).then((savedM:Any) ->
 					{
 						var map:quaver.Qua = cast savedM;
 						if (map == null)
 						{
 							map = new quaver.Qua(Cache.getText(Paths.file('$MapSetId/$MapId.qua')), false);
-							_db.set("quaverDB", MapId, map);
+							_db.set(QUAVER_DB, MapId, map);
 						}
 
 						quaver.QuaverDB.loadedMaps.set('${map.MapId}', map);

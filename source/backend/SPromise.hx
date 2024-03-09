@@ -97,4 +97,20 @@ class SPromise<T> // Sanco Promise
 			});
 		});
 	}
+
+	static function resolve<T>(result:T):SPromise<T>
+	{
+		return new SPromise<T>((resolve, _) ->
+		{
+			resolve(result);
+		});
+	}
+
+	static function reject<T>(reason:Dynamic):SPromise<T>
+	{
+		return new SPromise<T>((_, reject) ->
+		{
+			reject(reason);
+		});
+	}
 }

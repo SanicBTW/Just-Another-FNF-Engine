@@ -1,6 +1,7 @@
 package database;
 
 #if sys
+import backend.SPromise;
 import backend.io.Path;
 import database.IDatabase.DBInitParams;
 import database.IDatabase.DatabaseTable;
@@ -14,10 +15,7 @@ import sys.db.Sqlite;
 import sys.thread.Mutex;
 import sys.thread.Tls;
 
-using tink.CoreApi;
-
 // TODO: Improve some parts of the code since this is just an adaptation from the old code
-// In NEOPlayer I would reject with the error code of "I_am_a_Teapot" on all tink rejects lmao
 
 /**
  * A string-based key value store using Sqlite as backend.
@@ -37,7 +35,6 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 	private var mutexAcquiredInParent:Bool = false;
 
 	private var params:DBInitParams;
-	private var connected:Bool = false;
 
 	private function getConnection():Connection
 	{
@@ -65,29 +62,22 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 			FileSystem.createDirectory(Path.directory(params.path));
 	}
 
-	@async public function connect():Promise<SqliteImpl>
+	public function connect():SPromise<SqliteImpl>
 	{
-		if (connected)
-			return Promise.resolve(this);
-
 		for (table in params.tables)
 		{
 			this.createTable(table);
 		}
 
-		connected = true;
-		return Promise.resolve(this);
+		return SPromise.resolve(this);
 	}
 
-	@async public function set(table:DatabaseTable, key:String, value:Any):Promise<Bool>
+	public function set(table:DatabaseTable, key:String, value:Any):SPromise<Bool>
 	{
-		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
-
 		if (value == null)
 			return remove(table, key);
 
-		return new Promise<Bool>((resolve, reject) ->
+		return new SPromise<Bool>((resolve, reject) ->
 		{
 			var escapedTable:String = escape(table);
 			var escapedKey:String = escape(key);
@@ -109,22 +99,17 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 				log('Failed to set value in $table for key $key: $ex');
 				if (!mutexAcquiredInParent)
 					mutex.release();
-				reject(new Error(InternalError, ex));
+				reject(ex);
 			}
 
 			if (!mutexAcquiredInParent)
 				mutex.release();
-
-			return null;
 		});
 	}
 
-	@async public function remove(table:DatabaseTable, key:String):Promise<Bool>
+	public function remove(table:DatabaseTable, key:String):SPromise<Bool>
 	{
-		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
-
-		return new Promise<Bool>((resolve, reject) ->
+		return new SPromise<Bool>((resolve, reject) ->
 		{
 			var escapedTable:String = escape(table);
 			var escapedKey:String = escape(key);
@@ -143,22 +128,17 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 				log('Failed to remove value in $table for key $key: $ex');
 				if (!mutexAcquiredInParent)
 					mutex.release();
-				reject(new Error(InternalError, ex));
+				reject(ex);
 			}
 
 			if (!mutexAcquiredInParent)
 				mutex.release();
-
-			return null;
 		});
 	}
 
-	@async public function get(table:DatabaseTable, key:String):Promise<Any>
+	public function get(table:DatabaseTable, key:String):SPromise<Any>
 	{
-		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
-
-		return new Promise<Any>((resolve, reject) ->
+		return new SPromise<Any>((resolve, reject) ->
 		{
 			var escapedTable:String = escape(table);
 			var escapedKey:String = escape(key);
@@ -185,31 +165,26 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 			{
 				log('Failed to get value in $table for key $key: $ex');
 				mutex.release();
-				reject(new Error(InternalError, ex));
+				reject(ex);
 			}
 
 			if (numEntries > APPEND_ENTRIES_LIMIT)
 			{
 				mutexAcquiredInParent = true;
-				set(table, key, res).handle((out) ->
+				set(table, key, res).then((_) ->
 				{
-					log('Finished setting value in get, success: ${out.sure()}');
+					log('Edge case reached');
 					mutexAcquiredInParent = false;
 				});
 			}
 
 			mutex.release();
-
-			return null;
 		});
 	}
 
-	@async public function entries(table:DatabaseTable):Promise<DynamicMap<String, Any>>
+	public function entries(table:DatabaseTable):SPromise<DynamicMap<String, Any>>
 	{
-		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
-
-		return new Promise<DynamicMap<String, Any>>((resolve, reject) ->
+		return new SPromise<DynamicMap<String, Any>>((resolve, reject) ->
 		{
 			var escapedTable:String = escape(table);
 			var tempMap:DynamicMap<String, Any> = new DynamicMap();
@@ -235,12 +210,10 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 			{
 				log('Failed to get entries from $table: $ex');
 				mutex.release();
-				reject(new Error(InternalError, ex));
+				reject(ex);
 			}
 
 			mutex.release();
-
-			return null;
 		});
 	}
 

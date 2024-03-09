@@ -1,4 +1,4 @@
-# Just Another FNF Engine - 0.2.10
+# Just Another FNF Engine - 1.0.0rc1
 
 A rewrite of Friday Night Funkin' mixing:
 - Forever Engine

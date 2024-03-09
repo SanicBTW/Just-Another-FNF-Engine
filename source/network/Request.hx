@@ -41,7 +41,7 @@ enum RequestType
 
 class Request<T> extends SPromise<T>
 {
-	public static var userAgent:String = 'JAFE 0.2.10'; // See README.md Versioning
+	public static var userAgent:String = 'JAFE 1.0.0rc1'; // See README.md Versioning
 
 	public function new(opt:RequestOptions)
 	{

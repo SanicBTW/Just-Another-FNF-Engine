@@ -1,6 +1,7 @@
 package database;
 
 #if js
+import backend.SPromise;
 import database.IDatabase.DBInitParams;
 import database.IDatabase.DatabaseTable;
 import haxe.Serializer;
@@ -8,8 +9,6 @@ import haxe.Unserializer;
 import haxe.ds.DynamicMap;
 import js.Browser;
 import js.html.idb.*;
-
-using tink.CoreApi;
 
 // Code heavily based off old code and https://github.com/SanicBTW/NEOPlayer/blob/master/src/VFS.hx
 
@@ -33,23 +32,23 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 		this.params = params;
 	}
 
-	@async public function connect():Promise<IndexedDBImpl>
+	@async public function connect():SPromise<IndexedDBImpl>
 	{
 		if (connected)
-			return Promise.resolve(this);
+			return SPromise.resolve(this);
 
-		return new Promise<IndexedDBImpl>((resolve, reject) ->
+		return new SPromise<IndexedDBImpl>((resolve, reject) ->
 		{
 			request = Browser.window.indexedDB.open(params.path, params.version);
 
 			request.addEventListener('error', () ->
 			{
-				reject(new Error(InternalError, request.error.message));
+				reject(request.error.message);
 			});
 
 			request.addEventListener('blocked', () ->
 			{
-				reject(new Error(Forbidden, request.error.message));
+				reject(request.error.message);
 			});
 
 			// TODO: When upgrading copy the old data and try to move it to the new version of the database
@@ -71,20 +70,18 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 				connected = true;
 				resolve(this);
 			});
-
-			return null;
 		});
 	}
 
-	@async public function set(table:DatabaseTable, key:String, value:Any):Promise<Bool>
+	public function set(table:DatabaseTable, key:String, value:Any):SPromise<Bool>
 	{
 		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
+			return SPromise.reject("Database not connected yet");
 
 		if (value == null)
 			return remove(table, key);
 
-		return new Promise<Bool>((resolve, reject) ->
+		return new SPromise<Bool>((resolve, reject) ->
 		{
 			var res:Request = connection.transaction(table, READWRITE).objectStore(table).put(preprocessor(value, false), key);
 
@@ -96,19 +93,17 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 			res.addEventListener('error', () ->
 			{
 				log('Failed to set value in $table for key $key: ${res.error.message}');
-				reject(new Error(InternalError, res.error.message));
+				reject(res.error.message);
 			});
-
-			return null;
 		});
 	}
 
-	@async public function remove(table:DatabaseTable, key:String):Promise<Bool>
+	public function remove(table:DatabaseTable, key:String):SPromise<Bool>
 	{
 		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
+			return SPromise.reject("Database not connected yet");
 
-		return new Promise<Bool>((resolve, reject) ->
+		return new SPromise<Bool>((resolve, reject) ->
 		{
 			var res:Request = connection.transaction(table, READWRITE).objectStore(table).delete(key);
 
@@ -120,19 +115,17 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 			res.addEventListener('error', () ->
 			{
 				log('Failed to remove value in $table for key $key: ${res.error.message}');
-				reject(new Error(InternalError, res.error.message));
+				reject(res.error.message);
 			});
-
-			return null;
 		});
 	}
 
-	@async public function get(table:DatabaseTable, key:String):Promise<Any>
+	public function get(table:DatabaseTable, key:String):SPromise<Any>
 	{
 		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
+			return SPromise.reject("Database not connected yet");
 
-		return new Promise<Any>((resolve, reject) ->
+		return new SPromise<Any>((resolve, reject) ->
 		{
 			var res:Request = connection.transaction(table, READWRITE).objectStore(table).get(key);
 
@@ -147,19 +140,17 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 			res.addEventListener('error', () ->
 			{
 				log('Failed to get value in $table for key $key: ${res.error.message}');
-				reject(new Error(InternalError, res.error.message));
+				reject(res.error.message);
 			});
-
-			return null;
 		});
 	}
 
-	@async public function entries(table:DatabaseTable):Promise<DynamicMap<String, Any>>
+	public function entries(table:DatabaseTable):SPromise<DynamicMap<String, Any>>
 	{
 		if (!connected)
-			return Promise.reject(new Error(InternalError, "Database not connected yet"));
+			return SPromise.reject("Database not connected yet");
 
-		return new Promise<DynamicMap<String, Any>>((resolve, reject) ->
+		return new SPromise<DynamicMap<String, Any>>((resolve, reject) ->
 		{
 			var tempMap:DynamicMap<String, Any> = new DynamicMap();
 			var length:Int = 0;
@@ -187,8 +178,6 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 					cursor.advance(1);
 				});
 			});
-
-			return null;
 		});
 	}
 

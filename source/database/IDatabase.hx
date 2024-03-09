@@ -1,19 +1,25 @@
 package database;
 
+import backend.SPromise;
 import haxe.ds.DynamicMap;
 
-using tink.CoreApi;
+/*
+	This will change once:
+		- HxWebView is fully working (I guess??)
+		- More backends (Online?)
+		- Etc
+ */
+typedef DBBackend = #if sys SqliteImpl #else IndexedDBImpl #end;
 
 interface IDatabase<T>
 {
 	private var params:DBInitParams;
-	private var connected:Bool;
 
-	public function connect():Promise<T>;
-	public function set(table:DatabaseTable, key:String, value:Any):Promise<Bool>;
-	public function remove(table:DatabaseTable, key:String):Promise<Bool>;
-	public function get(table:DatabaseTable, key:String):Promise<Any>;
-	public function entries(table:DatabaseTable):Promise<DynamicMap<String, Any>>;
+	public function connect():SPromise<T>;
+	public function set(table:DatabaseTable, key:String, value:Any):SPromise<Bool>;
+	public function remove(table:DatabaseTable, key:String):SPromise<Bool>;
+	public function get(table:DatabaseTable, key:String):SPromise<Any>;
+	public function entries(table:DatabaseTable):SPromise<DynamicMap<String, Any>>;
 	public function destroy():Void;
 
 	private function log(v:String):Void;

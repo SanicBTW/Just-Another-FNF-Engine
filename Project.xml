@@ -58,9 +58,6 @@
 
 	<haxelib name="extension-androidtools" if="android" />
 
-	<haxelib name="tink_core" />
-	<haxelib name="tink_await" />
-
 	<haxelib name="discord_rpc" if="DISCORD_PRESENCE" />
 
 	<assets path="utils" if="FS_ACCESS" unless="linux || android" /> 
