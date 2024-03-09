@@ -145,6 +145,7 @@ function onCreatePost()
     bfx = PlayState.boyfriendGroup.x;
     bfy = PlayState.boyfriendGroup.y;
 
+    UI.refreshCounters(100);
     UI.fcFormat = " [fc]";
     UI.textFormat = "Sacrifices: $misses | Accuracy: $accuracy$fc";
     UI.scoreText.x = 0;

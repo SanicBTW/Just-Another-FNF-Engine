@@ -13,11 +13,12 @@ class Settings
 
 	// Optimizations
 	public static var showNoteSplashes:Bool = true;
+	public static var showJudgementCounters:Bool = true;
 
 	// Timings, Accuracy and Diff styles
 	public static var ratingStyle:funkin.Judgement.RatingStyle = PSYCH;
 	public static var accuracyStyle:funkin.Judgement.AccuracyStyle = SCORE;
-	public static var diffStyle:funkin.Judgement.DiffStyle = TIME;
+	public static var diffStyle:funkin.Judgement.DiffStyle = HITBOX;
 
 	// Timing Windows
 	public static var sickTiming:Float = 45;

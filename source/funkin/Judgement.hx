@@ -82,10 +82,22 @@ class Judgement
 
 				// Required for the UI
 				newJudgement.shortName = child.node.shortName.innerData;
-				if (child.node.color.att.format == "rgb")
+				// hscript for format support soon???!?!?!?!?!
+				var format:Null<String> = child.node.color.att.format;
+				if (format != null)
 				{
-					var rgb:Array<String> = child.node.color.innerData.split(",");
-					newJudgement.color = FlxColor.fromRGB(Std.parseInt(rgb[0]), Std.parseInt(rgb[1]), Std.parseInt(rgb[2]));
+					switch (format)
+					{
+						case "rgb":
+							var rgb:Array<String> = child.node.color.innerData.split(",");
+							newJudgement.color = FlxColor.fromRGB(Std.parseInt(rgb[0]), Std.parseInt(rgb[1]), Std.parseInt(rgb[2]));
+
+						case "rgbf":
+							var rgb:Array<String> = child.node.color.innerData.split(",");
+							newJudgement.color = FlxColor.fromRGBFloat(Std.parseFloat(rgb[0]), Std.parseFloat(rgb[1]), Std.parseFloat(rgb[2]));
+
+						default:
+					}
 				}
 
 				// Optionals

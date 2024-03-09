@@ -7,7 +7,6 @@ import base.TransitionState;
 import base.sprites.StateBG;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.text.FlxText;
 import funkin.text.Alphabet;
 import haxe.io.Bytes;
 import network.MultiCallback;

@@ -22,6 +22,7 @@ class UI extends FlxSpriteGroup
 
 	var judgementGroup:FlxTypedSpriteGroup<DepthSprite>;
 	var comboGroup:FlxTypedSpriteGroup<DepthSprite>;
+	var countersGroup:FlxTypedSpriteGroup<JudgementCounter>;
 
 	public function new()
 	{
@@ -37,10 +38,37 @@ class UI extends FlxSpriteGroup
 		scoreText.y -= 50;
 		add(scoreText);
 
-		judgementGroup = new FlxTypedSpriteGroup<DepthSprite>();
-		comboGroup = new FlxTypedSpriteGroup<DepthSprite>();
-		add(judgementGroup);
-		add(comboGroup);
+		add(judgementGroup = new FlxTypedSpriteGroup<DepthSprite>());
+		add(comboGroup = new FlxTypedSpriteGroup<DepthSprite>());
+		add(countersGroup = new FlxTypedSpriteGroup<JudgementCounter>());
+
+		refreshCounters();
+
+		displayJudgement('sick', false, true);
+	}
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		scoreText.text = formatText();
+	}
+
+	public function refreshCounters(startingPos:Null<Int> = null)
+	{
+		if (!Settings.showJudgementCounters)
+			return;
+
+		if (startingPos == null)
+			startingPos = FlxG.width;
+
+		if (countersGroup.length > 0)
+		{
+			for (i in 0...countersGroup.members.length)
+			{
+				countersGroup.remove(countersGroup.members[0], true).destroy();
+			}
+		}
 
 		var padding:Null<Float> = 20;
 
@@ -53,33 +81,25 @@ class UI extends FlxSpriteGroup
 		var th:Null<Float> = judgementsArray.length * (pre.height + padding) - padding; // total height
 		var sy:Null<Float> = (FlxG.height - th) / 2; // start y
 
+		pre.destroy();
 		pre = null;
 
 		for (idx => judge in judgementsArray)
 		{
 			var counter:JudgementCounter = new JudgementCounter(0, 0, judge);
-			counter.x = FlxG.width - (counter.width + padding);
+			counter.x = startingPos - (counter.width + padding);
 
 			if (idx == judgementsArray.length / 2)
 				counter.y = (FlxG.height / 2);
 			else
 				counter.y = sy + idx * (counter.height + padding);
 
-			add(counter);
+			countersGroup.add(counter);
 		}
 
-		// mark as gc
+		// mark as gc - only on mark & sweep gc dummy
 		padding = th = sy = null;
 		judgementsArray = null;
-
-		displayJudgement('sick', false, true);
-	}
-
-	override public function update(elapsed:Float)
-	{
-		super.update(elapsed);
-
-		scoreText.text = formatText();
 	}
 
 	public function formatText():String
