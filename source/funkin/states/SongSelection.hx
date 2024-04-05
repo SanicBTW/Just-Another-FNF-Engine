@@ -158,18 +158,6 @@ class SongSelection extends TransitionState
 
 	override function create()
 	{
-		new Request<Sound>({
-			url: "https://storage.sancopublic.com/nexus_bf.ogg",
-			type: SOUND
-		}).then(function(cock)
-		{
-				FlxG.sound.playMusic(cock);
-		}).catchError(function(error)
-		{
-				// Notify user that there was an error while loading the song
-				trace(error);
-		});
-
 		var bg:StateBG = new StateBG('M_menuBG');
 		add(bg);
 
@@ -209,6 +197,7 @@ class SongSelection extends TransitionState
 
 			case CONFIRM:
 				blockInputs = true;
+				ChartLoader.overridenLoad = false;
 
 				switch (pages[curPage])
 				{

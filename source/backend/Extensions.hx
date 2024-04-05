@@ -214,4 +214,38 @@ class Extensions<T>
 
 		return resolve;
 	}
+
+	// Check AudioBuffer "loadFromFile" function
+	public static function loadFromBytes(bytes:haxe.io.Bytes):SPromise<lime.media.AudioBuffer>
+	{
+		return new SPromise<lime.media.AudioBuffer>((resolve, reject) -> {
+			#if (js && html5 && lime_howlerjs)
+			var audioBuffer:lime.media.AudioBuffer = new lime.media.AudioBuffer();
+
+			@:privateAccess
+			{
+				audioBuffer.src = new lime.media.howlerjs.Howl({
+					src: [
+						"data:" + lime.media.AudioBuffer.__getCodec(bytes) + ";base64," + haxe.crypto.Base64.encode(bytes)
+					],
+					preload: false
+				});
+
+				audioBuffer.__srcHowl.on("load", () ->
+				{
+					resolve(audioBuffer);
+				});
+
+				audioBuffer.__srcHowl.on("loaderror", (id, msg) ->
+				{
+					reject(msg);
+				});
+
+				audioBuffer.__srcHowl.load();
+			}
+			#else
+			resolve(lime.media.AudioBuffer.fromBytes(bytes));
+			#end
+		});
+	}
 }

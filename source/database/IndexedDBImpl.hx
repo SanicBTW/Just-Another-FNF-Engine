@@ -27,12 +27,14 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 	private var params:DBInitParams;
 	private var connected:Bool = false;
 
+	public var shouldPreprocess:Bool = true;
+
 	public function new(params:DBInitParams)
 	{
 		this.params = params;
 	}
 
-	@async public function connect():SPromise<IndexedDBImpl>
+	public function connect():SPromise<IndexedDBImpl>
 	{
 		if (connected)
 			return SPromise.resolve(this);
@@ -195,6 +197,11 @@ class IndexedDBImpl implements IDatabase<IndexedDBImpl>
 	}
 
 	private function preprocessor(v:Any, isGet:Bool):Any
+	{
+		if (!shouldPreprocess)
+			return v;
+
 		return (isGet) ? Unserializer.run(v) : Serializer.run(v);
+	}
 }
 #end

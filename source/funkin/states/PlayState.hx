@@ -84,6 +84,9 @@ class PlayState extends MusicBeatState
 	public static var paused:Bool = false;
 	public static var canPause:Bool = true;
 
+	// For Async bs
+	private var canPlay:Bool = true;
+
 	override public function create()
 	{
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
@@ -94,12 +97,23 @@ class PlayState extends MusicBeatState
 		Paths.music("tea-time");
 
 		// dumb
-		if (SongSelection.songSelected.isFS)
-			ChartLoader.loadFSChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
-		else if (SongSelection.songSelected.netChart != null)
-			ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
+		if (!ChartLoader.overridenLoad)
+		{
+			if (SongSelection.songSelected.isFS)
+				ChartLoader.loadFSChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
+			else if (SongSelection.songSelected.netChart != null)
+				ChartLoader.loadNetChart(SongSelection.songSelected.netChart, SongSelection.songSelected.netInst, SongSelection.songSelected.netVoices);
+			else
+				ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
+		}
 		else
-			ChartLoader.loadChart(SongSelection.songSelected.songName, SongSelection.songSelected.songDiff);
+		{
+			canPlay = false;
+			ChartLoader.loadVFSChart(SongSelection.songSelected.songName).then((_) ->
+			{
+				canPlay = true;
+			});
+		}
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -236,7 +250,10 @@ class PlayState extends MusicBeatState
 
 		super.update(elapsed);
 
-		if (!paused && !boyfriend.dead)
+		if (!canPlay)
+			Conductor.time = -5000;
+
+		if (!paused && !boyfriend.dead && canPlay)
 			DiscordPresence.changePresence('Playing ${SONG.song}', ui.scoreText.text, null, true, Conductor.boundInst.length - Conductor.time);
 
 		if (startedCountdown && startingSong && !paused)
@@ -253,9 +270,9 @@ class PlayState extends MusicBeatState
 				Conductor.time = -Conductor.crochet * 5;
 		}
 
-		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.camera_settings.defaultZoom : 1, FlxG.camera.zoom,
-			FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
-		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, FlxMath.bound(1 - (elapsed * 3.125), 0, 1));
+		var camLerp:Float = FlxMath.bound(1 - (elapsed * 3.125), 0, 1);
+		FlxG.camera.zoom = FlxMath.lerp((stageBuild != null) ? stageBuild.camera_settings.defaultZoom : 1, FlxG.camera.zoom, camLerp);
+		camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, camLerp);
 
 		if (SONG.notes[Std.int(curStep / 16)] != null)
 			updateCamTarget(elapsed);
@@ -1017,6 +1034,8 @@ class PlayState extends MusicBeatState
 		daCopy.offset.copyFrom(char.offset);
 		daCopy.scale.copyFrom(char.scale);
 		daCopy.color = char.color;
+		daCopy.flipX = char.flipX;
+		daCopy.flipY = char.flipY;
 
 		// ez enough
 		var group:FlxSpriteGroup = boyfriendGroup;

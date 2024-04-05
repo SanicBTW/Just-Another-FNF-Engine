@@ -4,21 +4,21 @@ import database.IDatabase.DBBackend;
 
 class Save
 {
-	private static var _db:DBBackend;
+	public static var database:DBBackend;
 	public static var shouldLoadQuaver:Bool = true; // temp fix to avoid loading quaver beatmaps always
 
 	public static function Initialize()
 	{
 		var dbConnect:SPromise<DBBackend> = new DBBackend({
 			path: #if html5 "JAFE:DB" #else backend.io.Path.join(IO.getFolderPath(PARENT), "JAFE.db") #end,
-			tables: [SETTINGS, BINDS, HIGHSCORES, QUAVER_DB],
+			tables: [SETTINGS, BINDS, HIGHSCORES, QUAVER_DB, VFS],
 			version: Std.parseInt(lime.app.Application.current.meta.get("version")
 				.split(".")[0]) // Because this param isn't used on sys, it uses the html5 one instead
 		}).connect();
 
 		dbConnect.then((newDB) ->
 		{
-			_db = newDB;
+			database = newDB;
 			trace("Successfully connected to the Database Backend");
 			loadSettings();
 			reloadKeybinds();
@@ -40,11 +40,11 @@ class Save
 		for (field in settings)
 		{
 			var defaultValue:Any = Reflect.field(Settings, field);
-			_db.get(SETTINGS, field).then((save:Any) ->
+			database.get(SETTINGS, field).then((save:Any) ->
 			{
 				if (save == null)
 				{
-					_db.set(SETTINGS, field, defaultValue);
+					database.set(SETTINGS, field, defaultValue);
 					save = defaultValue;
 				}
 
@@ -73,11 +73,11 @@ class Save
 					gpBinds: backend.input.Controller.actions.get(action)
 				};
 
-				_db.get(BINDS, Std.string(action)).then((save:Any) ->
+				database.get(BINDS, Std.string(action)).then((save:Any) ->
 				{
 					if (save == null)
 					{
-						_db.set(BINDS, Std.string(action), endMap[action]);
+						database.set(BINDS, Std.string(action), endMap[action]);
 						save = endMap[action];
 						#if debug
 						trace('Saved binds on $action not found');
@@ -125,13 +125,13 @@ class Save
 			{
 				for (MapId in MapIds)
 				{
-					_db.get(QUAVER_DB, MapId).then((savedM:Any) ->
+					database.get(QUAVER_DB, MapId).then((savedM:Any) ->
 					{
 						var map:quaver.Qua = cast savedM;
 						if (map == null)
 						{
 							map = new quaver.Qua(Cache.getText(Paths.file('$MapSetId/$MapId.qua')), false);
-							_db.set(QUAVER_DB, MapId, map);
+							database.set(QUAVER_DB, MapId, map);
 						}
 
 						quaver.QuaverDB.loadedMaps.set('${map.MapId}', map);
