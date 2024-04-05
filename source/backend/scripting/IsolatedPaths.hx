@@ -40,6 +40,12 @@ class IsolatedPaths
 		}
 	}
 
+	public inline function txt(key:String, folder:String = "data"):String
+		return getText(key, folder);
+
+	public inline function json(key:String, folder:String = "data"):String
+		return getText(key, folder);
+
 	public inline function sound(key:String):Sound
 		return getSound(key, "sounds");
 
@@ -48,6 +54,10 @@ class IsolatedPaths
 
 	public inline function image(key:String):FlxGraphic
 		return getGraphic(key, "images");
+
+	// We want to replicate Vanilla Paths behaviour, since Cache.getFont returns a Lime/OpenFL Font we cannot really use that for now
+	public inline function font(key:String, folder = "fonts"):String
+		return getPath('$folder/$key');
 
 	public inline function getSparrowAtlas(key:String):FlxAtlasFrames
 		return FlxAtlasFrames.fromSparrow(Cache.getGraphic(getPath('$key.png')), Cache.getText(getPath('$key.xml')));
@@ -58,4 +68,7 @@ class IsolatedPaths
 
 	public inline function getSound(key:String, folder:String):Sound
 		return Cache.getSound(getPath('$folder/$key.ogg'));
+
+	public inline function getText(key:String, folder:String):String
+		return Cache.getText(getPath('$folder/$key'));
 }

@@ -2,7 +2,7 @@ package network.pocketbase;
 
 import flixel.util.typeLimit.OneOfTwo;
 import haxe.DynamicAccess;
-import network.Request.RequestType;
+import network.AsyncHTTP.RequestType;
 import network.pocketbase.Collection;
 import network.pocketbase.Record;
 

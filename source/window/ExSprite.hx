@@ -4,8 +4,6 @@ import flixel.math.FlxMath;
 import openfl.Lib;
 import openfl.display.DisplayObject;
 import openfl.display.Sprite;
-import openfl.text.Font;
-import openfl.utils.Assets;
 
 // Custom sprites and shit implementation
 // Extended sprite (ExSprite lol)
@@ -43,9 +41,6 @@ class ExSprite<T> extends Sprite
 		x = (0.5 * (Lib.current.stage.stageWidth - width));
 		y = (0.5 * (Lib.current.stage.stageHeight - height));
 	}
-
-	private inline function getFont(font:String):Font
-		return Assets.getFont(backend.Cache.getFont(font));
 
 	private inline function boundTo(value:Float, min:Float, max:Float):Float
 		return Math.max(min, Math.min(max, value));

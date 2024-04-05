@@ -1,5 +1,6 @@
 package window.packages;
 
+import backend.Cache;
 import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
@@ -103,7 +104,7 @@ class VolumeTray extends Tray
 
 	private function setTxtFieldProperties(field:TextField)
 	{
-		field.defaultTextFormat = new TextFormat(getFont('funkin.otf').fontName, 10, 0xFFFFFF);
+		field.defaultTextFormat = new TextFormat(Cache.getFont(Paths.font("funkin.otf")).fontName, 10, 0xFFFFFF);
 		field.width = _width;
 		field.height = _height;
 		field.multiline = true;

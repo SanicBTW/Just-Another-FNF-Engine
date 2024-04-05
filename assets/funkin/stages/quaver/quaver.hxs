@@ -9,7 +9,8 @@ var lerpTime:Float;
 function onCreate()
 {
     centerMark = new FlxText(0, 0, 0, Conductor.SONG.song);
-    centerMark.setFormat(Cache.getFont("vcr.ttf"), 24, 0xFFFFFFFF);
+    // We use the Vanilla Paths since the font is from funkin library
+    centerMark.setFormat(VPaths.font("vcr.ttf"), 24, 0xFFFFFFFF);
     centerMark.setBorderStyle(FlxTextBorderStyle.OUTLINE, 0xFF000000, 3);
     centerMark.antialiasing = Settings.antialiasing;
     centerMark.y = FlxG.height / 24;

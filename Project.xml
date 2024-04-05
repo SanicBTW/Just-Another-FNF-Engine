@@ -21,8 +21,6 @@
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 
 	<source path="source" />
-	<assets path="assets" />
-
 	<library name="funkin" preload="true" />
 	<assets path="assets/funkin" library="funkin" />
 
@@ -31,9 +29,6 @@
 
 	<library name="quaver" preload="false" />
 	<assets path="assets/quaver" library="quaver" />
-
-	<library name="fonts" preload="true" />
-	<assets path="assets/fonts" embed='true' library="fonts" />
 
 	<!-- _________________________________ Defines ______________________________ -->
 
@@ -54,7 +49,6 @@
 	<haxelib name="flixel" version="4.11.0" />
 	<haxelib name="flixel-ui" version="2.5.0" />
 	<haxelib name="hscript" />
-	<haxelib name="akifox-asynchttp" />
 
 	<haxelib name="extension-androidtools" if="android" />
 

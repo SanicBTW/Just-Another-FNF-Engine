@@ -2,42 +2,13 @@ package network;
 
 import backend.Cache;
 import backend.SPromise;
-import com.akifox.asynchttp.*;
 import flixel.graphics.FlxGraphic;
 import haxe.io.Bytes;
 import lime.graphics.Image;
+import network.AsyncHTTP;
 import openfl.display.BitmapData;
 import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
-
-typedef RequestOptions =
-{
-	var url:String;
-	var type:RequestType;
-
-	// headerss
-	var ?headers:Array<RequestHeader>;
-	// post shit
-	var ?post:Bool;
-	var ?postData:Null<String>;
-	var ?postBytes:Null<Bytes>;
-}
-
-// Dumb fr
-typedef RequestHeader =
-{
-	var name:String;
-	var value:String;
-}
-
-enum RequestType
-{
-	STRING;
-	OBJECT;
-	BYTES;
-	SOUND;
-	IMAGE;
-}
 
 class Request<T> extends SPromise<T>
 {
@@ -45,31 +16,26 @@ class Request<T> extends SPromise<T>
 
 	public function new(opt:RequestOptions)
 	{
+		var uaHeader:RequestHeader = {
+			name: "User-Agent",
+			value: userAgent
+		}
+
+		if (opt.headers != null && !opt.headers.contains(uaHeader))
+			opt.headers.push(uaHeader);
+
+		if (opt.headers == null)
+			opt.headers = [uaHeader];
+
 		super((resolve, reject) ->
 		{
-			var http = new HttpRequest({
-				url: opt.url,
-				async: true,
-				headers: new HttpHeaders(),
-				callback: (response:HttpResponse) ->
+			AsyncHTTP.request(opt, {
+				onSuccess: (res:Dynamic) ->
 				{
-					if (!response.isOK)
-					{
-						reject(response.status);
-						return;
-					}
-
 					switch (opt.type)
 					{
-						case STRING:
-							resolve(cast response.content);
-
-						case OBJECT:
-							resolve(cast haxe.Json.parse(response.content));
-
-						case BYTES:
-							resolve(cast response.contentRaw);
-
+						case STRING | BYTES: resolve(cast res);
+						case OBJECT: resolve(cast haxe.Json.parse(res));
 						case SOUND:
 							if (Cache.exists(opt.url))
 							{
@@ -83,8 +49,9 @@ class Request<T> extends SPromise<T>
 								resolve(cast Cache.set(sound, SOUND, opt.url));
 							});
 							#else
+							var bytes:Bytes = cast res;
 							var sound:Sound = new Sound();
-							sound.loadCompressedDataFromByteArray(response.contentRaw, response.contentRaw.length);
+							sound.loadCompressedDataFromByteArray(bytes, bytes.length);
 							resolve(cast Cache.set(sound, SOUND, opt.url));
 							#end
 
@@ -104,7 +71,8 @@ class Request<T> extends SPromise<T>
 								resolve(cast newGraphic);
 							});
 							#else
-							var limeImg:Image = Image.fromBytes(response.contentRaw);
+							var bytes:Bytes = cast res;
+							var limeImg:Image = Image.fromBytes(bytes);
 							var bitData:BitmapData = Cache.set(BitmapData.fromImage(limeImg), BITMAP, opt.url);
 							var newGraphic:FlxGraphic;
 
@@ -120,40 +88,11 @@ class Request<T> extends SPromise<T>
 							#end
 					}
 				},
-				callbackError: (response:HttpResponse) ->
+				onError: (err) ->
 				{
-					reject(response.error);
-				},
-				callbackProgress: (loaded:Int, total:Int) -> {}
-			});
-
-			if (opt.headers != null)
-			{
-				for (header in opt.headers)
-				{
-					http.headers.add(header.name, header.value);
+					reject(err);
 				}
-			}
-
-			// Refused to set unsafe header "User-Agent"
-			#if !html5 http.headers.add('User-Agent', userAgent); #end
-
-			/*
-				// http-socket doesnt have posting
-				if (opt.post != null && opt.post)
-				{
-					if (opt.postData != null)
-						http.setPostData(opt.postData);
-					if (opt.postBytes != null)
-						http.setPostBytes(opt.postBytes);
-			}*/
-
-			#if html5
-			if (opt.type != SOUND || opt.type != IMAGE)
-				http.send();
-			#else
-			http.send();
-			#end
+			});
 		});
 	}
 }

@@ -132,10 +132,9 @@ class Main extends Sprite
 			gameHeight = Math.ceil(stageHeight / zoom);
 		}
 
-		com.akifox.asynchttp.AsyncHttp.logEnabled = false;
-		com.akifox.asynchttp.AsyncHttp.userAgent = network.Request.userAgent;
 		FlxGraphic.defaultPersist = true;
 		addChild(new FlxGame(gameWidth, gameHeight, initialClass, zoom, framerate, framerate, false, false));
+		FlxG.plugins.add(new network.AsyncHTTP());
 
 		FlxG.fixedTimestep = false;
 		#if !android

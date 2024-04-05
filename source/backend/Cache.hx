@@ -6,6 +6,7 @@ import flixel.system.FlxSound;
 import openfl.display.BitmapData;
 import openfl.display3D.textures.Texture;
 import openfl.media.Sound;
+import openfl.text.Font;
 import openfl.utils.Assets;
 
 using StringTools;
@@ -117,8 +118,11 @@ class Cache
 		Assets.getText(path);
 	}
 
-	public static inline function getFont(key:String)
-		return 'assets/fonts/$key';
+	public static inline function getFont(path:String):Font
+	{
+		return #if FS_ACCESS (fromFS(path)) ? Font.fromFile(path) : #end
+		Assets.getFont(path);
+	}
 
 	public static function getTexture(id:String, bitmap:BitmapData):Texture
 	{
