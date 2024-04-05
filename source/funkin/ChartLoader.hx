@@ -8,8 +8,11 @@ import funkin.Events.EventNote;
 import funkin.SongTools;
 import funkin.notes.Note;
 import haxe.ds.DynamicMap;
+import haxe.io.Bytes;
+import network.MultiCallback;
 import openfl.media.Sound;
 import openfl.utils.Assets;
+import openfl.utils.ByteArray;
 import quaver.*;
 
 using StringTools;
@@ -21,13 +24,95 @@ typedef EventInit =
 	var value2:String;
 }
 
+typedef VirtSong =
+{
+	var chart:SongData;
+	var inst:Bytes;
+	var voices:Null<Bytes>;
+}
+
 // Rewrite this or something
+// Use cache
 class ChartLoader
 {
 	public static var noteQueue:Array<Note> = [];
 	public static var eventQueue:Array<EventNote> = [];
 	public static var strDiffMap:Map<Int, String> = [0 => '-easy', 1 => '', 2 => '-hard'];
 	public static var intDiffMap:Map<String, Int> = ['-easy' => 0, '' => 1, "-hard" => 2];
+	public static var overridenLoad:Bool = false;
+
+	// Tried using cache but it breaks the whole shit, late cache they say!
+	public static function loadVFSChart(songName:String, loadSounds:Bool = true):SPromise<SongData>
+	{
+		resetQueues();
+		var startTime:Float = haxe.Timer.stamp();
+
+		return new SPromise<SongData>((resolve, reject) ->
+		{
+			Save.database.shouldPreprocess = false;
+
+			// Surely NOT null
+			Save.database.get(VFS, songName).then((s) ->
+			{
+				var song:VirtSong = cast s;
+
+				if (loadSounds)
+				{
+					var inst:Sound = null;
+					var vocals:Null<Sound> = null;
+
+					var multCb:MultiCallback = new MultiCallback(() ->
+					{
+						Conductor.bindSong(song.chart, inst, vocals);
+						parseNotes(song.chart);
+
+						var endTime:Float = haxe.Timer.stamp();
+						trace('end chart parse time ${endTime - startTime}');
+
+						resolve(song.chart);
+					});
+
+					var instCb:() -> Void = multCb.add('inst:$songName');
+					var voicesCb:() -> Void = multCb.add('voices:$songName');
+
+					#if !js
+					var ibyteArray:ByteArray = ByteArray.fromBytes(song.inst);
+					#else
+					@:privateAccess
+					var ibyteArray:ByteArray = ByteArray.fromArrayBuffer(song.inst.b.buffer);
+					#end
+					Extensions.loadFromBytes(ibyteArray).then((audioBuffer) ->
+					{
+						inst = Sound.fromAudioBuffer(audioBuffer);
+						instCb();
+					});
+
+					if (song.voices != null)
+					{
+						#if !js
+						var byteArray:ByteArray = ByteArray.fromBytes(song.voices);
+						#else
+						@:privateAccess
+						var byteArray:ByteArray = ByteArray.fromArrayBuffer(song.voices.b.buffer);
+						#end
+
+						Extensions.loadFromBytes(byteArray).then((audioBuffer) ->
+						{
+							vocals = Sound.fromAudioBuffer(audioBuffer);
+							voicesCb();
+						});
+					}
+					else
+						voicesCb();
+				}
+				else
+				{
+					Conductor.SONG = song.chart;
+					resolve(song.chart);
+				}
+			});
+		});
+	}
 
 	public static function loadFSChart(songName:String, songDiff:Int = 1):SongData
 	{

@@ -8,6 +8,7 @@ import base.TransitionState;
 import base.sprites.StateBG;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import funkin.ChartLoader;
 import funkin.text.Alphabet;
 import quaver.*;
 
@@ -140,6 +141,7 @@ class QuaverSelection extends MusicBeatState
 
 						case "DiffList":
 							{
+								ChartLoader.overridenLoad = false;
 								mapID = diffStore.get(curText);
 								TransitionState.switchState(new QuaverGameplay());
 							}

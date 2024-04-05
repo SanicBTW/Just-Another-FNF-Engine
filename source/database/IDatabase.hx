@@ -14,6 +14,7 @@ typedef DBBackend = #if sys SqliteImpl #else IndexedDBImpl #end;
 interface IDatabase<T>
 {
 	private var params:DBInitParams;
+	public var shouldPreprocess:Bool; // This only affects HTML5 since it doesn't need to serialize values to save them properly (strings n shit yknow) I have to properly make a flag for it
 
 	public function connect():SPromise<T>;
 	public function set(table:DatabaseTable, key:String, value:Any):SPromise<Bool>;
@@ -40,4 +41,5 @@ enum abstract DatabaseTable(String) to String from String
 	var BINDS = "Binds";
 	var HIGHSCORES = "HighScores";
 	var QUAVER_DB = "QuaverDB";
+	var VFS = "VirtualFilesystem";
 }

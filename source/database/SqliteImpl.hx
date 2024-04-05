@@ -36,6 +36,8 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 
 	private var params:DBInitParams;
 
+	public var shouldPreprocess:Bool = true;
+
 	private function getConnection():Connection
 	{
 		var connection:Connection = tlsConnection.value;
@@ -203,7 +205,7 @@ class SqliteImpl implements IDatabase<SqliteImpl>
 					length++;
 				}
 
-				trace(tempMap);
+				tempMap["length"] = length;
 				resolve(tempMap);
 			}
 			catch (ex:Dynamic)

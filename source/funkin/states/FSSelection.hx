@@ -1,7 +1,10 @@
 package funkin.states;
 
-import backend.IO;
-import backend.input.Controls.ActionType;
+import backend.Cache;
+import backend.Extensions;
+import backend.Save;
+import backend.input.Controls;
+import backend.io.Path;
 import base.MusicBeatState;
 import base.TransitionState;
 import base.sprites.*;
@@ -9,9 +12,26 @@ import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import funkin.ChartLoader.VirtSong;
+import funkin.SongTools.SongData;
+import haxe.io.Bytes;
+import haxe.io.BytesData;
+import haxe.io.BytesInput;
+import haxe.io.Input;
+import haxe.zip.Entry;
+import haxe.zip.Reader;
 import lime.math.Vector2;
+import lime.media.AudioBuffer;
+import openfl.display.Loader;
+import openfl.display.LoaderInfo;
+import openfl.events.Event;
+import openfl.media.Sound;
+import openfl.net.FileFilter;
+import openfl.net.FileReference;
+import openfl.utils.ByteArray;
 
 using StringTools;
 
@@ -57,8 +77,14 @@ class FSSelection extends MusicBeatState
 	private var holdTime:Float = 0;
 
 	private var bg:StateBG;
+	private var options:Array<String> = ["Upload Chart", "Upload Inst", "Upload Voices (Optional)", "Done"];
+	private var done:Array<Bool> = [];
+	private var curState:String = "listing";
 
-	// lazy to put diffs, mb, the diff option will be added as a color representing the difficulty of the song "easy green" "normal yellow" "hard red" on the entry bg
+	private var chart:SongData = null;
+	private var inst:Bytes = null;
+	private var voices:Bytes = null;
+
 	override function create()
 	{
 		bg = new StateBG('menuBG');
@@ -67,26 +93,73 @@ class FSSelection extends MusicBeatState
 		grpOptions = new FlxTypedGroup<SongEntry>();
 		add(grpOptions);
 
-		var songs:Array<String> = IO.getFolderFiles(SONGS);
-
-		var i:Int = 0;
-		for (song in songs)
-		{
-			var entry:SongEntry = new SongEntry(0, 220, 700, song.replace("-", " "), 28);
-			entry.initialPositions.x = (FlxG.width - entry.width) / 2;
-			entry.targetY = i;
-			entry.text.autoSize = false;
-			entry.text.color = FlxColor.WHITE;
-			entry.text.font = Paths.font("funkin.otf");
-			entry.text.alignment = CENTER;
-			grpOptions.add(entry);
-			i++;
-		}
-		curSelected = grpOptions.length + 1;
-
 		super.create();
 
+		freshenEntries();
 		addTouchControls(DPAD, UP_DOWN, A_B);
+	}
+
+	function showDialog()
+	{
+		var fr:FileReference = new FileReference();
+		fr.addEventListener(Event.SELECT, _onSelect, false, 0, true);
+		fr.addEventListener(Event.CANCEL, _onCancel, false, 0, true);
+		fr.browse();
+	}
+
+	function _onSelect(E:Event):Void
+	{
+		var fr:FileReference = cast(E.target, FileReference);
+		fr.addEventListener(Event.COMPLETE, _onLoad, false, 0, true);
+		fr.load();
+	}
+
+	function _onLoad(E:Event):Void
+	{
+		var fr:FileReference = cast E.target;
+		fr.removeEventListener(Event.COMPLETE, _onLoad);
+
+		var bytes:ByteArray = fr.data;
+
+		// dumbass -mb og
+		if (bytes.position > 0 || bytes.length > fr.data.length)
+		{
+			var copy = new ByteArray(fr.data.length);
+			copy.writeBytes(bytes, bytes.position, fr.data.length);
+			bytes = copy;
+		}
+
+		// TODO: improve this shi lmao
+		switch (curState)
+		{
+			case "upload chart":
+				if (Path.extension(fr.name) != "json")
+					return;
+
+				chart = SongTools.loadSong(bytes.toString());
+
+			case "upload inst":
+				if (chart == null && (Path.extension(fr.name) != "ogg" #if html5 || Path.extension(fr.name) != "mp3" #end))
+					return;
+
+				inst = Bytes.ofData(bytes);
+
+			case "upload voices (optional)":
+				if ((chart == null && (Path.extension(fr.name) != "ogg" #if html5 || Path.extension(fr.name) != "mp3" #end))
+					|| chart != null
+					&& !chart.needsVoices)
+					return;
+
+				voices = Bytes.ofData(bytes);
+		}
+
+		curState = "idle";
+		done.push(true);
+	}
+
+	function _onCancel(_):Void
+	{
+		trace("Cancelled");
 	}
 
 	override function update(elapsed:Float)
@@ -124,11 +197,67 @@ class FSSelection extends MusicBeatState
 
 			case CONFIRM:
 				canPress = false;
-				SongSelection.songSelected.songName = grpOptions.members[curSelected].text.text.replace(" ", "-");
-				SongSelection.songSelected.isFS = true;
-				TransitionState.switchState(new PlayState());
+
+				if (curState == "listing" && grpOptions.members[curSelected].text.text != "Add new song")
+				{
+					ChartLoader.overridenLoad = true;
+					SongSelection.songSelected.songName = grpOptions.members[curSelected].text.text;
+
+					// Run first to load chart lmfao
+					ChartLoader.loadVFSChart(SongSelection.songSelected.songName, false).then((_) ->
+					{
+						TransitionState.switchState(new PlayState());
+					});
+					return;
+				}
+
+				if (curState == "listing" && grpOptions.members[curSelected].text.text == "Add new song")
+				{
+					curState = "idle";
+					regenMenu(options);
+					return;
+				}
+
+				var option:String = options[curSelected].toLowerCase();
+				switch (option)
+				{
+					default:
+						curState = option;
+						showDialog();
+
+					case "done":
+						if (chart != null && chart.needsVoices && done.length != 3 || chart != null && !chart.needsVoices && done.length != 2)
+							return;
+
+						// im dumb okay
+						var saveStruct:VirtSong = {
+							chart: chart,
+							inst: inst,
+							voices: voices
+						};
+
+						Save.database.shouldPreprocess = false;
+						Save.database.set(VFS, chart.song, saveStruct).then((r) ->
+						{
+							if (r)
+							{
+								freshenEntries();
+								chart = null;
+								inst = voices = null;
+							}
+						});
+				}
 
 			case BACK:
+				if (curState == "idle")
+				{
+					freshenEntries();
+					return;
+				}
+
+				if (curState != "listing") // avoid anything complicated
+					return;
+
 				canPress = false;
 				TransitionState.switchState(new SongSelection());
 		}
@@ -139,9 +268,49 @@ class FSSelection extends MusicBeatState
 		canPress = true;
 		holdTime = 0;
 	}
+
+	function regenMenu(array:Array<String>)
+	{
+		for (i in 0...grpOptions.members.length)
+		{
+			grpOptions.remove(grpOptions.members[0], true);
+		}
+
+		for (i in 0...array.length)
+		{
+			var entry:SongEntry = new SongEntry(0, 220, 700, array[i], 28);
+			entry.initialPositions.x = (FlxG.width - entry.width) / 2;
+			entry.targetY = i;
+			entry.text.autoSize = false;
+			entry.text.color = FlxColor.WHITE;
+			entry.text.font = Paths.font("funkin.otf");
+			entry.text.alignment = CENTER;
+			grpOptions.add(entry);
+		}
+		curSelected = grpOptions.length + 1;
+	}
+
+	function freshenEntries()
+	{
+		Save.database.shouldPreprocess = false;
+		Save.database.entries(VFS).then((songs) ->
+		{
+			var regen:Array<String> = [];
+			for (sName in songs.keys())
+			{
+				if (sName == "length")
+					continue;
+
+				regen.push(sName);
+			}
+			regen.push("Add new song");
+			regenMenu(regen);
+			curState = "listing";
+		});
+	}
 }
 
-// just a copy of BnidEntry from RebindingState
+// just a copy of BindEntry from RebindingState
 
 @:publicFields
 class SongEntry extends FlxSpriteGroup
