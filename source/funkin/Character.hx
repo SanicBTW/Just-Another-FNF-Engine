@@ -3,14 +3,19 @@ package funkin;
 import backend.Cache;
 import backend.Conductor;
 import backend.IO;
+import backend.SPromise;
+import backend.Save;
 import backend.io.Path;
 import backend.scripting.*;
 import base.sprites.OffsettedSprite;
 import flixel.math.FlxPoint;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import haxe.Json;
 import haxe.ds.StringMap;
+import haxe.io.Bytes;
 import openfl.utils.Assets;
+import openfl.utils.ByteArray;
 
 using StringTools;
 
@@ -37,6 +42,13 @@ typedef AnimArray =
 	var loop:Bool;
 	var indices:Array<Int>;
 	var offsets:Array<Int>;
+}
+
+typedef VirtCharact =
+{
+	var image:Bytes;
+	var xml:String;
+	var json:String;
 }
 
 // Just the old code
@@ -80,7 +92,7 @@ class Character extends OffsettedSprite
 	public var stunned:Bool = false;
 	public var alreadyLoaded:Bool = true;
 
-	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf')
+	public function new(X:Float, Y:Float, isPlayer:Bool = false, character:String = 'bf', overrideLoad:Bool = false)
 	{
 		super(X, Y);
 		cameraPosition = new FlxPoint(0, 0);
@@ -89,6 +101,9 @@ class Character extends OffsettedSprite
 		curCharacter = character;
 		this.isPlayer = isPlayer;
 		antialiasing = true;
+
+		if (overrideLoad)
+			return;
 
 		var charPath:String = getCharPath();
 
@@ -305,5 +320,90 @@ class Character extends OffsettedSprite
 		extension = '.json';
 
 		return retPath;
+	}
+
+	public static function loadFromVFS(isPlayer:Bool = false, character:String):SPromise<Character>
+	{
+		return new SPromise<Character>((resolve, reject) ->
+		{
+			Save.database.get(VFS, 'character:$character').then((s) ->
+			{
+				if (s == null)
+				{
+					resolve(new Character(0, 0, isPlayer, character));
+					return;
+				}
+
+				var save:VirtCharact = cast s;
+
+				#if !js
+				var byteArray:ByteArray = ByteArray.fromBytes(save.image);
+				#else
+				@:privateAccess
+				var byteArray:ByteArray = ByteArray.fromArrayBuffer(save.image.b.buffer);
+				#end
+
+				var char:Character = new Character(0, 0, isPlayer, "", true);
+
+				openfl.display.BitmapData.loadFromBytes(byteArray).onComplete((bitmapData) ->
+				{
+					char.frames = flixel.graphics.frames.FlxAtlasFrames.fromSparrow(flixel.graphics.FlxGraphic.fromBitmapData(bitmapData), save.xml);
+
+					var json:CharacterFile = Json.parse(save.json);
+					if (json.scale != 1)
+					{
+						char.setGraphicSize(Std.int(char.width * json.scale));
+						char.updateHitbox();
+					}
+
+					char.healthIcon = json.healthicon;
+					char.singDuration = json.sing_duration;
+					char.characterPosition.set(json.position[0], json.position[1]);
+					char.cameraPosition.set(json.camera_position[0], json.camera_position[1]);
+					char.flipX = !!json.flip_x;
+
+					if (json.healthbar_colors != null && json.healthbar_colors.length > 2)
+						char.healthColor = FlxColor.fromRGB(json.healthbar_colors[0], json.healthbar_colors[1], json.healthbar_colors[2]);
+
+					if (json.no_antialiasing)
+						char.antialiasing = false;
+
+					if (json.animations != null && json.animations.length > 0)
+					{
+						for (anim in json.animations)
+						{
+							var animAnim:String = anim.anim;
+							var animName:String = anim.name;
+							var animFPS:Int = anim.fps;
+							var animLoop:Bool = !!anim.loop;
+							var animInd:Array<Int> = anim.indices;
+							if (animInd != null && animInd.length > 0)
+								char.animation.addByIndices(animAnim, animName, animInd, "", animFPS, animLoop);
+							else
+								char.animation.addByPrefix(animAnim, animName, animFPS, animLoop);
+
+							if (anim.offsets != null && anim.offsets.length > 1)
+								char.animOffsets[animAnim] = [anim.offsets[0], anim.offsets[1]];
+						}
+					}
+
+					char.danceIdle = (char.animation.getByName('danceLeft') != null && char.animation.getByName('danceRight') != null);
+					if (char.animOffsets.exists('singLEFTmiss')
+						|| char.animOffsets.exists('singDOWNmiss')
+						|| char.animOffsets.exists('singUPmiss')
+						|| char.animOffsets.exists('singRIGHTmiss'))
+						char.hasMissAnimations = true;
+					char.dance();
+
+					if (isPlayer)
+						char.flipX = !char.flipX;
+
+					char.x += char.characterPosition.x;
+					char.y += char.characterPosition.y;
+
+					resolve(char);
+				});
+			});
+		});
 	}
 }
