@@ -5,12 +5,10 @@ import backend.IO;
 import backend.input.Controls.ActionType;
 import base.TransitionState;
 import base.sprites.StateBG;
-import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import funkin.text.Alphabet;
 import haxe.io.Bytes;
 import network.MultiCallback;
-import network.Request;
 import network.pocketbase.Collection;
 import network.pocketbase.PBRequest;
 import network.pocketbase.Record.FunkinRecord;
@@ -20,7 +18,7 @@ using StringTools;
 
 class SongSelection extends TransitionState
 {
-	private final pages:Array<String> = ["libraries", "funkin", "quaver", "fs"];
+	private final pages:Array<String> = ["libraries", "funkin", "quaver", "vfs"];
 	private var curPage(default, set):Int = 0;
 	private var curSelected(default, set):Int = 0;
 	private var curText(get, null):String;
@@ -143,9 +141,9 @@ class SongSelection extends TransitionState
 					TransitionState.switchState(new quaver.states.QuaverSelection());
 				}
 
-			case "fs":
+			case "vfs":
 				{
-					TransitionState.switchState(new FSSelection());
+					TransitionState.switchState(new VFSManagement());
 				}
 		}
 

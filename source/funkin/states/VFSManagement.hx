@@ -1,10 +1,7 @@
 package funkin.states;
 
-import backend.Cache;
-import backend.Extensions;
 import backend.Save;
 import backend.input.Controls;
-import backend.io.Path;
 import base.MusicBeatState;
 import base.TransitionState;
 import base.sprites.*;
@@ -12,31 +9,15 @@ import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
-import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import funkin.ChartLoader.VirtSong;
-import funkin.SongTools.SongData;
-import haxe.io.Bytes;
-import haxe.io.BytesData;
-import haxe.io.BytesInput;
-import haxe.io.Input;
-import haxe.zip.Entry;
-import haxe.zip.Reader;
+import funkin.substates.vfs.*;
 import lime.math.Vector2;
-import lime.media.AudioBuffer;
-import openfl.display.Loader;
-import openfl.display.LoaderInfo;
-import openfl.events.Event;
-import openfl.media.Sound;
-import openfl.net.FileFilter;
-import openfl.net.FileReference;
-import openfl.utils.ByteArray;
 
 using StringTools;
 
-// FileSystem selection
-class FSSelection extends MusicBeatState
+// So the substates require pressing confirm twice to actually work, its something weird and im looking into it
+class VFSManagement extends MusicBeatState
 {
 	private var grpOptions:FlxTypedGroup<SongEntry>;
 	private var curSelected(default, set):Int = 0;
@@ -77,13 +58,9 @@ class FSSelection extends MusicBeatState
 	private var holdTime:Float = 0;
 
 	private var bg:StateBG;
-	private var options:Array<String> = ["Upload Chart", "Upload Inst", "Upload Voices (Optional)", "Done"];
-	private var done:Array<Bool> = [];
 	private var curState:String = "listing";
 
-	private var chart:SongData = null;
-	private var inst:Bytes = null;
-	private var voices:Bytes = null;
+	public static var songName:String = "";
 
 	override function create()
 	{
@@ -97,69 +74,6 @@ class FSSelection extends MusicBeatState
 
 		freshenEntries();
 		addTouchControls(DPAD, UP_DOWN, A_B);
-	}
-
-	function showDialog()
-	{
-		var fr:FileReference = new FileReference();
-		fr.addEventListener(Event.SELECT, _onSelect, false, 0, true);
-		fr.addEventListener(Event.CANCEL, _onCancel, false, 0, true);
-		fr.browse();
-	}
-
-	function _onSelect(E:Event):Void
-	{
-		var fr:FileReference = cast(E.target, FileReference);
-		fr.addEventListener(Event.COMPLETE, _onLoad, false, 0, true);
-		fr.load();
-	}
-
-	function _onLoad(E:Event):Void
-	{
-		var fr:FileReference = cast E.target;
-		fr.removeEventListener(Event.COMPLETE, _onLoad);
-
-		var bytes:ByteArray = fr.data;
-
-		// dumbass -mb og
-		if (bytes.position > 0 || bytes.length > fr.data.length)
-		{
-			var copy = new ByteArray(fr.data.length);
-			copy.writeBytes(bytes, bytes.position, fr.data.length);
-			bytes = copy;
-		}
-
-		// TODO: improve this shi lmao
-		switch (curState)
-		{
-			case "upload chart":
-				if (Path.extension(fr.name) != "json")
-					return;
-
-				chart = SongTools.loadSong(bytes.toString());
-
-			case "upload inst":
-				if (chart == null && (Path.extension(fr.name) != "ogg" #if html5 || Path.extension(fr.name) != "mp3" #end))
-					return;
-
-				inst = Bytes.ofData(bytes);
-
-			case "upload voices (optional)":
-				if ((chart == null && (Path.extension(fr.name) != "ogg" #if html5 || Path.extension(fr.name) != "mp3" #end))
-					|| chart != null
-					&& !chart.needsVoices)
-					return;
-
-				voices = Bytes.ofData(bytes);
-		}
-
-		curState = "idle";
-		done.push(true);
-	}
-
-	function _onCancel(_):Void
-	{
-		trace("Cancelled");
 	}
 
 	override function update(elapsed:Float)
@@ -198,54 +112,23 @@ class FSSelection extends MusicBeatState
 			case CONFIRM:
 				canPress = false;
 
-				if (curState == "listing" && grpOptions.members[curSelected].text.text != "Add new song")
+				if (curState == "listing")
 				{
-					ChartLoader.overridenLoad = true;
-					SongSelection.songSelected.songName = grpOptions.members[curSelected].text.text;
-
-					// Run first to load chart lmfao
-					ChartLoader.loadVFSChart(SongSelection.songSelected.songName, false).then((_) ->
+					switch (grpOptions.members[curSelected].text.text)
 					{
-						TransitionState.switchState(new PlayState());
-					});
-					return;
-				}
+						case "Add new song":
+							curState = "idle";
+							openSubState(new SongUpload());
 
-				if (curState == "listing" && grpOptions.members[curSelected].text.text == "Add new song")
-				{
-					curState = "idle";
-					regenMenu(options);
-					return;
-				}
+						case "Add new character":
+							curState = "idle";
+							openSubState(new CharacterUpload());
 
-				var option:String = options[curSelected].toLowerCase();
-				switch (option)
-				{
-					default:
-						curState = option;
-						showDialog();
-
-					case "done":
-						if (chart != null && chart.needsVoices && done.length != 3 || chart != null && !chart.needsVoices && done.length != 2)
-							return;
-
-						// im dumb okay
-						var saveStruct:VirtSong = {
-							chart: chart,
-							inst: inst,
-							voices: voices
-						};
-
-						Save.database.shouldPreprocess = false;
-						Save.database.set(VFS, chart.song, saveStruct).then((r) ->
-						{
-							if (r)
-							{
-								freshenEntries();
-								chart = null;
-								inst = voices = null;
-							}
-						});
+						default:
+							ChartLoader.overridenLoad = true;
+							songName = grpOptions.members[curSelected].text.text;
+							TransitionState.switchState(new AsyncPlayState());
+					}
 				}
 
 			case BACK:
@@ -255,9 +138,6 @@ class FSSelection extends MusicBeatState
 					return;
 				}
 
-				if (curState != "listing") // avoid anything complicated
-					return;
-
 				canPress = false;
 				TransitionState.switchState(new SongSelection());
 		}
@@ -265,6 +145,9 @@ class FSSelection extends MusicBeatState
 
 	override function onActionReleased(action:ActionType)
 	{
+		if (FlxG.state.subState != null)
+			return;
+
 		canPress = true;
 		holdTime = 0;
 	}
@@ -301,9 +184,11 @@ class FSSelection extends MusicBeatState
 				if (sName == "length")
 					continue;
 
-				regen.push(sName);
+				if (!sName.contains("character:"))
+					regen.push(sName);
 			}
 			regen.push("Add new song");
+			regen.push("Add new character");
 			regenMenu(regen);
 			curState = "listing";
 		});
