@@ -11,7 +11,8 @@ using StringTools;
 // Just noticed extending Request is kind of dumb, just return a Request lol
 class PBRequest<R:Record, C:Collection<R>>
 {
-	private static final base:String = "https://pb.sancopublic.com/api/";
+	// Thanks to PocketHost for offering the PocketBase Hosting!
+	private static final base:String = "https://funky-sanco.pockethost.io/api/";
 	private static final recordsExt:String = "collections/:col/records";
 	private static final filesExt:String = "files/:col/:id/:file";
 
