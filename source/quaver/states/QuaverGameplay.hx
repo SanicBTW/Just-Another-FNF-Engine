@@ -625,6 +625,10 @@ class QuaverGameplay extends MusicBeatState
 		return retHitObj;
 	}
 
+	// Used to avoid getting so much "null" and lagging the game when the target audio is not found
+	// this check SHOULD be done while parsing the beatmap on first run
+	private var cantPlay:Array<String> = [];
+
 	// Having to add storage support is gonna be wild af
 	private function playHitObjectSound(hitObject:HitObject)
 	{
@@ -632,9 +636,15 @@ class QuaverGameplay extends MusicBeatState
 		{
 			var targetSound:String = 'soft-hit${hitObject.HitSound.toLowerCase()}.wav';
 			var targetPath:String = 'quaver:assets/quaver/${qua.MapSetId}/$targetSound'; // forgot to enforce when i was moving quaver to its own lib my bad
+			if (cantPlay.contains(targetPath))
+				return;
+
 			var sound = Cache.getSound(targetPath);
 			if (sound == null)
+			{
+				cantPlay.push(targetPath);
 				return;
+			}
 
 			FlxG.sound.play(sound, 0.4);
 		}
@@ -642,9 +652,15 @@ class QuaverGameplay extends MusicBeatState
 		if (hitObject.KeySounds != null)
 		{
 			var targetPath:String = qua.CustomAudioSamples[hitObject.KeySounds.Sample - 1];
+			if (cantPlay.contains(targetPath))
+				return;
+
 			var sound = Cache.getSound(targetPath);
 			if (sound == null)
+			{
+				cantPlay.push(targetPath);
 				return;
+			}
 
 			FlxG.sound.play(sound, hitObject.KeySounds.Volume);
 		}
