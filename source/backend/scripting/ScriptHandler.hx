@@ -3,9 +3,11 @@ package backend.scripting;
 import backend.Conductor;
 import backend.input.*;
 import backend.io.Path;
+import base.*;
 import base.sprites.*;
 import base.sprites.SBar.SBarFillAxis;
 import flixel.*;
+import flixel.group.FlxGroup;
 import flixel.math.*;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
@@ -15,6 +17,7 @@ import flixel.util.*;
 import funkin.*;
 import funkin.notes.*;
 import funkin.substates.GameOverSubstate;
+import funkin.text.Alphabet;
 import haxe.ds.StringMap;
 import hscript.*;
 import hscript.Expr.Error;
@@ -22,7 +25,7 @@ import openfl.utils.Assets;
 
 using StringTools;
 
-// Idea: scan for scripts on a dedicated folder and load them globally for extra functionality
+// Idea: scan for scripts on a dedicated folder and load them globally for extra functionality - pending
 
 /**
  * Handles the Backend and Script interfaces of the engine, as well as exceptions and crashes.
@@ -38,7 +41,14 @@ class ScriptHandler
 		// Haxe
 		"toString" => Std.string,
 		"toInt" => Std.parseInt,
+		#if !hl
 		"toInt32" => Std.int,
+		#else
+		"toInt32" => (f:Float) ->
+		{
+			return Std.int(f);
+		},
+		#end
 		"toFloat" => Std.parseFloat,
 		#if sys "Sys" => Sys, #end
 		"Date" => Date,
@@ -78,6 +88,7 @@ class ScriptHandler
 		'FlxTextBorderStyle' => FlxTextBorderStyle,
 		'FlxSound' => FlxSound,
 		'FlxAxes' => FlxAxes,
+		'FlxGroup' => FlxGroup,
 		// Engine / Forever
 		'Settings' => Settings,
 		'VPaths' => Paths, // Vanilla Paths , basically access the whole engine Paths
@@ -95,7 +106,7 @@ class ScriptHandler
 		'SBar' => SBar, // Sanco Bar, my own FlxBar implementation
 		'SBarFillAxis' => SBarFillAxis,
 		"StateBG" => StateBG, // Used for fallbacks on Quaver
-		"Controls" => Controls, // In case is needed to add some custom bind (Once I finish the code for rebinding and Funkergarten I will work on custom binds)
+		"SControls" => Controls, // Static Controls - In case is needed to add some custom bind (Once I finish rebinding I will work on custom binds)
 		"Controller" => Controller, // Access to the Controller schema and more
 		"GamepadButton" => {
 			A: lime.ui.GamepadButton.A,
@@ -115,6 +126,8 @@ class ScriptHandler
 			DPAD_RIGHT: lime.ui.GamepadButton.DPAD_RIGHT,
 		}, // Dependency
 		"Keyboard" => Keyboard, // Access to the Keyboard stuff
+		"Alphabet" => Alphabet,
+		"TransitionState" => TransitionState,
 	];
 
 	private static var parser:Parser = new Parser();

@@ -290,9 +290,12 @@ class ChartLoader
 						if (noteQueue.length > 0)
 							oldNote = noteQueue[Std.int(noteQueue.length - 1)];
 
-						var newNote:Note = new Note(strumTime, noteData, songNotes[3], strumLine, oldNote);
+						var noteType:Null<String> = Std.string(songNotes[3]);
+						if (noteType == "null" || noteType == null)
+							noteType = "default";
+						var newNote:Note = new Note(strumTime, noteData, noteType, strumLine, oldNote);
 						newNote.mustPress = hitNote;
-						newNote.gfNote = (section.gfSection || songNotes[3] == "GF Sing"); // force
+						newNote.gfNote = (section.gfSection || noteType == "GF Sing"); // force
 						newNote.doubleNote = checkDouble(noteTimes, strumLine, strumTime);
 						var holdStep:Float = newNote.sustainLength = songNotes[2] / Conductor.stepCrochet;
 						noteQueue.push(newNote);
