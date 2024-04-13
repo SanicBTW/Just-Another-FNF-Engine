@@ -1,9 +1,8 @@
 package shaders;
 
 import backend.DeepCopy;
-import backend.SPromise;
 import backend.input.Controls.ActionType;
-import base.sprites.RoundedSprite;
+import base.sprites.RoundSprite;
 import base.sprites.StateBG;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -368,7 +367,7 @@ class PendingSprite extends FlxSprite
 // joins flxtext and rounded sprite, not using lerped flx text or modifying it cuz it already works so im leavin it as it is just in case, but this is heavily based off it so
 class ShaderEntry extends FlxSpriteGroup
 {
-	public var bg:RoundedSprite;
+	public var bg:RoundSprite;
 	public var text:FlxText;
 
 	public var targetX:Float = 0;
@@ -384,7 +383,8 @@ class ShaderEntry extends FlxSpriteGroup
 		defaultText = Text;
 
 		text = new FlxText(12.5, 12.5, FieldWidth, Text, Size, true);
-		bg = new RoundedSprite(0, 0, Math.floor(text.width + 25), Math.floor(text.height + 25), [50], FlxColor.BLACK, 0.75);
+		bg = new RoundSprite(0, 0, Math.floor(text.width + 25), Math.floor(text.height + 25), [50], FlxColor.BLACK);
+		bg.alpha = 0.75;
 
 		add(bg);
 		add(text);
