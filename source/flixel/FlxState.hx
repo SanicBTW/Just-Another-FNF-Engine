@@ -128,6 +128,7 @@ class FlxState extends FlxGroup implements IModuleAPI implements IControlsAPI im
 	{
 		Controls.onActionPressed.add(onActionPressed);
 		Controls.onActionReleased.add(onActionReleased);
+		setOnModules("controls", controls); // Expose instance controls
 	}
 
 	override public function draw():Void

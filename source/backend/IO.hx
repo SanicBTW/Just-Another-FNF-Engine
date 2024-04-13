@@ -41,6 +41,7 @@ class IO
 		addFolder(MUSIC);
 		addFolder(SOUNDS);
 		addFolder(EVENTS);
+		addFolder(SCRIPTS);
 
 		// because my dumb ass cant do a proper check to create folders on parsing (old Qua.hx from scrolling&backend-rewrite branch)
 		addFolder(QUAVER);
@@ -210,6 +211,7 @@ enum abstract AssetFolder(String) to String
 	var MUSIC = "music";
 	var SOUNDS = "sounds";
 	var EVENTS = "events";
+	var SCRIPTS = "scripts"; // Global Scripts, will be kept in memory for the rest of the game (or atleast try to)
 	// it will be hard to implement a good system for this but should be just like libraries (maybe I will add a .ini system that builds file references and it will be used for loading and shit??? sounds cool tho)
 	var MODS = "mods";
 	// Chart support and convert (will move .mp3 files into here)
