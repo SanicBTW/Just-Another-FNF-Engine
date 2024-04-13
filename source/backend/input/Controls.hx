@@ -75,7 +75,11 @@ class Controls
 
 	// When switching states, the code will try to automatically switch the actor to avoid issues and manual override
 	public static var uiStates:Array<String> = [];
-	public static var noteStates:Array<String> = [Type.getClassName(QuaverGameplay), Type.getClassName(PlayState)];
+	public static var noteStates:Array<String> = [
+		Type.getClassName(QuaverGameplay),
+		Type.getClassName(PlayState),
+		Type.getClassName(AsyncPlayState)
+	];
 
 	public static var onActionPressed:Event<ActionType->Void> = new Event<ActionType->Void>();
 	public static var onActionReleased:Event<ActionType->Void> = new Event<ActionType->Void>();
