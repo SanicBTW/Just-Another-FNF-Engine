@@ -1,16 +1,19 @@
-# Just Another FNF Engine - 1.0.0rc1
+# Just Another FNF Engine - 1.0.0rcX2
 
-A rewrite of Friday Night Funkin' mixing:
-- Forever Engine
-- - Legacy 
-- - Rewrite
-- Kade Engine 1.6.2 
-- My Psych Engine 0.3.2h fork
+<p align="center">
+  <img src="https://github.com/4mbr0s3-2/Schmovin/blob/main/SchmovinLogo.png?raw=true" alt="Schmovin' Logo"/>
+</p>
 
-and more!
+## Branch: schmovin-ex
 
-# NOTION PUBLISHED!!!
+This branch targets on adding Schmovin' to the engine while adding more features to itself.
 
-It will be used for important stuff like versions, pages, workroads, progress, etc
+For example: using Interfaces instead of literal Vanilla FNF classes, etc. (I have no idea on what else to implement)
 
-[Notion here](https://sancobtw.notion.site/sancobtw/Just-Another-FNF-Engine-c4076e2b1ea34032a4f9e9faa754537c)
+Please note that this won't use [my Schmovin' fork](https://github.com/SanicBTW/Schmovin) as a submodule since it will be added inside the source directly for easier and quicker modifications.
+
+It will use some code from the [other Schmovin' branch](https://github.com/SanicBTW/Just-Another-FNF-Engine/tree/schmovin)
+
+## Credits
+
+4mbr0s3 2 for making Schmovin.
