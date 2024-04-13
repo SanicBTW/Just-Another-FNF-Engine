@@ -138,14 +138,24 @@ class UI extends FlxSpriteGroup
 		else
 			curJudgement.animation.play(judgement + (late ? '-late' : '-early'));
 
+		// Forced values :yum:
+		var adjust:Float = 40;
 		curJudgement.setGraphicSize(Std.int(curJudgement.frameWidth * 0.7));
+		if (Settings.smallJudgements)
+		{
+			curJudgement.updateHitbox();
+			curJudgement.setGraphicSize(Std.int(curJudgement.width * 0.7));
+			adjust = (adjust * 2) * -1;
+		}
+
+		curJudgement.updateHitbox();
 
 		curJudgement.acceleration.y = 550;
 		curJudgement.velocity.x = -FlxG.random.int(0, 10);
 		curJudgement.velocity.y = -FlxG.random.int(140, 175);
 
 		curJudgement.screenCenter();
-		curJudgement.x = ((FlxG.width * 0.35) - 40) - judgementOffset[0];
+		curJudgement.x = ((FlxG.width * 0.35) - adjust) - judgementOffset[0];
 		curJudgement.y -= 60 + judgementOffset[1];
 
 		judgementGroup.add(curJudgement);

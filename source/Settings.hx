@@ -5,6 +5,7 @@ class Settings
 	// Graphics
 	public static var antialiasing:Bool = true;
 	public static var bgTheme:Paths.BGTheme = DEFAULT;
+	public static var smallJudgements:Bool = true;
 
 	// Gameplay
 	public static var downScroll:Bool = false;
