@@ -33,7 +33,7 @@ class SchmovinAdapter
 	}
 
 	// This accounts for custom notes with custom textures
-	public function shouldCacheNoteBitmap(note:Note)
+	public function shouldCacheNoteBitmap(note:schmovin.interfaces.INote)
 	{
 		return true;
 	}

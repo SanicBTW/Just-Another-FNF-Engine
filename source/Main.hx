@@ -91,6 +91,8 @@ class Main extends Sprite
 
 		setupGame();
 
+		new base.schmovin_ex.JAFESchmovin();
+
 		FlxG.signals.preStateCreate.add((_) ->
 		{
 			Cache.clearStoredMemory();

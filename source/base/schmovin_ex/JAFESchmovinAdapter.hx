@@ -2,6 +2,7 @@ package base.schmovin_ex;
 
 import backend.Conductor;
 import schmovin.SchmovinAdapter;
+import schmovin.SchmovinStandalone;
 
 class JAFESchmovinAdapter extends SchmovinAdapter
 {
@@ -54,16 +55,14 @@ class JAFESchmovinAdapter extends SchmovinAdapter
 		return getSongPosition() / getCrotchetNow();
 	}
 
-	// TODO
 	override function getHoldNoteSubdivisions():Int
 	{
-		return 4;
+		return SchmovinStandalone.holdNoteSubdivisions;
 	}
 
-	// TODO
 	override function getArrowPathSubdivisions():Int
 	{
-		return 80;
+		return SchmovinStandalone.arrowPathSubdivisions;
 	}
 
 	// TODO
@@ -72,10 +71,9 @@ class JAFESchmovinAdapter extends SchmovinAdapter
 		return 0;
 	}
 
-	// TODO
 	override function getOptimizeHoldNotes():Bool
 	{
-		return true;
+		return SchmovinStandalone.optimizeHoldNotes;
 	}
 
 	override function log(string:Dynamic)

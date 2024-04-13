@@ -223,9 +223,9 @@ class SchmovinNoteModList
 		{
 			var notemod = _mods[modName];
 			// Concrete dependencies :P
-			if (Std.is(sprite, Note))
+			if (sprite is INote)
 			{
-				var note:Note = cast sprite;
+				var note:INote = cast sprite;
 				var strumTimeDiff = _schmovinAdapter.getSongPosition() - note.strumTime - _schmovinAdapter.grabGlobalVisualOffset();
 				pos = notemod.executePath(currentBeat, strumTimeDiff, note.getTotalColumn(), player, pos, playfield);
 			}
@@ -254,9 +254,9 @@ class SchmovinNoteModList
 		for (modName in getModNameList(playfield))
 		{
 			var notemod = _mods[modName];
-			if (Std.is(sprite, Note))
+			if (sprite is INote)
 			{
-				var note:Note = cast sprite;
+				var note:INote = cast sprite;
 				notemod.executeNote(currentBeat, note, player, pos, playfield);
 			}
 			else
@@ -282,9 +282,9 @@ class SchmovinNoteModList
 			if (!notemod.isVertexModifier())
 				continue;
 			// Concrete dependencies :P
-			if (Std.is(sprite, Note))
+			if (sprite is INote)
 			{
-				var note:Note = cast sprite;
+				var note:INote = cast sprite;
 				var strumTimeDiff = _schmovinAdapter.getSongPosition() - note.strumTime - _schmovinAdapter.grabGlobalVisualOffset();
 				outVertex = notemod.executeNoteVertex(currentBeat, strumTimeDiff, note.getTotalColumn(), player, outVertex, vertexIndex, pos, playfield);
 			}

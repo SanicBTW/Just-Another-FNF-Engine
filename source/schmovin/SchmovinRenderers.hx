@@ -366,7 +366,7 @@ class SchmovinHoldNoteRenderer extends SchmovinRenderer
 		drawHoldNotes();
 	}
 
-	private function calculatePointsAlongPathNormal(targetWidth:Float, hold:Note, strumTime:Float, column:Int, player:Int, playfield:SchmovinPlayfield)
+	private function calculatePointsAlongPathNormal(targetWidth:Float, strumTime:Float, column:Int, player:Int, playfield:SchmovinPlayfield)
 	{
 		var currentBeat = SchmovinAdapter.getInstance().getCurrentBeat();
 

@@ -2,13 +2,12 @@
  * @ Author: 4mbr0s3 2
  * @ Create Time: 2024-01-12 11:46:28
  * @ Modified by: sanco
+ * @ Modification Time: 2024-04-13 16:20:20
  */
 
 // Mixed some code from `GroovinSchmovinAdapter`
-
 package schmovin;
 
-import Song.SwagSong;
 import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -17,6 +16,7 @@ import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
+import schmovin.interfaces.ISwagSong;
 
 using SchmovinUtil.SchmovinUtil;
 
@@ -64,6 +64,7 @@ class SchmovinStandalone
 	}
 
 	// * Before calling this, make sure to set the SchmovinAdapter instance so Schmovin' properly works.
+
 	/**
 	 * Call this in PlayState between the following lines:
 	 * 
@@ -153,7 +154,7 @@ class SchmovinStandalone
 	public function update(elapsed:Float)
 	{
 		instance.update(elapsed);
-		//updateReceptors();
+		// updateReceptors();
 		hideReceptors();
 	}
 
@@ -227,12 +228,12 @@ class SchmovinStandalone
 	 * @deprecated Note positioning moved to SchmovinRenderers for multiple playfield support
 	 */
 	@:deprecated
-	public function postNotePosition(state:PlayState, strumLine:FlxSprite, daNote:Note, SONG:SwagSong):Bool
+	public function postNotePosition(state:PlayState, strumLine:FlxSprite, daNote:Note, SONG:ISwagSong):Bool
 	{
 		/*
-		if (daNote.alive && daNote.visible)
-			instance.timeline.updateNotes(getCurrentBeat(), daNote, daNote.getPlayer());
-		return true;*/
+			if (daNote.alive && daNote.visible)
+				instance.timeline.updateNotes(getCurrentBeat(), daNote, daNote.getPlayer());
+			return true; */
 
 		// Note positioning moved to SchmovinRenderers for multiple playfield support
 
@@ -242,6 +243,6 @@ class SchmovinStandalone
 			daNote.cameras = [];
 		}
 
-		return true;		
+		return true;
 	}
 }
