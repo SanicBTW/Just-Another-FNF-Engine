@@ -21,7 +21,7 @@ class Main extends Sprite
 {
 	private var gameWidth:Int = 1280;
 	private var gameHeight:Int = 720;
-	private var initialClass:Class<FlxState> = funkin.states.SongSelection;
+	private var initialClass:Class<FlxState> = funkin.states.start.TitleState;
 	private var zoom:Float = -1;
 	private var framerate:Int = getDisplay().currentMode.refreshRate; // VSync :troll: - maybe not now
 

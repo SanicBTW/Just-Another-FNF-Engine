@@ -1,0 +1,210 @@
+var initialized:Bool = false;
+
+var logoBl:FlxSprite;
+var gfDance:FlxSprite;
+var titleText:FlxSprite;
+
+var cover:FlxSprite;
+var group:FlxGroup;
+var logo:FlxSprite;
+var danceLeft:Bool = false;
+
+var skipped:Bool = false;
+var pressed:Bool = false;
+var transitioning:Bool = false;
+
+function MusicMeta()
+{
+    return {
+        music: "freakyMenuOG",
+        bpm: 102,
+        fadeIn: true
+    };
+}
+
+function onStartIntro()
+{
+    logoBl = new FlxSprite(-150, -100);
+    logoBl.frames = VPaths.getSparrowAtlas("title/logoBumpin");
+    logoBl.animation.addByPrefix("bump", "logo bumpin", 24);
+    logoBl.animation.play("bump");
+    logoBl.updateHitbox();
+
+    gfDance = new FlxSprite(FlxG.width * 0.4, FlxG.height * 0.07);
+    gfDance.frames = VPaths.getSparrowAtlas("title/gfDanceTitle");
+    gfDance.animation.addByIndices('danceLeft', 'gfDance', [30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], "", 24, false);
+	gfDance.animation.addByIndices('danceRight', 'gfDance', [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], "", 24, false);
+
+    add(gfDance);
+    add(logoBl);
+
+    titleText = new FlxSprite(100, FlxG.height * 0.8);
+    titleText.frames = VPaths.getSparrowAtlas("title/titleEnter");
+    titleText.animation.addByPrefix("idle", "Press Enter to Begin", 24);
+    titleText.animation.addByPrefix("press", "ENTER PRESSED", 24);
+    titleText.animation.play("idle");
+    titleText.updateHitbox();
+    add(titleText);
+
+    cover = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+    add(cover);
+
+    group = new FlxGroup();
+    add(group);
+
+    logo = new FlxSprite(0, FlxG.height * 0.4).loadGraphic(VPaths.image("title/titlelogo"));
+    logo.alpha = 0.0001;
+    logo.setGraphicSize(toInt32(logo.width * 0.55));
+    logo.updateHitbox();
+    logo.screenCenter(FlxAxes.X);
+    add(logo);
+
+    // music cant be null when reaching here
+    if (FlxG.sound.music != null)
+    {
+        FlxG.sound.music.play(true);
+        if (MusicMeta().fadeIn)
+            FlxG.sound.music.fadeIn(4, 0, 0.7);
+    }
+
+    initialized = true;
+	Conductor.active = true;
+    Conductor.shouldResync = false;
+}
+
+function onUpdate(elapsed:Float)
+{
+    // only touchy
+    if (FlxG.onMobile)
+    {
+        for (touch in FlxG.touches.list)
+        {
+            if (touch.justPressed)
+                pressed = true;
+        }
+    }
+
+    if (pressed && !transitioning && skipped)
+    {
+        if (titleText != null)
+            titleText.animation.play("press");
+
+        FlxG.camera.flash(FlxColor.WHITE, 1);
+        FlxG.sound.play(VPaths.sound('confirmMenu'), 0.7);
+
+        transitioning = true;
+
+        new FlxTimer().start(1, function(tmr:FlxTimer)
+		{
+            onEnded();
+		});
+    }
+
+    if (initialized && pressed && !skipped)
+    {
+        finishIntro();
+        pressed = false;
+    }
+}
+
+function onBeatHit(beat:Int)
+{
+    if (logoBl != null)
+        logoBl.animation.play("bump");
+
+    if (gfDance != null)
+    {
+        danceLeft = !danceLeft;
+
+        if (danceLeft)
+            gfDance.animation.play("danceRight");
+        else
+            gfDance.animation.play("danceLeft");
+    }
+
+    if (!skipped)
+    {
+        switch (beat)
+        {
+            case 1:
+                createText(["Just Another FNF Engine by"], 45);
+            case 3:
+                addMore("SanicBTW", 45);
+                addMore("And you!", 45);
+            case 4:
+                deleteText();
+            case 5:
+                createText(["This is a rewrite of"], -60);
+            case 7:
+                addMore("The game right below lmao", -60);
+                logo.alpha = 1;
+            case 8:
+                deleteText();
+                remove(logo);
+                logo.destroy();
+            case 9:
+                createText([introText[0]], 0);
+            case 11:
+                addMore(introText[1], 0);
+            case 12:
+                deleteText();
+            case 13:
+                addMore("Friday", 0);
+            case 14:
+                addMore("Night", 0);
+            case 15:
+                addMore("Funkin", 0);
+
+            case 16:
+                finishIntro();
+        }
+    }
+}
+
+function finishIntro()
+{
+    if (!skipped)
+    {
+        remove(cover);
+        FlxG.camera.flash(FlxColor.WHITE, 4);
+        remove(group);
+        skipped = true;
+    }
+}
+
+// setting the variable on source code does nothing apparently??
+function onConfirm()
+{
+    pressed = true;
+}
+
+function createText(textArray:Array<String>, offset:Float)
+{
+    for (i in 0...textArray.length)
+    {
+        var text:Alphabet = new Alphabet(0, 0, textArray[i], true);
+        text.screenCenter(FlxAxes.X);
+        text.y += (i * 60) + 215 + offset;
+        group.add(text);
+    }
+}
+
+function addMore(text:String, offset:Float)
+{
+    if (group != null)
+    {
+        var text:Alphabet = new Alphabet(0, 0, text, true);
+        text.screenCenter(FlxAxes.X);
+        text.y += (group.length * 60) + 215 + offset;
+        group.add(text);
+    }
+}
+
+function deleteText()
+{
+    while (group.members.length > 0)
+    {
+        group.members[0].destroy();
+        group.remove(group.members[0], true);
+    }
+}
