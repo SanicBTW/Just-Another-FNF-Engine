@@ -822,14 +822,13 @@ class PlayState extends MusicBeatState
 
 	private function updateCamTarget(elapsed:Float)
 	{
-		var curSection = Std.int(curStep / 16);
 		if (curSection != lastSection)
 		{
 			if (SONG.notes[lastSection] != null && (SONG.notes[curSection].mustHitSection != SONG.notes[lastSection].mustHitSection))
 			{
 				camDisplaceX = 0;
 				camDisplaceY = 0;
-				lastSection = Std.int(curStep / 16);
+				lastSection = curSection;
 			}
 		}
 

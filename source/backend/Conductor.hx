@@ -6,66 +6,24 @@ import flixel.util.FlxSignal.FlxTypedSignal;
 import funkin.SongTools.SongData;
 import openfl.media.Sound;
 
-typedef BPMChange =
+typedef BPMChangeEvent =
 {
-	var time:Float;
-	var beat:Float;
-	var step:Float;
+	var stepTime:Int;
+	var songTime:Float;
+	var bpm:Float;
+	@:optional var stepCrochet:Float;
 }
+
+// Rewritten once again but using the 0.2.7.1A Conductor with some newer changes (https://github.com/SanicBTW/Just-Another-FNF-Engine/tree/a118fe49424d27eafa25cdb9f13bc8645b343c6d)
 
 @:publicFields
 class Conductor
 {
-	// Time and steps
-	static var time(default, set):Float = 0;
-
-	@:noCompletion
-	private static function set_time(newTime:Float)
-	{
-		time = newTime;
-
-		if (roundStep > lastStepHit)
-		{
-			for (step in Math.floor(lastStepHit)...roundStep)
-				onStepHit.dispatch(step);
-
-			lastStepHit = roundStep;
-		}
-
-		if (roundBeat > lastBeatHit)
-		{
-			for (beat in Math.floor(lastBeatHit)...roundBeat)
-				onBeatHit.dispatch(beat);
-
-			lastBeatHit = roundBeat;
-		}
-
-		return time;
-	}
-
-	static var step(get, null):Float = 0;
-
-	@:noCompletion
-	private static function get_step()
-		return step = lastStep + ((time - lastTime) / stepCrochet);
-
-	static var roundStep(get, null):Int = 0;
-
-	@:noCompletion
-	private static function get_roundStep()
-		return roundStep = Math.floor(step);
-
-	static var beat(get, null):Float = 0;
-
-	@:noCompletion
-	private static function get_beat()
-		return beat = lastBeat + ((time - lastTime) / crochet);
-
-	static var roundBeat(get, null):Int = 0;
-
-	@:noCompletion
-	private static function get_roundBeat()
-		return roundBeat = Math.floor(beat);
+	// Time, steps, beats and sections
+	static var time:Float = 0;
+	public static var section:Int = 0;
+	public static var step:Int = 0;
+	public static var beat:Int = 0;
 
 	// BPM
 	static var bpm(default, set):Float = 0;
@@ -73,56 +31,37 @@ class Conductor
 	@:noCompletion
 	private static function set_bpm(newBPM:Float)
 	{
-		crochet = (60 / newBPM) * 1000;
+		crochet = calculateCrochet(newBPM);
 		stepCrochet = crochet / 4;
 		return bpm = newBPM;
 	}
 
 	static var crochet(default, null):Float = 0;
 	static var stepCrochet(default, null):Float = 0;
-	static var bpmChanges:Array<BPMChange> = [
-		{
-			step: 0,
-			beat: 0,
-			time: 0
-		}
-	];
+	static var bpmChanges:Array<BPMChangeEvent> = [];
 
 	// Resync
+	static var shouldResync:Bool = true; // Flag to avoid resyncing on some states, only affects music
 	static final resyncThreshold:Float = 50;
-
-	static var lastTime(get, null):Float = 0;
-
-	@:noCompletion
-	private static function get_lastTime()
-		return lastTime = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].time;
-
-	static var lastStep(get, null):Float = 0;
-
-	@:noCompletion
-	private static function get_lastStep()
-		return lastStep = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].step;
-
-	static var lastBeat(get, null):Float = 0;
-
-	@:noCompletion
-	private static function get_lastBeat()
-		return lastBeat = bpmChanges.length == 0 ? 0 : bpmChanges[bpmChanges.length - 1].beat;
 
 	@:noCompletion
 	static var lastStepHit(default, null):Int = -1;
 	@:noCompletion
 	static var lastBeatHit(default, null):Int = -1;
+	@:noCompletion
+	static var lastSectionHit(default, null):Int = -1;
 
 	// Events
 	static var onStepHit(default, null):FlxTypedSignal<Int->Void> = new FlxTypedSignal<Int->Void>();
 	static var onBeatHit(default, null):FlxTypedSignal<Int->Void> = new FlxTypedSignal<Int->Void>();
+	static var onSectionHit(default, null):FlxTypedSignal<Int->Void> = new FlxTypedSignal<Int->Void>();
 	static var onBPMChange(default, null):FlxTypedSignal<(Float, Float) -> Void> = new FlxTypedSignal<(Float, Float) -> Void>();
 
 	// LifeTime
 	static var active:Bool = false;
 
 	// If it should work even if an audio device doesn't exists
+	// TODO: Finish callbacks not firing when the song finishes
 	static var force:Bool = false; // Search for a better name or sum
 
 	// FNF - Speed
@@ -162,14 +101,17 @@ class Conductor
 
 	static function changeBPM(newBPM:Float, dontResetBeat:Bool = true)
 	{
+		// she a keeper :money_mouth: (idk how this works to be honest)
+		// (15 min later) ok so this basically its just a way to avoid parsing bpm changes when parsing the chart, and add the bpm changes mid song, pretty cool if i can say so
 		if (crochet != 0 && dontResetBeat)
 		{
 			bpmChanges.push({
-				beat: beat,
-				step: step,
-				time: time
+				stepTime: step,
+				songTime: time,
+				bpm: newBPM,
+				stepCrochet: stepCrochet
 			});
-			bpmChanges.sort((a, b) -> Std.int(a.time - b.time));
+			bpmChanges.sort((a, b) -> Std.int(a.songTime - b.songTime));
 		}
 
 		onBPMChange.dispatch(bpm, newBPM);
@@ -194,19 +136,62 @@ class Conductor
 			return;
 		}
 
+		// no need to calculate sections in here
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 		{
-			if (Math.abs(FlxG.sound.music.time - time) > resyncThreshold)
+			step = Math.floor(time / stepCrochet);
+			beat = Math.floor(step / 4);
+
+			if (shouldResync && Math.abs(FlxG.sound.music.time - time) > resyncThreshold)
 				resyncMusic();
+
+			if (step > lastStepHit)
+			{
+				onStepHit.dispatch(step);
+				lastStepHit = step;
+			}
+
+			if (beat > lastBeatHit)
+			{
+				if (step % 4 == 0)
+					onBeatHit.dispatch(beat);
+				lastBeatHit = beat;
+			}
 
 			time += elapsed * 1000;
 		}
 
 		if (boundInst != null && boundInst.playing)
 		{
-			if (Math.abs(boundInst.time - time) > resyncThreshold
-				|| (SONG.needsVoices && Math.abs(boundVocals.time - time) > resyncThreshold))
-				resyncFNF();
+			var lastChange:BPMChangeEvent = getBPMFromSeconds(time);
+
+			step = lastChange.stepTime + Math.floor((time - lastChange.songTime) / stepCrochet);
+			section = Math.floor(step / 16); // aint no way :sob:
+			beat = Math.floor(step / 4);
+
+			if (step > lastStepHit)
+			{
+				if (Math.abs(boundInst.time - time) > resyncThreshold
+					|| (SONG.needsVoices && Math.abs(boundVocals.time - time) > resyncThreshold))
+					resyncFNF();
+
+				onStepHit.dispatch(step);
+				lastStepHit = step;
+			}
+
+			if (beat > lastBeatHit)
+			{
+				if (step % 4 == 0)
+					onBeatHit.dispatch(beat);
+				lastBeatHit = beat;
+			}
+
+			// Psych rollback?
+			if (section > lastSectionHit)
+			{
+				onSectionHit.dispatch(section);
+				lastSectionHit = section;
+			}
 
 			time += elapsed * 1000;
 		}
@@ -242,22 +227,38 @@ class Conductor
 
 	static function reset()
 	{
+		bpmChanges = [];
 		time = 0;
 		step = 0;
-		roundStep = 0;
 		beat = 0;
-		roundBeat = 0;
-		bpmChanges = [
-			{
-				step: 0,
-				beat: 0,
-				time: 0
-			}
-		];
-		lastTime = 0;
-		lastStep = 0;
-		lastBeat = 0;
-		lastStepHit = 0;
-		lastBeatHit = 0;
+		section = 0;
+		lastStepHit = -1;
+		lastBeatHit = -1;
+		lastSectionHit = -1;
+		onStepHit.removeAll();
+		onBeatHit.removeAll();
+		onSectionHit.removeAll();
+		onBPMChange.removeAll();
 	}
+
+	static function getBPMFromSeconds(time:Float)
+	{
+		var lastChange:BPMChangeEvent = {
+			stepTime: 0,
+			songTime: 0,
+			bpm: bpm,
+			stepCrochet: stepCrochet
+		};
+
+		for (i in 0...Conductor.bpmChanges.length)
+		{
+			if (time >= Conductor.bpmChanges[i].songTime)
+				lastChange = Conductor.bpmChanges[i];
+		}
+
+		return lastChange;
+	}
+
+	static inline function calculateCrochet(bpm:Float)
+		return (60 / bpm) * 1000;
 }

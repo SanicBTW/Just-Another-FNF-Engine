@@ -27,18 +27,25 @@ class MusicBeatState extends TransitionState implements MusicHandler
 
 	@:noCompletion
 	private function get_curStep():Int
-		return Conductor.roundStep;
+		return Conductor.step;
 
 	@:isVar public var curBeat(get, never):Int = 0;
 
 	@:noCompletion
 	private function get_curBeat():Int
-		return Conductor.roundBeat;
+		return Conductor.beat;
+
+	@:isVar public var curSection(get, never):Int = 0;
+
+	@:noCompletion
+	private function get_curSection():Int
+		return Conductor.section;
 
 	override public function create()
 	{
 		Conductor.onStepHit.add(stepHit);
 		Conductor.onBeatHit.add(beatHit);
+		Conductor.onSectionHit.add(sectionHit);
 
 		super.create();
 	}
@@ -46,6 +53,7 @@ class MusicBeatState extends TransitionState implements MusicHandler
 	override public function update(elapsed:Float)
 	{
 		Conductor.update(elapsed);
+
 		super.update(elapsed);
 	}
 
@@ -53,6 +61,8 @@ class MusicBeatState extends TransitionState implements MusicHandler
 	{
 		Conductor.onStepHit.remove(stepHit);
 		Conductor.onBeatHit.remove(beatHit);
+		Conductor.onSectionHit.remove(sectionHit);
+		Conductor.shouldResync = true; // Reset the flag to avoid forgor
 
 		super.destroy();
 	}
@@ -63,13 +73,19 @@ class MusicBeatState extends TransitionState implements MusicHandler
 		callOnModules('onStepHit', step);
 	}
 
-	public function beatHit(beat:Int)
+	public function beatHit(beat:Int):Void
 	{
-		if (SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
+		if (SONG != null && SONG.notes[Std.int(curStep / 16)] != null && SONG.notes[Std.int(curStep / 16)].changeBPM)
 			Conductor.changeBPM(SONG.notes[Std.int(curStep / 16)].bpm);
 
 		setOnModules('curBeat', beat);
 		callOnModules('onBeatHit', beat);
+	}
+
+	public function sectionHit(section:Int):Void
+	{
+		setOnModules("curSection", section);
+		callOnModules("onSectionHit", section);
 	}
 }
 
@@ -95,18 +111,25 @@ class MusicBeatSubState extends FlxSubState implements MusicHandler
 
 	@:noCompletion
 	private function get_curStep():Int
-		return Conductor.roundStep;
+		return Conductor.step;
 
 	@:isVar public var curBeat(get, never):Int = 0;
 
 	@:noCompletion
 	private function get_curBeat():Int
-		return Conductor.roundBeat;
+		return Conductor.beat;
+
+	@:isVar public var curSection(get, never):Int = 0;
+
+	@:noCompletion
+	private function get_curSection():Int
+		return Conductor.section;
 
 	override public function create()
 	{
 		Conductor.onStepHit.add(stepHit);
 		Conductor.onBeatHit.add(beatHit);
+		Conductor.onSectionHit.add(sectionHit);
 
 		super.create();
 	}
@@ -121,20 +144,27 @@ class MusicBeatSubState extends FlxSubState implements MusicHandler
 	{
 		Conductor.onStepHit.remove(stepHit);
 		Conductor.onBeatHit.remove(beatHit);
+		Conductor.onSectionHit.remove(sectionHit);
 
 		super.destroy();
 	}
 
-	public function stepHit(step:Int)
+	public function stepHit(step:Int):Void
 	{
 		setOnModules('curStep', step);
 		callOnModules('onStepHit', step);
 	}
 
-	public function beatHit(beat:Int)
+	public function beatHit(beat:Int):Void
 	{
 		setOnModules('curBeat', beat);
 		callOnModules('onBeatHit', beat);
+	}
+
+	public function sectionHit(section:Int):Void
+	{
+		setOnModules("curSection", section);
+		callOnModules("onSectionHit", section);
 	}
 }
 
@@ -152,4 +182,8 @@ interface MusicHandler
 	public var curBeat(get, never):Int;
 	private function get_curBeat():Int;
 	public function beatHit(beat:Int):Void;
+
+	public var curSection(get, never):Int;
+	private function get_curSection():Int;
+	public function sectionHit(section:Int):Void;
 }
