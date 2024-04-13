@@ -133,7 +133,7 @@ function onStartCountdown()
 		}});
 	});
 
-    UI.judgementOffset[0] = 455;
+    UI.judgementOffset[0] = 425;
 }
 
 function onCreatePost()
